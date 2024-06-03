@@ -2290,7 +2290,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     #     status.start()
     #     status.update(f"Checking study existance")
     #
-    #     study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+    #     study_list = requests.get(f"https://api.prolific.com/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
     #
     #     study_current = None
     #     for study_data in study_list:
@@ -2318,7 +2318,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     #             "peripheral_requirements": [],
     #             "eligibility_requirements": []
     #         }
-    #         response = requests.post(f"https://api.prolific.co/api/v1/projects/62e3a5aec0202351838e8e0a/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
+    #         response = requests.post(f"https://api.prolific.com/api/v1/projects/62e3a5aec0202351838e8e0a/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
     #         # TODO: Write code to create a study
     #         # The completion code can be randomly generated. Remember to update the environment and delete the .env variable.
     #         # The study must be created just once. The code must remain the same-

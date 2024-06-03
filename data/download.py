@@ -1500,6 +1500,7 @@ if 'prolific' in platforms:
         "study_date_published_parsed",
         "study_name",
         "study_name_internal",
+        "study_description",
         "study_completion_code",
         "study_completion_option",
         "study_completion_option_id",
@@ -1554,7 +1555,7 @@ if 'prolific' in platforms:
 
         df_prolific_study_data = pd.DataFrame(columns=column_names)
 
-        study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+        study_list = requests.get(f"https://api.prolific.com/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
 
         study_counter = 0
         submissions_counter = 0
@@ -1576,7 +1577,7 @@ if 'prolific' in platforms:
 
                     if int(study_current['number_of_submissions']) > 0:
 
-                        study_current_add = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                        study_current_add = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
                         del study_current_add['eligibility_requirements']
                         del study_current_add['description']
 
@@ -1584,7 +1585,7 @@ if 'prolific' in platforms:
                         submissions_list_response = None
                         while submissions_list_response is None or 'next' in submissions_list_response['_links']:
                             if not submissions_list_response:
-                                submissions_list_response = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/",
+                                submissions_list_response = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/submissions/",
                                                                          headers={'Authorization': f"Token {prolific_api_token}"}).json()
                                 for submission_current in submissions_list_response['results']:
                                     submissions_list.append(submission_current)
@@ -1671,6 +1672,7 @@ if 'prolific' in platforms:
         console.print(f"Submissions found for the current task: [green]{submissions_counter}[/green]")
         console.print(f"Dataframe shape: {df_prolific_study_data.shape}")
         if df_prolific_study_data.shape[0] > 0:
+            df_prolific_study_data.dropna(axis=1, how='all', inplace=True)
             df_prolific_study_data.to_csv(df_prolific_study_data_path, index=False)
             console.print(f"Prolific study dataframe serialized at path: [cyan on black]{df_prolific_study_data_path}")
         else:
@@ -1693,6 +1695,7 @@ if 'prolific' in platforms:
             "workspace_id",
             "project_id",
             "study_id",
+            "study_custom_tncs_accepted",
             "submission_id",
             'submission_date_started',
             'submission_date_started_parsed',
@@ -1703,6 +1706,9 @@ if 'prolific' in platforms:
             'submission_date_archived',
             'submission_date_archived_parsed',
             'submission_time_elapsed_seconds',
+            'submission_status',
+            'worker_completion_code_entered',
+            'worker_total_approvals',
             'worker_sex',
             'worker_age',
             'worker_ethnicity_simplified',
@@ -1717,7 +1723,7 @@ if 'prolific' in platforms:
 
         df_prolific_demo_data = pd.DataFrame(columns=column_names)
 
-        study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+        study_list = requests.get(f"https://api.prolific.com/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
 
         study_counter = 0
         submissions_counter = 0
@@ -1732,12 +1738,12 @@ if 'prolific' in platforms:
                 else:
                     study_current = study_data
                 if study_current is not None:
-                    study_current_add = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                    study_current_add = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
                     del study_current_add['eligibility_requirements']
                     del study_current_add['description']
                     console.print(f"Processing study [cyan]{study_current['internal_name']}")
                     with requests.Session() as session:
-                        endpoint_data = session.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/export/", headers={'Authorization': f"Token {prolific_api_token}"})
+                        endpoint_data = session.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/export/", headers={'Authorization': f"Token {prolific_api_token}"})
                         decoded_content = endpoint_data.content.decode('utf-8')
                         demographic_data = csv.reader(decoded_content.splitlines(), delimiter=',')
                         demo_list = list(demographic_data)
@@ -1751,6 +1757,7 @@ if 'prolific' in platforms:
                                     "workspace_id": study_current_add['workspace'],
                                     "project_id": study_current_add['project'],
                                     "study_id": study_current['id'],
+                                    "study_custom_tncs_accepted": row_raw['Custom study tncs accepted at'] if 'Custom study tncs accepted at' in row_raw else np.nan,
                                     "submission_id": row_raw['Submission id'],
                                     'submission_date_started': row_raw['Started at'],
                                     'submission_date_started_parsed': find_date_string(row_raw['Started at'], seconds=True),
@@ -1761,6 +1768,9 @@ if 'prolific' in platforms:
                                     'submission_date_archived': row_raw['Archived at'],
                                     'submission_date_archived_parsed': find_date_string(row_raw['Archived at'], seconds=True),
                                     'submission_time_elapsed_seconds': float(row_raw['Time taken']) if row_raw['Time taken'] != '' else np.nan,
+                                    'submission_status': row_raw['Status'] if 'Status' in row_raw else np.nan,
+                                    'worker_total_approvals': row_raw['Total approvals'],
+                                    'worker_completion_code_entered': row_raw['Completion code'],
                                     'worker_sex': row_raw['Sex'],
                                     'worker_age': row_raw['Age'],
                                     'worker_ethnicity_simplified': row_raw['Ethnicity simplified'],
@@ -1775,6 +1785,7 @@ if 'prolific' in platforms:
                                 df_prolific_demo_data = pd.concat([df_prolific_demo_data, pd.DataFrame([row])], ignore_index=True)
 
         if df_prolific_demo_data.shape[0] > 0:
+            df_prolific_demo_data.dropna(axis=1, how='all', inplace=True)
             df_prolific_demo_data.to_csv(df_prolific_demographic_data_path, index=False)
             console.print(f"Prolific demographic dataframe serialized at path: [cyan on black]{df_prolific_demographic_data_path}")
         else:
@@ -1785,6 +1796,7 @@ if 'prolific' in platforms:
         df_prolific_demo_data = pd.read_csv(df_prolific_demographic_data_path)
         console.print(f"Prolific demographic dataframe [yellow]already detected[/yellow], skipping creation")
         console.print(f"Serialized at path: [cyan on black]{df_prolific_demographic_data_path}")
+
 
 console.rule(f"{step_index} - Building [cyan on white]workers_ip_addresses[/cyan on white] Dataframe")
 step_index = step_index + 1
@@ -2168,7 +2180,7 @@ if not os.path.exists(df_quest_path):
                         (df_quest['unit_id'] == row['unit_id']) &
                         (df_quest['try_current'] == row['try_current']) &
                         (df_quest['questionnaire_index'] == questionnaire_data['serialization']['info']['index'])
-                        ]
+                    ]
 
                     if data.shape[0] <= 0:
 
