@@ -74,7 +74,7 @@
 														<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
 														<mat-radio-button
 																value="{{mapping.value}}"
-																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false)"
+																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); this.detectCategoricalDimensionOnChange($event); "
 																[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
 															<span class="mapping-label">{{ mapping.label }}</span>
@@ -102,22 +102,43 @@
 										</div>
 									</ng-container>
 									<ng-container *ngIf="dimension.scale.type=='interval'">
-										<div class="scale-interval">
-											<mat-slider min="{{this.task.dimensionIntervalMinValues[documentIndex]}}" max="{{this.task.dimensionIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}" discrete>
-												<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
-													   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
-											</mat-slider>
-											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
-												Value: #
-											</span>
-											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
-												Value: {{ assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value }}
-											</span>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
-												<span i18n>This field is required</span>
-											</mat-error>
-										</div>
+										<ng-container *ngIf="this.isVideoTimestampInterval()">
+											<div class="scale-interval">
+												<mat-slider [disabled]="this.sliderDisabled()" min="{{this.task.dimensionIntervalMinValues[documentIndex]}}" max="{{this.task.dimensionIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}">
+													<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
+														(change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
+														[attr.disabled]="(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')">
+												</mat-slider>
+												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
+													Value: 00:00.00
+												</span>
+												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
+													Value: {{ this.videoTimestampVisualization(assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value) }}
+												</span>
+												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required') && !this.sliderDisabled()">
+													<br>
+													<span i18n>This field is required</span>
+												</mat-error>
+											</div>
+										</ng-container>
+										<ng-container *ngIf="!isVideoTimestampInterval()">
+											<div class="scale-interval">
+												<mat-slider min="{{this.task.dimensionIntervalMinValues[documentIndex]}}" max="{{this.task.dimensionIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}" discrete>
+													<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
+															(change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
+															[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
+												</mat-slider>
+												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
+													Value: #
+												</span>
+												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
+													Value: {{ assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value }}
+												</span>
+												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
+													<span i18n>This field is required</span>
+												</mat-error>
+											</div>
+										</ng-container>
 									</ng-container>
 									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
 										<mat-form-field appearance="fill">

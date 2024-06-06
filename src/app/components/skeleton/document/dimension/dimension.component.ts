@@ -8,7 +8,7 @@ import {SectionService} from "../../../../services/section.service";
 import {UtilsService} from "../../../../services/utils.service";
 /* Models */
 import {Task} from "../../../../models/skeleton/task";
-import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
+import {Dimension, ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
 /* Components */
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
 import {Worker} from "../../../../models/worker/worker";
@@ -234,6 +234,62 @@ export class DimensionComponent implements OnInit, OnChanges {
                 }
             }
         }
+    }
+
+    /* #################### CATEGORICAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    public detectCategoricalDimensionOnChange(eventData: { value?: any; target?: any; }) {
+        if (this.task.settings.attributesMain.some(attribute => attribute.is_video) && this.task.dimensions.some(dimension => dimension.scale.type == "interval")) {
+            let currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value)
+            let categoricalDimension = this.getCategoricalDimension();
+            let previousValue = this.assessmentForm.controls[categoricalDimension.name.concat('_value').concat('')].value;
+            if (categoricalDimension.scale instanceof ScaleCategorical) {
+                if (currentValue == categoricalDimension.scale.mapping[0].value) {  
+                    let intervalDimension = this.getIntervalDimension();
+                    if (intervalDimension.scale instanceof ScaleInterval) {
+                        this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue(intervalDimension.scale.min);
+                    }            
+                }
+                else if (previousValue == categoricalDimension.scale.mapping[0].value) {
+                    let intervalDimension = this.getIntervalDimension();
+                    if (intervalDimension.scale instanceof ScaleInterval) {
+                        this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue('');
+                    }
+                }
+            }
+        }
+    }    
+
+    /* #################### INTERVAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    public isVideoTimestampInterval(): boolean {
+        return this.task.settings.attributesMain.some(attribute => attribute.is_video) && this.task.dimensions.some(dimension => dimension.scale.type == "categorical");
+    }
+
+    public videoTimestampVisualization(timestamp: number): string {
+        const time = String(timestamp).split('.')
+        const seconds = time[0].padStart(2, '0')
+        const milliseconds = time[1] ? time[1].padEnd(2, '0') : '00'
+        return `00:${seconds}.${milliseconds}`
+    }
+
+    private getCategoricalDimension(): Dimension {
+        return this.task.dimensions.find(dimension => dimension.scale.type == "categorical")
+    }
+
+    private getIntervalDimension(): Dimension {
+        return this.task.dimensions.find(dimension => dimension.scale.type == "interval")
+    }
+
+    public sliderDisabled(): boolean {
+        const categoricalDimension = this.getCategoricalDimension();
+        let disableValues = [];
+        if (categoricalDimension.scale instanceof ScaleCategorical) {
+            categoricalDimension.scale.mapping.forEach((el, index) => {
+                if (index !== 0) {
+                    disableValues.push(el.value)
+                }
+            });
+        }
+        return !disableValues.includes(this.assessmentForm.controls[(categoricalDimension.name).concat('_value').concat('')].value)
     }
 
     /* #################### POST ASSESSMENT #################### */
