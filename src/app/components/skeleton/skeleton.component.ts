@@ -217,6 +217,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
         let workerIdGenerated = String(false);
+        let workerIdentifierProvided = this.worker.identifier
         if (workerACLRecord["Items"].length <= 0) {
             if (this.worker.identifier == null) {
                 let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase();
@@ -268,6 +269,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter(key, value)
                 );
                 this.worker.setParameter("status_code", StatusCodes.TASK_ALREADY_COMPLETED);
+                this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             } else {
                 Object.entries(aclEntry).forEach(([key, value]) =>
@@ -292,6 +294,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("time_removal", new Date().toUTCString());
                     this.sectionService.taskFailed = true;
+                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                 } else {
                     Object.entries(aclEntry).forEach(([key, value]) => this.worker.setParameter(key, value));
@@ -299,6 +302,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
                     hitAssigned = true;
                     this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
+                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                 }
             }
@@ -667,7 +671,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
         let entriesParsed = []
         for (let dataEntry of wholeEntries) {
-            if (this.worker.identifier == dataEntry.identifier) {
+            if (this.worker.identifier == dataEntry.identifier && dataEntry.sequence.includes(this.worker.getIP()['ip'])) {
                 dataEntry["data"] = JSON.parse(dataEntry["data"])
                 entriesParsed.push(dataEntry)
             }

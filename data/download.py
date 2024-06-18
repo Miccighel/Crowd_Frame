@@ -613,7 +613,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                 if len(worker_session) > 0:
 
-
                     table_base_name = "_".join(data_source.split("_")[:-1])
 
                     acl_data_source = None
@@ -627,273 +626,311 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                     task_key_found = False
 
-                    snapshot = {
-                        "source_path": worker_snapshot_path,
-                        "source_data": data_source,
-                        "source_acl": acl_data_source,
-                        "source_log": log_data_source,
-                        "data_items": len(worker_session),
-                        "task": {},
-                        "worker": {
-                            "identifier": worker_id
-                        },
-                        "ip": {
-                            "info": {},
-                            "serialization": {}
-                        },
-                        "uag": {
-                            "info": {},
-                            "serialization": {}
-                        },
-                        "checks": [],
-                        "questionnaires_answers": [],
-                        "documents_answers": [],
-                        "comments": [],
-                        "logs": [],
-                        "questionnaires": {},
-                        "documents": {},
-                        "dimensions": {}
-                    }
-
-                    sequence_number = 0
-
+                    data_sequences = {}
                     for element in worker_session:
-
                         sequence = element['sequence']['S'].split("-")
-                        data = json.loads(element['data']['S'])
-                        time = element['time']['S']
-
-                        worker_id = sequence[0]
-                        unit_id = sequence[1]
-                        current_try = sequence[2]
-                        sequence_number_current = sequence[3]
-
-                        if data:
-                            if data['info']['element'] == 'data':
-                                if len(data['task'].items()) > 0:
-                                    task_key_found = True
-                                for attribute, value in data['task'].items():
-                                    if attribute == 'task_id':
-                                        snapshot['task']['task_name'] = value
-                                    else:
-                                        snapshot['task'][attribute] = value
-                                snapshot['task']['try_last'] = current_try
-                                snapshot['task']['time_submit'] = time
-                                snapshot['task']['time_submit_parsed'] = find_date_string(time)
-                                snapshot['task']['info'] = data['info']
-                                if 'settings' in snapshot['task']:
-                                    settings = snapshot['task'].pop('settings')
-                                    snapshot['task']['settings'] = settings
-                                snapshot['worker'] = data.pop('worker')
-                                snapshot['questionnaires'] = data.pop('questionnaires')
-                                snapshot['documents'] = data.pop('documents')
-                                snapshot['dimensions'] = data.pop('dimensions')
-                                if 'propertiesFetched' in snapshot['worker'].keys():
-                                    snapshot['worker']['properties_fetched'] = snapshot['worker'].pop('propertiesFetched')
-                                if 'paramsFetched' in snapshot['worker'].keys():
-                                    snapshot['worker']['params_fetched'] = snapshot['worker'].pop('paramsFetched')
-                                snapshot['worker'] = dict(sorted(snapshot['worker'].items()))
-                            elif data['info']['element'] == 'document':
-                                snapshot['documents_answers'].append({
-                                    "time_submit": time,
-                                    "serialization": data
-                                })
-                            elif data['info']['element'] == 'questionnaire':
-                                snapshot['questionnaires_answers'].append({
-                                    "time_submit": time,
-                                    "serialization": data
-                                })
-                            elif data['info']['element'] == 'checks':
-                                snapshot['checks'].append({
-                                    "time_submit": time,
-                                    "serialization": data
-                                })
-                            elif data['info']['element'] == 'comment':
-                                snapshot['comments'].append({
-                                    "time_submit": time,
-                                    "serialization": data
-                                })
-
-                        if int(sequence_number_current) > int(sequence_number):
-                            if 'try_last' in snapshot['task'].keys():
-                                snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
-                            snapshot['task']['unit_id'] = unit_id
-                            sequence_number = sequence_number_current
-
-                    if not task_key_found:
-
-                        paginator = dynamo_db.get_paginator('query')
-                        for page in paginator.paginate(
-                                TableName=acl_data_source,
-                                KeyConditionExpression="identifier = :identifier",
-                                ExpressionAttributeValues={
-                                    ":identifier": {'S': worker_id}
-                                }, Select='ALL_ATTRIBUTES'
-                        ):
-
-                            if len(page['Items']) > 0:
-                                task_key_found = True
-
-                            for item in page['Items']:
-
-                                task_name = item['task_name']['S']
-                                batch_name = item['batch_name']['S']
-                                unit_id = item['unit_id']['S']
-                                ip_address = item['ip_address']['S']
-                                user_agent = item['user_agent']['S']
-                                time_arrival = item['time_arrival']['S']
-                                time_arrival_parsed = find_date_string(time_arrival)
-
-                                snapshot['task']['task_name'] = task_name
-                                snapshot['task']['batch_name'] = batch_name
-                                snapshot['task']['unit_id'] = unit_id
-                                snapshot['task']['try_last'] = current_try
-                                snapshot['task']['time_submit'] = time
-                                snapshot['task']['time_submit_parsed'] = find_date_string(time)
-
-                                if ip_address is not None:
-                                    if ip_address not in worker_ip_addresses[worker_id]:
-                                        worker_ip_addresses[worker_id][ip_address] = {}
-                                        worker_ip_addresses[worker_id][ip_address]['fetched'] = False
-                                        worker_ip_addresses[worker_id][ip_address]['batches'] = {batch_name: {}}
-                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
-                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                    else:
-                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
-                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
-                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-
-                                    if ip_address in worker_ip_batches[worker_id]:
-                                        worker_ip_batches[worker_id][ip_address].append(batch_name)
-                                    else:
-                                        worker_ip_batches[worker_id][ip_address] = [batch_name]
-                                for ip_address_current in worker_ip_addresses[worker_id]:
-                                    if batch_name in worker_ip_batches[worker_id][ip_address_current]:
-                                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current, properties_fetched)
-                                        worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
-
-                                if user_agent is not None:
-                                    if user_agent not in worker_user_agents[worker_id]:
-                                        worker_user_agents[worker_id][user_agent] = {}
-                                        worker_user_agents[worker_id][user_agent]['fetched'] = False
-                                        worker_user_agents[worker_id][user_agent]['batches'] = {batch_name: {}}
-                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
-                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                    else:
-                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
-                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
-                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                    if user_agent in worker_user_agents_batches[worker_id]:
-                                        worker_user_agents_batches[worker_id][user_agent].append(batch_name)
-                                    else:
-                                        worker_user_agents_batches[worker_id][user_agent] = [batch_name]
-                                for user_agent_current in worker_user_agents[worker_id]:
-                                    if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
-                                        ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current, properties_fetched)
-                                        worker_user_agents[worker_id][user_agent_current]['fetched'] = True
-                    if 'params_fetched' in snapshot['worker'].keys():
-                        properties_fetched = snapshot['worker']['properties_fetched']
-                        properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
-                        ip_address = None
-                        user_agent = None
-                        if 'cf_ip' in properties_fetched:
-                            ip_address = properties_fetched['cf_ip']
-                        elif 'ipify_ip' in properties_fetched:
-                            ip_address = properties_fetched['ipify_ip']
-                        if 'cf_uag' in properties_fetched:
-                            user_agent = properties_fetched['cf_uag']
-                        elif 'ngx_user_agent' in properties_fetched:
-                            user_agent = properties_fetched['ngx_user_agent']
+                        if len(sequence) > 4:
+                            worker_id = sequence[0]
+                            worker_ip = sequence[1]
+                            unit_id = sequence[2]
+                            sequence_key = f"{worker_id}-{worker_ip}-{unit_id}"
+                            if sequence_key not in data_sequences:
+                                data_sequences[sequence_key] = []
                         else:
-                            user_agent = properties_fetched['nav_user_agent']
-                        if ip_address is not None:
-                            if ip_address not in worker_ip_addresses[worker_id]:
-                                worker_ip_addresses[worker_id][ip_address] = {}
-                                worker_ip_addresses[worker_id][ip_address]['fetched'] = False
-                                worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
-                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                            worker_id = sequence[0]
+                            unit_id = sequence[1]
+                            sequence_key = f"{worker_id}-{unit_id}"
+                            if sequence_key not in data_sequences:
+                                data_sequences[sequence_key] = []
+                        data_sequences[sequence_key].append(element)
+
+                    for data_sequence_key, worker_session_across_tries in data_sequences.items():
+
+                        snapshot = {
+                            "sequence_key": data_sequence_key,
+                            "source_path": worker_snapshot_path,
+                            "source_data": data_source,
+                            "source_acl": acl_data_source,
+                            "source_log": log_data_source,
+                            "data_items": len(worker_session_across_tries),
+                            "task": {},
+                            "worker": {
+                                "identifier": worker_id
+                            },
+                            "ip": {
+                                "info": {},
+                                "serialization": {}
+                            },
+                            "uag": {
+                                "info": {},
+                                "serialization": {}
+                            },
+                            "checks": [],
+                            "questionnaires_answers": [],
+                            "documents_answers": [],
+                            "comments": [],
+                            "logs": [],
+                            "questionnaires": {},
+                            "documents": {},
+                            "dimensions": {}
+                        }
+
+                        sequence_number = 0
+
+                        for element in worker_session_across_tries:
+
+                            sequence = element['sequence']['S'].split("-")
+                            data = json.loads(element['data']['S'])
+                            time = element['time']['S']
+
+                            if len(sequence) > 4:
+                                worker_id = sequence[0]
+                                worker_ip = sequence[1]
+                                unit_id = sequence[2]
+                                current_try = sequence[3]
+                                sequence_number_current = sequence[4]
                             else:
-                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']] = {}
-                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
-                            if ip_address in worker_ip_batches[worker_id]:
-                                worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
+                                worker_id = sequence[0]
+                                unit_id = sequence[1]
+                                current_try = sequence[2]
+                                sequence_number_current = sequence[3]
+
+                            if data:
+                                if data['info']['element'] == 'data':
+                                    if len(data['task'].items()) > 0:
+                                        task_key_found = True
+                                    for attribute, value in data['task'].items():
+                                        if attribute == 'task_id':
+                                            snapshot['task']['task_name'] = value
+                                        else:
+                                            snapshot['task'][attribute] = value
+                                    snapshot['task']['try_last'] = current_try
+                                    snapshot['task']['time_submit'] = time
+                                    snapshot['task']['time_submit_parsed'] = find_date_string(time)
+                                    snapshot['task']['info'] = data['info']
+                                    if 'settings' in snapshot['task']:
+                                        settings = snapshot['task'].pop('settings')
+                                        snapshot['task']['settings'] = settings
+                                    snapshot['questionnaires'] = data.pop('questionnaires')
+                                    snapshot['documents'] = data.pop('documents')
+                                    snapshot['dimensions'] = data.pop('dimensions')
+                                    snapshot['worker'] = data.pop('worker')
+                                    if 'propertiesFetched' in snapshot['worker'].keys():
+                                        snapshot['worker']['properties_fetched'] = snapshot['worker'].pop('propertiesFetched')
+                                    if 'paramsFetched' in snapshot['worker'].keys():
+                                        snapshot['worker']['params_fetched'] = snapshot['worker'].pop('paramsFetched')
+                                    if 'previousIPAddresses' in snapshot['worker'].keys():
+                                        snapshot['worker'].pop('previousIPAddresses')
+                                    if 'identifiersProvided' in snapshot['worker'].keys():
+                                        snapshot['worker'].pop('identifiersProvided')
+                                    snapshot['worker'] = dict(sorted(snapshot['worker'].items()))
+                                elif data['info']['element'] == 'document':
+                                    snapshot['documents_answers'].append({
+                                        "time_submit": time,
+                                        "serialization": data
+                                    })
+                                elif data['info']['element'] == 'questionnaire':
+                                    snapshot['questionnaires_answers'].append({
+                                        "time_submit": time,
+                                        "serialization": data
+                                    })
+                                elif data['info']['element'] == 'checks':
+                                    snapshot['checks'].append({
+                                        "time_submit": time,
+                                        "serialization": data
+                                    })
+                                elif data['info']['element'] == 'comment':
+                                    snapshot['comments'].append({
+                                        "time_submit": time,
+                                        "serialization": data
+                                    })
+
+                            if int(sequence_number_current) > int(sequence_number):
+                                if 'try_last' in snapshot['task'].keys():
+                                    snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
+                                snapshot['task']['unit_id'] = unit_id
+                                sequence_number = sequence_number_current
+
+                        if not task_key_found:
+
+                            paginator = dynamo_db.get_paginator('query')
+                            for page in paginator.paginate(
+                                    TableName=acl_data_source,
+                                    KeyConditionExpression="identifier = :identifier",
+                                    ExpressionAttributeValues={
+                                        ":identifier": {'S': worker_id}
+                                    }, Select='ALL_ATTRIBUTES'
+                            ):
+
+                                if len(page['Items']) > 0:
+                                    task_key_found = True
+
+                                for item in page['Items']:
+
+                                    task_name = item['task_name']['S']
+                                    batch_name = item['batch_name']['S']
+                                    unit_id = item['unit_id']['S']
+                                    ip_address = item['ip_address']['S']
+                                    user_agent = item['user_agent']['S']
+                                    time_arrival = item['time_arrival']['S']
+                                    time_arrival_parsed = find_date_string(time_arrival)
+
+                                    snapshot['task']['task_name'] = task_name
+                                    snapshot['task']['batch_name'] = batch_name
+                                    snapshot['task']['unit_id'] = unit_id
+                                    snapshot['task']['try_last'] = current_try
+                                    snapshot['task']['time_submit'] = time
+                                    snapshot['task']['time_submit_parsed'] = find_date_string(time)
+
+                                    if ip_address is not None:
+                                        if ip_address not in worker_ip_addresses[worker_id]:
+                                            worker_ip_addresses[worker_id][ip_address] = {}
+                                            worker_ip_addresses[worker_id][ip_address]['fetched'] = False
+                                            worker_ip_addresses[worker_id][ip_address]['batches'] = {batch_name: {}}
+                                            worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                                            worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                        else:
+                                            worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
+                                            worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                                            worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+
+                                        if ip_address in worker_ip_batches[worker_id]:
+                                            worker_ip_batches[worker_id][ip_address].append(batch_name)
+                                        else:
+                                            worker_ip_batches[worker_id][ip_address] = [batch_name]
+                                    for ip_address_current in worker_ip_addresses[worker_id]:
+                                        if batch_name in worker_ip_batches[worker_id][ip_address_current]:
+                                            ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current, properties_fetched)
+                                            worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
+
+                                    if user_agent is not None:
+                                        if user_agent not in worker_user_agents[worker_id]:
+                                            worker_user_agents[worker_id][user_agent] = {}
+                                            worker_user_agents[worker_id][user_agent]['fetched'] = False
+                                            worker_user_agents[worker_id][user_agent]['batches'] = {batch_name: {}}
+                                            worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                                            worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                        else:
+                                            worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
+                                            worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                                            worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                        if user_agent in worker_user_agents_batches[worker_id]:
+                                            worker_user_agents_batches[worker_id][user_agent].append(batch_name)
+                                        else:
+                                            worker_user_agents_batches[worker_id][user_agent] = [batch_name]
+                                    for user_agent_current in worker_user_agents[worker_id]:
+                                        if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
+                                            ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current, properties_fetched)
+                                            worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+                        if 'params_fetched' in snapshot['worker'].keys():
+                            properties_fetched = snapshot['worker']['properties_fetched']
+                            properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
+                            ip_address = None
+                            user_agent = None
+                            if 'cf_ip' in properties_fetched:
+                                ip_address = properties_fetched['cf_ip']
+                            elif 'ipify_ip' in properties_fetched:
+                                ip_address = properties_fetched['ipify_ip']
+                            if 'cf_uag' in properties_fetched:
+                                user_agent = properties_fetched['cf_uag']
+                            elif 'ngx_user_agent' in properties_fetched:
+                                user_agent = properties_fetched['ngx_user_agent']
                             else:
-                                worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
-                        for ip_address_current in worker_ip_addresses[worker_id]:
-                            if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
-                                fetch_ip_data(worker_id, ip_address_current, properties_fetched)
-                                worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
-                        if user_agent is not None:
-                            if user_agent not in worker_user_agents[worker_id]:
-                                worker_user_agents[worker_id][user_agent] = {}
-                                worker_user_agents[worker_id][user_agent]['fetched'] = False
-                                worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
-                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                                user_agent = properties_fetched['nav_user_agent']
+                            if ip_address is not None:
+                                if ip_address not in worker_ip_addresses[worker_id]:
+                                    worker_ip_addresses[worker_id][ip_address] = {}
+                                    worker_ip_addresses[worker_id][ip_address]['fetched'] = False
+                                    worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                                else:
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']] = {}
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                                if ip_address in worker_ip_batches[worker_id]:
+                                    worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
+                                else:
+                                    worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
+                            for ip_address_current in worker_ip_addresses[worker_id]:
+                                if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
+                                    fetch_ip_data(worker_id, ip_address_current, properties_fetched)
+                                    worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
+                            if user_agent is not None:
+                                if user_agent not in worker_user_agents[worker_id]:
+                                    worker_user_agents[worker_id][user_agent] = {}
+                                    worker_user_agents[worker_id][user_agent]['fetched'] = False
+                                    worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
+                                    worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                    worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                                else:
+                                    worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']] = {}
+                                    worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                    worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+
+                                if user_agent in worker_user_agents_batches[worker_id]:
+                                    worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
+                                else:
+                                    worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
+                            for user_agent_current in worker_user_agents[worker_id]:
+                                if not worker_user_agents[worker_id][user_agent_current]['fetched']:
+                                    fetch_uag_data(worker_id, user_agent_current, properties_fetched)
+                                    worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+
+                            ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
+                            uag_data, properties_moved_uag = fetch_uag_data(worker_id, user_agent, properties_fetched)
+                            worker_ip_addresses[worker_id][ip_address]['fetched'] = True
+                            worker_user_agents[worker_id][user_agent]['fetched'] = True
+                            properties_unhandled = set(properties_fetched.keys()) - set(properties_moved_ip + properties_moved_uag)
+                            if len(properties_unhandled) > 0:
+                                for property_key in properties_unhandled:
+                                    if property_key not in properties_unhandled:
+                                        worker_properties_unhandled.append(property_key)
+                                        console.print(f"Worker {worker_id} property unhandled: [orange]{property_key}")
+                            snapshot['worker']['properties_fetched'] = properties_fetched_copy
+                            if len(sequence) > 4:
+                                for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
+                                    if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current] and ip_current in sequence_key:
+                                        snapshot['ip']['info'][ip_current] = {}
+                                        snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
+                                        snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
                             else:
-                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']] = {}
-                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                                for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
+                                    if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
+                                        snapshot['ip']['info'][ip_current] = {}
+                                        snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
+                                        snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
+                            for ua_current, ua_data_current in worker_user_agents[worker_id].items():
+                                if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
+                                    snapshot['uag']['info'][ua_current] = {}
+                                    snapshot['uag']['info'][ua_current][snapshot['task']['batch_name']] = worker_user_agents[worker_id][ua_current]['batches'][snapshot['task']['batch_name']]
+                                    snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
 
-                            if user_agent in worker_user_agents_batches[worker_id]:
-                                worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
-                            else:
-                                worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
-                        for user_agent_current in worker_user_agents[worker_id]:
-                            if not worker_user_agents[worker_id][user_agent_current]['fetched']:
-                                fetch_uag_data(worker_id, user_agent_current, properties_fetched)
-                                worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+                        if log_data_source:
+                            paginator = dynamo_db.get_paginator('query')
+                            for page in paginator.paginate(
+                                    TableName=log_data_source,
+                                    KeyConditionExpression="worker = :worker",
+                                    ExpressionAttributeValues={
+                                        ":worker": {'S': worker_id}
+                                    }, Select='ALL_ATTRIBUTES'
+                            ):
+                                for item in page['Items']:
+                                    data = {
+                                        'worker': item['worker']['S'],
+                                        'task': item['task']['S'],
+                                        'batch': item['batch']['S'],
+                                        'unit_id': item['unitId']['S'] if 'unitId' in item else None,
+                                        'sequence': item['sequence']['S'].split("_")[1],
+                                        'type': item['type']['S'],
+                                        'time_server': item['server_time']['N'],
+                                        'time_client': item['client_time']['N'],
+                                        'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
+                                    }
+                                    snapshot['logs'].append(data)
 
-                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
-                        uag_data, properties_moved_uag = fetch_uag_data(worker_id, user_agent, properties_fetched)
-                        worker_ip_addresses[worker_id][ip_address]['fetched'] = True
-                        worker_user_agents[worker_id][user_agent]['fetched'] = True
-                        properties_unhandled = set(properties_fetched.keys()) - set(properties_moved_ip + properties_moved_uag)
-                        if len(properties_unhandled) > 0:
-                            for property_key in properties_unhandled:
-                                if property_key not in properties_unhandled:
-                                    worker_properties_unhandled.append(property_key)
-                                    console.print(f"Worker {worker_id} property unhandled: [orange]{property_key}")
-                        snapshot['worker']['properties_fetched'] = properties_fetched_copy
-
-                        for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
-                            if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
-                                snapshot['ip']['info'][ip_current] = {}
-                                snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
-                                snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
-                        for ua_current, ua_data_current in worker_user_agents[worker_id].items():
-                            if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
-                                snapshot['uag']['info'][ua_current] = {}
-                                snapshot['uag']['info'][ua_current][snapshot['task']['batch_name']] = worker_user_agents[worker_id][ua_current]['batches'][snapshot['task']['batch_name']]
-                                snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
-
-                    if log_data_source:
-                        paginator = dynamo_db.get_paginator('query')
-                        for page in paginator.paginate(
-                                TableName=log_data_source,
-                                KeyConditionExpression="worker = :worker",
-                                ExpressionAttributeValues={
-                                    ":worker": {'S': worker_id}
-                                }, Select='ALL_ATTRIBUTES'
-                        ):
-                            for item in page['Items']:
-                                data = {
-                                    'worker': item['worker']['S'],
-                                    'task': item['task']['S'],
-                                    'batch': item['batch']['S'],
-                                    'unit_id': item['unitId']['S'] if 'unitId' in item else None,
-                                    'sequence': item['sequence']['S'].split("_")[1],
-                                    'type': item['type']['S'],
-                                    'time_server': item['server_time']['N'],
-                                    'time_client': item['client_time']['N'],
-                                    'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
-                                }
-                                snapshot['logs'].append(data)
-
-                    if task_key_found:
-                        worker_snapshot.append(snapshot)
+                        if task_key_found:
+                            worker_snapshot.append(snapshot)
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, indent=4, separators=(',', ':'))
@@ -979,7 +1016,8 @@ if not os.path.exists(df_acl_path):
                     if worker_id not in workers_participations:
                         workers_participations[worker_id] = [table_acl]
                     else:
-                        workers_participations[worker_id].append(table_acl)
+                        if table_acl not in workers_participations[worker_id]:
+                            workers_participations[worker_id].append(table_acl)
 
     worker_identifiers = set(workers_participations.keys())
 
@@ -987,6 +1025,7 @@ if not os.path.exists(df_acl_path):
 
     df_acl = pd.DataFrame(columns=[
         'worker_id',
+        'identifiers_provided',
         'generated',
         'in_progress',
         'paid',
@@ -1050,9 +1089,6 @@ if not os.path.exists(df_acl_path):
                         ":worker": {'S': worker_id},
                     }, Select='ALL_ATTRIBUTES'
             ):
-                if len(page['Items']) > 1:
-                    pp.pprint(worker_id)
-                    assert False
                 if len(page['Items']) > 0:
                     for item in page['Items']:
 
@@ -1071,36 +1107,44 @@ if not os.path.exists(df_acl_path):
                                     if attribute not in df_acl.columns:
                                         df_acl[attribute] = np.nan
                                     row[attribute] = value
+                        if 'identifiers_provided' not in row.keys():
+                            row['identifiers_provided'] = np.nan
+
+                        sequence_keys = [
+                            f"{row['worker_id']}-{row['ip_address']}-{row['unit_id']}",
+                            f"{row['worker_id']}-{row['unit_id']}"
+                        ]
 
                         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
                         worker_snapshots = read_json(worker_snapshot_path)
                         if len(worker_snapshots) > 0:
                             for worker_snapshot in worker_snapshots:
-                                task = worker_snapshot['task']
-                                task_name_snapshot = task['task_name'] if 'task_name' in task else task['task_id']
-                                batch_name_snapshot = task['batch_name']
-                                unit_id_snapshot = task['unit_id']
-                                if task_name_acl == task_name_snapshot and batch_name_acl == batch_name_snapshot and unit_id_acl == unit_id_snapshot:
-                                    worker_paid = check_worker_paid(worker_snapshot)
-                                    row['paid'] = worker_paid
-                                    row['source_acl'] = worker_snapshot['source_acl']
-                                    row['source_data'] = worker_snapshot['source_data']
-                                    row['source_log'] = worker_snapshot['source_log'] if worker_snapshot['source_log'] is not None else np.nan
-                                    row['source_path'] = worker_snapshot['source_path']
-                                    for attribute, value in task.items():
-                                        if attribute != 'settings' and attribute != 'info' and attribute != 'task_id' and attribute != 'search_engine_settings':
-                                            row[attribute] = value
-                                    if 'time_arrival' in row:
-                                        row['time_arrival_parsed'] = find_date_string(row['time_arrival'])
-                                    if 'time_completion' in row:
-                                        row['time_completion_parsed'] = find_date_string(row['time_completion'])
-                                    if 'time_removal' in row:
-                                        row['time_removal_parsed'] = find_date_string(row['time_removal'])
-                                    if 'time_expiration' in row:
-                                        row['time_expiration_parsed'] = find_date_string(row['time_expiration'])
-                                    if 'time_expiration_nearest' in row:
-                                        row['time_expiration_nearest_parsed'] = find_date_string(row['time_expiration_nearest'])
-                                    df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
+                                if worker_snapshot['sequence_key'] in sequence_keys:
+                                    task = worker_snapshot['task']
+                                    task_name_snapshot = task['task_name'] if 'task_name' in task else task['task_id']
+                                    batch_name_snapshot = task['batch_name']
+                                    unit_id_snapshot = task['unit_id']
+                                    if task_name_acl == task_name_snapshot and batch_name_acl == batch_name_snapshot and unit_id_acl == unit_id_snapshot:
+                                        worker_paid = check_worker_paid(worker_snapshot)
+                                        row['paid'] = worker_paid
+                                        row['source_acl'] = worker_snapshot['source_acl']
+                                        row['source_data'] = worker_snapshot['source_data']
+                                        row['source_log'] = worker_snapshot['source_log'] if worker_snapshot['source_log'] is not None else np.nan
+                                        row['source_path'] = worker_snapshot['source_path']
+                                        for attribute, value in task.items():
+                                            if attribute != 'settings' and attribute != 'info' and attribute != 'task_id' and attribute != 'search_engine_settings':
+                                                row[attribute] = value
+                                        if 'time_arrival' in row:
+                                            row['time_arrival_parsed'] = find_date_string(row['time_arrival'])
+                                        if 'time_completion' in row:
+                                            row['time_completion_parsed'] = find_date_string(row['time_completion'])
+                                        if 'time_removal' in row:
+                                            row['time_removal_parsed'] = find_date_string(row['time_removal'])
+                                        if 'time_expiration' in row:
+                                            row['time_expiration_parsed'] = find_date_string(row['time_expiration'])
+                                        if 'time_expiration_nearest' in row:
+                                            row['time_expiration_nearest_parsed'] = find_date_string(row['time_expiration_nearest'])
+                                        df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
                         else:
                             df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
 
@@ -1808,6 +1852,7 @@ if not os.path.exists(df_ip_path):
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
+        sequence_key = f"{acl_record['worker_id']}-{acl_record['ip_address']}-{acl_record['unit_id']}"
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
 
         if worker_snapshot is not None:

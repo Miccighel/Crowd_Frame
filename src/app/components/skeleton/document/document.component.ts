@@ -84,6 +84,7 @@ export class DocumentComponent implements OnInit {
     @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
     /* Reference to the countdown element itself for the current document */
     @ViewChildren('countdownElement') countdown: CountdownComponent;
+    @ViewChildren('countdownElement') countdownElements!: QueryList<CountdownComponent>;
 
     /* #################### EMITTERS #################### */
 
@@ -129,9 +130,12 @@ export class DocumentComponent implements OnInit {
                 this.task.followingAssessmentAllowed[this.documentIndex][attributePostAssessment.index + 1] = true
             }
         }
-        /* Enable the first countdown if there are no questionnaires and the countdown time is set. */
-        if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
-            this.countdown.begin();
+    }
+
+    ngAfterViewInit() {
+        let comp = this.countdownElements.get(this.documentIndex)
+        if (comp) {
+            comp.begin()
         }
     }
 

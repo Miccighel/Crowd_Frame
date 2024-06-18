@@ -45,15 +45,13 @@ export class DynamoDBService {
 
     public async getACLRecordWorkerId(config, worker_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
         let params = {
             TableName: table ? table : config["table_acl_name"],
-            KeyConditionExpression: "#identifier = :identifier",
-            ExpressionAttributeNames: {
-                "#identifier": "identifier"
-            },
-            ExpressionAttributeValues: {
-                ":identifier": worker_id
-            }
+            IndexName: 'identifier-index',
+            ScanIndexForward: true,
+            KeyConditionExpression: "identifier = :identifier",
+            ExpressionAttributeValues: {":identifier": worker_id}
         };
         return await docClient.query(params).promise()
     }
@@ -66,7 +64,7 @@ export class DynamoDBService {
             IndexName: 'unit_id-index',
             ScanIndexForward: true,
             KeyConditionExpression: "unit_id = :unit_id",
-            ExpressionAttributeValues: {":unit_id": unit_id},
+            ExpressionAttributeValues: {":unit_id": unit_id}
         };
         return await docClient.query(params).promise()
     }
@@ -159,7 +157,7 @@ export class DynamoDBService {
             TableName: config["table_data_name"],
             Item: {
                 identifier: {S: worker.identifier},
-                sequence: {S: `${worker.identifier}-${task.unitId}-${task.tryCurrent}-${task.sequenceNumber}`},
+                sequence: {S: `${worker.identifier}-${worker.getIP()['ip']}-${task.unitId}-${task.tryCurrent}-${task.sequenceNumber}`},
             }
         };
         for (const [key, value] of Object.entries(data['info'])) {

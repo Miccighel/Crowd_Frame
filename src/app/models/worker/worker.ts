@@ -5,6 +5,7 @@ export class Worker {
     public settings: WorkerSettings
 
     identifier: string;
+    identifiersProvided: Array<string>;
     folder: string
     paramsFetched: Record<string, string>
     propertiesFetched: Record<string, Object>
@@ -28,6 +29,7 @@ export class Worker {
                 this.identifier = value
         }
         this.propertiesFetched = {}
+        this.identifiersProvided = []
     }
 
     public setParameter(name: string, value: any) {
@@ -135,7 +137,22 @@ export class Worker {
 
     }
 
-    getIP(): Object {
+    public storeIdentifiersProvided(identifierProvided: string, identifiersProvided?: string): string {
+        if (identifiersProvided) {
+            const identifiersProvidedAll = identifiersProvided.split(':::');
+            for (const id of identifiersProvidedAll) {
+                if (!this.identifiersProvided.includes(id)) {
+                    this.identifiersProvided.push(id);
+                }
+            }
+        }
+        if (!this.identifiersProvided.includes(identifierProvided)) {
+            this.identifiersProvided.push(identifierProvided);
+        }
+        return this.identifiersProvided.join(':::');
+    }
+
+    public getIP(): Object {
         let ipData = {
             ip: null,
             source: null
@@ -150,7 +167,7 @@ export class Worker {
         return ipData
     }
 
-    getUAG(): Object {
+    public getUAG(): Object {
         let uagData = {
             uag: null,
             source: null

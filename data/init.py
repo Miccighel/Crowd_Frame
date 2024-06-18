@@ -618,10 +618,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
-        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
-        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -930,7 +926,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 {'AttributeName': 'ip_address', 'AttributeType': 'S'},
             ],
             KeySchema=[
-                {'AttributeName': 'identifier', 'KeyType': 'HASH'}
+                {'AttributeName': 'identifier', 'KeyType': 'HASH'},
+                # If you want to use ip_address as part of the primary key:
+                {'AttributeName': 'ip_address', 'KeyType': 'RANGE'}
             ],
             GlobalSecondaryIndexes=[
                 {
@@ -938,6 +936,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     'KeySchema': [
                         {
                             'AttributeName': 'unit_id',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                },
+                {
+                    'IndexName': 'identifier-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'identifier',
                             'KeyType': 'HASH',
                         },
                         {

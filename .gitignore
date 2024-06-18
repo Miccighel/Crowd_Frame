@@ -96,3 +96,5 @@ data/build/toloka/tokens.tsv
 data/build/toloka/output_specification.json
 data/build/toloka/input_specification.json
 data/__pycache__/
+
+data/videos/
