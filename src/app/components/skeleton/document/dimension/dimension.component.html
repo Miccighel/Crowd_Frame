@@ -66,40 +66,73 @@
 								<ng-container *ngIf="dimension.style.orientation=='vertical'">
 
 									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<div>
-											<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
-															 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-												<ng-container *ngIf="!dimension.scale.multipleSelection">
-													<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
-														<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
-														<mat-radio-button
-																value="{{mapping.value}}"
-																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); this.detectCategoricalDimensionOnChange($event); "
-																[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
-																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-															<span class="mapping-label">{{ mapping.label }}</span>
-															<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
-														</mat-radio-button>
+										<ng-container *ngIf="this.isVideoTypeLabelCategorical(dimension)">
+											<div>
+												<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+																 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
+													<ng-container *ngIf="!dimension.scale.multipleSelection">
+														<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
+															<ng-container *ngIf="k !== 0">
+																<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
+																<mat-radio-button
+																		value="{{mapping.value}}"
+																		(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false);"
+																		[disabled]="this.categoricalDimensionDisabled(dimension)"
+																		[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
+																		[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
+																	<span class="mapping-label">{{ mapping.label }}</span>
+																	<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
+																</mat-radio-button>
+															</ng-container>
+														</ng-container>
 													</ng-container>
-												</ng-container>
-
-
-												<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
-													<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
-														<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-															<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
-																{{ mapping.label }}
-															</mat-checkbox>
+													<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+														<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
+															<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+																<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
+																	{{ mapping.label }}
+																</mat-checkbox>
+															</div>
 														</div>
+														<mat-form-field>
+															<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
+														</mat-form-field>
 													</div>
-													<mat-form-field>
-														<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-													</mat-form-field>
-												</div>
-
-
-											</mat-radio-group>
-										</div>
+												</mat-radio-group>
+											</div>
+										</ng-container>
+										<ng-container *ngIf="!this.isVideoTypeLabelCategorical(dimension)">
+											<div>
+												<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+																 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
+													<ng-container *ngIf="!dimension.scale.multipleSelection">
+														<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
+															<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
+															<mat-radio-button
+																	value="{{mapping.value}}"
+																	(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); this.detectCategoricalDimensionOnChange($event);"
+																	[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
+																	[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
+																<span class="mapping-label">{{ mapping.label }}</span>
+																<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
+															</mat-radio-button>
+														</ng-container>
+													</ng-container>
+													<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+														<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
+															<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+																<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
+																	{{ mapping.label }}
+																</mat-checkbox>
+															</div>
+														</div>
+														<mat-form-field>
+															<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
+														</mat-form-field>
+													</div>
+												</mat-radio-group>
+											</div>
+										</ng-container>
 									</ng-container>
 									<ng-container *ngIf="dimension.scale.type=='interval'">
 										<ng-container *ngIf="this.isVideoTimestampInterval()">
