@@ -36,7 +36,7 @@
 					</ng-container>
 					<!-- Video player -->
 					<ng-container *ngIf="attribute.is_video && !this.task.documents[this.documentIndex][attribute.name].includes('youtube.com')">
-						<video width="560" height="315" controls>
+						<video width="560" height="315" controls controlsList="nodownload" oncontextmenu="return false;">
 							<source [src]="this.task.documents[this.documentIndex][attribute.name]" type="video/mp4">
 							Your browser does not support the video tag.
 						</video>
