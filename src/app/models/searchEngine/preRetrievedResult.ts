@@ -30,11 +30,7 @@ export class PreRetrievedResult {
         if (!this.pageSummary) {
             return ''; // Return an empty string if no summary is provided or it's null/undefined
         }
-        // Replace occurrences of two consecutive newlines at the beginning of the string with an empty string
-        let formattedSummary = this.pageSummary.replace(/^\n\n/, '');
-        // Replace remaining occurrences of single newline characters with <br> tags
-        formattedSummary = formattedSummary.replace(/\n/g, '<br>');
-        return formattedSummary
+        return this.pageSummary
     }
 
 }

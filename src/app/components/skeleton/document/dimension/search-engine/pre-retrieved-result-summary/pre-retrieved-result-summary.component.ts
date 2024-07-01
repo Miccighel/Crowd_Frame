@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy, Input, SimpleChanges} from '@angular/core';
+import {Component, OnInit, OnDestroy, Input, SimpleChanges, ViewEncapsulation} from '@angular/core';
 import {Subject} from 'rxjs';
 
 import {Title} from '@angular/platform-browser';
@@ -11,7 +11,8 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
 @Component({
     selector: 'app-pre-retrieved-result-summary',
     templateUrl: './pre-retrieved-result-summary.component.html',
-    styleUrls: ['./pre-retrieved-result-summary.component.scss']
+    styleUrls: ['./pre-retrieved-result-summary.component.scss'],
+    encapsulation: ViewEncapsulation.None
 })
 export class PreRetrievedResultSummaryComponent implements OnInit, OnDestroy {
 

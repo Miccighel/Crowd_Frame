@@ -11,13 +11,12 @@
 			   [textPosition]="'bottom-center'"
 ></ngx-ui-loader>
 
-<mat-card appearance="outlined">
+<mat-card appearance="outlined" class="pre-retrieved-result">
 	<mat-card-title class="main-title">
 		<span i18n>This is a summary of the document: <strong>{{ this.preRetrievedResult.pageName }}</strong></span>
 	</mat-card-title>
-	<mat-card-content class="pt-16px">
-		<div>
-			<p [innerHTML]="this.preRetrievedResult.prettyPrintSummary()"></p>
+	<mat-card-content class="pt-16px pre-retrieved-result-summary">
+		<div [innerHTML]="this.preRetrievedResult.prettyPrintSummary()">
 		</div>
 	</mat-card-content>
 	<mat-card-actions class="center">

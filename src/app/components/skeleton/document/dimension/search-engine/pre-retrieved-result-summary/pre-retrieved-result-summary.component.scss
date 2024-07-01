@@ -1,27 +1,29 @@
-mat-card {
+mat-card.pre-retrieved-result {
 	margin: 24px
 }
 
-mat-card-content, mat-card-title {
+mat-card.pre-retrieved-result mat-card-content, mat-card.pre-retrieved-result mat-card-title {
 	width: 85% !important;
 	margin: auto !important;
 }
 
-mat-card-title {
+mat-card.pre-retrieved-result mat-card-title {
 	border-bottom: 1px solid rgba(0,0,0,.12);
 	font-size: 24px;
 }
 
-mat-card-actions {
+mat-card.pre-retrieved-result mat-card-actions {
 	align-self: center;
 }
 
-h2 {
+mat-card.pre-retrieved-result h2 {
 	font-weight: normal;
 	margin-top: 0;
 	font-size: 1.3em;
 }
 
-p {
-	font-size: 1.1em;
+mat-card.pre-retrieved-result li {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-size: 1.2em;
 }

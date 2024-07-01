@@ -1774,12 +1774,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         os.makedirs(folder_build_task_path, exist_ok=True)
 
     filename = filename_hits_config
+    hits_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        hits_config = read_json(f"{folder_build_task_path}{filename}")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_units = [{
                 "unit_id": "unit_0",
@@ -1807,7 +1807,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_units, indent=4), file=file)
 
     filename = filename_questionnaires_config
+    questionnaire_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
+        questionnaire_config = read_json(f"{folder_build_task_path}{filename}")
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1860,9 +1862,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_questionnaires, indent=4), file=file)
 
     filename = filename_dimensions_config
+    dimensions_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        dimensions_config = read_json(f"{folder_build_task_path}{filename}")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
@@ -1909,7 +1912,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_dimensions, indent=4), file=file)
 
     filename = filename_instructions_general_config
+    instructions_general_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
+        instructions_general_config = read_json(f"{folder_build_task_path}{filename}")
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
@@ -1924,12 +1929,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_instructions, indent=4), file=file)
 
     filename = filename_instructions_evaluation_config
+    instructions_evaluation_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        instructions_evaluation_config = read_json(f"{folder_build_task_path}{filename}")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_instructions = {
                 "instructions": [
@@ -1950,7 +1955,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_instructions, indent=4), file=file)
 
     filename = filename_search_engine_config
+    search_engine_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
+        search_engine_config = read_json(f"{folder_build_task_path}{filename}")
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1963,7 +1970,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_search_engine, indent=4), file=file)
 
     filename = filename_task_settings_config
+    task_settings_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
+        task_settings_config = read_json(f"{folder_build_task_path}{filename}")
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -2056,7 +2065,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print(json.dumps(sample_settings, indent=4), file=file)
 
     filename = filename_workers_settings_config
+    worker_settings_config = None
     if os.path.exists(f"{folder_build_task_path}{filename}"):
+        worker_settings_config = read_json(f"{folder_build_task_path}{filename}")
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -2263,13 +2274,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.update(f"Instantiating Mako model")
 
         model = Template(filename=f"{folder_build_mturk_path}model.html")
-        mturk_page = model.render(
-            aws_region=aws_region,
-            aws_deploy_bucket=aws_deploy_bucket,
-            task_name=task_name,
-            batch_name=batch_name,
-            cloudfront_endpoint=cloudfront_endpoint
-        )
+        if 'results_retrieved' in search_engine_config:
+            if len(search_engine_config['results_retrieved'])>0:
+                mturk_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=cloudfront_endpoint)
+            else:
+                mturk_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
+        else:
+            mturk_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
         mturk_page_file = f"{folder_build_mturk_path}index.html"
         with open(mturk_page_file, 'w') as file:
             print(mturk_page, file=file)
@@ -2347,13 +2358,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.update(f"Instantiating Mako model")
 
         model = Template(filename=f"{folder_build_toloka_path}model.html")
-        toloka_page = model.render(
-            aws_region=aws_region,
-            aws_deploy_bucket=aws_deploy_bucket,
-            task_name=task_name,
-            batch_name=batch_name,
-            cloudfront_endpoint=cloudfront_endpoint
-        )
+        if 'results_retrieved' in search_engine_config:
+            if len(search_engine_config['results_retrieved'])>0:
+                toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=cloudfront_endpoint)
+            else:
+                toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
+        else:
+            toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
+
         toloka_page_file = f"{folder_build_toloka_path}interface.html"
         with open(toloka_page_file, 'w') as file:
             print(toloka_page, file=file)
@@ -2809,28 +2821,31 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
-    step_index = step_index + 1
+    if 'results_retrieved' in search_engine_config:
+        if len(search_engine_config['results_retrieved'])>0:
 
-    # Specify the path to invalidate
-    # Adjust the path to target your specific subpath
-    paths = {
-        'Quantity': 3,
-        'Items': [
-            f"/{task_name}/{batch_name}/styles.css",
-            f"/{task_name}/{batch_name}/scripts.js",
-            f"/{task_name}/{batch_name}/index.html"
-        ]
-    }
+            console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
+            step_index = step_index + 1
 
-    # Create the invalidation
-    response = cloudfront_client.create_invalidation(
-        DistributionId=distribution['Id'],
-        InvalidationBatch={
-            'Paths': paths,
-            'CallerReference': str(time.time())  # Unique identifier for this invalidation
-        }
-    )
+            # Specify the path to invalidate
+            # Adjust the path to target your specific subpath
+            paths = {
+                'Quantity': 3,
+                'Items': [
+                    f"/{task_name}/{batch_name}/styles.css",
+                    f"/{task_name}/{batch_name}/scripts.js",
+                    f"/{task_name}/{batch_name}/index.html"
+                ]
+            }
+
+            # Create the invalidation
+            response = cloudfront_client.create_invalidation(
+                DistributionId=distribution['Id'],
+                InvalidationBatch={
+                    'Paths': paths,
+                    'CallerReference': str(time.time())  # Unique identifier for this invalidation
+                }
+            )
 
     console.rule(f"{step_index} - Public Links")
     step_index = step_index + 1
@@ -2844,5 +2859,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Static Website Endpoint")
     console.print(f"[bold white on black]http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com/{task_name}/{batch_name}/")
 
-    console.print(f"Cloudfront Endpoint")
-    console.print(f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/")
+    if 'results_retrieved' in search_engine_config:
+        if len(search_engine_config['results_retrieved'])>0:
+
+            console.print(f"Cloudfront Endpoint")
+            console.print(f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/")
