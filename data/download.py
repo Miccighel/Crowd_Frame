@@ -1653,7 +1653,7 @@ if 'prolific' in platforms:
                             "study_name": study_current['name'],
                             "study_name_internal": study_current['internal_name'],
                             "study_completion_code": study_current_add['completion_code'],
-                            "study_completion_option": study_current_add['completion_option'],
+                            "study_completion_option": study_current_add['completion_option'] if 'completion_option' in study_current_add else np.nan,
                             "study_completion_option_id": study_current_add['prolific_id_option'],
                             "study_status": study_current['status'],
                             "study_type": study_current['study_type'],
