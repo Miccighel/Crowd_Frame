@@ -1007,7 +1007,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     'OPTIONS'
                 ],
                 'AllowOrigins': [
-                    f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com"
+                    f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com",
+                    f"https://{cloudfront_endpoint}",
+                    f"{website_endpoint}",
                 ],
                 'ExposeHeaders': [
                     'x-msedge-clientid',
@@ -1112,7 +1114,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     api_stage = response
     api_stage_endpoint = f"https://{api_gateway['ApiId']}.execute-api.{aws_region}.amazonaws.com"
     console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
-    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_{api_stage['DeploymentId']}.json", response)
+    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_default.json", response)
 
     console.rule(f"{step_index} - Logging infrastructure setup")
     step_index = step_index + 1
@@ -1225,7 +1227,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
-                Runtime='nodejs16.x',
+                Runtime='nodejs20.x',
                 Handler='index.handler',
                 Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
                 Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
@@ -2822,6 +2824,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
     if 'results_retrieved' in search_engine_config:
+
         if len(search_engine_config['results_retrieved'])>0:
 
             console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
