@@ -8,7 +8,7 @@ import {SectionService} from "../../../../services/section.service";
 import {UtilsService} from "../../../../services/utils.service";
 /* Models */
 import {Task} from "../../../../models/skeleton/task";
-import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
+import {Dimension, ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
 /* Components */
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
 import {Worker} from "../../../../models/worker/worker";
@@ -232,6 +232,91 @@ export class DimensionComponent implements OnInit, OnChanges {
                         "form": this.assessmentFormAdditional
                     })
                 }
+            }
+        }
+    }
+
+    /* #################### CATEGORICAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    public detectCategoricalDimensionOnChange(eventData: { value?: any; target?: any; }) {
+        if (this.task.settings.attributesMain.some(attribute => attribute.is_video) && 
+            this.task.dimensions.some(dimension => dimension.scale.type == "interval") &&
+            this.task.dimensions.filter(dimension => dimension.scale.type == "categorical").length > 1) {
+            let currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value)
+            let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
+            let previousValue = this.assessmentForm.controls[primaryCategoricalDimension.name.concat('_value').concat('')].value;
+            if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
+                if (currentValue == primaryCategoricalDimension.scale.mapping[0].value) {  
+                    let intervalDimension = this.getIntervalDimension();
+                    let secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
+                    
+                    if (intervalDimension.scale instanceof ScaleInterval) {
+                        this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue(intervalDimension.scale.min);
+                    }
+                    if (secondaryCategoricalDimension.scale instanceof ScaleCategorical) {
+                        this.assessmentForm.controls[secondaryCategoricalDimension.name.concat('_value').concat('')].setValue(secondaryCategoricalDimension.scale.mapping[0].value);
+                    }            
+                }
+                else if (previousValue == primaryCategoricalDimension.scale.mapping[0].value) {
+                    let intervalDimension = this.getIntervalDimension();
+                    let secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
+                    
+                    if (intervalDimension.scale instanceof ScaleInterval) {
+                        this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue('');
+                    }
+                    if (secondaryCategoricalDimension.scale instanceof ScaleCategorical) {
+                        this.assessmentForm.controls[secondaryCategoricalDimension.name.concat('_value').concat('')].setValue('');
+                    }
+                }
+            }
+        }
+    }    
+
+    /* #################### INTERVAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    public isVideoTimestampInterval(): boolean {
+        return this.task.settings.attributesMain.some(attribute => attribute.is_video) && this.task.dimensions.some(dimension => dimension.scale.type == "categorical");
+    }
+
+    public isVideoTypeLabelCategorical(currentCategoricalDimension : Dimension): boolean {
+        if (currentCategoricalDimension.scale instanceof ScaleCategorical) {
+            let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
+            return this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
+        }
+        return false;
+    }
+
+    public videoTimestampVisualization(timestamp: number): string {
+        const time = String(timestamp).split('.')
+        const seconds = time[0].padStart(2, '0')
+        const milliseconds = time[1] ? time[1].padEnd(2, '0') : '00'
+        return `00:${seconds}.${milliseconds}`
+    }
+
+    private getPrimaryCategoricalDimension(): Dimension {
+        /* Get the first categorical dimension - the master categorical dimension */
+        return this.task.dimensions.filter(dimension => dimension.scale.type == "categorical")[0];
+    }
+
+    private getSecondaryCategoricalDimension(): Dimension {
+        /* Get the second categorical dimension */
+        return this.task.dimensions.filter(dimension => dimension.scale.type == "categorical")[1];
+    }
+
+    private getIntervalDimension(): Dimension {
+        return this.task.dimensions.find(dimension => dimension.scale.type == "interval")
+    }
+
+    public sliderDisabled(): boolean {
+        const primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
+        if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
+            return this.assessmentForm.controls[(primaryCategoricalDimension.name).concat('_value').concat('')].value !== primaryCategoricalDimension.scale.mapping[1].value
+        }
+    }
+
+    public categoricalDimensionDisabled(currentDimension : Dimension): boolean {
+        if (currentDimension.scale instanceof ScaleCategorical) {
+            const primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
+            if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
+                return this.assessmentForm.controls[(primaryCategoricalDimension.name).concat('_value').concat('')].value !== primaryCategoricalDimension.scale.mapping[1].value && currentDimension.name != primaryCategoricalDimension.name
             }
         }
     }

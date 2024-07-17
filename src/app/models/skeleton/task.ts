@@ -7,7 +7,7 @@ import {BaseInstruction} from "./instructions/baseInstruction";
 import {EvaluationInstruction} from "./instructions/evaluationInstruction";
 import {Document} from "../../../../data/build/skeleton/document";
 import {Questionnaire} from "./questionnaires/questionnaire";
-import {Dimension, ScaleMagnitude} from "./dimension";
+import {Dimension, ScaleInterval, ScaleMagnitude} from "./dimension";
 /* Annotator */
 import {Note} from "./annotators/notes";
 import {NoteStandard} from "./annotators/notesStandard";
@@ -68,6 +68,9 @@ export class Task {
     /* Selected values for each dimension. Used to reconstruct worker's behavior. */
     dimensionsSelectedValues: Array<object>;
     dimensionsPairwiseSelection = [];
+    /* Array of intervall minimum and maximum values for each document */
+    dimensionIntervalMinValues: Array<number>;
+    dimensionIntervalMaxValues: Array<number>;
 
     /* Array to store search engine queries and responses, one for each document within a Hit */
     searchEngineQueries: Array<object>;
@@ -400,6 +403,31 @@ export class Task {
                     let existingDimensionsSelectedValues = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected()
                     this.dimensionsSelectedValues[index]["data"] = existingDimensionsSelectedValues.data
                     this.dimensionsSelectedValues[index]["amount"] = existingDimensionsSelectedValues.amount
+                }
+            }
+        }
+
+        /* Checks if there are interval scales among the dimensions */
+        if (this.dimensions.some(dimension => dimension.scale instanceof ScaleInterval)) {
+            let intervalDimesions = this.dimensions.find(dimension => dimension.scale instanceof ScaleInterval);
+
+            /* Initialize the arrays of interval min and max values for each document */
+            this.dimensionIntervalMinValues = new Array<number>(this.documentsAmount);
+            this.dimensionIntervalMaxValues = new Array<number>(this.documentsAmount);
+
+            if (intervalDimesions.scale instanceof ScaleInterval) {
+                for (let index = 0; index < this.documentsAmount; index++) {
+                    /* Check if there is a video attribute in the task attributes and a HITS element called "video_duration"*/
+                    if(this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index].video_duration) {
+                        /* Set the max interval value to the duration of the video */
+                        this.dimensionIntervalMaxValues[index] = this.documents[index].video_duration;
+                    }
+                    /* Otherwise create and array with the default value setted in the dimension.json file */
+                    else {
+                        this.dimensionIntervalMaxValues[index] = intervalDimesions.scale.max;
+                    }
+                    /* Set the min interval value to the default value setted in the dimension.json file */
+                    this.dimensionIntervalMinValues[index] = intervalDimesions.scale.min;
                 }
             }
         }

@@ -63,6 +63,7 @@ import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirecti
 
 /* Pipes imports */
 import {TruncatePipe} from "./pipes/truncatePipe";
+import { SafePipe } from './pipes/safe.pipe';
 
 /* RxJS imports */
 import {from, Observable} from "rxjs";
@@ -124,6 +125,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatCommentModalComponent,
         ChatInstructionModalComponent,
         ChatUrlInputComponent,
+        SafePipe,
     ],
     imports: [
         BrowserModule,
