@@ -418,9 +418,9 @@ export class Task {
             if (intervalDimesions.scale instanceof ScaleInterval) {
                 for (let index = 0; index < this.documentsAmount; index++) {
                     /* Check if there is a video attribute in the task attributes and a HITS element called "video_duration"*/
-                    if(this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index].video_duration) {
+                    if(this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index]['video_duration']) {
                         /* Set the max interval value to the duration of the video */
-                        this.dimensionIntervalMaxValues[index] = this.documents[index].video_duration;
+                        this.dimensionIntervalMaxValues[index] = this.documents[index]['video_duration'];
                     }
                     /* Otherwise create and array with the default value setted in the dimension.json file */
                     else {

@@ -1,7 +1,7 @@
 <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
-	<ng-container *ngIf="!attribute.is_video && attribute.show">
+	<ng-container *ngIf="!attribute.is_video && this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
 		<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false)">
-			<div *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
+			<div class="attribute">
 				<p class="attribute-label">
 					<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
 					<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
@@ -45,7 +45,7 @@
 			</p>
 		</div>
 	</ng-container>
-</ng-container>	
+</ng-container>
 
 <ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormInteraction">
 	<button mat-stroked-button color="accent" class="button-continue" (click)="unlockNextRepetition(true)">
