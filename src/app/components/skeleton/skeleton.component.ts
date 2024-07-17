@@ -300,10 +300,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     Object.entries(aclEntry).forEach(([key, value]) => this.worker.setParameter(key, value));
                     this.worker.identifier = this.worker.getParameter("identifier");
                     this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
-                    hitAssigned = true;
                     this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
                     this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                    hitAssigned = true;
                 }
             }
         }
@@ -361,6 +361,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                 for (let aclEntry of wholeEntries) {
                                     if (aclEntry["ip_address"] != this.worker.getIP()) {
                                         if (/true/i.test(aclEntry["paid"]) == true || ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true)))
+
                                             hitCompletedOrInProgress[aclEntry["unit_id"]] = true;
 
                                         /*
@@ -698,9 +699,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         /* Scan each entry for the token input */
         for (let currentHit of hits) {
             /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-            if (this.worker.getParameter('token_input') === currentHit.token_input) {
+            if (this.worker.getParameter('unit_id') === currentHit.unit_id) {
                 currentHit = currentHit as Hit;
-                this.task.tokenInput = this.worker.getParameter('token_input');
+                this.task.tokenInput = currentHit.token_input;
                 this.task.tokenOutput = currentHit.token_output;
                 this.task.unitId = currentHit.unit_id;
                 this.task.documentsAmount = currentHit.documents.length;
