@@ -650,7 +650,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      */
     public enableTask() {
         this.sectionService.taskInstructionsRead = true;
-        this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+        if (this.configService.environment.taskTitle != 'none') {
+            this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+        } else {
+            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+        }
         this.showSnackbar("If you have a very slow internet connection, please wait a few seconds for the page to load.", "Dismiss", 8000);
         this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
     }

@@ -132,6 +132,9 @@ console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 if batch_prefix is None:
     batch_prefix = ''
 
+if task_title is None:
+    task_title = 'none'
+
 if platform is None:
     platform = 'none'
 
@@ -1563,6 +1566,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "platform": platform if platform else 'none',
         "taskName": task_name,
         "batchName": batch_name,
+        "taskTitle": task_title,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "bucket_deploy": aws_deploy_bucket,
@@ -1614,6 +1618,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
+        "taskTitle": task_title,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "bucket_deploy": aws_deploy_bucket,

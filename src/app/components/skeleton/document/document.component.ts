@@ -299,7 +299,11 @@ export class DocumentComponent implements OnInit {
                 }
                 action = "Jump"
             }
-            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            if(this.configService.environment.taskTitle != 'none') {
+                this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            } else {
+                this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            }
         } else {
             if (action == "Back") {
                 this.stepper.previous();
@@ -308,7 +312,11 @@ export class DocumentComponent implements OnInit {
                 this.stepper.next();
                 this.sectionService.stepIndex = this.stepper.selectedIndex
             }
-            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            if(this.configService.environment.taskTitle != 'none') {
+                this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            } else {
+                this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+            }
         }
         this.formEmitter.emit({
             "form": this.assessmentForm,
