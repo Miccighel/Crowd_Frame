@@ -2593,7 +2593,10 @@ if not os.path.exists(df_data_path):
                                     if mapping['value'] == row[f"{dimension['name']}_value"]:
                                         row[f"{dimension['name']}_label"] = label
                                         row[f"{dimension['name']}_index"] = mapping['index']
-                                        row[f"{dimension['name']}_description"] = np.nan if len(mapping['description']) <= 0 else mapping['description']
+                                        if not (mapping['description']):
+                                            row[f"{dimension['name']}_description"] = np.nan
+                                        else:
+                                            row[f"{dimension['name']}_description"] = np.nan if len(mapping['description']) <= 0 else mapping['description']
                             else:
                                 row[f"{dimension['name']}_label"] = np.nan
                                 row[f"{dimension['name']}_index"] = np.nan
