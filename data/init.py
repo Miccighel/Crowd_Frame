@@ -794,7 +794,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"{step_index} - Configuring Cloudfront distribution ")
     step_index = step_index + 1
 
-    cloudfront_client = boto3.client('cloudfront')
+    cloudfront_client = boto3.Session(profile_name=profile_name).client('cloudfront')
     paginator = cloudfront_client.get_paginator('list_distributions')
 
     origin_domain = website_endpoint.replace("http://", '')
@@ -1751,6 +1751,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                 date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
                                 console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
                                 console.print(f"Fetching remote version, date: {date_modified_remote_parsed}")
+                                # folder is created if it doesn't exist 
+                                if not os.path.exists(folder_build_task_path):
+                                    os.makedirs(folder_build_task_path)
+
                                 s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
                                 task_config_items_updated += 1
                                 task_config_items_checked.append(filename_config)

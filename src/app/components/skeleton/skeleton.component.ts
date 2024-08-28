@@ -25,6 +25,7 @@ import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {LocalStorageService} from "../../services/localStorage.service";
 
+
 /* Models */
 import {Task} from "../../models/skeleton/task";
 import {Worker} from "../../models/worker/worker";
@@ -196,7 +197,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     private fetchExternalData() {
-        return this.client.get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"}).pipe(
+        return this.client.get("https://1.0.0.1/cdn-cgi/trace", {responseType: "text"}).pipe(
             tap(cloudflareData => this.worker.updateProperties("cloudflare", cloudflareData)),
             catchError(() => this.client.get("https://api64.ipify.org?format=json")),
             catchError(() => of(null)),
@@ -1086,7 +1087,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             if (completedElementType == "S") {
                 let countdown = null;
                 if (this.task.settings.countdownTime)
-                    countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"]);
+                    countdown = Math.round(Number(this.documentComponent.get(completedElementIndex).countdown.i.value) / 1000);
                 let additionalAnswers = {}
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
                     Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
@@ -1165,34 +1166,34 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     ) {
         /* The countdowns are stopped and resumed to the left or to the right of the current document,
          *  depending on the chosen action ("Back" or "Next") */
-        let currentIndex = currentDocument;
-        let countdown = this.documentComponent[currentIndex].countdown;
+        const getCountdown = (index: number) => this.documentComponent.get(index).countdown;
+        const pauseCountdown = (index: number) => {
+            const countdown = getCountdown(index);
+            if(countdown.i.value > 0)
+                countdown.pause();
+        }
+        const currentCountdown = getCountdown(currentDocument);
+        
         switch (action) {
             case "Next":
-                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
+                if (currentDocument > 0) {
+                    pauseCountdown(currentDocument - 1);
                 }
                 break;
             case "Back":
-                if (countdown.toArray()[currentIndex + 1].left > 0) {
-                    countdown.toArray()[currentIndex + 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
-                }
+                pauseCountdown(currentDocument + 1);
                 break;
             case "Finish":
-                if (countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
+                if (currentDocument > 0) {
+                    pauseCountdown(currentDocument - 1);
                 }
-                break;
+                return; // No need to start/resume countdown on finish
+        }
+    
+        if (currentCountdown.i.value === this.task.documentsCountdownTime[completedDocument]) {
+            currentCountdown.begin();
+        } else if (currentCountdown.i.value > 0) {
+            currentCountdown.resume();
         }
     }
 

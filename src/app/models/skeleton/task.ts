@@ -310,25 +310,29 @@ export class Task {
             for (let index = 0; index < this.notes.length; index++)
                 this.annotationsDisabled.push(true);
         }
-        // TODO: Add initialization from past records also for countdowns
+
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
         this.countdownsExpired = new Array<boolean>(this.documentsAmount);
         for (let index = 0; index < this.documents.length; index++) {
             this.documentsCountdownTime[index] = this.settings.countdownTime;
-            if (this.settings.countdown_attribute_values[index]) {
-                for (const attributeValue of Object.values(this.documents[index])) {
-                    if (attributeValue == this.settings.countdown_attribute_values[index]["name"]) {
-                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]["time"];
+            if (this.mostRecentDataRecordsForDocuments[index]){
+                this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
+                this.countdownsExpired[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpired();
+            } else {
+                if(this.settings.countdown_attribute_values.length > 0){
+                    const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index].fact_check_ground_truth_label);
+                    if(element != undefined){
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
+
+                if (this.settings.countdown_position_values[index])
+                    this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]["time"];
+                this.countdownsExpired[index] = false;
             }
-            if (this.settings.countdown_position_values[index])
-                this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]["time"];
-            this.countdownsExpired[index] = false;
+            
         }
-        for (let index = 0; index < this.documents.length; index++) {
-            this.countdownsExpired[index] = false;
-        }
+
         this.documentsPairwiseSelection = new Array<Array<boolean>>(
             this.documentsAmount
         );

@@ -1,33 +1,37 @@
 <div class="statement">
-    <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
-        <div class="attribute" *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
+    <ng-container *ngIf="!this.task.countdownsExpired[documentIndex] || this.task.settings.countdown_behavior != 'hide_attributes'">
+        <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
+            <div class="attribute" *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
 
-            <p class="attribute-label" *ngIf="!attribute.annotate">
-                <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
-                <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
-                <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'">'---------- text_hidden ----------'</span>
-                </ng-container>
-                <span
-                        *ngIf="!this.task.countdownsExpired[documentIndex]">{{this.task.documents[this.documentIndex][attribute.name]}}</span>
-            </p>
+                <p class="attribute-label" *ngIf="!attribute.annotate">
+                    <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
+                    <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
+                    <span>{{this.task.documents[this.documentIndex][attribute.name]}}</span>
+                </p>
 
-            <p class="attribute-label" *ngIf="attribute.annotate">
-                <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
-                <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
-                <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'">'---------- text_hidden ----------'</span>
-                </ng-container>
-                <span *ngIf="!this.task.countdownsExpired[documentIndex]">
+                <p class="attribute-label" *ngIf="attribute.annotate">
+                    <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
+                    <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
                     <span id="document-{{documentIndex}}-attribute-{{k}}"
-                          (mouseup)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)"
-                          (touchend)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)">
+                        (mouseup)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)"
+                        (touchend)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)">
                     {{this.task.documents[this.documentIndex][attribute.name]}}
                     </span>
-                </span>
-
-            </p>
-        </div>
+                </p>
+            </div>
+        </ng-container>
+    </ng-container>
+    <ng-container *ngIf="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes'">
+        <mat-card appearance="outlined" class="alert-card">
+            <mat-card-content>
+              <div class="alert-content">
+                <mat-icon color="warn" class="alert-icon">warning</mat-icon>
+                <div>
+                  <span class="alert-message" i18n>The content is no longer visible</span>
+                </div>
+              </div>
+            </mat-card-content>
+        </mat-card> 
     </ng-container>
 </div>
 
