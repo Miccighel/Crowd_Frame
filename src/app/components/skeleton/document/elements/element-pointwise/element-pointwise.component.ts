@@ -6,7 +6,8 @@ import {UtilsService} from "../../../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
-import {AttributePost} from "../../../../../models/skeleton/taskSettings";
+import {AttributeMain, AttributePost} from "../../../../../models/skeleton/taskSettings";
+
 @Component({
     selector: 'app-element-pointwise',
     templateUrl: './element-pointwise.component.html',
@@ -37,6 +38,7 @@ export class ElementPointwiseComponent implements OnInit {
     task: Task
     attributeForPostAssessment: AttributePost
     followingAssessmentAllowed: boolean
+    hasNonVideos : boolean
 
     /* #################### EMITTERS #################### */
 
@@ -54,6 +56,7 @@ export class ElementPointwiseComponent implements OnInit {
         this.utilsService = utilsService
         this.task = sectionService.task
         this.followingAssessmentAllowedEmitter = new EventEmitter<boolean>();
+        this.hasNonVideos = this.task.settings.attributesMain.some(attr => !attr.is_video)
     }
 
     ngOnInit() {
@@ -79,5 +82,10 @@ export class ElementPointwiseComponent implements OnInit {
             "followingAssessmentAllowed": this.followingAssessmentAllowed
         });
     }
+
+    public isAttributeVideo(attr: AttributeMain){
+        return attr.is_video;
+    }
+
 
 }
