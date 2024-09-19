@@ -240,7 +240,7 @@ export class DimensionComponent implements OnInit, OnChanges {
     public detectCategoricalDimensionOnChange(eventData: { value?: any; target?: any; }) {
         if (this.task.settings.attributesMain.some(attribute => attribute.is_video) && 
             this.task.dimensions.some(dimension => dimension.scale.type == "interval") &&
-            this.task.dimensions.filter(dimension => dimension.scale.type == "categorical").length > 1) {
+            this.task.dimensions.filter(dimension => dimension.scale && dimension.scale.type === "categorical").length > 1) {
             let currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value)
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             let previousValue = this.assessmentForm.controls[primaryCategoricalDimension.name.concat('_value').concat('')].value;
@@ -277,8 +277,15 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     public isVideoTypeLabelCategorical(currentCategoricalDimension : Dimension): boolean {
-        if (currentCategoricalDimension.scale instanceof ScaleCategorical) {
+        console.log(currentCategoricalDimension.name)
+        if (currentCategoricalDimension.scale && currentCategoricalDimension.scale instanceof ScaleCategorical) {
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
+
+            /* Debug Test */
+            let test = this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
+            //console.log(currentCategoricalDimension.name)
+            console.log(test);
+
             return this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
         }
         return false;
@@ -293,16 +300,16 @@ export class DimensionComponent implements OnInit, OnChanges {
 
     private getPrimaryCategoricalDimension(): Dimension {
         /* Get the first categorical dimension - the master categorical dimension */
-        return this.task.dimensions.filter(dimension => dimension.scale.type == "categorical")[0];
+        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === "categorical");
     }
 
     private getSecondaryCategoricalDimension(): Dimension {
         /* Get the second categorical dimension */
-        return this.task.dimensions.filter(dimension => dimension.scale.type == "categorical")[1];
+        return this.task.dimensions.filter(dimension => dimension.scale && dimension.scale.type === "categorical")[1];
     }
 
     private getIntervalDimension(): Dimension {
-        return this.task.dimensions.find(dimension => dimension.scale.type == "interval")
+        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === "interval")
     }
 
     public sliderDisabled(): boolean {
