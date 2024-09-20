@@ -277,15 +277,8 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     public isVideoTypeLabelCategorical(currentCategoricalDimension : Dimension): boolean {
-        console.log(currentCategoricalDimension.name)
         if (currentCategoricalDimension.scale && currentCategoricalDimension.scale instanceof ScaleCategorical) {
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
-
-            /* Debug Test */
-            let test = this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
-            //console.log(currentCategoricalDimension.name)
-            console.log(test);
-
             return this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
         }
         return false;
