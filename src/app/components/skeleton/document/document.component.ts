@@ -132,8 +132,9 @@ export class DocumentComponent implements OnInit {
     }
 
     ngAfterViewInit() {
-        /* We start the countdown on the current document */
-        if(this.documentIndex === this.worker.getPositionCurrent() && this.countdown)
+        /* We start the countdown at the current position if it's a document */
+        const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
+        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown)
             this.countdown.begin();
     }
 
@@ -250,15 +251,15 @@ export class DocumentComponent implements OnInit {
     /* #################### COUNTDOWNS #################### */
 
     /* Intercept the event triggered when the time left to evaluate a document reaches 0, setting the corresponding flag to false. */
-    public handleCountdown(event, i) {
+    public handleCountdown(event) {
         if (event.action === 'done') {
-            this.task.countdownsExpired[i] = true;
-            
+            this.task.countdownsExpired[this.documentIndex] = true;
+
             if(this.task.settings.modality == 'pointwise'){
                 if(this.task.settings.annotator)
-                    this.annotatorOptions.toArray()[i].changeDetector.detectChanges();
+                    this.annotatorOptions.toArray()[this.documentIndex].changeDetector.detectChanges();
                 else
-                    this.dimensionsPointwise.toArray()[i].changeDetector.detectChanges();
+                    this.dimensionsPointwise.toArray()[this.documentIndex].changeDetector.detectChanges();
             }
                 
         }

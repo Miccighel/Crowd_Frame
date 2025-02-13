@@ -41,11 +41,11 @@
 			</div>
 
 			<!--- Countdown markup --->
-			<ng-container *ngIf="this.task.settings.countdownTime">
+			<ng-container *ngIf="this.task.settings.countdownTime>=0">
 				<div class="countdown sticky" *ngIf="this.task.settings.countdownTime>=0">
 					<h1 class="text-lighter m-0">
-						<span i18n>Time left:</span>
-						<countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
+						<span i18n>Time left: </span>
+						<countdown #countdownElement [config]="{demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss'}" (event)="handleCountdown($event)"></countdown>
 					</h1>
 				</div>
 			</ng-container>

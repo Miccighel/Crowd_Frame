@@ -319,15 +319,20 @@ export class Task {
                 this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
                 this.countdownsExpired[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpired();
             } else {
-                if(this.settings.countdown_attribute_values.length > 0){
+                if(this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0){
                     const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index].fact_check_ground_truth_label);
                     if(element != undefined){
                         this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
 
-                if (this.settings.countdown_position_values[index])
-                    this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]["time"];
+                if(this.settings.countdown_modality === "position" && this.settings.countdown_position_values.length > 0){
+                    const element = this.settings.countdown_position_values.find(item => item["position"] === this.documents[index].index);
+                    if(element != undefined){
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
+                    }
+                }
+
                 this.countdownsExpired[index] = false;
             }
             

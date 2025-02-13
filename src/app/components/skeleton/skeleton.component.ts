@@ -283,14 +283,14 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
                 if (
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment) ||
-                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1) ||
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) < 1) ||
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false)
                 ) {
                     // TODO: Implementare controlli per gli status codes nel caso di task overbooking
                     /* As of today, such a worker is not allowed to perform the task */
                     if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment)
                         this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
-                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) <= 1)
+                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) < 1)
                         this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("time_removal", new Date().toUTCString());
@@ -452,7 +452,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             else
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
-                        this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
+                        
                     }
                     this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();
@@ -1035,9 +1035,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
-        if (this.task.settings.countdownTime) {
-            if (currentElementType == "S")
-                this.handleCountdowns(currentElementIndex, completedElementIndex, action);
+        if (this.task.settings.countdownTime >= 0) {
+            this.handleCountdowns(currentElementData, completedElementData, action);
         }
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
@@ -1070,7 +1069,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("try_current", String(this.task.tryCurrent + 1));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
-                    this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
+                    this.worker.setParameter("status_code", this.task.settings.allowed_tries - this.task.tryCurrent > 0 ? StatusCodes.TASK_FAILED_WITH_TRIES : StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter('position_current', String(this.computeJumpIndex()))
                 }
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
@@ -1086,7 +1085,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
             if (completedElementType == "S") {
                 let countdown = null;
-                if (this.task.settings.countdownTime)
+                if (this.task.settings.countdownTime >= 0)
                     countdown = Math.round(Number(this.documentComponent.get(completedElementIndex).countdown.i.value) / 1000);
                 let additionalAnswers = {}
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
@@ -1160,40 +1159,28 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* #################### COUNTDOWNS #################### */
     public handleCountdowns(
-        currentDocument: number,
-        completedDocument: number,
+        currentDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
+        completedDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
         action: string
     ) {
-        /* The countdowns are stopped and resumed to the left or to the right of the current document,
-         *  depending on the chosen action ("Back" or "Next") */
         const getCountdown = (index: number) => this.documentComponent.get(index).countdown;
         const pauseCountdown = (index: number) => {
             const countdown = getCountdown(index);
-            if(countdown.i.value > 0)
+            if(!this.task.countdownsExpired[index])
                 countdown.pause();
         }
-        const currentCountdown = getCountdown(currentDocument);
-        
-        switch (action) {
-            case "Next":
-                if (currentDocument > 0) {
-                    pauseCountdown(currentDocument - 1);
-                }
-                break;
-            case "Back":
-                pauseCountdown(currentDocument + 1);
-                break;
-            case "Finish":
-                if (currentDocument > 0) {
-                    pauseCountdown(currentDocument - 1);
-                }
-                return; // No need to start/resume countdown on finish
+
+        if(completedDocumentData.elementType === "S"){
+            pauseCountdown(completedDocumentData.elementIndex);
+            if(action === "Finish")
+                return; // No need to start/resume the countdown if the action is Finish
         }
-    
-        if (currentCountdown.i.value === this.task.documentsCountdownTime[completedDocument]) {
-            currentCountdown.begin();
-        } else if (currentCountdown.i.value > 0) {
-            currentCountdown.resume();
+        if(currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex]){
+            const currentCountdown = getCountdown(currentDocumentData.elementIndex);
+            if(currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
+                currentCountdown.begin();
+            else
+                currentCountdown.resume();
         }
     }
 
