@@ -28,6 +28,16 @@
 
 		<mat-card-content class="pt-16px">
 
+			<!--- Countdown markup --->
+			<ng-container *ngIf="this.task.settings.countdownTime>=0">
+				<div class="sticky" *ngIf="this.task.settings.countdownTime>=0">
+					<h1 class="text-lighter m-0">
+						<span i18n>Time left: </span>
+						<countdown #countdownElement [config]="{demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss', notify: 0}" (event)="handleCountdown($event)"></countdown>
+					</h1>
+				</div>
+			</ng-container>
+
 			<!-- Evaluation instructions markup -->
 			<ng-container *ngIf="this.task.instructionsEvaluation.element" class="evaluation-instructions">
 				<h2>{{ this.task.instructionsEvaluation.element.label }} - {{ this.task.instructionsEvaluation.element.caption }}</h2>
@@ -39,16 +49,6 @@
 					<div *ngIf="this.task.checkCurrentTaskType(this.document, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
 				</div>
 			</div>
-
-			<!--- Countdown markup --->
-			<ng-container *ngIf="this.task.settings.countdownTime>=0">
-				<div class="countdown sticky" *ngIf="this.task.settings.countdownTime>=0">
-					<h1 class="text-lighter m-0">
-						<span i18n>Time left: </span>
-						<countdown #countdownElement [config]="{demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss'}" (event)="handleCountdown($event)"></countdown>
-					</h1>
-				</div>
-			</ng-container>
 
 			<ng-container *ngIf="(this.task.settings.modality=='pointwise')">
 				<ng-container *ngIf="!(this.task.settings.annotator)">
@@ -106,6 +106,15 @@
 				</ng-container>
 			</ng-container>
 
+			<ng-container *ngIf="this.task.settings.countdownTime>=0 && this.checkAssessmentFormValidity() && this.task.searchEngineRetrievedResponses[documentIndex] && !this.sectionService.taskCompleted && this.task.checkAnnotationConsistency(documentIndex) && this.checkAdditionalAssessmentFormsValidity() && documentIndex+1<this.task.documentsAmount">
+				<mat-card appearance="outlined" class="alert-next-timer-container">
+					<mat-card-content class="alert-next-timer-content">
+						<mat-icon class="alert-next-timer-icon alert-warn">error_outline</mat-icon>
+						<span class="alert-next-timer-message alert-warn" i18n>For the upcoming document, you will have only {{formatTime(this.task.documentsStartCountdownTime[documentIndex + 1])}} to complete your evaluation.</span>
+					</mat-card-content>
+				</mat-card> 
+			</ng-container>
+			
 			<ng-container>
 				<mat-card-actions *ngIf="this.assessmentForm">
 					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"

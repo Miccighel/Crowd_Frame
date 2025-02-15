@@ -19,6 +19,8 @@ import {MatStepper} from "@angular/material/stepper";
 /* Browser */
 import {Title} from "@angular/platform-browser";
 import {ConfigService} from "../../../services/config.service";
+//DynamoDB
+import {DynamoDBService} from "../../../services/aws/dynamoDB.service";
 
 @Component({
     selector: 'app-document',
@@ -35,6 +37,7 @@ export class DocumentComponent implements OnInit {
 
     /* Service to detect user's device */
     sectionService: SectionService;
+    dynamoDBService: DynamoDBService;
     utilsService: UtilsService
     titleService: Title
     configService: ConfigService
@@ -84,6 +87,8 @@ export class DocumentComponent implements OnInit {
     @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
     /* Reference to the countdown element itself for the current document */
     @ViewChild('countdownElement') countdown: CountdownComponent;
+    /* Counter used by handleCountdown to only handle "notify" events every 3 seconds */
+    countdownInterval!: number;
 
     /* #################### EMITTERS #################### */
 
@@ -97,12 +102,14 @@ export class DocumentComponent implements OnInit {
         titleService: Title,
         configService: ConfigService,
         snackBar: MatSnackBar,
-        formBuilder: UntypedFormBuilder
+        formBuilder: UntypedFormBuilder,
+        dynamoDBService: DynamoDBService
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.titleService = titleService
+        this.dynamoDBService = dynamoDBService
         this.configService = configService
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<Object>();
@@ -129,6 +136,7 @@ export class DocumentComponent implements OnInit {
                 this.task.followingAssessmentAllowed[this.documentIndex][attributePostAssessment.index + 1] = true
             }
         }
+        this.countdownInterval = 0;
     }
 
     ngAfterViewInit() {
@@ -250,20 +258,52 @@ export class DocumentComponent implements OnInit {
 
     /* #################### COUNTDOWNS #################### */
 
-    /* Intercept the event triggered when the time left to evaluate a document reaches 0, setting the corresponding flag to false. */
-    public handleCountdown(event) {
-        if (event.action === 'done') {
+    /* Handles the event triggered by the ngx-countdown component while it's running or when it expires. */
+    public async handleCountdown(event) {
+        if (!this.task.countdownsExpired[this.documentIndex] && event.action === 'done') {
             this.task.countdownsExpired[this.documentIndex] = true;
-
+            this.sendCountdownPayload(0);
             if(this.task.settings.modality == 'pointwise'){
                 if(this.task.settings.annotator)
-                    this.annotatorOptions.toArray()[this.documentIndex].changeDetector.detectChanges();
+                    this.annotatorOptions?.forEach(ann => ann.changeDetector.detectChanges());
                 else
-                    this.dimensionsPointwise.toArray()[this.documentIndex].changeDetector.detectChanges();
+                    this.dimensionsPointwise?.forEach(dim => dim.changeDetector.detectChanges());
             }
                 
         }
+        if(event.action === 'notify'){
+            this.countdownInterval++;
+            if(this.countdownInterval === 3){
+                this.sendCountdownPayload(event.left);
+                this.countdownInterval = 0;
+            }
+        }
         
+    }
+
+    /* Used to format the time available for the next document in the message at the bottom of the page */
+    public formatTime(seconds: number): string {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        
+        const minutePart = minutes > 0 ? `${minutes} ${minutes === 1 ? "minute" : "minutes"}` : "";
+        const secondPart = remainingSeconds > 0 ? `${remainingSeconds} ${remainingSeconds === 1 ? "second" : "seconds"}` : "";
+    
+        return [minutePart, secondPart].filter(Boolean).join(" and ");
+    }
+    
+   /* Called by handleCountdown to log an entry in the database every 3 seconds. This helps track the worker's time spent on the current document while also saving potential answers and search engine results.
+    The mechanism prevents workers from having unlimited time. */
+    private async sendCountdownPayload(timeLeft){
+        const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
+        let additionalAnswers = {}
+        for (let assessmentFormAdditional of this.documentsFormsAdditional[currentElement['elementIndex']]) {
+            Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
+                additionalAnswers[controlName] = assessmentFormAdditional.get(controlName).value
+            });
+        }
+        let documentPayload = this.task.buildTaskDocumentPayload(currentElement, this.documentsForm[currentElement['elementIndex']].value, additionalAnswers, Math.round(Number(timeLeft) / 1000), "countdownUpdate");
+        await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload, true);
     }
 
     /* #################### DOCUMENT COMPLETION #################### */

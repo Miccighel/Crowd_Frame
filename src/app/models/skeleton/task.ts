@@ -93,6 +93,7 @@ export class Task {
 
     /* Optional countdown to use for each document */
     documentsCountdownTime: Array<number>;
+    documentsStartCountdownTime: Array<number>;
     /* Array of checks to see if the countdowns are expired; one for each document */
     countdownsExpired: Array<boolean>;
 
@@ -312,11 +313,13 @@ export class Task {
         }
 
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+        this.documentsStartCountdownTime = new Array<number>(this.documentsAmount);
         this.countdownsExpired = new Array<boolean>(this.documentsAmount);
         for (let index = 0; index < this.documents.length; index++) {
             this.documentsCountdownTime[index] = this.settings.countdownTime;
             if (this.mostRecentDataRecordsForDocuments[index]){
                 this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
+                this.documentsStartCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeStart();
                 this.countdownsExpired[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpired();
             } else {
                 if(this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0){
@@ -332,7 +335,7 @@ export class Task {
                         this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
-
+                this.documentsStartCountdownTime[index] = this.documentsCountdownTime[index];
                 this.countdownsExpired[index] = false;
             }
             

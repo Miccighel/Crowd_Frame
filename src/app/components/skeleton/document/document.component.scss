@@ -92,10 +92,12 @@ p {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     z-index: 1000;
-    background-color: rgb(255, 255, 123);
+    background-color: #3f51b5;
     padding: 8px 0 8px 40px;
     top: 0;
     text-align: center;
+    color: white;
+    border-radius: 4px;
     margin-bottom: 1.5%;
 }
 
@@ -197,4 +199,30 @@ p {
 
 .alert-message {
     font-size: 18px;
+}
+
+.alert-next-timer-container{
+    border-radius: 4px;
+    margin: 8px 0;
+    background-color: rgb(254, 252, 232);
+    border-color: rgb(136, 79, 14);
+}
+.alert-next-timer-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 30px !important;
+    padding-left: 0px !important;
+}
+
+.alert-next-timer-icon {
+    vertical-align: middle;
+}
+
+.alert-next-timer-message {
+    vertical-align: middle;
+}
+
+.alert-warn{
+    color: rgb(136, 79, 14); 
 }
