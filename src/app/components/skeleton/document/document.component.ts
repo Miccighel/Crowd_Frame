@@ -302,7 +302,8 @@ export class DocumentComponent implements OnInit {
                 additionalAnswers[controlName] = assessmentFormAdditional.get(controlName).value
             });
         }
-        let documentPayload = this.task.buildTaskDocumentPayload(currentElement, this.documentsForm[currentElement['elementIndex']].value, additionalAnswers, Math.round(Number(timeLeft) / 1000), "countdownUpdate");
+        let documentPayload = this.task.buildTaskDocumentPayload(currentElement, this.documentsForm[currentElement['elementIndex']].value, additionalAnswers, Math.round(Number(timeLeft) / 1000), "Update");
+        documentPayload['update_type'] = "countdown_update";
         await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload, true);
     }
 

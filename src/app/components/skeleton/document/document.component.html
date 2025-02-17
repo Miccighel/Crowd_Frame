@@ -106,15 +106,15 @@
 				</ng-container>
 			</ng-container>
 
-			<ng-container *ngIf="this.task.settings.countdownTime>=0 && this.checkAssessmentFormValidity() && this.task.searchEngineRetrievedResponses[documentIndex] && !this.sectionService.taskCompleted && this.task.checkAnnotationConsistency(documentIndex) && this.checkAdditionalAssessmentFormsValidity() && documentIndex+1<this.task.documentsAmount">
-				<mat-card appearance="outlined" class="alert-next-timer-container">
+			<ng-container *ngIf="this.task.settings.countdownTime>=0 && documentIndex+1<this.task.documentsAmount">
+				<mat-card class="alert-next-timer-container alert-info">
 					<mat-card-content class="alert-next-timer-content">
-						<mat-icon class="alert-next-timer-icon alert-warn">error_outline</mat-icon>
-						<span class="alert-next-timer-message alert-warn" i18n>For the upcoming document, you will have only {{formatTime(this.task.documentsStartCountdownTime[documentIndex + 1])}} to complete your evaluation.</span>
+						<mat-icon class="alert-next-timer-icon">info_outline</mat-icon>
+						<span class="alert-next-timer-message" i18n>For the upcoming statement, you will have <strong>{{formatTime(this.task.documentsStartCountdownTime[documentIndex + 1])}}</strong> to complete your evaluation.</span>
 					</mat-card-content>
 				</mat-card> 
 			</ng-container>
-			
+
 			<ng-container>
 				<mat-card-actions *ngIf="this.assessmentForm">
 					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"

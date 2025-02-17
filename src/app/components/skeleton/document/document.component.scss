@@ -201,11 +201,10 @@ p {
     font-size: 18px;
 }
 
-.alert-next-timer-container{
+.alert-next-timer-container {
     border-radius: 4px;
     margin: 8px 0;
-    background-color: rgb(254, 252, 232);
-    border-color: rgb(136, 79, 14);
+    box-shadow: none !important;
 }
 .alert-next-timer-content {
     display: flex;
@@ -223,6 +222,7 @@ p {
     vertical-align: middle;
 }
 
-.alert-warn{
-    color: rgb(136, 79, 14); 
+.alert-info {
+    color: #344397;
+    background-color: #f4f6ff;
 }
