@@ -92,10 +92,11 @@ p {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     z-index: 1000;
-    background-color: rgb(255, 255, 123);
-    padding: 8px 0 8px 40px;
     top: 0;
     text-align: center;
+    background-color: #f8f8fa;
+    border-radius: 4px;
+    margin-bottom: 1.5%;
 }
 
 .m-0 {
@@ -171,3 +172,51 @@ p {
     align-items: left;
     margin-left: 10px;
 }
+
+/* COUNTDOWN CARD */
+.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+    text-align: center;
+    background-color: #f8f8fa;
+    border-radius: 4px;
+    margin-bottom: 1.5%;
+    padding: 5px;
+}
+
+.countdown-footer {
+    padding: 16px;
+  }
+
+.centered {
+    display: flex;
+    justify-content: center;
+}
+.icon-header {
+    transform: scale(1.5);
+}
+.card-content {
+    text-align: center;
+    padding: 10px;
+}
+
+.time-left {
+    font-size: 30px;
+}
+  
+.time-remaining{
+    color: rgb(95, 95, 95);
+}
+
+.mat-mdc-progress-bar{
+    --mdc-linear-progress-active-indicator-height: 8px !important;
+    --mdc-linear-progress-track-height: 8px !important;
+    border-radius: 8px;
+}
+
+.mat-progress-bar-fill::after {
+    transition: transform 0.9s linear; /* Smooth transition over 900ms */
+}
+

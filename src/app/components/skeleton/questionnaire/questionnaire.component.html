@@ -181,7 +181,7 @@
 				</div>
 				<mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
 					<div>
-						<p class="question-text">{{ m + 1 }} - {{ question.text }}</p>
+						<p class="question-text"><span *ngIf="question.showIndex">{{ m + 1 }} - </span>{{ question.text }}</p>
 					</div>
 					<div *ngFor="let mapping of questionnaire.mappings">
 						<mat-radio-button *ngIf="!mapping.spacing" class="radio-button" value="{{mapping.value}}"></mat-radio-button>

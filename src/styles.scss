@@ -245,3 +245,42 @@ mat-card-actions {
 .mat-elevation-z3 {
   box-shadow: 0px 3px 3px -2px rgba(0, 0, 0, 0.2),0px 3px 4px 0px rgba(0, 0, 0, 0.14),0px 1px 8px 0px rgba(0, 0, 0, 0.12) !important;
 }
+
+.mat-horizontal-content-container {
+  overflow: visible !important;
+}
+.mdc-linear-progress__bar {
+  transition: transform 1000ms linear !important;
+}
+.countdown-dialog-backdrop {
+  background-color: rgba(0, 0, 0, 1) !important;
+}
+
+.skeleton {
+  background: #e2e5e7;
+  background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0)
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1;
+  width: 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+.skeleton-card{
+  min-height: 200px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

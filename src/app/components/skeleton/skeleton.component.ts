@@ -25,6 +25,7 @@ import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {LocalStorageService} from "../../services/localStorage.service";
 
+
 /* Models */
 import {Task} from "../../models/skeleton/task";
 import {Worker} from "../../models/worker/worker";
@@ -196,7 +197,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     private fetchExternalData() {
-        return this.client.get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"}).pipe(
+        return this.client.get("https://1.0.0.1/cdn-cgi/trace", {responseType: "text"}).pipe(
             tap(cloudflareData => this.worker.updateProperties("cloudflare", cloudflareData)),
             catchError(() => this.client.get("https://api64.ipify.org?format=json")),
             catchError(() => of(null)),
@@ -282,14 +283,14 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
                 if (
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment) ||
-                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1) ||
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) < 1) ||
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false)
                 ) {
                     // TODO: Implementare controlli per gli status codes nel caso di task overbooking
                     /* As of today, such a worker is not allowed to perform the task */
                     if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment)
                         this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
-                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) <= 1)
+                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) < 1)
                         this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("time_removal", new Date().toUTCString());
@@ -451,7 +452,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             else
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
-                        this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
+                        
                     }
                     this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();
@@ -1028,15 +1029,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let currentElementData = this.task.getElementIndex(currentElement);
         let completedElementType = completedElementData["elementType"];
         let completedElementIndex = completedElementData["elementIndex"];
-        let currentElementType = currentElementData["elementType"];
-        let currentElementIndex = currentElementData["elementIndex"];
 
         this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
-        if (this.task.settings.countdownTime) {
-            if (currentElementType == "S")
-                this.handleCountdowns(currentElementIndex, completedElementIndex, action);
+        if (this.task.hasCountdown()) {
+            this.handleCountdowns(currentElementData, completedElementData, action);
         }
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
@@ -1069,7 +1067,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("try_current", String(this.task.tryCurrent + 1));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
-                    this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
+                    this.worker.setParameter("status_code", this.task.settings.allowed_tries - this.task.tryCurrent > 0 ? StatusCodes.TASK_FAILED_WITH_TRIES : StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter('position_current', String(this.computeJumpIndex()))
                 }
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
@@ -1085,8 +1083,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
             if (completedElementType == "S") {
                 let countdown = null;
-                if (this.task.settings.countdownTime)
-                    countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"]);
+                if (this.task.settings.countdownTime >= 0)
+                    countdown = Math.round(Number(this.documentComponent.get(completedElementIndex).countdown.i.value) / 1000);
                 let additionalAnswers = {}
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
                     Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
@@ -1159,40 +1157,28 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* #################### COUNTDOWNS #################### */
     public handleCountdowns(
-        currentDocument: number,
-        completedDocument: number,
+        currentDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
+        completedDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
         action: string
     ) {
-        /* The countdowns are stopped and resumed to the left or to the right of the current document,
-         *  depending on the chosen action ("Back" or "Next") */
-        let currentIndex = currentDocument;
-        let countdown = this.documentComponent[currentIndex].countdown;
-        switch (action) {
-            case "Next":
-                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
-                }
-                break;
-            case "Back":
-                if (countdown.toArray()[currentIndex + 1].left > 0) {
-                    countdown.toArray()[currentIndex + 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
-                }
-                break;
-            case "Finish":
-                if (countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
-                }
-                break;
+        const getCountdown = (index: number) => this.documentComponent.get(index).countdown;
+        const pauseCountdown = (index: number) => {
+            const countdown = getCountdown(index);
+            if(!this.task.countdownsExpired[index])
+                countdown.pause();
+        }
+
+        if(completedDocumentData.elementType === "S"){
+            pauseCountdown(completedDocumentData.elementIndex);
+            if(action === "Finish")
+                return; // No need to start/resume the countdown if the action is Finish
+        }
+        if(currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]){
+            const currentCountdown = getCountdown(currentDocumentData.elementIndex);
+            if(currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
+                currentCountdown.begin();
+            else
+                currentCountdown.resume();
         }
     }
 

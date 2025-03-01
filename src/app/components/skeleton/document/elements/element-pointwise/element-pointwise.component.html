@@ -1,35 +1,32 @@
-<ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
-	<ng-container *ngIf="!attribute.is_video && this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
-		<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false)">
-			<div class="attribute">
-				<p class="attribute-label">
-					<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
-					<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
-					<ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-						<span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'"><span i18n>'---------- text_hidden ----------'</span></span>
-					</ng-container>
-					<ng-container *ngIf="!this.task.countdownsExpired[documentIndex]">
-						<ng-container *ngIf="attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-							<br>
-							<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
-						</ng-container>
-						<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-							<span *ngIf="!attribute.is_video">
-								{{ this.task.documents[this.documentIndex][attribute.name] }}
+<ng-container *ngIf="this.task.countdownsStarted[documentIndex] && (!this.task.countdownsExpired[documentIndex] || this.task.settings.countdown_behavior != 'hide_attributes')">
+	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false && this.hasNonVideos)">
+		<ng-container *ngFor="let attribute of this.task.settings.attributesMain | filter:isAttributeVideo:false; let k=index">
+			<ng-container *ngIf="!attribute.is_video && this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
+					<div class="attribute">
+						<p class="attribute-label">
+							<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
+							<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
+							<ng-container *ngIf="attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
+								<br>
+								<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
+							</ng-container>
+							<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
+								<span *ngIf="!attribute.is_video">
+									{{ this.task.documents[this.documentIndex][attribute.name] }}
+								</span>
 							</span>
-						</span>
-					</ng-container>
-				</p>
-			</div>
-		</div>
-	</ng-container>
-	<ng-container *ngIf="attribute.is_video && attribute.show">
-		<div *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
-			<p class="attribute-label">
-				<ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-					<span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'"><span i18n>'---------- text_hidden ----------'</span></span>
-				</ng-container>
-				<ng-container *ngIf="!this.task.countdownsExpired[documentIndex]">
+						</p>
+					</div>
+				
+			</ng-container>
+		</ng-container>
+	</div>
+	
+
+	<ng-container *ngFor="let attribute of this.task.settings.attributesMain | filter:isAttributeVideo; let k=index">
+		<ng-container *ngIf="attribute.is_video && attribute.show">
+			<div *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
+				<p class="attribute-label">
 					<!-- Video player YouTube -->
 					<ng-container *ngIf="attribute.is_video && this.task.documents[this.documentIndex][attribute.name].includes('youtube.com')">
 						<iframe width="560" height="315" [src]="this.task.documents[this.documentIndex][attribute.name] | safe" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -41,10 +38,23 @@
 							Your browser does not support the video tag.
 						</video>
 					</ng-container>
-				</ng-container>
-			</p>
-		</div>
+				</p>
+			</div>
+		</ng-container>
 	</ng-container>
+</ng-container>
+
+<ng-container *ngIf="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes'">
+    <mat-card appearance="outlined" class="hidden-statement-card">
+        <mat-card-content class="hidden-statement-content">
+            <mat-icon class="hidden-statement-icon">visibility_off</mat-icon>
+            <span class="hidden-statement-message" i18n>The content has been hidden as the time expired.</span>
+        </mat-card-content>
+    </mat-card> 
+</ng-container>
+
+<ng-container *ngIf="!this.task.countdownsStarted[documentIndex]">
+    <div class="skeleton skeleton-card"></div>
 </ng-container>
 
 <ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormInteraction">

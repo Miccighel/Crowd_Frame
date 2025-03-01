@@ -1,0 +1,35 @@
+.countdown-dialog-backdrop {
+    background-color: rgb(0, 0, 0) !important;
+  }
+
+.time-card {
+    background-color: #f4f6ff;
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 24px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .timer-icon {
+    font-size: 32px;
+    height: 32px;
+    width: 32px;
+    color: #344397;
+  }
+  .time-value {
+    font-size: 32px;
+    color: #344397;
+    font-weight: 400;
+  }
+  
+  mat-dialog-content {
+    min-height: 150px;
+    padding-top: 10px !important;
+  }
+
+.dialog-title {
+    font-weight: bold !important;
+}

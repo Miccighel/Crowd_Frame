@@ -152,7 +152,7 @@ export class DynamoDBService {
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertDataRecord(config, worker: Worker, task: Task, data) {
+    public async insertDataRecord(config, worker: Worker, task: Task, data, sameSeq = false) {
         let params = {
             TableName: config["table_data_name"],
             Item: {
@@ -177,7 +177,7 @@ export class DynamoDBService {
         params['Item']['data']['S'] = {}
         params['Item']['time']['S'] = (new Date().toUTCString())
         params['Item']['data']['S'] = JSON.stringify(data)
-        task.sequenceNumber = task.sequenceNumber + 1
+        task.sequenceNumber = sameSeq ? task.sequenceNumber : task.sequenceNumber + 1
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 

@@ -93,8 +93,15 @@ export class Task {
 
     /* Optional countdown to use for each document */
     documentsCountdownTime: Array<number>;
+    documentsStartCountdownTime: Array<number>;
     /* Array of checks to see if the countdowns are expired; one for each document */
     countdownsExpired: Array<boolean>;
+    /* Array of checks to see if the countdowns were started, one per document; kind of redundant but makes things easier */
+    countdownsStarted: Array<boolean>;
+    /* Array to record when the countdown expires using a timestamp */
+    countdownExpiredTimestamp: Array<number>;
+    /* Array to record the excess time a worker takes to evaluate a document */
+    overtime: Array<number>;
 
     /* Arrays to store user annotations, one for each document within a Hit */
     notes: Array<Array<Note>>;
@@ -310,25 +317,45 @@ export class Task {
             for (let index = 0; index < this.notes.length; index++)
                 this.annotationsDisabled.push(true);
         }
-        // TODO: Add initialization from past records also for countdowns
+
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+        this.documentsStartCountdownTime = new Array<number>(this.documentsAmount);
+        this.countdownsStarted = new Array<boolean>(this.documentsAmount);
         this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+        this.countdownExpiredTimestamp = new Array<number>(this.documentsAmount);
+        this.overtime = new Array<number>(this.documentsAmount);
         for (let index = 0; index < this.documents.length; index++) {
             this.documentsCountdownTime[index] = this.settings.countdownTime;
-            if (this.settings.countdown_attribute_values[index]) {
-                for (const attributeValue of Object.values(this.documents[index])) {
-                    if (attributeValue == this.settings.countdown_attribute_values[index]["name"]) {
-                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]["time"];
+            if (this.mostRecentDataRecordsForDocuments[index]){
+                this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
+                this.documentsStartCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeStart();
+                this.countdownsStarted[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownStarted();
+                this.countdownsExpired[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpired();
+                this.countdownExpiredTimestamp[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpiredTimestamp();
+                this.overtime[index] = this.mostRecentDataRecordsForDocuments[index].loadOvertime();
+            } else {
+                if(this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0){
+                    const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index].fact_check_ground_truth_label);
+                    if(element != undefined){
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
+
+                if(this.settings.countdown_modality === "position" && this.settings.countdown_position_values.length > 0){
+                    const element = this.settings.countdown_position_values.find(item => item["position"] === this.documents[index].index);
+                    if(element != undefined){
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
+                    }
+                }
+                this.documentsStartCountdownTime[index] = this.documentsCountdownTime[index];
+                this.countdownsStarted[index] = false;
+                this.countdownsExpired[index] = false;
+                this.countdownExpiredTimestamp[index] = -1;
+                this.overtime[index] = 0;
             }
-            if (this.settings.countdown_position_values[index])
-                this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]["time"];
-            this.countdownsExpired[index] = false;
+            
         }
-        for (let index = 0; index < this.documents.length; index++) {
-            this.countdownsExpired[index] = false;
-        }
+
         this.documentsPairwiseSelection = new Array<Array<boolean>>(
             this.documentsAmount
         );
@@ -721,6 +748,12 @@ export class Task {
             /* The total amount of selected values for the current document is set to 1. */
             /* IMPORTANT: The document_index of the last selected value for a document will be <amount - 1>. */
             this.dimensionsSelectedValues[currentDocument]["amount"] = 1;
+        }
+
+        /* If the document has an (expired) countdown and the modality is hide_attributes, we compute the excess time */
+        if(this.hasCountdown() && this.settings.countdown_behavior === 'hide_attributes' && this.countdownsExpired[currentDocument]){
+            const element = [...Array(this.getElementsNumber()).keys()].find(i => this.getElementIndex(i).elementIndex == currentDocument);
+            this.overtime[currentDocument] += timeInSeconds - (this.elementsAccesses[element] > 0 ? this.timestampsStart[element][this.timestampsStart[element].length - 1] : this.countdownExpiredTimestamp[currentDocument]);
         }
     }
 
@@ -1224,8 +1257,14 @@ export class Task {
         data["countdowns_times_start"] = countdownTimeStart;
         let countdownTime = this.settings.countdownTime >= 0 ? countdown : [];
         data["countdowns_times_left"] = countdownTime;
+        let countdown_started = this.settings.countdownTime >= 0 ? this.countdownsStarted[elementData['elementIndex']] : [];
+        data["countdowns_started"] = countdown_started;
         let countdown_expired = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
         data["countdowns_expired"] = countdown_expired;
+        let countdown_expired_timestamp = this.settings.countdownTime >= 0 ? this.countdownExpiredTimestamp[elementData['elementIndex']] : [];
+        let overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
+        data['countdown_expired_timestamp'] = countdown_expired_timestamp;
+        data['overtime'] = overtime;
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
         /* Responses retrieved by search engine for each worker's query for the current document */
@@ -1260,5 +1299,9 @@ export class Task {
         data["comment"] = comment;
         this.sequenceNumber = this.sequenceNumber + 1;
         return data;
+    }
+
+    public hasCountdown(){
+        return this.settings.countdownTime >= 0;
     }
 }

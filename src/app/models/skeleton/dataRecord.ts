@@ -73,4 +73,27 @@ export class DataRecord {
         return this.data['notes']
     }
 
+    public loadCountdownTimeStart() : number {
+        return this.data['countdowns_times_start'];
+    }
+
+    public loadCountdownTimeLeft() : number {
+        return this.data['countdowns_times_left'];
+    }
+
+    public loadCountdownExpired() : boolean {
+        return this.data['countdowns_expired'];
+    }
+    
+    public loadCountdownStarted() : boolean {
+        return this.data['countdowns_started'];
+    }
+
+    public loadCountdownExpiredTimestamp(): number{
+        return this.data['countdown_expired_timestamp'];
+    }
+
+    public loadOvertime(): number {
+        return this.data['overtime'];
+    }
 }
