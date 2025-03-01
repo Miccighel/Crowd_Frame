@@ -1,4 +1,4 @@
-<div class="statement" *ngIf="!this.task.countdownsExpired[documentIndex] || this.task.settings.countdown_behavior != 'hide_attributes'">
+<div class="statement" *ngIf="this.task.countdownsStarted[documentIndex] && (!this.task.countdownsExpired[documentIndex] || this.task.settings.countdown_behavior != 'hide_attributes')">
     <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
         <div class="attribute" *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
 
@@ -20,19 +20,19 @@
         </div>
     </ng-container>
 </div>
+
 <ng-container *ngIf="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes'">
-    <mat-card appearance="outlined" class="alert-card">
-        <mat-card-content>
-            <div class="alert-content">
-            <mat-icon class="visibility-off-icon alert-icon">visibility_off</mat-icon>
-            <div>
-                <span class="alert-message" i18n>The content has been hidden as the time expired.</span>
-            </div>
-            </div>
+    <mat-card appearance="outlined" class="hidden-statement-card">
+        <mat-card-content class="hidden-statement-content">
+            <mat-icon class="hidden-statement-icon">visibility_off</mat-icon>
+            <span class="hidden-statement-message" i18n>The content has been hidden as the time expired.</span>
         </mat-card-content>
     </mat-card> 
 </ng-container>
 
+<ng-container *ngIf="!this.task.countdownsStarted[documentIndex]">
+    <div class="skeleton skeleton-card"></div>
+</ng-container>
 
 <ng-container>
     <!-- Annotation buttons markup -->

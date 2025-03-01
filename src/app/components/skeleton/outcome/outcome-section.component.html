@@ -75,7 +75,7 @@
             </p>
 
             <p *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_TIME_EXPIRED">
-                <span i18n>The task assigned to you has been reassigned to another worker because the allotted time for completion has expired on</span>
+                <span i18n>The task assigned to you has been reassigned to another worker because the allotted time for completion has expired on </span>
                 <strong>{{this.worker.prettyTimeExpiration()}}</strong>.
                 <span i18n>We kindly request you to return the assignment on the original platform.</span>
             </p>

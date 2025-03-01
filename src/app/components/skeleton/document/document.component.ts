@@ -13,14 +13,19 @@ import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";
 import {Worker} from "../../../models/worker/worker";
+import { CountdownDialogComponent } from './countdown-dialog/countdown-dialog.component';
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
+import {MatProgressBar} from '@angular/material/progress-bar';
+import {MatDialog} from '@angular/material/dialog';
+
 /* Browser */
 import {Title} from "@angular/platform-browser";
 import {ConfigService} from "../../../services/config.service";
 //DynamoDB
 import {DynamoDBService} from "../../../services/aws/dynamoDB.service";
+
 
 @Component({
     selector: 'app-document',
@@ -45,6 +50,8 @@ export class DocumentComponent implements OnInit {
     formBuilder: UntypedFormBuilder;
     /* Snackbar reference */
     snackBar: MatSnackBar;
+    /* Dialog reference */
+    dialog: MatDialog;
 
     /* #################### INPUTS #################### */
 
@@ -89,6 +96,7 @@ export class DocumentComponent implements OnInit {
     @ViewChild('countdownElement') countdown: CountdownComponent;
     /* Counter used by handleCountdown to only handle "notify" events every 3 seconds */
     countdownInterval!: number;
+    @ViewChild('countdownProgressBar') countdownProgressBar: MatProgressBar;
 
     /* #################### EMITTERS #################### */
 
@@ -102,6 +110,7 @@ export class DocumentComponent implements OnInit {
         titleService: Title,
         configService: ConfigService,
         snackBar: MatSnackBar,
+        dialog: MatDialog,
         formBuilder: UntypedFormBuilder,
         dynamoDBService: DynamoDBService
     ) {
@@ -115,6 +124,7 @@ export class DocumentComponent implements OnInit {
         this.formEmitter = new EventEmitter<Object>();
         this.task = this.sectionService.task
         this.snackBar = snackBar;
+        this.dialog = dialog;
     }
 
     ngOnInit(): void {
@@ -142,8 +152,22 @@ export class DocumentComponent implements OnInit {
     ngAfterViewInit() {
         /* We start the countdown at the current position if it's a document */
         const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
-        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown)
+        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && this.task.countdownsStarted[this.documentIndex])
             this.countdown.begin();
+
+        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]){
+            this.openCountdownDialog();
+        }
+
+        this.stepper.selectionChange.subscribe((event) => {
+            const element = this.task.getElementIndex(event.selectedIndex);
+            if(element["elementType"] === "S" && this.documentIndex === element["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]){
+                this.openCountdownDialog();
+            }
+        });
+
+        this.countdownProgressBar.value = (this.task.documentsCountdownTime[this.documentIndex] /this.task.documentsStartCountdownTime[this.documentIndex]) * 100
+
     }
 
     /* #################### ANSWERS, ASSESSMENT FORMS, & POST ASSESSMENT #################### */
@@ -262,6 +286,7 @@ export class DocumentComponent implements OnInit {
     public async handleCountdown(event) {
         if (!this.task.countdownsExpired[this.documentIndex] && event.action === 'done') {
             this.task.countdownsExpired[this.documentIndex] = true;
+            this.task.countdownExpiredTimestamp[this.documentIndex] = Date.now() / 1000;
             this.sendCountdownPayload(0);
             if(this.task.settings.modality == 'pointwise'){
                 if(this.task.settings.annotator)
@@ -271,7 +296,10 @@ export class DocumentComponent implements OnInit {
             }
                 
         }
+
         if(event.action === 'notify'){
+            if(this.countdownProgressBar)
+                this.countdownProgressBar.value = (event.left / (this.task.documentsStartCountdownTime[this.documentIndex] * 1000)) * 100
             this.countdownInterval++;
             if(this.countdownInterval === 3){
                 this.sendCountdownPayload(event.left);
@@ -281,17 +309,7 @@ export class DocumentComponent implements OnInit {
         
     }
 
-    /* Used to format the time available for the next document in the message at the bottom of the page */
-    public formatTime(seconds: number): string {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        
-        const minutePart = minutes > 0 ? `${minutes} ${minutes === 1 ? "minute" : "minutes"}` : "";
-        const secondPart = remainingSeconds > 0 ? `${remainingSeconds} ${remainingSeconds === 1 ? "second" : "seconds"}` : "";
-    
-        return [minutePart, secondPart].filter(Boolean).join(" and ");
-    }
-    
+ 
    /* Called by handleCountdown to log an entry in the database every 3 seconds. This helps track the worker's time spent on the current document while also saving potential answers and search engine results.
     The mechanism prevents workers from having unlimited time. */
     private async sendCountdownPayload(timeLeft){
@@ -305,6 +323,23 @@ export class DocumentComponent implements OnInit {
         let documentPayload = this.task.buildTaskDocumentPayload(currentElement, this.documentsForm[currentElement['elementIndex']].value, additionalAnswers, Math.round(Number(timeLeft) / 1000), "Update");
         documentPayload['update_type'] = "countdown_update";
         await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload, true);
+    }
+
+    /* Dialog that shows up when there's a countdown and the worker accesses the document for the first time */
+    private openCountdownDialog(){
+        const dialogRef = this.dialog.open(CountdownDialogComponent, {
+            disableClose: true,
+            backdropClass: 'countdown-dialog-backdrop',
+            width: '450px',
+            minHeight: '85%',
+            data: {timeAllowed: this.task.documentsStartCountdownTime[this.documentIndex]}
+        });
+       dialogRef.afterClosed().subscribe((response) => {
+            if(response === 'confirmed'){
+                this.countdown.begin();
+                this.task.countdownsStarted[this.documentIndex] = true;
+            }
+       });
     }
 
     /* #################### DOCUMENT COMPLETION #################### */

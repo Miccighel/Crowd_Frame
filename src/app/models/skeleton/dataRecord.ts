@@ -84,4 +84,16 @@ export class DataRecord {
     public loadCountdownExpired() : boolean {
         return this.data['countdowns_expired'];
     }
+    
+    public loadCountdownStarted() : boolean {
+        return this.data['countdowns_started'];
+    }
+
+    public loadCountdownExpiredTimestamp(): number{
+        return this.data['countdown_expired_timestamp'];
+    }
+
+    public loadOvertime(): number {
+        return this.data['overtime'];
+    }
 }

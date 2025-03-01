@@ -92,11 +92,9 @@ p {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     z-index: 1000;
-    background-color: #3f51b5;
-    padding: 8px 0 8px 40px;
     top: 0;
     text-align: center;
-    color: white;
+    background-color: #f8f8fa;
     border-radius: 4px;
     margin-bottom: 1.5%;
 }
@@ -175,54 +173,50 @@ p {
     margin-left: 10px;
 }
 
-
-/* CARD THAT SHOWS UP WHEN THE COUNTDOWN IS OVER */
-
-.alert-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    height: 200px;
-}
-
-.alert-content{
+/* COUNTDOWN CARD */
+.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    z-index: 1000;
+    top: 0;
     text-align: center;
-}
-
-.alert-icon {
-    font-size: 48px; 
-    height: 48px; 
-    width: 48px; 
-    margin-bottom: 16px;
-}
-
-.alert-message {
-    font-size: 18px;
-}
-
-.alert-next-timer-container {
+    background-color: #f8f8fa;
     border-radius: 4px;
-    margin: 8px 0;
-    box-shadow: none !important;
+    margin-bottom: 1.5%;
+    padding: 5px;
 }
-.alert-next-timer-content {
+
+.countdown-footer {
+    padding: 16px;
+  }
+
+.centered {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: 30px !important;
-    padding-left: 0px !important;
+    justify-content: center;
+}
+.icon-header {
+    transform: scale(1.5);
+}
+.card-content {
+    text-align: center;
+    padding: 10px;
 }
 
-.alert-next-timer-icon {
-    vertical-align: middle;
+.time-left {
+    font-size: 30px;
+}
+  
+.time-remaining{
+    color: rgb(95, 95, 95);
 }
 
-.alert-next-timer-message {
-    vertical-align: middle;
+.mat-mdc-progress-bar{
+    --mdc-linear-progress-active-indicator-height: 8px !important;
+    --mdc-linear-progress-track-height: 8px !important;
+    border-radius: 8px;
 }
 
-.alert-info {
-    color: #344397;
-    background-color: #f4f6ff;
+.mat-progress-bar-fill::after {
+    transition: transform 0.9s linear; /* Smooth transition over 900ms */
 }
+

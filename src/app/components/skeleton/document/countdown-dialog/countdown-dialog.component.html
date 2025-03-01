@@ -1,0 +1,14 @@
+
+<h2 mat-dialog-title class="dialog-title">Get ready, a new statement is coming</h2>
+<mat-dialog-content>
+    <p>It will remain visible for:</p>
+    <div class="time-card">
+        <mat-icon class="timer-icon">timer</mat-icon>
+        <div class="time-value" [innerHTML] = "formatTime(data.timeAllowed)"></div>
+    </div>
+    <p>The timer begins when the statement is shown.</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="primary" (click)="onConfirm()">GO</button>
+</mat-dialog-actions>

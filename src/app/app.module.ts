@@ -53,7 +53,7 @@ import {ChatInputIntervalComponent} from "./components/chatbot/chat-inputs/chat-
 import {ChatInputSelectComponent} from "./components/chatbot/chat-inputs/chat-input-select/chat-input-select.component";
 import {ChatInputButtonComponent} from "./components/chatbot/chat-inputs/chat-input-button/chat-input-button.component";
 import {ChatUrlInputComponent} from "./components/chatbot/chat-inputs/chat-input-url/chat-input-url.component";
-
+import { CountdownDialogComponent } from './components/skeleton/document/countdown-dialog/countdown-dialog.component';
 /* Services imports */
 import {SectionService} from "./services/section.service";
 import {ActionLogger} from "./services/userActionLogger.service";
@@ -128,6 +128,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatUrlInputComponent,
         SafePipe,
         FilterPipe,
+        CountdownDialogComponent
     ],
     imports: [
         BrowserModule,

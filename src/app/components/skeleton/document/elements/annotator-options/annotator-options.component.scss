@@ -45,6 +45,27 @@
   color: black;
 }
 
-.visibility-off-icon{
-  color: grey;
+.hidden-statement-card {
+	background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
+	padding: 50px;
 }
+  
+.hidden-statement-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 25px;
+}
+  
+.hidden-statement-icon {
+	color: #3b3b3b;
+	transform: scale(2.3);
+}
+
+.hidden-statement-message {
+	color: #3b3b3b;
+	font-weight: 500;
+	font-size: 18px;
+}
+  

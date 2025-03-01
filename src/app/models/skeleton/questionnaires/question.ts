@@ -18,6 +18,7 @@ export class Question {
     showDetail?: boolean
     freeText?: boolean
     answers?: Array<string>
+    showIndex?: boolean
 
     dropped = false
 
@@ -45,6 +46,7 @@ export class Question {
         this.detail = data['detail'] ? new Detail(data["detail"]) : null;
         this.showDetail = data['show_detail'] ? data['show_detail'] : null;
         this.freeText = data['free_text'] ? data['free_text'] : null;
+        this.showIndex = data['show_index'] ?? true
     }
 
 

@@ -1029,13 +1029,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let currentElementData = this.task.getElementIndex(currentElement);
         let completedElementType = completedElementData["elementType"];
         let completedElementIndex = completedElementData["elementIndex"];
-        let currentElementType = currentElementData["elementType"];
-        let currentElementIndex = currentElementData["elementIndex"];
 
         this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
-        if (this.task.settings.countdownTime >= 0) {
+        if (this.task.hasCountdown()) {
             this.handleCountdowns(currentElementData, completedElementData, action);
         }
         if (this.task.settings.annotator) {
@@ -1175,7 +1173,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             if(action === "Finish")
                 return; // No need to start/resume the countdown if the action is Finish
         }
-        if(currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex]){
+        if(currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]){
             const currentCountdown = getCountdown(currentDocumentData.elementIndex);
             if(currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
                 currentCountdown.begin();

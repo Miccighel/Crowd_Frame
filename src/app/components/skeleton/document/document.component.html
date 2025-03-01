@@ -29,13 +29,21 @@
 		<mat-card-content class="pt-16px">
 
 			<!--- Countdown markup --->
-			<ng-container *ngIf="this.task.settings.countdownTime>=0">
-				<div class="sticky" *ngIf="this.task.settings.countdownTime>=0">
-					<h1 class="text-lighter m-0">
-						<span i18n>Time left: </span>
-						<countdown #countdownElement [config]="{demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss', notify: 0}" (event)="handleCountdown($event)"></countdown>
-					</h1>
-				</div>
+			<ng-container *ngIf="this.task.hasCountdown()">
+				<mat-card #countdownCard class="sticky" *ngIf="this.task.settings.countdownTime>=0">
+					<mat-card-header class="centered">
+					  <mat-icon class="icon-header material-icons-outlined">timer</mat-icon>
+					</mat-card-header>
+					<mat-card-content class="card-content">
+					  <div class="time-left"><countdown #countdownElement [config]="{demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss', notify: 0}" (event)="handleCountdown($event)"></countdown></div>
+					  <div class="time-remaining">Time remaining</div>
+					</mat-card-content>
+					<mat-card-footer class="countdown-footer">
+					  <mat-progress-bar #countdownProgressBar
+						mode="determinate"
+					  ></mat-progress-bar>
+					</mat-card-footer>
+				</mat-card>
 			</ng-container>
 
 			<!-- Evaluation instructions markup -->
@@ -104,15 +112,6 @@
 						></app-dimension>
 					</ng-container>
 				</ng-container>
-			</ng-container>
-
-			<ng-container *ngIf="this.task.settings.countdownTime>=0 && documentIndex+1<this.task.documentsAmount">
-				<mat-card class="alert-next-timer-container alert-info">
-					<mat-card-content class="alert-next-timer-content">
-						<mat-icon class="alert-next-timer-icon">info_outline</mat-icon>
-						<span class="alert-next-timer-message" i18n>For the upcoming statement, you will have <strong>{{formatTime(this.task.documentsStartCountdownTime[documentIndex + 1])}}</strong> to complete your evaluation.</span>
-					</mat-card-content>
-				</mat-card> 
 			</ng-container>
 
 			<ng-container>
