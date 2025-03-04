@@ -76,23 +76,29 @@ export class ActionLogger {
      * @param details of the event
      */
     log(type: string, details: object) {
-        let payload = this.buildPayload(type, details)
+        let payload = this.buildPayload(type, details);
+
         if (payload.worker != null) {
             if (this.logOnConsole) {
                 console.log(payload)
             } else {
+
+                // SQS requires MessageBody as a string, so we wrap our payload in it
+                const body = new URLSearchParams();
+                body.set("MessageBody", JSON.stringify(payload)); // Must be a string
+
                 this.http.post(
                     this.endpoint,
-                    payload,
+                    body.toString(), // Ensure URL-encoded format
                     {
-                        responseType: 'text',
-                        headers: new HttpHeaders()
-                            .set('content-type', 'text/plain')
+                        responseType: "text",
+                        headers: new HttpHeaders().set("Content-Type", "application/x-www-form-urlencoded") // Required by SQS
                     }
-                ).subscribe()
+                ).subscribe();
             }
         }
     }
+
 
     /**
      * This function is called once to log the context information of the session
