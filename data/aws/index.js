@@ -1,22 +1,34 @@
-const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
-const { marshall } = require('@aws-sdk/util-dynamodb');
+const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
+const { marshall } = require("@aws-sdk/util-dynamodb");
+const querystring = require("querystring");
 
 exports.handler = async (event) => {
+    console.log("🚀 Lambda invoked with", event.Records.length, "messages");
+
     for (const msg of event.Records) {
-        let data = JSON.parse(msg.body); // Access 'body' directly, msg['body'] -> msg.body
-        let seq = data.sequence;
-        let bucket = data.bucket;
-        let task = data.task;
-        let batch = data.batch;
-        let worker = data.worker;
-        let unit_id = data.unitId;
-        let try_current = data.try_current;
-        let region = data.region;
+        let data;
+
+        try {
+            let rawBody = msg.body;
+
+            // Decode URL-encoded MessageBody if needed
+            if (rawBody.includes("=")) {
+                rawBody = querystring.parse(rawBody).MessageBody;
+            }
+
+            // Parse JSON payload
+            data = JSON.parse(rawBody);
+        } catch (error) {
+            console.error("❌ Failed to parse message. Skipping.", "\nError:", error);
+            continue;
+        }
+
+        let { sequence: seq, region } = data;
 
         data.server_time = Date.now();
         data.details = JSON.stringify(data.details);
 
-        // Initialize DynamoDB client with the region from event data
+        // Initialize DynamoDB client
         const dynamodbClient = new DynamoDBClient({ region });
 
         await writeToDB(data, seq, 1, dynamodbClient);
@@ -24,27 +36,25 @@ exports.handler = async (event) => {
 };
 
 async function writeToDB(data, seq, tryNum, dynamodbClient) {
-    data.sequence = tryNum.toString() + "_" + seq.toString();
+    data.sequence = `${tryNum}_${seq}`;
     let table_name = `Crowd_Frame-${data.task}_${data.batch}_Logger`;
 
     try {
-        // Marshall the data for DynamoDB PutItemCommand
         const params = {
             TableName: table_name,
-            Item: marshall(data),
-            ConditionExpression: "attribute_not_exists(worker)"
+            Item: marshall(data)
         };
 
-        // Execute PutItemCommand
         await dynamodbClient.send(new PutItemCommand(params));
     } catch (error) {
-        console.error("Error writing to DynamoDB:", error);
-        // Handle retries or error handling logic here
-        if (tryNum < 3) {
+        console.error(`❌ DynamoDB Error (Attempt ${tryNum}):`, error.name);
+
+        // Retry on transient errors
+        if (tryNum < 3 && error.name === "ProvisionedThroughputExceededException") {
+            console.warn(`🔁 Retrying (Attempt ${tryNum + 1})...`);
             await writeToDB(data, seq, tryNum + 1, dynamodbClient);
         } else {
-            console.error("Max retry limit reached. Data:", data);
-            throw new Error("Max retry limit reached");
+            console.error("⛔ Max retry limit reached. Skipping.");
         }
     }
 }

@@ -68,7 +68,7 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     public completeTask() {
-        window.open(`https://app.prolific.com/submissions/complete?cc${this.configService.environment.prolific_completion_code}`, "_blank");
+        window.open(`https://app.prolific.com/submissions/complete?cc=${this.configService.environment.prolific_completion_code}`, "_blank");
     }
 
     public performCommentSaving() {
