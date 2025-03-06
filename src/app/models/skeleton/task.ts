@@ -702,12 +702,14 @@ export class Task {
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
         let timeInSeconds = Date.now() / 1000;
+        let prevSelectionTimestamp = -1;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {
             /* The new query is pushed into current document data array along with a document_index used to identify such query*/
             let selectedValues = Object.values(
                 this.dimensionsSelectedValues[currentDocument]["data"]
             );
+            prevSelectionTimestamp = this.dimensionsSelectedValues[currentDocument]["data"][selectedValues.length - 1]["timestamp"]
             let selectedValue = {
                 document: currentDocument,
                 dimension: currentDimension,
@@ -753,7 +755,10 @@ export class Task {
         /* If the document has an (expired) countdown and the modality is hide_attributes, we compute the excess time */
         if(this.hasCountdown() && this.settings.countdown_behavior === 'hide_attributes' && this.countdownsExpired[currentDocument]){
             const element = [...Array(this.getElementsNumber()).keys()].find(i => this.getElementIndex(i).elementIndex == currentDocument);
-            this.overtime[currentDocument] += timeInSeconds - (this.elementsAccesses[element] > 0 ? this.timestampsStart[element][this.timestampsStart[element].length - 1] : this.countdownExpiredTimestamp[currentDocument]);
+            if(this.overtime[currentDocument] > 0)
+                this.overtime[currentDocument] += timeInSeconds - Math.max(this.timestampsStart[element][this.timestampsStart[element].length - 1], prevSelectionTimestamp, this.countdownExpiredTimestamp[currentDocument])
+            else
+                this.overtime[currentDocument] = timeInSeconds - this.countdownExpiredTimestamp[currentDocument]
         }
     }
 
@@ -1253,7 +1258,7 @@ export class Task {
         let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
         data["timestamps_elapsed"] = timestampsElapsed;
         /* Countdown time and corresponding flag */
-        let countdownTimeStart = this.settings.countdownTime >= 0 ? this.documentsCountdownTime[elementData['elementIndex']] : [];
+        let countdownTimeStart = this.settings.countdownTime >= 0 ? this.documentsStartCountdownTime[elementData['elementIndex']] : [];
         data["countdowns_times_start"] = countdownTimeStart;
         let countdownTime = this.settings.countdownTime >= 0 ? countdown : [];
         data["countdowns_times_left"] = countdownTime;
