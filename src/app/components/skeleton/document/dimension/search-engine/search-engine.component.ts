@@ -142,4 +142,8 @@ export class SearchEngineComponent implements OnInit {
         this.urlSelectedEmitter.emit(true)
         this.formEmitter.emit(this.searchEngineForm)
     }
+
+    public handleSearchEngineVisitedResponse(visitedResponseDate, document: Document, dimension: Dimension) {
+        this.task.storeSearchEngineVisitedResponse(visitedResponseDate, document, dimension)
+    }
 }

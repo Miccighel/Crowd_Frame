@@ -9,6 +9,7 @@ export class BaseResponse {
     url: string;
     name: string;
     snippet: string;
+    visited: boolean;
 
     /* Additional parameters*/
     parameters: { [key: string]: any } = {};
@@ -17,10 +18,12 @@ export class BaseResponse {
         url: string,
         name: string,
         snippet: string,
+        visited: boolean
     ) {
         this.url = url;
         this.name = name;
         this.snippet = snippet;
+        this.visited = visited;
     }
 
     public setParameter(parameter: string, value: any) {

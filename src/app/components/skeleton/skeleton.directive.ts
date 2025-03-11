@@ -384,4 +384,10 @@ export class SearchEngineBodyDirective {
             this.actionLogger.onResult(results)
     }
 
+    @HostListener('visitedRowEmitter', ['$event'])
+    onVisited(result) {
+        if(this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['general'])
+            this.actionLogger.onVisited(result)
+    }
+
 }

@@ -121,7 +121,8 @@ export class PubmedService {
                 let baseResponse = new BaseResponse(
                     `https://www.ncbi.nlm.nih.gov/pubmed/${articleId}`,
                     data["title"],
-                    data["fulljournalname"]
+                    data["fulljournalname"],
+                    false
                 )
                 baseResponse.setParameter('identifier', articleId)
                 baseResponse.setParameter('sort_title', data['sorttitle'])

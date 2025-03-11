@@ -130,6 +130,8 @@ export class SearchEngineBodyComponent implements OnInit {
     /* EMITTER: Response selected by user */
     @Output() selectedRowEmitter = new EventEmitter<Object>();
 
+    @Output() visitedRowEmitter = new EventEmitter<Object>();
+
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
     constructor(
@@ -337,6 +339,11 @@ export class SearchEngineBodyComponent implements OnInit {
                                 map((searchResponses) => {
                                     let decodedResponses = this.fakerService.decodeResponse(searchResponses)
                                     this.estimatedMatches = decodedResponses.length
+                                    this.baseResponses = this.baseResponses.concat(decodedResponses)
+                                    this.resultsAmount = this.baseResponses.length
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
                                     this.resultEmitter.emit({
                                         "decodedResponses": this.baseResponses,
                                         "estimatedMatches": this.estimatedMatches,
@@ -346,11 +353,6 @@ export class SearchEngineBodyComponent implements OnInit {
                                         "pageIndex": this.paginator.pageIndex,
                                         "pageSize": this.paginator.pageSize,
                                     });
-                                    this.baseResponses = this.baseResponses.concat(decodedResponses)
-                                    this.resultsAmount = this.baseResponses.length
-                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
-                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
                                     this.searchInProgress = false;
                                     this.ngxService.stopBackgroundLoader('search-loader')
                                     return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
@@ -398,7 +400,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 this.searchInProgress = false;
                 if (!this.previousDataRecord) {
                     for (let preRetrievedResult of this.preRetrievedResults) {
-                        let baseResponse = new BaseResponse(preRetrievedResult.pageUrl, preRetrievedResult.pageName, preRetrievedResult.pageSnippet)
+                        let baseResponse = new BaseResponse(preRetrievedResult.pageUrl, preRetrievedResult.pageName, preRetrievedResult.pageSnippet, false)
                         baseResponse.setParameter('resultUUID', preRetrievedResult.resultUUID)
                         this.baseResponses.push(baseResponse)
                     }
@@ -452,7 +454,7 @@ export class SearchEngineBodyComponent implements OnInit {
                         ) {
                             let baseResponses = []
                             for (let previousResponseRetrieved of previousResponsesRetrieved['response']) {
-                                let baseResponseParsed = new BaseResponse(previousResponseRetrieved['url'], previousResponseRetrieved['name'], previousResponseRetrieved['snippet'])
+                                let baseResponseParsed = new BaseResponse(previousResponseRetrieved['url'], previousResponseRetrieved['name'], previousResponseRetrieved['snippet'], previousResponseRetrieved['visited'])
                                 Object.entries(previousResponseRetrieved['parameters']).forEach(([parameterName, parameterValue]) => {
                                     baseResponseParsed.setParameter(parameterName, parameterValue)
                                 });
@@ -601,6 +603,10 @@ export class SearchEngineBodyComponent implements OnInit {
     /* EMITTER: The response item clicked by user is emitted to provide it to an eventual parent component */
     public selectBaseResponse(response: BaseResponse) {
         this.selectedRowEmitter.emit(response);
+    }
+
+    public markAsVisited(response: BaseResponse) {
+        this.visitedRowEmitter.emit(response);
     }
 
     public checkCookie(identifier: string) {

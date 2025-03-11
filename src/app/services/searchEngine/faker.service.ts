@@ -81,7 +81,8 @@ export class FakerService {
             let baseResponse = new BaseResponse(
                 `https://jsonplaceholder.typicode.com/posts/${data.id}`,
                 data.title,
-                data.body
+                data.body,
+                false
             )
             baseResponses.push(baseResponse)
         }

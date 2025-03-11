@@ -367,6 +367,13 @@ export class ActionLogger {
         this.log('query', details)
     }
 
+    onVisited(result) {
+        let details = {
+            section: this.findSection()
+        }
+        this.log('linkVisited', details)
+    }
+    
     onResult(results) {
         let urlArray = [];
         results['decodedResponses'].forEach((result) => {

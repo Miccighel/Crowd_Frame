@@ -122,7 +122,8 @@ export class BingService {
                     let baseResponse = new BaseResponse(
                         responseCurrent.url,
                         responseCurrent.name,
-                        responseCurrent.snippet
+                        responseCurrent.snippet,
+                        false
                     )
                     baseResponse.setParameter('identifier', responseId)
                     baseResponse.setParameter('date_last_crawled', responseCurrent.dateLastCrawled)

@@ -31,7 +31,7 @@
 					<mat-header-cell *matHeaderCellDef i18n>{{ estimatedMatches | number }} estimated matches found</mat-header-cell>
 					<mat-cell *matCellDef="let baseResponse; let i = index">
 						<p>
-							<a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(baseResponse.url) }}">{{ baseResponse.name }}</a>
+							<a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(baseResponse.url) }}" (click)="markAsVisited(baseResponse)">{{ baseResponse.name }}</a>
 							<br/>
 							<span>{{ decodeURI(baseResponse.url) }}</span>
 							<br/>
@@ -57,10 +57,10 @@
 					<mat-cell *matCellDef="let baseResponse; let i = index">
 						<p>
 							<ng-container *ngIf="this.preRetrievedResultsSettings.displayModality==DisplayModality.Link">
-								<a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(baseResponse.url) }}">{{ baseResponse.name }}</a>
+								<a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(baseResponse.url) }}" (click)="markAsVisited(baseResponse)">{{ baseResponse.name }}</a>
 							</ng-container>
 							<ng-container *ngIf="this.preRetrievedResultsSettings.displayModality==DisplayModality.Summary">
-								<a target="_blank" rel="noopener noreferrer" href="{{this.generatePreRetrievedResultSummaryUrl(baseResponse.getParameter('resultUUID'))}}">{{ baseResponse.name }}</a>
+								<a target="_blank" rel="noopener noreferrer" href="{{this.generatePreRetrievedResultSummaryUrl(baseResponse.getParameter('resultUUID'))}}" (click)="markAsVisited(baseResponse)">{{ baseResponse.name }}</a>
 							</ng-container>
 							<br/>
 							<span class="result-url">{{ decodeURI(baseResponse.url) }}</span>

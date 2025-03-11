@@ -3094,7 +3094,8 @@ df_urls = pd.DataFrame(columns=[
     "response_name",
     "response_snippet",
     "response_uuid",
-    "index_selected"
+    "index_selected",
+    'response_visited'
 ])
 df_urls['try_last'] = df_urls['try_last'].astype(float)
 df_urls['try_current'] = df_urls['try_current'].astype(float)
@@ -3149,6 +3150,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 row["response_url"] = response["url"]
                 row["response_name"] = response["name"]
                 row["response_snippet"] = response["snippet"]
+                row["response_visited"] = response["visited"]
 
                 if 'parameters' in response.keys():
                     for parameter, value in response['parameters'].items():
@@ -3447,6 +3449,11 @@ if not os.path.exists(df_log_path):
                             row['log_section'] = log_details['section']
                             row['log_query_text'] = log_details['query']['text']
                             row['log_query_text_encoded'] = log_details['query']['encoded']
+                            df_logs_part.loc[len(df_logs_part)] = row
+                        elif data_log['type'] == 'linkVisited':
+                            if 'log_section' not in df_logs_part.columns:
+                                df_logs_part['log_section'] = np.nan
+                            row['log_section'] = log_details['section']
                             df_logs_part.loc[len(df_logs_part)] = row
                         else:
                             print(data_log['type'])

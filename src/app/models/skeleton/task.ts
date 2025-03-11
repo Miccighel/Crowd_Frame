@@ -945,6 +945,25 @@ export class Task {
         }
     }
 
+
+    public storeSearchEngineVisitedResponse(
+        visitedResponseData: Object,
+        document: Document,
+        dimension: Dimension
+    ) {
+        if (this.searchEngineRetrievedResponses[document.index]["groups"] > 0) {
+            const query = this.searchEngineQueries[document.index]["amount"] - 1;
+            const groupToUpdate = this.searchEngineRetrievedResponses[document.index]["data"].findIndex(group => group.query === query && group.dimension === dimension.index && group.document === document.index)
+            if (groupToUpdate != -1) {
+                const responseToUpdate = this.searchEngineRetrievedResponses[document.index]["data"][groupToUpdate]['response'].findIndex(response => response.url === visitedResponseData['url'] && response.name === visitedResponseData['name'])
+                if (responseToUpdate != -1){
+                    this.searchEngineRetrievedResponses[document.index]["data"][groupToUpdate]["response"][responseToUpdate]['visited'] = true
+                }
+            }
+        }
+          
+    }
+
     public retrieveSearchEnginePreRetrievedResults(documentIndex: number) {
         let documentCurrent = this.documents[documentIndex]
         let preRetrievedResults: Array<PreRetrievedResult> = []
