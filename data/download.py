@@ -28,6 +28,7 @@ from distutils.util import strtobool
 from pathlib import Path
 from dotenv import load_dotenv
 from rich.console import Console
+from rich.columns import Columns
 from datetime import datetime
 from glob import glob
 from botocore.exceptions import ClientError
@@ -1177,6 +1178,9 @@ for hit in tqdm.tqdm(hits):
     if not hit_completed:
         units.append(hit['unit_id'])
 console.print(f"There are [cyan on white]{len(units)}/{len(hits)}[/cyan on white] units not yet evaluated")
+if units:
+    sorted_units = sorted(units, key=lambda u: int(re.search(r'\d+', u).group()))
+    console.print(Columns(sorted_units, equal=True, expand=True))
 
 if 'mturk' in platforms:
 
