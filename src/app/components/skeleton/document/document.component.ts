@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild, ElementRef} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
@@ -13,7 +13,8 @@ import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";
 import {Worker} from "../../../models/worker/worker";
-import { CountdownDialogComponent } from './countdown-dialog/countdown-dialog.component';
+import {CountdownDialogComponent} from './countdown-dialog/countdown-dialog.component';
+import {ElementPointwiseComponent} from "./elements/element-pointwise/element-pointwise.component";
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
@@ -90,6 +91,8 @@ export class DocumentComponent implements OnInit {
     annotationOptions: UntypedFormGroup;
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
 
+    @ViewChildren(ElementPointwiseComponent) pointwiseComponents!: QueryList<ElementPointwiseComponent>;
+
     /* Reference to the dimensions initialized for the current document. Used to handle countdown events. */
     @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
     /* Reference to the countdown element itself for the current document */
@@ -112,7 +115,8 @@ export class DocumentComponent implements OnInit {
         snackBar: MatSnackBar,
         dialog: MatDialog,
         formBuilder: UntypedFormBuilder,
-        dynamoDBService: DynamoDBService
+        dynamoDBService: DynamoDBService,
+        private elementRef: ElementRef
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
@@ -152,21 +156,22 @@ export class DocumentComponent implements OnInit {
     ngAfterViewInit() {
         /* We start the countdown at the current position if it's a document */
         const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
-        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && this.task.countdownsStarted[this.documentIndex])
+        if (currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && this.task.countdownsStarted[this.documentIndex])
             this.countdown.begin();
 
-        if(currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]){
+        if (currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]) {
             this.openCountdownDialog();
         }
 
         this.stepper.selectionChange.subscribe((event) => {
             const element = this.task.getElementIndex(event.selectedIndex);
-            if(element["elementType"] === "S" && this.documentIndex === element["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]){
+            if (element["elementType"] === "S" && this.documentIndex === element["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]) {
                 this.openCountdownDialog();
             }
         });
 
-        this.countdownProgressBar.value = (this.task.documentsCountdownTime[this.documentIndex] /this.task.documentsStartCountdownTime[this.documentIndex]) * 100
+        if (this.task.settings.countdown_modality)
+            this.countdownProgressBar.value = (this.task.documentsCountdownTime[this.documentIndex] / this.task.documentsStartCountdownTime[this.documentIndex]) * 100
 
     }
 
@@ -247,7 +252,7 @@ export class DocumentComponent implements OnInit {
 
     /* Checks if every post-assessment form is valid and not disabled. Note: This function is called only when post-assessment is enabled. */
     public checkAdditionalAssessmentFormsValidity() {
-        if(this.assessmentFormsAdditional) {
+        if (this.assessmentFormsAdditional) {
             const arrayLength = this.assessmentFormsAdditional.length;
 
             /* If post-assessment is not enabled, return true to avoid blocking the "Next" button */
@@ -288,31 +293,30 @@ export class DocumentComponent implements OnInit {
             this.task.countdownsExpired[this.documentIndex] = true;
             this.task.countdownExpiredTimestamp[this.documentIndex] = Date.now() / 1000;
             this.sendCountdownPayload(0);
-            if(this.task.settings.modality == 'pointwise'){
-                if(this.task.settings.annotator)
+            if (this.task.settings.modality == 'pointwise') {
+                if (this.task.settings.annotator)
                     this.annotatorOptions?.forEach(ann => ann.changeDetector.detectChanges());
                 else
                     this.dimensionsPointwise?.forEach(dim => dim.changeDetector.detectChanges());
             }
-                
+
         }
 
-        if(event.action === 'notify'){
-            if(this.countdownProgressBar)
+        if (event.action === 'notify') {
+            if (this.countdownProgressBar)
                 this.countdownProgressBar.value = (event.left / (this.task.documentsStartCountdownTime[this.documentIndex] * 1000)) * 100
             this.countdownInterval++;
-            if(this.countdownInterval === 3){
+            if (this.countdownInterval === 3) {
                 this.sendCountdownPayload(event.left);
                 this.countdownInterval = 0;
             }
         }
-        
+
     }
 
- 
-   /* Called by handleCountdown to log an entry in the database every 3 seconds. This helps track the worker's time spent on the current document while also saving potential answers and search engine results.
-    The mechanism prevents workers from having unlimited time. */
-    private async sendCountdownPayload(timeLeft){
+    /* Called by handleCountdown to log an entry in the database every 3 seconds. This helps track the worker's time spent on the current document while also saving potential answers and search engine results.
+     The mechanism prevents workers from having unlimited time. */
+    private async sendCountdownPayload(timeLeft) {
         const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
         let additionalAnswers = {}
         for (let assessmentFormAdditional of this.documentsFormsAdditional[currentElement['elementIndex']]) {
@@ -326,7 +330,7 @@ export class DocumentComponent implements OnInit {
     }
 
     /* Dialog that shows up when there's a countdown and the worker accesses the document for the first time */
-    private openCountdownDialog(){
+    private openCountdownDialog() {
         const dialogRef = this.dialog.open(CountdownDialogComponent, {
             disableClose: true,
             backdropClass: 'countdown-dialog-backdrop',
@@ -334,76 +338,92 @@ export class DocumentComponent implements OnInit {
             minHeight: '85%',
             data: {timeAllowed: this.task.documentsStartCountdownTime[this.documentIndex]}
         });
-       dialogRef.afterClosed().subscribe((response) => {
-            if(response === 'confirmed'){
+        dialogRef.afterClosed().subscribe((response) => {
+            if (response === 'confirmed') {
                 this.countdown.begin();
                 this.task.countdownsStarted[this.documentIndex] = true;
             }
-       });
+        });
     }
 
     /* #################### DOCUMENT COMPLETION #################### */
 
     public handleAssessmentCompletion(action: string) {
-        let documentCheckGold = this.document.params["check_gold"]
-        let okMessage = documentCheckGold && typeof documentCheckGold["message"] === 'string'
-        let okJump = documentCheckGold && typeof documentCheckGold["jump"] === 'string'
-        if ((action == "Next" || action == "Finish") && (okMessage || okJump)) {
-            let documentsForm = this.documentsForm.slice()
-            documentsForm.push(this.assessmentForm)
 
-            let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, documentsForm, this.task.notes);
-            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
+        const documentCheckGold = this.document.params["check_gold"];
+        const okMessage = documentCheckGold && typeof documentCheckGold["message"] === 'string';
+        const okJump = documentCheckGold && typeof documentCheckGold["jump"] === 'string';
+
+        const videos = this.elementRef.nativeElement.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
+        videos.forEach(video => { video.pause();});
+
+        if ((action === "Next" || action === "Finish") && (okMessage || okJump)) {
+            const documentsForm = this.documentsForm.slice();
+            documentsForm.push(this.assessmentForm);
+
+            const goldConfiguration = this.task.generateGoldConfiguration(
+                this.task.goldDocuments,
+                this.task.goldDimensions,
+                documentsForm,
+                this.task.notes
+            );
+
+            const goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
             if (goldChecks.every(Boolean)) {
                 for (let i = 0; i <= this.documentIndex; i++) {
-                    this.task.showMessageFailGoldCheck[i] = null
+                    this.task.showMessageFailGoldCheck[i] = null;
                 }
                 this.stepper.next();
-                this.sectionService.stepIndex = this.stepper.selectedIndex
+                this.sectionService.stepIndex = this.stepper.selectedIndex;
             } else {
                 if (okJump) {
-                    let jumpIndex = this.task.questionnaireAmountStart
+                    let jumpIndex = this.task.questionnaireAmountStart;
                     for (let i = 0; i < this.task.documents.length; i++) {
                         const doc = this.task.documents[i];
-                        if (doc["id"] == documentCheckGold["jump"]) {
-                            jumpIndex += doc["index"]
-                            if (okMessage)
-                                this.task.showMessageFailGoldCheck[doc["index"]] = documentCheckGold["message"]
-                            break
+                        if (doc["id"] === documentCheckGold["jump"]) {
+                            jumpIndex += doc["index"];
+                            if (okMessage) {
+                                this.task.showMessageFailGoldCheck[doc["index"]] = documentCheckGold["message"];
+                            }
+                            break;
                         }
                     }
-                    this.stepper.selectedIndex = jumpIndex
-                    this.sectionService.stepIndex = jumpIndex
-                } else {
-                    if (okMessage)
-                        this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
+                    this.stepper.selectedIndex = jumpIndex;
+                    this.sectionService.stepIndex = jumpIndex;
+                } else if (okMessage) {
+                    this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
                 }
-                action = "Jump"
+                action = "Jump";
             }
-            if(this.configService.environment.taskTitle != 'none') {
-                this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
-            } else {
-                this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
-            }
+
         } else {
-            if (action == "Back") {
+            if (action === "Back") {
                 this.stepper.previous();
-                this.sectionService.stepIndex = this.stepper.selectedIndex
+                this.sectionService.stepIndex = this.stepper.selectedIndex;
             } else {
                 this.stepper.next();
-                this.sectionService.stepIndex = this.stepper.selectedIndex
-            }
-            if(this.configService.environment.taskTitle != 'none') {
-                this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
-            } else {
-                this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
+                this.sectionService.stepIndex = this.stepper.selectedIndex;
             }
         }
+
+        // 2. Play the new video's component after DOM updates
+        const newIndex = this.sectionService.stepIndex;
+
+        // 3. Update the document title
+        const titleBase = this.configService.environment.taskTitle !== 'none'
+            ? this.configService.environment.taskTitle
+            : this.configService.environment.taskName;
+
+        const elementIndex = this.task.getElementIndex(newIndex)['elementType'];
+        this.titleService.setTitle(`${titleBase}: ${elementIndex}${newIndex}`);
+
+        // 4. Emit the form result
         this.formEmitter.emit({
-            "form": this.assessmentForm,
-            "action": action
-        })
+            form: this.assessmentForm,
+            action
+        });
     }
+
 
 }

@@ -335,7 +335,7 @@ export class Task {
                 this.overtime[index] = this.mostRecentDataRecordsForDocuments[index].loadOvertime();
             } else {
                 if(this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0){
-                    const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index].fact_check_ground_truth_label);
+                    const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index][this.settings.countdown_attribute]);
                     if(element != undefined){
                         this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }

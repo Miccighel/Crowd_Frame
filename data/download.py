@@ -1,46 +1,60 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# Standard library imports
+import asyncio
+import csv
 import json
 import os
-import chardet
-import pycountry
+import re
 import shutil
 import sys
-import warnings
-import time as time_mod
-import asyncio
-import aiohttp
-import xml.etree.ElementTree as Xml
-import tqdm
-from pytz import timezone
-import ipinfo
-import csv
-import numpy as np
-import requests
-import boto3
-import re
-import pandas as pd
-import pprint
 import uuid
-import toloka.client as toloka
-from distutils.util import strtobool
-from pathlib import Path
-from dotenv import load_dotenv
-from rich.console import Console
+import warnings
+import xml.etree.ElementTree as Xml
 from datetime import datetime
+from distutils.util import strtobool
 from glob import glob
+from pathlib import Path
+from pprint import pprint
+from time import time as time_mod
+
+# Third-party imports
+import aiohttp
+import boto3
+import chardet
+import ipinfo
+import numpy as np
+import pandas as pd
+import pycountry
+import requests
+import toloka.client as toloka
+import tqdm
+from aiohttp import (
+    ClientConnectorError,
+    ClientResponseError,
+    ClientOSError,
+    ClientPayloadError,
+    ServerDisconnectedError,
+    TooManyRedirects,
+)
 from botocore.exceptions import ClientError
-from aiohttp import ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError
-from shared import handle_aws_error
-from shared import rename_dict_key
-from shared import move_dict_key
-from shared import flatten
-from shared import read_json
-from shared import merge_dicts
-from shared import find_date_string
-from shared import camel_to_snake
-from shared import sanitize_string
+from dotenv import load_dotenv
+from pytz import timezone
+from rich.console import Console
+
+# Local/shared imports
+from shared import (
+    camel_to_snake,
+    find_date_string,
+    flatten,
+    handle_aws_error,
+    merge_dicts,
+    move_dict_key,
+    read_json,
+    rename_dict_key,
+    sanitize_string,
+)
 
 pd.set_option('display.max_columns', None)
 

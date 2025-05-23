@@ -1,100 +1,90 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
+# --- Compiled output ---
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
 
-# compiled output
-/dist
-/tmp
-/out-tsc
-# Only exists if Bazel was run
-/bazel-out
+# --- Dependencies ---
+/node_modules/
+/typings/
 
-# dependencies
-/node_modules
-
-# profiling files
-chrome-profiler-events*.json
-speed-measure-plugin*.json
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
-
-# misc
-/.angular/cache
-/.sass-cache
-/connect.lock
-/coverage
+# --- Build artifacts ---
+/coverage/
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
 testem.log
-/typings
 
-# System Files
+# --- Angular / Sass / Cache ---
+/.angular/cache/
+/.sass-cache/
+/.connect.lock
+.cache/
+
+# --- Python bytecode ---
+__pycache__/
+/**/__pycache__/
+*.pyc
+
+# --- System files ---
 .DS_Store
 Thumbs.db
 
-# Environments
+# --- IDEs and editors ---
+/.idea/
+/.project
+/.classpath
+/.settings/
+/.c9/
+*.launch
+*.sublime-workspace
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# --- Yarn (Berry/modern) ---
+.yarn/*
+!.yarn/cache/
+!.yarn/patches/
+!.yarn/plugins/
+!.yarn/releases/
+!.yarn/sdks/
+!.yarn/versions/
+
+# --- Environment and config ---
+data/.env
 src/environments/*
 data/build/environments/*
 
-# Visual Studio Code folder
-.vscode/
-
-# Yarn
-.yarn/*
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Environment variables file
-data/.env
-
-# File generated when configuring AWS
+# --- AWS generated files ---
 data/aws/generated/*
 data/aws/backup/*
 
-.vscode/settings.json
-
-# Outputs of build phase
+# --- Build phase outputs ---
 data/tasks/*
 data/build/deploy/*
 data/build/mturk/*
 data/build/task/*
 data/build/skeleton/document.ts
 data/build/config/admin.json
-
-# Random things
-local/log.md
-local/*
-
 data/build/skeleton/goldChecker.ts
-
-data/result/*
-
-.cache/*
-
-
-data/Logs-Partial.zip
 data/build/toloka/interface.html
 data/build/toloka/tokens.tsv
 data/build/toloka/output_specification.json
 data/build/toloka/input_specification.json
-data/__pycache__/
 
+# --- Results and logs ---
+data/result/*
+local/log.md
+local/*
+
+# --- Misc ---
+chrome-profiler-events*.json
+speed-measure-plugin*.json
+.history/*
+data/Logs-Partial.zip
 data/videos/

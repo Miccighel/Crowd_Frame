@@ -61,6 +61,8 @@
 			<ng-container *ngIf="(this.task.settings.modality=='pointwise')">
 				<ng-container *ngIf="!(this.task.settings.annotator)">
 					<app-element-pointwise
+							#pointwiseComponent
+							[worker]="this.worker"
 							[documentIndex]="documentIndex"
 							[postAssessment]="false"
 					></app-element-pointwise>
@@ -90,6 +92,8 @@
 				<ng-container *ngIf="(this.task.settings.modality=='pointwise')">
 					<ng-container *ngFor="let attributePost of this.task.settings.attributesPost; let k=index">
 						<app-element-pointwise
+								#pointwiseComponent
+								[worker]="this.worker"
 								[documentIndex]="documentIndex"
 								[postAssessment]="true"
 								[postAssessmentIndex]="k+1"

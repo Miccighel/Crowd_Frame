@@ -1,75 +1,191 @@
-<ng-container *ngIf="this.task.countdownsStarted[documentIndex] && (!this.task.countdownsExpired[documentIndex] || this.task.settings.countdown_behavior != 'hide_attributes')">
-	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false && this.hasNonVideos)">
-		<ng-container *ngFor="let attribute of this.task.settings.attributesMain | filter:isAttributeVideo:false; let k=index">
-			<ng-container *ngIf="!attribute.is_video && this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
+<!-- CASE: Countdown expired AND behavior is to hide attributes -->
+<ng-container *ngIf="task.countdownsExpired?.[documentIndex] && task.settings.countdown_behavior === 'hide_attributes'">
+	<mat-card appearance="outlined" class="hidden-statement-card">
+		<mat-card-content class="hidden-statement-content">
+			<mat-icon class="hidden-statement-icon">visibility_off</mat-icon>
+			<span class="hidden-statement-message" i18n>The content has been hidden as the time expired.</span>
+		</mat-card-content>
+	</mat-card>
+</ng-container>
+
+<!-- CASE: Show content if NOT hidden -->
+<ng-container #container *ngIf="!(task.countdownsExpired?.[documentIndex] && task.settings.countdown_behavior === 'hide_attributes')">
+
+	<!-- COUNTDOWN DISABLED -->
+	<ng-container *ngIf="!(task.settings.countdownTime > 0)">
+		<!-- NON-VIDEO ATTRIBUTES -->
+		<div class="statement"
+			 *ngIf="task.settings.modality === 'pointwise'
+                && !postAssessment
+                && hasRenderableNonVideoAttributes(documentIndex)">
+			<ng-container *ngFor="let attribute of task.settings.attributesMain | filter:isAttributeVideo:false">
+				<ng-container *ngIf="task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
 					<div class="attribute">
 						<p class="attribute-label">
 							<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
 							<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
-							<ng-container *ngIf="attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
+							<ng-container *ngIf="attribute.isImage(task.documents[documentIndex][attribute.name])">
 								<br>
-								<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
+								<img [src]="task.documents[documentIndex][attribute.name]" alt="attribute.name">
 							</ng-container>
-							<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-								<span *ngIf="!attribute.is_video">
-									{{ this.task.documents[this.documentIndex][attribute.name] }}
-								</span>
-							</span>
+							<span *ngIf="!attribute.isImage(task.documents[documentIndex][attribute.name])">
+                {{ task.documents[documentIndex][attribute.name] }}
+              </span>
 						</p>
 					</div>
-				
+				</ng-container>
+			</ng-container>
+		</div>
+
+		<!-- VIDEO ATTRIBUTES -->
+		<ng-container *ngFor="let attribute of task.settings.attributesMain | filter:isAttributeVideo">
+			<ng-container *ngIf="attribute.is_video && attribute.show">
+				<div *ngIf="task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)" class="attribute">
+					<p class="attribute-label">
+						<ng-container *ngIf="task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
+							<div class="video-container">
+								<iframe width="560" height="315"
+										[src]="task.documents[documentIndex][attribute.name] | safe"
+										title="YouTube video player"
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+										referrerpolicy="strict-origin-when-cross-origin"
+										allowfullscreen></iframe>
+							</div>
+						</ng-container>
+
+						<ng-container *ngIf="!task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
+							<div class="video-container"
+								 [ngClass]="{ 'portrait': isPortraitVideo[documentIndex + '-' + attribute.name] }">
+								<div class="video-wrapper">
+									<video
+                                        #videoElement
+										muted
+										playsinline
+										loop
+										preload="metadata"
+										disablePictureInPicture
+										controls
+										controlsList="nodownload"
+										oncontextmenu="return false"
+										aria-label="Embedded video content">
+										<source [src]="task.documents[documentIndex][attribute.name]" type="video/mp4">
+										<p>Your browser does not support the video tag.
+											<a [href]="task.documents[documentIndex][attribute.name]" download>Download the video</a>.
+										</p>
+									</video>
+									<div class="video-overlay-label" i18n>
+										Click to play or pause the video
+									</div>
+								</div>
+							</div>
+
+						</ng-container>
+					</p>
+				</div>
 			</ng-container>
 		</ng-container>
-	</div>
-	
+	</ng-container>
 
-	<ng-container *ngFor="let attribute of this.task.settings.attributesMain | filter:isAttributeVideo; let k=index">
-		<ng-container *ngIf="attribute.is_video && attribute.show">
-			<div *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
-				<p class="attribute-label">
-					<!-- Video player YouTube -->
-					<ng-container *ngIf="attribute.is_video && this.task.documents[this.documentIndex][attribute.name].includes('youtube.com')">
-						<iframe width="560" height="315" [src]="this.task.documents[this.documentIndex][attribute.name] | safe" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+	<!-- COUNTDOWN ENABLED -->
+	<ng-container *ngIf="task.settings.countdownTime > 0">
+		<ng-container *ngIf="task.countdownsStarted?.[documentIndex] === false">
+			<div class="skeleton skeleton-card"></div>
+		</ng-container>
+
+		<ng-container *ngIf="task.countdownsStarted?.[documentIndex] === true">
+			<!-- NON-VIDEO ATTRIBUTES -->
+			<div class="statement"
+				 *ngIf="task.settings.modality === 'pointwise'
+                  && !postAssessment
+                  && hasRenderableNonVideoAttributes(documentIndex)">
+				<ng-container *ngFor="let attribute of task.settings.attributesMain | filter:isAttributeVideo:false">
+					<ng-container *ngIf="task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
+						<div class="attribute">
+							<p class="attribute-label">
+								<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
+								<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
+								<ng-container *ngIf="attribute.isImage(task.documents[documentIndex][attribute.name])">
+									<br>
+									<img [src]="task.documents[documentIndex][attribute.name]" alt="attribute.name">
+								</ng-container>
+								<span *ngIf="!attribute.isImage(task.documents[documentIndex][attribute.name])">
+								  {{ task.documents[documentIndex][attribute.name] }}
+								</span>
+							</p>
+						</div>
 					</ng-container>
-					<!-- Video player -->
-					<ng-container *ngIf="attribute.is_video && !this.task.documents[this.documentIndex][attribute.name].includes('youtube.com')">
-						<video width="560" height="315" controls controlsList="nodownload" oncontextmenu="return false;">
-							<source [src]="this.task.documents[this.documentIndex][attribute.name]" type="video/mp4">
-							Your browser does not support the video tag.
-						</video>
-					</ng-container>
-				</p>
+				</ng-container>
 			</div>
+
+			<!-- VIDEO ATTRIBUTES -->
+			<ng-container *ngFor="let attribute of task.settings.attributesMain | filter:isAttributeVideo">
+				<ng-container *ngIf="attribute.is_video && attribute.show">
+					<div *ngIf="task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)" class="attribute">
+						<p class="attribute-label">
+							<ng-container *ngIf="task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
+								<div class="video-container">
+									<iframe width="560" height="315"
+											[src]="task.documents[documentIndex][attribute.name] | safe"
+											title="YouTube video player"
+											allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+											referrerpolicy="strict-origin-when-cross-origin"
+											allowfullscreen></iframe>
+								</div>
+							</ng-container>
+
+							<ng-container *ngIf="!task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
+								<div class="video-container"
+									 [ngClass]="{ 'portrait': isPortraitVideo[documentIndex + '-' + attribute.name] }">
+									<div class="video-wrapper">
+										<video
+                                            #videoElement
+											muted
+											playsinline
+											loop
+											preload="metadata"
+											disablePictureInPicture
+											controls
+											controlsList="nodownload"
+											oncontextmenu="return false"
+											aria-label="Embedded video content">
+											<source [src]="task.documents[documentIndex][attribute.name]" type="video/mp4">
+											<p>Your browser does not support the video tag.
+												<a [href]="task.documents[documentIndex][attribute.name]" download>Download the video</a>.
+											</p>
+										</video>
+										<div class="video-overlay-label" i18n>
+											Click to play or pause the video
+										</div>
+									</div>
+								</div>
+
+							</ng-container>
+						</p>
+					</div>
+				</ng-container>
+			</ng-container>
 		</ng-container>
 	</ng-container>
 </ng-container>
 
-<ng-container *ngIf="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes'">
-    <mat-card appearance="outlined" class="hidden-statement-card">
-        <mat-card-content class="hidden-statement-content">
-            <mat-icon class="hidden-statement-icon">visibility_off</mat-icon>
-            <span class="hidden-statement-message" i18n>The content has been hidden as the time expired.</span>
-        </mat-card-content>
-    </mat-card> 
-</ng-container>
-
-<ng-container *ngIf="!this.task.countdownsStarted[documentIndex]">
-    <div class="skeleton skeleton-card"></div>
-</ng-container>
-
-<ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormInteraction">
+<!-- POST-ASSESSMENT CONTENT -->
+<ng-container *ngIf="postAssessment && initialAssessmentFormInteraction">
 	<button mat-stroked-button color="accent" class="button-continue" (click)="unlockNextRepetition(true)">
 		<span i18n>Continue Your Assessment</span>
 	</button>
-	<ng-container *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true && this.followingAssessmentAllowed)" class="evaluation-instructions">
-		<h2>{{ this.attributeForPostAssessment.text }}</h2>
+
+	<ng-container *ngIf="task.settings.modality === 'pointwise' && followingAssessmentAllowed" class="evaluation-instructions">
+		<h2>{{ attributeForPostAssessment.text }}</h2>
 	</ng-container>
-	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true && this.followingAssessmentAllowed)">
-		<div *ngIf="this.attributeForPostAssessment" class="attribute" style="white-space: pre-line;">
+
+	<div class="statement"
+		 *ngIf="task.settings.modality === 'pointwise'
+              && followingAssessmentAllowed
+              && attributeForPostAssessment">
+		<div class="attribute" style="white-space: pre-line;">
 			<p class="attribute-label">
-				<span>{{ this.task.documents[this.documentIndex][this.attributeForPostAssessment.name] }}</span>
+				<span>{{ task.documents[documentIndex][attributeForPostAssessment.name] }}</span>
 			</p>
 		</div>
 	</div>
-
 </ng-container>
