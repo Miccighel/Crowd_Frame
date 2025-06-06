@@ -1,0 +1,31 @@
+<div class="video-container" [class.portrait]="portrait">
+	<div class="video-wrapper" [attr.data-video-key]="docIndex + '-' + attrName">
+
+		<!-- Video rendered immediately -->
+		<video
+				*ngIf="loaded"
+                #videoElement
+				[muted]="true"
+				playsinline
+				loop
+				preload="metadata"
+				disablePictureInPicture
+				controls
+				controlsList="nodownload"
+				aria-label="Embedded video content"
+				(loadedmetadata)="handleMetadata(videoElement)"
+				(contextmenu)="$event.preventDefault()"
+		>
+			<source [src]="src" type="video/mp4"/>
+			<p>
+				Your browser does not support the video tag.
+				<a [href]="src" download>Download the video</a>.
+			</p>
+		</video>
+
+		<!-- Overlay label -->
+		<div class="video-overlay-label" i18n>
+			Click to play or pause the video
+		</div>
+	</div>
+</div>

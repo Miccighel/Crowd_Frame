@@ -1,31 +1,30 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "allowSyntheticDefaultImports": true,
-      "resolveJsonModule": true,
-      "baseUrl": "./",
-      "outDir": "./dist/out-tsc",
-      "sourceMap": true,
-      "declaration": false,
-      "downlevelIteration": true,
-      "experimentalDecorators": true,
-      "module": "es2022",
-      "moduleResolution": "node",
-      "importHelpers": true,
-      "target": "ES2022",
-      "typeRoots": [
-        "node_modules/@types"
-      ],
-      "lib": [
-        "es2022",
-        "dom"
-      ],
-      "useDefineForClassFields": false
-    },
-    "angularCompilerOptions": {
-        "fullTemplateTypeCheck": true,
-        "strictInjectionParameters": false,
-        "strictInputAccessModifiers": false,
-        "strictTemplates": false
-    }
+	"compilerOptions": {
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"baseUrl": "./",
+		"outDir": "./dist/out-tsc",
+		"sourceMap": true,
+		"declaration": false,
+		"downlevelIteration": true,
+		"experimentalDecorators": true,
+		"module": "es2022",
+		"moduleResolution": "node",
+		"importHelpers": true,
+		"target": "ES2022",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"lib": [
+			"es2022",
+			"dom"
+		],
+		"useDefineForClassFields": false
+	},
+	"angularCompilerOptions": {
+		"fullTemplateTypeCheck": true,
+		"strictInjectionParameters": false,
+		"strictInputAccessModifiers": false,
+		"strictTemplates": false
+	}
 }

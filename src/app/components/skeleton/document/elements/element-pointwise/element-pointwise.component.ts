@@ -14,10 +14,14 @@ import {SectionService} from '../../../../../services/section.service';
 import {UtilsService} from '../../../../../services/utils.service';
 import {DeviceDetectorService} from 'ngx-device-detector';
 
+/* Compoonents */
+import {DocumentVideoComponent} from './document-video/document-video.component';
+
 /* Models */
 import {Task} from '../../../../../models/skeleton/task';
 import {AttributeMain, AttributePost} from '../../../../../models/skeleton/taskSettings';
 import {Worker} from '../../../../../models/worker/worker';
+
 
 @Component({
     selector: 'app-element-pointwise',
@@ -46,7 +50,7 @@ export class ElementPointwiseComponent implements OnInit {
     followingAssessmentAllowed: boolean;
     hasNonVideos: boolean;
     isPortraitVideo: { [key: string]: boolean } = {};
-    @ViewChild('container', { static: true }) container!: ElementRef;
+    @ViewChild('container', {static: true}) container!: ElementRef;
 
     /* #################### EMITTERS #################### */
     @Output() followingAssessmentAllowedEmitter: EventEmitter<Object>;
@@ -108,18 +112,25 @@ export class ElementPointwiseComponent implements OnInit {
             );
     }
 
-    public onVideoMetadataLoaded(video: HTMLVideoElement, docIndex: number, attrName: string): void {
-        const key = `${docIndex}-${attrName}`;
-        this.isPortraitVideo[key] = video.videoHeight > video.videoWidth;
+    public onVideoMetadataLoadedFromChild(event: {
+        docIndex: number;
+        attrName: string;
+        isPortrait: boolean;
+        src: string;
+    }): void {
+        const key = `${event.docIndex}-${event.attrName}`;
+        this.isPortraitVideo[key] = event.isPortrait;
 
-        if (this.isPortraitVideo[key]) {
-            const wrapper = video.parentElement as HTMLElement;
-            const source = video.querySelector('source') as HTMLSourceElement;
-            if (wrapper && source) {
-                const bgUrl = source.src;
-                wrapper.style.setProperty('--bg-url', `url('${bgUrl}')`);
+        if (event.isPortrait) {
+            const wrapper = this.elementRef.nativeElement.querySelector(
+                `[data-video-key="${key}"]`
+            )?.closest('.video-wrapper') as HTMLElement;
+
+            if (wrapper) {
+                wrapper.style.setProperty('--bg-url', `url('${event.src}')`);
             }
         }
     }
+
 
 }

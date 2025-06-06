@@ -4,6 +4,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientModule} from '@angular/common/http';
 import {ReactiveFormsModule, FormsModule} from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /* Third-party module imports */
 import {NgxUiLoaderModule} from 'ngx-ui-loader';
@@ -57,6 +58,8 @@ import { CountdownDialogComponent } from './components/skeleton/document/countdo
 /* Services imports */
 import {SectionService} from "./services/section.service";
 import {ActionLogger} from "./services/userActionLogger.service";
+
+import { DocumentVideoComponent } from './components/skeleton/document/elements/element-pointwise/document-video/document-video.component';
 
 /* Directives imports */
 import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
@@ -128,7 +131,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatUrlInputComponent,
         SafePipe,
         FilterPipe,
-        CountdownDialogComponent
+        CountdownDialogComponent,
+        DocumentVideoComponent
     ],
     imports: [
         BrowserModule,
@@ -143,6 +147,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         NgxFileHelpersModule,
         ColorPickerModule,
         NgxUiLoaderModule,
+        MatProgressSpinnerModule,
         AppRoutingModule  // Always keep AppRoutingModule as the last import
     ],
     providers: [
