@@ -4252,7 +4252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bootstrap@npm:^5.3.2":
+"bootstrap@npm:^5.3.3":
   version: 5.3.6
   resolution: "bootstrap@npm:5.3.6"
   peerDependencies:
@@ -4788,20 +4788,20 @@ __metadata:
     "@popperjs/core": "npm:^2.11.8"
     "@types/node": "npm:^20.10.5"
     aws-sdk: "npm:^2.1521.0"
-    bootstrap: "npm:^5.3.2"
+    bootstrap: "npm:^5.3.3"
     crypto-es: "npm:^2.1.0"
     flat-angular: "npm:^1.6.0"
-    material-icons: "npm:^1.13.12"
+    material-icons: "npm:^1.13.14"
     ngx-color-picker: "npm:^15.0.0"
-    ngx-cookie-service: "npm:^16.1.0"
+    ngx-cookie-service: "npm:^17.0.0"
     ngx-countdown: "npm:^16.0.0"
     ngx-device-detector: "npm:^6.0.2"
     ngx-file-helpers: "npm:^10.0.0"
     ngx-ui-loader: "npm:^13.0.0"
-    rxjs: "npm:^6.5.3 || ^7.4.0"
+    rxjs: "npm:^7.8.1"
     titleize: "npm:^4.0.0"
     tree-model: "npm:^1.0.7"
-    tslib: "npm:^2.6.2"
+    tslib: "npm:^2.8.1"
     typescript: "npm:5.4.5"
     util: "npm:^0.12.5"
     zone.js: "npm:~0.14.10"
@@ -6950,7 +6950,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"material-icons@npm:^1.13.12":
+"material-icons@npm:^1.13.14":
   version: 1.13.14
   resolution: "material-icons@npm:1.13.14"
   checksum: 10/87caa645e17aebe8620c0b694d89cba171fb0f0b3c11d8e918c2c249194c117c3bc61f09346ce62d98c0dd393b636b61060f1fef71036f83830c473002c352b1
@@ -7339,15 +7339,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-cookie-service@npm:^16.1.0":
-  version: 16.1.0
-  resolution: "ngx-cookie-service@npm:16.1.0"
+"ngx-cookie-service@npm:^17.0.0":
+  version: 17.1.0
+  resolution: "ngx-cookie-service@npm:17.1.0"
   dependencies:
-    tslib: "npm:^2.0.0"
+    tslib: "npm:^2.6.2"
   peerDependencies:
-    "@angular/common": ^16.0.0
-    "@angular/core": ^16.0.0
-  checksum: 10/a098da8bc34394722b989ed45068b52567ec41261038bd2c0765bad24cee24c10af8a55bfc009899f5d5f5fb93b2c58bab9e7c5aee065c60fa9588bd539002f0
+    "@angular/common": ^17.0.0
+    "@angular/core": ^17.0.0
+  checksum: 10/dcce14db6884cbed6c75115ce3a264d4c9a3688d0a927789e6441613a53b06693088ac17cf97e6a5cd55241d5a8d22989e407da14569b0ace867fe68d2d1b99d
   languageName: node
   linkType: hard
 
@@ -8622,7 +8622,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^6.5.3 || ^7.4.0, rxjs@npm:^7.8.1":
+"rxjs@npm:^7.8.1":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -9458,7 +9458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.5.3, tslib@npm:^2.6.2":
+"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.5.3, tslib@npm:^2.6.2, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
