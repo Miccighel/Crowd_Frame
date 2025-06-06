@@ -143,28 +143,28 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "Crowd_Frame:build",
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "buildTarget": "Crowd_Frame:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "Crowd_Frame:build:production"
+              "buildTarget": "Crowd_Frame:build:production"
             },
             "production-it": {
-              "browserTarget": "Crowd_Frame:build:production-it"
+              "buildTarget": "Crowd_Frame:build:production-it"
             },
             "development": {
-              "browserTarget": "Crowd_Frame:build:development"
+              "buildTarget": "Crowd_Frame:build:development"
             },
             "development-it": {
-              "browserTarget": "Crowd_Frame:build:development-it"
+              "buildTarget": "Crowd_Frame:build:development-it"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Crowd_Frame:build"
+            "buildTarget": "Crowd_Frame:build"
           }
         }
       }
