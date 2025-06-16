@@ -4792,11 +4792,11 @@ __metadata:
     crypto-es: "npm:^2.1.0"
     flat-angular: "npm:^1.6.0"
     material-icons: "npm:^1.13.14"
-    ngx-color-picker: "npm:^15.0.0"
+    ngx-color-picker: "npm:16"
     ngx-cookie-service: "npm:^17.0.0"
-    ngx-countdown: "npm:^16.0.0"
-    ngx-device-detector: "npm:^8"
-    ngx-file-helpers: "npm:^12"
+    ngx-countdown: "npm:17"
+    ngx-device-detector: "npm:9"
+    ngx-file-helpers: "npm:13"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.1"
     titleize: "npm:^4.0.0"
@@ -7326,16 +7326,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "ngx-color-picker@npm:15.0.0"
+"ngx-color-picker@npm:16":
+  version: 16.0.0
+  resolution: "ngx-color-picker@npm:16.0.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/common": ">=9.0.0"
     "@angular/core": ">=9.0.0"
     "@angular/forms": ">=9.0.0"
-  checksum: 10/a18208ba0a549c3c9e6bb92d4dab44bbf557101393bec19318dbc0899063ec4caa107ff31f8d580d92522654fbed12bcc2ddf06afc7da1ae3c95eee6f6b09fd4
+  checksum: 10/36441de4a08da5f4558c86952ebbd1a50872a7171c3ba9a9c238e3142438f079e3857f015b31b633497254983538b3d35dea114df1a7540c688381b00d9b27ab
   languageName: node
   linkType: hard
 
@@ -7351,36 +7351,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^16.0.0":
-  version: 16.0.0
-  resolution: "ngx-countdown@npm:16.0.0"
+"ngx-countdown@npm:17":
+  version: 17.1.1
+  resolution: "ngx-countdown@npm:17.1.1"
   dependencies:
     tslib: "npm:^2.3.0"
-  checksum: 10/2987a3531f867ef3f4c22ec240f0d051bd46510aac29058d6f426269433888f5a1e576188033ea9656909c1e905bfa23615875fbce9ffb7d35013ce2577db682
+  checksum: 10/7c3c7ba144999f70490307fa451c33885d4d531f81eca78dcf8b9803ccc1c94681e1b731c8fa35e65cb88195bcaa1ec996a35379f6dcf0da75b229ece8d1de77
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^8":
-  version: 8.0.0
-  resolution: "ngx-device-detector@npm:8.0.0"
+"ngx-device-detector@npm:9":
+  version: 9.0.0
+  resolution: "ngx-device-detector@npm:9.0.0"
   dependencies:
     tslib: "npm:^2.0.0"
   peerDependencies:
-    "@angular/common": ^18.0.0
-    "@angular/core": ^18.0.0
-  checksum: 10/6255ec4455a34299795259a59969137b6327911b426b08c36264f239ae36f900e66fef6dd7030fa35833e2aab02b19c3985b35eebb721f04054a52358399e5a8
+    "@angular/common": ^19.0.0
+    "@angular/core": ^19.0.0
+  checksum: 10/e0af455227563f9afbf955dbe01a88efce95b99bea65f8d70378d5bf1f6dc920ca5b5fa97171199074ba9ec962cbb3188e4aafb762cb6243d7d65994440cff8d
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:^12":
-  version: 12.0.0
-  resolution: "ngx-file-helpers@npm:12.0.0"
+"ngx-file-helpers@npm:13":
+  version: 13.0.1
+  resolution: "ngx-file-helpers@npm:13.0.1"
   dependencies:
     tslib: "npm:^2.6.3"
   peerDependencies:
-    "@angular/common": ^18.0.0
-    "@angular/core": ^18.0.0
-  checksum: 10/7b648e640cf3e5003bc6931d6d82ff3a7d51ed44f6a7ff654a38c33044df3a84a4a7eb64be6aea81c2be197727f9714619539afdae468007f1ebb5306b75b8d6
+    "@angular/common": ^19.0.0
+    "@angular/core": ^19.0.0
+  checksum: 10/b9e287d0614e6a22f39c3a9d1026fe2d72285bba577907940badae1c99e3ff3df21c9024fe452cda3e13d2ebe8e4c467713f4b00f43e27f40d3d8756856da81d
   languageName: node
   linkType: hard
 
