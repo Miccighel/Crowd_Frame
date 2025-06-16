@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 import pycountry
 import requests
-import tqdm
+from tqdm import tqdm
 from aiohttp import (
     ClientConnectorError,
     ClientOSError,
@@ -597,7 +597,7 @@ worker_properties_unhandled = []
 with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesthetic") as status:
     status.start()
 
-    for worker_id in tqdm.tqdm(worker_identifiers):
+    for worker_id in tqdm(worker_identifiers):
 
         worker_snapshot = []
         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
@@ -1023,7 +1023,7 @@ if not os.path.exists(df_acl_path):
 
     workers_participations = {}
     paginator = dynamo_db.get_paginator('scan')
-    for table_acl in tqdm.tqdm(task_acl_tables):
+    for table_acl in tqdm(task_acl_tables):
         for page in paginator.paginate(TableName=table_acl, Select='ALL_ATTRIBUTES'):
             if len(page['Items']) > 0:
                 for item in page['Items']:
@@ -1086,7 +1086,7 @@ if not os.path.exists(df_acl_path):
         'source_log'
     ])
 
-    for worker_id in tqdm.tqdm(worker_identifiers):
+    for worker_id in tqdm(worker_identifiers):
 
         worker_snapshot_path = None
         worker_snapshots = []
@@ -1184,7 +1184,7 @@ step_index = step_index + 1
 
 hits = read_json(f"{task_config_folder}{batch_name}/{filename_hits_config}")
 units = []
-for hit in tqdm.tqdm(hits):
+for hit in tqdm(hits):
     hit_completed = False
     for index, acl_record in df_acl.iterrows():
         if hit['unit_id'] == acl_record['unit_id'] and acl_record['paid'] == True:
@@ -1450,7 +1450,7 @@ if 'toloka' in platforms:
                     task_suites = []
                     for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created'], limit=10000).items:
                         task_suites.append(task_suite)
-                    for task_suite in tqdm.tqdm(task_suites, desc=f"Processing task suites for pool {pool.id}:"):
+                    for task_suite in tqdm(task_suites, desc=f"Processing task suites for pool {pool.id}:"):
                         row['task_suite_id'] = task_suite.id
                         row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
                         row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
@@ -1622,15 +1622,26 @@ if 'prolific' in platforms:
         study_counter = 0
         submissions_counter = 0
 
-        for study_data in study_list:
+        seen_study_ids = set()
+        seen_submission_ids = set()
+        skipped_study_dupes = 0
+        skipped_submission_dupes = 0
 
+        for study_data in study_list:
             if task_name in study_data['internal_name']:
+
+                if study_data['id'] in seen_study_ids:
+                    skipped_study_dupes += 1
+                    continue
+                seen_study_ids.add(study_data['id'])
+
                 study_current = None
                 if batch_prefix is not None:
                     if batch_prefix in study_data['internal_name']:
                         study_current = study_data
                 else:
                     study_current = study_data
+
                 if study_current is not None:
 
                     console.print(f"Processing study [cyan]{study_current['internal_name']}")
@@ -1639,96 +1650,116 @@ if 'prolific' in platforms:
 
                     if int(study_current['number_of_submissions']) > 0:
 
-                        study_current_add = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                        study_current_add = requests.get(
+                            f"https://api.prolific.com/api/v1/studies/{study_current['id']}/",
+                            headers={'Authorization': f"Token {prolific_api_token}"}
+                        ).json()
                         del study_current_add['eligibility_requirements']
                         del study_current_add['description']
 
                         submissions_list = []
-                        submissions_list_response = None
-                        while submissions_list_response is None or 'next' in submissions_list_response['_links']:
-                            if not submissions_list_response:
-                                submissions_list_response = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/submissions/",
-                                                                         headers={'Authorization': f"Token {prolific_api_token}"}).json()
-                                for submission_current in submissions_list_response['results']:
-                                    submissions_list.append(submission_current)
-                            else:
-                                submission_page_next = submissions_list_response['_links']['next']['href']
-                                if submission_page_next is None:
+                        page_count = 0
+                        max_pages = 100
+                        next_url = f"https://api.prolific.com/api/v1/studies/{study_current['id']}/submissions/"
+                        seen_urls = set()
+
+                        with tqdm(total=None, desc="Downloading submissions", unit=" page") as pbar:
+                            while next_url and page_count < max_pages:
+                                if next_url in seen_urls:
+                                    pbar.set_postfix_str("repeated next_url, stopping")
                                     break
-                                else:
-                                    submissions_list_response = requests.get(submission_page_next, headers={'Authorization': f"Token {prolific_api_token}"}).json()
-                                    for submission_current in submissions_list_response['results']:
-                                        submissions_list.append(submission_current)
+                                seen_urls.add(next_url)
 
-                        row = {
-                            "workspace_id": study_current_add['workspace'],
-                            "project_id": study_current_add['project'],
-                            "study_id": study_current['id'],
-                            "study_date_created": study_current['date_created'],
-                            "study_date_created_parsed": find_date_string(study_current['date_created']),
-                            "study_date_published": study_current_add['published_at'] if study_current_add['published_at'] else np.nan,
-                            "study_date_published_parsed": find_date_string(study_current_add['published_at']) if study_current_add['published_at'] else np.nan,
-                            "study_name": study_current['name'],
-                            "study_name_internal": study_current['internal_name'],
-                            "study_completion_code": study_current_add['completion_code'],
-                            "study_completion_option": study_current_add['completion_option'] if 'completion_option' in study_current_add else np.nan,
-                            "study_completion_option_id": study_current_add['prolific_id_option'],
-                            "study_status": study_current['status'],
-                            "study_type": study_current['study_type'],
-                            "study_share_id": study_current_add['share_id'],
-                            "study_participant_eligible_count": int(study_current_add['eligible_participant_count']),
-                            "study_participant_pool_total": int(study_current_add['total_participant_pool']),
-                            "study_number_of_submissions": int(study_current['number_of_submissions']),
-                            "study_places_taken": int(study_current['places_taken']),
-                            "study_places_total_available": int(study_current['total_available_places']),
-                            "study_places_total_cost": float(study_current['total_cost']),
-                            "study_fees_per_submission": float(study_current_add['fees_per_submission']),
-                            "study_fees_percentage": float(study_current_add['fees_percentage']),
-                            "study_fees_percentage_service_margin": float(study_current_add['service_margin_percentage']),
-                            "study_fees_percentage_vat": float(study_current_add['vat_percentage']),
-                            "study_fees_discount_from_coupon": float(study_current_add['discount_from_coupons']),
-                            "study_fees_stars_remaining": float(study_current_add['stars_remaining']),
-                            "study_receipt": float(study_current_add['receipt']) if study_current_add['receipt'] else np.nan,
-                            "study_currency_code": study_current_add['currency_code'],
-                            "study_reward": float(study_current['reward']),
-                            "study_reward_minimum_per_hour": float(study_current_add['minimum_reward_per_hour']),
-                            "study_reward_average_per_hour": float(study_current_add['average_reward_per_hour']),
-                            "study_reward_average_per_hour_without_adjustment": float(study_current_add['average_reward_per_hour_without_adjustment']),
-                            "study_reward_has_had_adjustment": study_current_add['has_had_adjustment'],
-                            "study_reward_level_below_original_estimate": study_current['reward_level']['below_original_estimate'],
-                            "study_reward_level_below_prolific_min": study_current['reward_level']['below_prolific_min'],
-                            "study_time_allowed_maximum": float(study_current_add['maximum_allowed_time']),
-                            "study_time_average_taken": float(study_current_add['average_time_taken']),
-                            "study_time_completion_estimated": float(study_current_add['estimated_completion_time']),
-                            "study_is_reallocated": study_current['is_reallocated'],
-                            "study_is_underpaying": study_current['is_underpaying'],
-                            "study_privacy_notice": study_current['privacy_notice'],
-                            "study_publish_at": study_current['publish_at'],
-                            "study_device_compatibility": ':::'.join(study_current_add['device_compatibility']),
-                            "study_peripheral_requirements": ':::'.join(study_current_add['peripheral_requirements']) if len(study_current_add['peripheral_requirements']) > 0 else np.nan,
-                            "study_url_external": study_current_add['external_study_url']
-                        }
+                                response = requests.get(next_url, headers={'Authorization': f"Token {prolific_api_token}"})
+                                if response.status_code != 200:
+                                    raise Exception(f"Request failed with status {response.status_code}")
 
-                        for submission_current in submissions_list:
+                                submissions_list_response = response.json()
+                                submissions_list.extend(submissions_list_response['results'])
+                                page_count += 1
+                                pbar.update(1)
+
+                                pbar.set_postfix({"page": page_count, "offset": next_url.split("offset=")[-1] if "offset=" in next_url else ""})
+                                next_url = submissions_list_response.get('_links', {}).get('next', {}).get('href')
+
+                        for submission_current in tqdm(submissions_list, desc="Processing submissions", unit=" record"):
+
+                            submission_id = submission_current.get('id', None)
+                            if submission_id is None or submission_id in seen_submission_ids:
+                                skipped_submission_dupes += 1
+                                continue
+                            seen_submission_ids.add(submission_id)
+
                             submissions_counter += 1
 
-                            row['worker_id'] = submission_current['participant_id']
-                            row['worker_ip'] = submission_current['ip']
-                            row['submission_id'] = submission_current['id']
-                            row['submission_status'] = submission_current['status']
-                            row['submission_return_requested'] = submission_current['return_requested'] if 'return_requested' in submission_current else np.nan
-                            row['submission_study_code'] = submission_current['study_code']
-                            row['submission_date_started'] = submission_current['started_at'] if 'started_at' in submission_current else np.nan
-                            row['submission_date_started_parsed'] = find_date_string(submission_current['started_at']) if submission_current['started_at'] else np.nan
-                            row['submission_date_completed'] = submission_current['completed_at'] if submission_current['completed_at'] else np.nan
-                            row['submission_date_completed_parsed'] = find_date_string(submission_current['completed_at']) if submission_current['completed_at'] else np.nan
-                            row['submission_is_complete'] = submission_current['is_complete']
-                            row['submission_time_elapsed_seconds'] = int(submission_current['time_taken']) if submission_current['time_taken'] else np.nan
-                            row['submission_reward'] = float(submission_current['reward']) if 'reward' in submission_current else np.nan
-                            row['submission_star_awarded'] = float(submission_current['star_awarded']) if 'star_awarded' in submission_current else np.nan
-                            row['submission_bonus_payments'] = ':::'.join([str(i) for i in submission_current['bonus_payments']])
+                            row = {
+                                "workspace_id": study_current_add.get('workspace', np.nan),
+                                "project_id": study_current_add.get('project', np.nan),
+                                "study_id": study_current.get('id', np.nan),
+                                "study_date_created": study_current.get('date_created', np.nan),
+                                "study_date_created_parsed": find_date_string(study_current.get('date_created')) if study_current.get('date_created') else np.nan,
+                                "study_date_published": study_current_add.get('published_at', np.nan),
+                                "study_date_published_parsed": find_date_string(study_current_add.get('published_at')) if study_current_add.get('published_at') else np.nan,
+                                "study_name": study_current.get('name', np.nan),
+                                "study_name_internal": study_current.get('internal_name', np.nan),
+                                "study_completion_code": study_current_add.get('completion_code', np.nan),
+                                "study_completion_option": study_current_add.get('completion_option', np.nan),
+                                "study_completion_option_id": study_current_add.get('prolific_id_option', np.nan),
+                                "study_status": study_current.get('status', np.nan),
+                                "study_type": study_current.get('study_type', np.nan),
+                                "study_share_id": study_current_add.get('share_id', np.nan),
+                                "study_participant_eligible_count": int(study_current_add.get('eligible_participant_count', 0)),
+                                "study_participant_pool_total": int(study_current_add.get('total_participant_pool', 0)),
+                                "study_number_of_submissions": int(study_current.get('number_of_submissions', 0)),
+                                "study_places_taken": int(study_current.get('places_taken', 0)),
+                                "study_places_total_available": int(study_current.get('total_available_places', 0)),
+                                "study_places_total_cost": float(study_current.get('total_cost', 0.0)),
+                                "study_fees_per_submission": float(study_current_add.get('fees_per_submission', 0.0)),
+                                "study_fees_percentage": float(study_current_add.get('fees_percentage', 0.0)),
+                                "study_fees_percentage_service_margin": float(study_current_add.get('service_margin_percentage', 0.0)),
+                                "study_fees_percentage_vat": float(study_current_add.get('vat_percentage', 0.0)),
+                                "study_fees_discount_from_coupon": float(study_current_add.get('discount_from_coupons', 0.0)),
+                                "study_fees_stars_remaining": float(study_current_add.get('stars_remaining', np.nan)),
+                                "study_receipt": float(study_current_add.get('receipt')) if study_current_add.get('receipt') else np.nan,
+                                "study_currency_code": study_current_add.get('currency_code', np.nan),
+                                "study_reward": float(study_current.get('reward', 0.0)),
+                                "study_reward_minimum_per_hour": float(study_current_add.get('minimum_reward_per_hour', 0.0)),
+                                "study_reward_average_per_hour": float(study_current_add.get('average_reward_per_hour', 0.0)),
+                                "study_reward_average_per_hour_without_adjustment": float(study_current_add.get('average_reward_per_hour_without_adjustment', 0.0)),
+                                "study_reward_has_had_adjustment": study_current_add.get('has_had_adjustment', np.nan),
+                                "study_reward_level_below_original_estimate": study_current.get('reward_level', {}).get('below_original_estimate', np.nan),
+                                "study_reward_level_below_prolific_min": study_current.get('reward_level', {}).get('below_prolific_min', np.nan),
+                                "study_time_allowed_maximum": float(study_current_add.get('maximum_allowed_time', 0.0)),
+                                "study_time_average_taken": float(study_current_add.get('average_time_taken', 0.0)),
+                                "study_time_completion_estimated": float(study_current_add.get('estimated_completion_time', 0.0)),
+                                "study_is_reallocated": study_current.get('is_reallocated', np.nan),
+                                "study_is_underpaying": study_current.get('is_underpaying', np.nan),
+                                "study_privacy_notice": study_current.get('privacy_notice', np.nan),
+                                "study_publish_at": study_current.get('publish_at', np.nan),
+                                "study_device_compatibility": ':::'.join(study_current_add.get('device_compatibility', [])),
+                                "study_peripheral_requirements": ':::'.join(study_current_add.get('peripheral_requirements', [])) if study_current_add.get('peripheral_requirements') else np.nan,
+                                "study_url_external": study_current_add.get('external_study_url', np.nan),
+                                "worker_id": submission_current.get('participant_id', np.nan),
+                                "worker_ip": submission_current.get('ip', np.nan),
+                                "submission_id": submission_id,
+                                "submission_status": submission_current.get('status', np.nan),
+                                "submission_return_requested": submission_current.get('return_requested', np.nan),
+                                "submission_study_code": submission_current.get('study_code', np.nan),
+                                "submission_date_started": submission_current.get('started_at', np.nan),
+                                "submission_date_started_parsed": find_date_string(submission_current.get('started_at')) if submission_current.get('started_at') else np.nan,
+                                "submission_date_completed": submission_current.get('completed_at', np.nan),
+                                "submission_date_completed_parsed": find_date_string(submission_current.get('completed_at')) if submission_current.get('completed_at') else np.nan,
+                                "submission_is_complete": submission_current.get('is_complete', np.nan),
+                                "submission_time_elapsed_seconds": int(submission_current.get('time_taken', 0)) if submission_current.get('time_taken') else np.nan,
+                                "submission_reward": float(submission_current.get('reward', np.nan)),
+                                "submission_star_awarded": float(submission_current.get('star_awarded', np.nan)),
+                                "submission_bonus_payments": ':::'.join(map(str, submission_current.get('bonus_payments', [])))
+                            }
 
                             df_prolific_study_data.loc[len(df_prolific_study_data)] = row
+
+        console.print(f"Skipped [red]{skipped_study_dupes}[/red] duplicate studies based on ID.")
+        console.print(f"Skipped [red]{skipped_submission_dupes}[/red] duplicate submissions based on ID.")
 
         console.print(f"Study found for the current task: [green]{study_counter}[/green]")
         console.print(f"Submissions found for the current task: [green]{submissions_counter}[/green]")
@@ -1750,99 +1781,83 @@ if 'prolific' in platforms:
     if not os.path.exists(df_prolific_demographic_data_path):
 
         console.rule(f"{step_index} - Fetching Prolific Demographic Data")
-        step_index = step_index + 1
+        step_index += 1
 
         column_names = [
-            "worker_id",
-            "workspace_id",
-            "project_id",
-            "study_id",
-            "study_custom_tncs_accepted",
-            "submission_id",
-            'submission_date_started',
-            'submission_date_started_parsed',
-            'submission_date_completed',
-            'submission_date_completed_parsed',
-            'submission_date_reviewed',
-            'submission_date_reviewed_parsed',
-            'submission_date_archived',
-            'submission_date_archived_parsed',
-            'submission_time_elapsed_seconds',
-            'submission_status',
-            'worker_completion_code_entered',
-            'worker_total_approvals',
-            'worker_sex',
-            'worker_age',
-            'worker_ethnicity_simplified',
-            'worker_country_birth',
-            'worker_country_residence',
-            'worker_nationality',
-            'worker_language',
-            'worker_languages_fluent',
-            'worker_student_status',
+            "worker_id", "workspace_id", "project_id", "study_id", "study_custom_tncs_accepted",
+            "submission_id", 'submission_date_started', 'submission_date_started_parsed',
+            'submission_date_completed', 'submission_date_completed_parsed',
+            'submission_date_reviewed', 'submission_date_reviewed_parsed',
+            'submission_date_archived', 'submission_date_archived_parsed',
+            'submission_time_elapsed_seconds', 'submission_status', 'worker_completion_code_entered',
+            'worker_total_approvals', 'worker_sex', 'worker_age', 'worker_ethnicity_simplified',
+            'worker_country_birth', 'worker_country_residence', 'worker_nationality',
+            'worker_language', 'worker_languages_fluent', 'worker_student_status',
             'worker_employment_status',
         ]
 
         df_prolific_demo_data = pd.DataFrame(columns=column_names)
 
-        study_list = requests.get(f"https://api.prolific.com/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
-
-        study_counter = 0
-        submissions_counter = 0
+        study_list = requests.get(
+            "https://api.prolific.com/api/v1/studies/",
+            headers={'Authorization': f"Token {prolific_api_token}"}
+        ).json().get('results', [])
 
         for study_data in study_list:
-
-            if task_name in study_data['internal_name']:
-                study_current = None
-                if batch_prefix is not None:
-                    if batch_prefix in study_data['internal_name']:
-                        study_current = study_data
-                else:
+            if task_name in study_data.get('internal_name', ''):
+                if batch_prefix is None or batch_prefix in study_data['internal_name']:
                     study_current = study_data
-                if study_current is not None:
-                    study_current_add = requests.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
-                    del study_current_add['eligibility_requirements']
-                    del study_current_add['description']
+                    study_current_add = requests.get(
+                        f"https://api.prolific.com/api/v1/studies/{study_current['id']}/",
+                        headers={'Authorization': f"Token {prolific_api_token}"}
+                    ).json()
+
+                    study_current_add.pop('eligibility_requirements', None)
+                    study_current_add.pop('description', None)
+
                     console.print(f"Processing study [cyan]{study_current['internal_name']}")
+
                     with requests.Session() as session:
-                        endpoint_data = session.get(f"https://api.prolific.com/api/v1/studies/{study_current['id']}/export/", headers={'Authorization': f"Token {prolific_api_token}"})
-                        decoded_content = endpoint_data.content.decode('utf-8')
-                        demographic_data = csv.reader(decoded_content.splitlines(), delimiter=',')
-                        demo_list = list(demographic_data)
-                        if len(demo_list) > 0:
-                            df_demo_raw = pd.DataFrame(columns=demo_list[0])
-                            for row in demo_list[1:]:
-                                df_demo_raw.loc[len(df_demo_raw)] = row
-                            for index, row_raw in df_demo_raw.iterrows():
+                        export_url = f"https://api.prolific.com/api/v1/studies/{study_current['id']}/export/"
+                        response = session.get(export_url, headers={'Authorization': f"Token {prolific_api_token}"})
+
+                        decoded_content = response.content.decode('utf-8')
+                        reader = csv.reader(decoded_content.splitlines(), delimiter=',')
+                        demo_list = list(reader)
+
+                        if len(demo_list) > 1:
+                            df_demo_raw = pd.DataFrame(demo_list[1:], columns=demo_list[0])
+
+                            for _, row_raw in tqdm(df_demo_raw.iterrows(), total=len(df_demo_raw), desc=f"Downloading demographics", unit=" row"):
                                 row = {
-                                    "worker_id": row_raw['Participant id'],
-                                    "workspace_id": study_current_add['workspace'],
-                                    "project_id": study_current_add['project'],
-                                    "study_id": study_current['id'],
-                                    "study_custom_tncs_accepted": row_raw['Custom study tncs accepted at'] if 'Custom study tncs accepted at' in row_raw else np.nan,
-                                    "submission_id": row_raw['Submission id'],
-                                    'submission_date_started': row_raw['Started at'],
-                                    'submission_date_started_parsed': find_date_string(row_raw['Started at'], seconds=True),
-                                    'submission_date_completed': row_raw['Completed at'],
-                                    'submission_date_completed_parsed': find_date_string(row_raw['Completed at'], seconds=True),
-                                    'submission_date_reviewed': row_raw['Reviewed at'],
-                                    'submission_date_reviewed_parsed': find_date_string(row_raw['Reviewed at'], seconds=True),
-                                    'submission_date_archived': row_raw['Archived at'],
-                                    'submission_date_archived_parsed': find_date_string(row_raw['Archived at'], seconds=True),
-                                    'submission_time_elapsed_seconds': float(row_raw['Time taken']) if row_raw['Time taken'] != '' else np.nan,
-                                    'submission_status': row_raw['Status'] if 'Status' in row_raw else np.nan,
-                                    'worker_total_approvals': row_raw['Total approvals'],
-                                    'worker_completion_code_entered': row_raw['Completion code'],
-                                    'worker_sex': row_raw['Sex'],
-                                    'worker_age': row_raw['Age'],
-                                    'worker_ethnicity_simplified': row_raw['Ethnicity simplified'],
-                                    'worker_country_birth': row_raw['Country of birth'],
-                                    'worker_country_residence': row_raw['Country of residence'],
-                                    'worker_nationality': row_raw['Nationality'],
-                                    'worker_language': row_raw['Language'],
-                                    'worker_languages_fluent': ":::".join(row_raw['Fluent languages'].split(", ")) if 'Fluent languages' in row_raw else np.nan,
-                                    'worker_student_status': row_raw['Student status'],
-                                    'worker_employment_status': row_raw['Employment status'],
+                                    "worker_id": row_raw.get('Participant id', np.nan),
+                                    "workspace_id": study_current_add.get('workspace', np.nan),
+                                    "project_id": study_current_add.get('project', np.nan),
+                                    "study_id": study_current.get('id', np.nan),
+                                    "study_custom_tncs_accepted": row_raw.get('Custom study tncs accepted at', np.nan),
+                                    "submission_id": row_raw.get('Submission id', np.nan),
+                                    'submission_date_started': row_raw.get('Started at', np.nan),
+                                    'submission_date_started_parsed': find_date_string(row_raw.get('Started at'), seconds=True) if row_raw.get('Started at') else np.nan,
+                                    'submission_date_completed': row_raw.get('Completed at', np.nan),
+                                    'submission_date_completed_parsed': find_date_string(row_raw.get('Completed at'), seconds=True) if row_raw.get('Completed at') else np.nan,
+                                    'submission_date_reviewed': row_raw.get('Reviewed at', np.nan),
+                                    'submission_date_reviewed_parsed': find_date_string(row_raw.get('Reviewed at'), seconds=True) if row_raw.get('Reviewed at') else np.nan,
+                                    'submission_date_archived': row_raw.get('Archived at', np.nan),
+                                    'submission_date_archived_parsed': find_date_string(row_raw.get('Archived at'), seconds=True) if row_raw.get('Archived at') else np.nan,
+                                    'submission_time_elapsed_seconds': float(row_raw.get('Time taken')) if row_raw.get('Time taken', '') else np.nan,
+                                    'submission_status': row_raw.get('Status', np.nan),
+                                    'worker_completion_code_entered': row_raw.get('Completion code', np.nan),
+                                    'worker_total_approvals': row_raw.get('Total approvals', np.nan),
+                                    'worker_sex': row_raw.get('Sex', np.nan),
+                                    'worker_age': row_raw.get('Age', np.nan),
+                                    'worker_ethnicity_simplified': row_raw.get('Ethnicity simplified', np.nan),
+                                    'worker_country_birth': row_raw.get('Country of birth', np.nan),
+                                    'worker_country_residence': row_raw.get('Country of residence', np.nan),
+                                    'worker_nationality': row_raw.get('Nationality', np.nan),
+                                    'worker_language': row_raw.get('Language', np.nan),
+                                    'worker_languages_fluent': ":::".join(row_raw.get('Fluent languages', '').split(", ")) if row_raw.get('Fluent languages') else np.nan,
+                                    'worker_student_status': row_raw.get('Student status', np.nan),
+                                    'worker_employment_status': row_raw.get('Employment status', np.nan),
                                 }
                                 df_prolific_demo_data = pd.concat([df_prolific_demo_data, pd.DataFrame([row])], ignore_index=True)
 
@@ -1854,11 +1869,9 @@ if 'prolific' in platforms:
             console.print(f"Dataframe shape: {df_prolific_demo_data.shape}")
             console.print(f"Prolific demographic dataframe [yellow]empty[/yellow], dataframe not serialized.")
     else:
-
         df_prolific_demo_data = pd.read_csv(df_prolific_demographic_data_path)
         console.print(f"Prolific demographic dataframe [yellow]already detected[/yellow], skipping creation")
         console.print(f"Serialized at path: [cyan on black]{df_prolific_demographic_data_path}")
-
 
 console.rule(f"{step_index} - Building [cyan on white]workers_ip_addresses[/cyan on white] Dataframe")
 step_index = step_index + 1
@@ -1867,7 +1880,7 @@ if not os.path.exists(df_ip_path):
 
     df_ip = pd.DataFrame()
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         sequence_key = f"{acl_record['worker_id']}-{acl_record['ip_address']}-{acl_record['unit_id']}"
@@ -1925,7 +1938,7 @@ if not os.path.exists(df_uag_path):
 
     df_ua = pd.DataFrame()
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -1995,7 +2008,7 @@ if not os.path.exists(df_comm_path):
 
     df_comm = pd.DataFrame(columns=load_comment_col_names())
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -2181,7 +2194,7 @@ if not os.path.exists(df_quest_path):
     df_quest = pd.DataFrame()
     questionnaires_backup = None
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -2330,7 +2343,7 @@ def load_elem_col_names(documents):
 
 if not os.path.exists(df_docs_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -2501,7 +2514,7 @@ def check_task_type(doc, typeslist):
 
 if not os.path.exists(df_data_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -2815,7 +2828,7 @@ df_notes = pd.DataFrame()
 
 if not os.path.exists(df_notes_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -3019,7 +3032,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
 
 if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -3222,7 +3235,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
 
 if not os.path.exists(df_url_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -3250,7 +3263,7 @@ if not os.path.exists(df_url_path):
     df_urls.drop_duplicates(inplace=True)
     unique_urls = np.unique(df_urls['response_url'].values)
     console.print(f"Generating UUIDs for {len(unique_urls)} unique URLs")
-    for url in tqdm.tqdm(unique_urls):
+    for url in tqdm(unique_urls):
         df_urls.loc[df_urls['response_url'] == url, 'response_uuid'] = uuid.uuid4()
 
     if df_urls.shape[0] > 0:
@@ -3296,7 +3309,7 @@ counter = 0
 
 if not os.path.exists(df_log_path):
 
-    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
@@ -3488,7 +3501,7 @@ if not os.path.exists(df_log_path):
 
     console.print(f"Merging together {len(df_partials_paths)} partial log dataframes")
 
-    for df_partial_path in tqdm.tqdm(df_partials_paths):
+    for df_partial_path in tqdm(df_partials_paths):
         partial_df = pd.read_csv(df_partial_path)
         if partial_df.shape[0] > 0:
             dataframes_partial.append(partial_df)
@@ -3626,11 +3639,11 @@ if enable_crawling:
                         return build_response_dict(response_url, 'error', response_uuid, error, error_code)
 
             console.print("Generating asynchronous requests")
-            for index, row_url in tqdm.tqdm(df_url.iterrows(), total=df_url.shape[0]):
+            for index, row_url in tqdm(df_url.iterrows(), total=df_url.shape[0]):
                 tasks.append(asyncio.create_task(get(row_url)))
 
             console.print("Processing asynchronous requests")
-            for request_current in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            for request_current in tqdm(asyncio.as_completed(tasks), total=len(tasks)):
                 result = await request_current
                 result_url = result['url']
                 result_type = result['type']
