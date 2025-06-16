@@ -4795,7 +4795,7 @@ __metadata:
     ngx-color-picker: "npm:^15.0.0"
     ngx-cookie-service: "npm:^17.0.0"
     ngx-countdown: "npm:^16.0.0"
-    ngx-device-detector: "npm:^6.0.2"
+    ngx-device-detector: "npm:^8"
     ngx-file-helpers: "npm:^10.0.0"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.1"
@@ -7360,15 +7360,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^6.0.2":
-  version: 6.0.2
-  resolution: "ngx-device-detector@npm:6.0.2"
+"ngx-device-detector@npm:^8":
+  version: 8.0.0
+  resolution: "ngx-device-detector@npm:8.0.0"
   dependencies:
     tslib: "npm:^2.0.0"
   peerDependencies:
-    "@angular/common": ^16.0.0
-    "@angular/core": ^16.0.0
-  checksum: 10/0a1cf844f11f0ad76be2494397a513c45498841ae6021b7f71569653c107e1756c40143c62db88ba1a6c4c0f18b58ef7655c6a446708000ca8bcc17684b66d67
+    "@angular/common": ^18.0.0
+    "@angular/core": ^18.0.0
+  checksum: 10/6255ec4455a34299795259a59969137b6327911b426b08c36264f239ae36f900e66fef6dd7030fa35833e2aab02b19c3985b35eebb721f04054a52358399e5a8
   languageName: node
   linkType: hard
 
