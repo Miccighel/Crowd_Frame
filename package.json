@@ -28,7 +28,7 @@
     "@angular/router": "17.3.12",
     "@funktechno/texthighlighter": "^2.1.2",
     "@kolkov/angular-editor": "^2.1.0",
-    "@ng-bootstrap/ng-bootstrap": "15.1.2",
+    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@popperjs/core": "^2.11.8",
     "aws-sdk": "^2.1521.0",
     "bootstrap": "^5.3.3",
