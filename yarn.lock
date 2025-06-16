@@ -4796,7 +4796,7 @@ __metadata:
     ngx-cookie-service: "npm:^17.0.0"
     ngx-countdown: "npm:^16.0.0"
     ngx-device-detector: "npm:^8"
-    ngx-file-helpers: "npm:^10.0.0"
+    ngx-file-helpers: "npm:^12"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.1"
     titleize: "npm:^4.0.0"
@@ -7372,15 +7372,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "ngx-file-helpers@npm:10.0.0"
+"ngx-file-helpers@npm:^12":
+  version: 12.0.0
+  resolution: "ngx-file-helpers@npm:12.0.0"
   dependencies:
-    tslib: "npm:^2.5.3"
+    tslib: "npm:^2.6.3"
   peerDependencies:
-    "@angular/common": ^16.0.0
-    "@angular/core": ^16.0.0
-  checksum: 10/0cff5451216061d33e115e68cea5a61ad5607fdda6ce0a51e8459b49f113f2c1dd91969dccbd69777722b9a8518c18890c8a2bca8fe60c2c7b6c4d8a652c618a
+    "@angular/common": ^18.0.0
+    "@angular/core": ^18.0.0
+  checksum: 10/7b648e640cf3e5003bc6931d6d82ff3a7d51ed44f6a7ff654a38c33044df3a84a4a7eb64be6aea81c2be197727f9714619539afdae468007f1ebb5306b75b8d6
   languageName: node
   linkType: hard
 
@@ -9458,7 +9458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.5.3, tslib@npm:^2.6.2, tslib@npm:^2.8.1":
+"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
