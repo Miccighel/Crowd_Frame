@@ -1,274 +1,269 @@
-/* Core imports */
 import {Injectable} from '@angular/core';
-import * as AWS from "aws-sdk";
-/* Debug config import */
-import * as localRawDimensions from '../../../../data/build/task/dimensions.json';
-import * as localRawHits from '../../../../data/build/task/hits.json';
-import * as localRawInstructionsDimensions from '../../../../data/build/task/instructions_evaluation.json';
-import * as localRawQuestionnaires from '../../../../data/build/task/questionnaires.json';
-import * as localRawTaskSettings from '../../../../data/build/task/task.json';
-import * as localRawSearchEngineSettings from '../../../../data/build/task/search_engine.json';
-import * as localRawWorkers from '../../../../data/build/task/workers.json';
-import * as localRawInstructionsMain from '../../../../data/build/task/instructions_general.json';
-import * as localRawAdmin from '../../../../data/build/config/admin.json';
-import {ManagedUpload} from "aws-sdk/clients/s3";
+
+/* ---------- AWS SDK v3 ---------- */
+import {
+    S3Client,
+    GetObjectCommand,
+    ListObjectsV2Command
+} from '@aws-sdk/client-s3';
+import {Upload} from '@aws-sdk/lib-storage';
+
+/* ---------- Local debug JSON (default imports) ---------- */
+import localRawDimensions from '../../../../data/build/task/dimensions.json';
+import localRawHits from '../../../../data/build/task/hits.json';
+import localRawInstructionsDimensions from '../../../../data/build/task/instructions_evaluation.json';
+import localRawQuestionnaires from '../../../../data/build/task/questionnaires.json';
+import localRawTaskSettings from '../../../../data/build/task/task.json';
+import localRawSearchEngineSettings from '../../../../data/build/task/search_engine.json';
+import localRawWorkers from '../../../../data/build/task/workers.json';
+import localRawInstructionsMain from '../../../../data/build/task/instructions_general.json';
+import localRawAdmin from '../../../../data/build/config/admin.json';
+/* ---------- Domain models ---------- */
 import {Worker} from "../../models/worker/worker";
 
-@Injectable({
-    providedIn: 'root'
-})
-
+@Injectable({providedIn: 'root'})
 export class S3Service {
 
-    constructor() {
-    }
-
-    public loadS3(config) {
-        let region = config["region"];
-        let bucket = config["bucket"];
-        let aws_id_key = config["aws_id_key"];
-        let aws_secret_key = config["aws_secret_key"];
-        return new AWS.S3({
-            region: region,
-            params: {Bucket: bucket},
-            credentials: new AWS.Credentials(aws_id_key, aws_secret_key)
+    /* Build a thin v3 client */
+    private buildClient(cfg) {
+        return new S3Client({
+            region: cfg.region,
+            credentials: {
+                accessKeyId: cfg.aws_id_key,
+                secretAccessKey: cfg.aws_secret_key
+            }
         });
     }
 
-    /*
-     * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
-     * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-     */
-    public async download(config, path) {
-        let s3 = this.loadS3(config)
-        return JSON.parse(
-            (await (s3.getObject({
-                Bucket: config["bucket"],
-                Key: path
-            }).promise())).Body.toString()
+    /* ---------- BASIC CRUD ---------- */
+
+    /** Download & JSON-parse a file from S3 */
+    async download(cfg, key: string) {
+        const s3 = this.buildClient(cfg);
+        const {Body} = await s3.send(
+            new GetObjectCommand({Bucket: cfg.bucket, Key: key})
         );
+        return JSON.parse(await new Response(Body as any).text());
     }
 
-    /*
-     * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
-     * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
-     */
-    public async upload(config, path: string, payload: Object): Promise<ManagedUpload> {
-        let s3 = this.loadS3(config)
-        return s3.upload({
-            Key: path,
-            Bucket: config["bucket"],
-            Body: (typeof payload == "string") ? payload : JSON.stringify(payload),
-            ContentType: "application/json"
-        }, function (err, data) {
-        })
+    /** Multipart-aware upload (uses @aws-sdk/lib-storage) */
+    async upload(cfg, key: string, payload: unknown) {
+        const s3 = this.buildClient(cfg);
+        const uploader = new Upload({
+            client: s3,
+            params: {
+                Bucket: cfg.bucket,
+                Key: key,
+                Body: typeof payload === 'string' ? payload
+                    : JSON.stringify(payload),
+                ContentType: 'application/json'
+            }
+        });
+        return uploader.done();               // resolves when the upload finishes
     }
 
-    /*
-     * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
-     * https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
-     */
-    public async listFolders(config, key = null) {
-        let s3 = this.loadS3(config)
-        if (key) {
-            return Object(
-                (await (s3.listObjectsV2({
-                    Bucket: config["bucket"],
-                    Prefix: `${key}`,
-                    Delimiter: '/'
-                }).promise())).CommonPrefixes
-            );
-        } else {
-            return Object(
-                (await (s3.listObjectsV2({
-                    Bucket: config["bucket"],
-                    Delimiter: '/'
-                }).promise())).CommonPrefixes
-            );
-        }
-
+    /** List “folders” (CommonPrefixes) under a given prefix */
+    async listFolders(cfg, prefix: string = '') {
+        const s3 = this.buildClient(cfg);
+        const {CommonPrefixes} = await s3.send(
+            new ListObjectsV2Command({
+                Bucket: cfg.bucket,
+                Prefix: prefix || undefined,
+                Delimiter: '/'
+            })
+        );
+        return CommonPrefixes ?? [];
     }
 
-    /*
-     * The following functions are used to retrieve some base path names on the S3 bucket
-     */
+    /* ---------- PATH HELPERS ---------- */
 
-    public getTaskDataS3Path(config, name, batch) {
-        return `${config["region"]}/${config["bucket"]}/${name}/${batch}`
+    getTaskDataS3Path(cfg, name, batch) {
+        return `${cfg.region}/${cfg.bucket}/${name}/${batch}`;
     }
 
-    public getFolder(config) {
-        if (config["batchName"]) {
-            return `${config["taskName"]}/${config["batchName"]}/`
-        } else {
-            return `${config["taskName"]}/`
-        }
+    getFolder(cfg) {
+        return cfg.batchName ? `${cfg.taskName}/${cfg.batchName}/`
+            : `${cfg.taskName}/`;
     }
 
-    public getWorkerFolder(config, worker: Worker) {
-        return `${this.getFolder(config)}Data/${worker.identifier}/`;
+    getWorkerFolder(cfg, worker: Worker) {
+        return `${this.getFolder(cfg)}Data/${worker.identifier}/`;
     }
 
-    public getWorkersFile(config) {
-        return `${this.getFolder(config)}Task/workers.json`
+    getWorkersFile(cfg) {
+        return `${this.getFolder(cfg)}Task/workers.json`;
     }
 
-    /*
-     * The following functions are used to download the files used by the rest of the application from the S3 bucket
-     */
+    /* ---------- FILE DOWNLOADERS ---------- */
 
-    public downloadAdministrators(config) {
-        let administratorsFile = `${this.getFolder(config)}Generator/admin.json`;
-        return (config["configuration_local"]) ? localRawAdmin["default"] : this.download(config, administratorsFile);
+    downloadAdministrators(cfg) {
+        const file = `${this.getFolder(cfg)}Generator/admin.json`;
+        return cfg.configuration_local ? localRawAdmin
+            : this.download(cfg, file);
     }
 
-    public downloadTaskSettings(config) {
-        let taskSettingsFile = `${this.getFolder(config)}Task/task.json`;
-        return (config["configuration_local"]) ? localRawTaskSettings["default"] : this.download(config, taskSettingsFile);
+    downloadTaskSettings(cfg) {
+        const file = `${this.getFolder(cfg)}Task/task.json`;
+        return cfg.configuration_local ? localRawTaskSettings
+            : this.download(cfg, file);
     }
 
-    public downloadSearchEngineSettings(config) {
-        let searchEngineSettingsFile = `${this.getFolder(config)}Task/search_engine.json`;
-        return (config["configuration_local"]) ? localRawSearchEngineSettings["default"] : this.download(config, searchEngineSettingsFile);
+    downloadSearchEngineSettings(cfg) {
+        const file = `${this.getFolder(cfg)}Task/search_engine.json`;
+        return cfg.configuration_local ? localRawSearchEngineSettings
+            : this.download(cfg, file);
     }
 
-    public downloadHits(config) {
-        let hitsFile = `${this.getFolder(config)}Task/hits.json`;
-        return (config["configuration_local"]) ? localRawHits["default"] : this.download(config, hitsFile);
+    downloadHits(cfg) {
+        const file = `${this.getFolder(cfg)}Task/hits.json`;
+        return cfg.configuration_local ? localRawHits
+            : this.download(cfg, file);
     }
 
-    public downloadGeneralInstructions(config) {
-        let taskInstructionsFile = `${this.getFolder(config)}Task/instructions_general.json`;
-        return (config["configuration_local"]) ? localRawInstructionsMain["default"] : this.download(config, taskInstructionsFile);
+    downloadGeneralInstructions(cfg) {
+        const file = `${this.getFolder(cfg)}Task/instructions_general.json`;
+        return cfg.configuration_local ? localRawInstructionsMain
+            : this.download(cfg, file);
     }
 
-    public downloadEvaluationInstructions(config) {
-        let dimensionsInstructionsFile = `${this.getFolder(config)}Task/instructions_evaluation.json`;
-        return (config["configuration_local"]) ? localRawInstructionsDimensions["default"] : this.download(config, dimensionsInstructionsFile);
+    downloadEvaluationInstructions(cfg) {
+        const file = `${this.getFolder(cfg)}Task/instructions_evaluation.json`;
+        return cfg.configuration_local ? localRawInstructionsDimensions
+            : this.download(cfg, file);
     }
 
-    public downloadDimensions(config) {
-        let dimensionsFile = `${this.getFolder(config)}Task/dimensions.json`;
-        return (config["configuration_local"]) ? localRawDimensions["default"] : this.download(config, dimensionsFile);
+    downloadDimensions(cfg) {
+        const file = `${this.getFolder(cfg)}Task/dimensions.json`;
+        return cfg.configuration_local ? localRawDimensions
+            : this.download(cfg, file);
     }
 
-    public downloadQuestionnaires(config) {
-        let questionnairesFile = `${this.getFolder(config)}Task/questionnaires.json`;
-        return (config["configuration_local"]) ? localRawQuestionnaires["default"] : this.download(config, questionnairesFile);
+    downloadQuestionnaires(cfg) {
+        const file = `${this.getFolder(cfg)}Task/questionnaires.json`;
+        return cfg.configuration_local ? localRawQuestionnaires
+            : this.download(cfg, file);
     }
 
-    public downloadWorkers(config, batch = null) {
-        if (batch == null) {
-            let workersFile = `${this.getFolder(config)}Task/workers.json`;
-            return (config["configuration_local"]) ? localRawWorkers["default"] : this.download(config, workersFile);
-        } else {
-            let workersFile = `${batch}Task/workers.json`;
-            return this.download(config, workersFile);
-        }
+    downloadWorkers(cfg, batch = null): Promise<any> {
+        const file = batch
+            ? `${batch}Task/workers.json`
+            : `${this.getFolder(cfg)}Task/workers.json`;
+
+        // Always return a Promise so the API is uniform
+        return batch || !cfg.configuration_local
+            ? this.download(cfg, file)          // already returns a Promise
+            : Promise.resolve(localRawWorkers); // wrap static JSON in a resolved Promise
     }
 
-    /*
-     * The following functions are used to retrieve the paths to the configuration files of the current task on the S3 bucket
-     */
+    /* ---------- STATIC PATH HELPERS ---------- */
 
-    public getQuestionnairesConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/questionnaires.json`
+    getQuestionnairesConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/questionnaires.json`;
     }
 
-    public getHitsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/hits.json`
+    getHitsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/hits.json`;
     }
 
-    public getDimensionsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/dimensions.json`
+    getDimensionsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/dimensions.json`;
     }
 
-    public getTaskInstructionsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/instructions_general.json`
+    getTaskInstructionsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/instructions_general.json`;
     }
 
-    public getDimensionsInstructionsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/instructions_evaluation.json`
+    getDimensionsInstructionsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/instructions_evaluation.json`;
     }
 
-    public getSearchEngineSettingsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/search_engine.json`
+    getSearchEngineSettingsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/search_engine.json`;
     }
 
-    public getTaskSettingsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/task.json`
+    getTaskSettingsConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/task.json`;
     }
 
-    public getWorkerChecksConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/workers.json`
+    getWorkerChecksConfigPath(cfg) {
+        return `${cfg.taskName}/${cfg.batchName}/Task/workers.json`;
     }
 
-    /*
-     * The following functions are used to upload the configuration files of the current task on the S3 bucket
-     */
+    /* ---------- CONFIG UPLOADERS ---------- */
 
-    public uploadQuestionnairesConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/questionnaires.json`, data)
+    uploadQuestionnairesConfig(cfg, data) {
+        return this.upload(cfg, this.getQuestionnairesConfigPath(cfg), data);
     }
 
-    public uploadHitsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/hits.json`, data)
+    uploadHitsConfig(cfg, data) {
+        return this.upload(cfg, this.getHitsConfigPath(cfg), data);
     }
 
-    public uploadDimensionsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/dimensions.json`, data)
+    uploadDimensionsConfig(cfg, data) {
+        return this.upload(cfg, this.getDimensionsConfigPath(cfg), data);
     }
 
-    public uploadTaskInstructionsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_general.json`, data)
+    uploadTaskInstructionsConfig(cfg, data) {
+        return this.upload(cfg, this.getTaskInstructionsConfigPath(cfg), data);
     }
 
-    public uploadDimensionsInstructionsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_evaluation.json`, data)
+    uploadDimensionsInstructionsConfig(cfg, data) {
+        return this.upload(cfg, this.getDimensionsInstructionsConfigPath(cfg), data);
     }
 
-    public uploadSearchEngineSettings(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/search_engine.json`, data)
+    uploadSearchEngineSettings(cfg, data) {
+        return this.upload(cfg, this.getSearchEngineSettingsConfigPath(cfg), data);
     }
 
-    public uploadTaskSettings(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/task.json`, data)
+    uploadTaskSettings(cfg, data) {
+        return this.upload(cfg, this.getTaskSettingsConfigPath(cfg), data);
     }
 
-    public uploadWorkersCheck(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/workers.json`, data)
+    uploadWorkersCheck(cfg, data) {
+        return this.upload(cfg, this.getWorkerChecksConfigPath(cfg), data);
     }
 
-    /*
-     * The following functions are used upload the data produced during the task's executions
-     */
+    /* ---------- RUNTIME DATA UPLOADERS ---------- */
 
-    public uploadWorkers(config, data) {
-        return this.upload(config, this.getWorkersFile(config), data)
+    uploadWorkers(cfg, data) {
+        return this.upload(cfg, this.getWorkersFile(cfg), data);
     }
 
-    public uploadTaskData(config, worker, unit, data) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/task_data.json`, data)
+    uploadTaskData(cfg, worker: Worker, unit, data) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/task_data.json`, data);
     }
 
-    public uploadQualityCheck(config, worker, unit, data, currentTry) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/checks_try_${currentTry}.json`, data)
+    uploadQualityCheck(cfg, worker: Worker, unit, data, currentTry) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/checks_try_${currentTry}.json`, data);
     }
 
-    public uploadQuestionnaire(config, worker, unit, data, currentTry = null, completedElement = null, accessesAmount = null, sequenceNumber = null) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/quest_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
+    uploadQuestionnaire(cfg, worker: Worker, unit, data,
+                        currentTry = null, completedElement = null,
+                        accessesAmount = null, sequenceNumber = null) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/quest_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`,
+            data);
     }
 
-    public uploadDocument(config, worker, unit, data, currentTry, completedElement = null, accessesAmount = null, sequenceNumber = null) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/doc_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
+    uploadDocument(cfg, worker: Worker, unit, data, currentTry,
+                   completedElement = null, accessesAmount = null,
+                   sequenceNumber = null) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/doc_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`,
+            data);
     }
 
-    public uploadFinalData(config, worker, unit, data, currentTry) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/data_try_${currentTry}.json`, data)
+    uploadFinalData(cfg, worker: Worker, unit, data, currentTry) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/data_try_${currentTry}.json`,
+            data);
     }
 
-    public uploadComment(config, worker, unit, data, currentTry) {
-        return this.upload(config, `${this.getWorkerFolder(config, worker)}${unit}/comment_try_${currentTry}.json`, data)
+    uploadComment(cfg, worker: Worker, unit, data, currentTry) {
+        return this.upload(cfg,
+            `${this.getWorkerFolder(cfg, worker)}${unit}/comment_try_${currentTry}.json`,
+            data);
     }
-
 }

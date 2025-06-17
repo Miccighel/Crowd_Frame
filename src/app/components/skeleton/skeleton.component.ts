@@ -310,7 +310,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
 
         if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
-            this.worker.settings = new WorkerSettings(this.S3Service.downloadWorkers(this.configService.environment));
+
+            this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(
+                this.configService.environment
+            ));
 
             /* The logging service is enabled if it is needed */
             if (this.task.settings.logger_enable)
@@ -452,7 +455,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             else
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
-                        
+
                     }
                     this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();
@@ -1157,25 +1160,25 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* #################### COUNTDOWNS #################### */
     public handleCountdowns(
-        currentDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
-        completedDocumentData: {elementType: string, elementIndex: number, overallIndex: any, elementLabel: string},
+        currentDocumentData: { elementType: string, elementIndex: number, overallIndex: any, elementLabel: string },
+        completedDocumentData: { elementType: string, elementIndex: number, overallIndex: any, elementLabel: string },
         action: string
     ) {
         const getCountdown = (index: number) => this.documentComponent.get(index).countdown;
         const pauseCountdown = (index: number) => {
             const countdown = getCountdown(index);
-            if(!this.task.countdownsExpired[index])
+            if (!this.task.countdownsExpired[index])
                 countdown.pause();
         }
 
-        if(completedDocumentData.elementType === "S"){
+        if (completedDocumentData.elementType === "S") {
             pauseCountdown(completedDocumentData.elementIndex);
-            if(action === "Finish")
+            if (action === "Finish")
                 return; // No need to start/resume the countdown if the action is Finish
         }
-        if(currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]){
+        if (currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]) {
             const currentCountdown = getCountdown(currentDocumentData.elementIndex);
-            if(currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
+            if (currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
                 currentCountdown.begin();
             else
                 currentCountdown.resume();

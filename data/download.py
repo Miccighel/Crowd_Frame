@@ -2749,10 +2749,13 @@ if not os.path.exists(df_data_path):
                         df_answ = pd.concat([df_answ, pd.DataFrame([row])], ignore_index=True)
 
     if df_answ.shape[0] > 0:
-        empty_cols = [col for col in df_answ.columns if df_answ[col].isnull().all()]
-        if len(empty_cols) > 0:
+        empty_cols = [
+            col for col in df_answ.columns
+            if df_answ[col].apply(lambda x: pd.isna(x) or x == []).all()
+        ]
+        if empty_cols:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
-        df_answ.drop(empty_cols, axis=1, inplace=True)
+        df_answ.drop(columns=empty_cols, inplace=True)
         df_answ["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_answ["paid"] = df_answ["paid"].astype(bool)
         df_answ["try_last"] = df_answ["try_last"].astype(int)
