@@ -101,6 +101,7 @@ aws_region = os.getenv('aws_region')
 language_code = os.getenv('language_code')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+aws_dataset_bucket = os.getenv('aws_dataset_bucket')
 toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 prolific_api_token = os.getenv('prolific_api_token')
@@ -442,6 +443,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
             "lambda:CreateEventSourceMapping",
+            "cloudfront:ListDistributions",
+            "cloudfront:CreateDistribution",
+            "cloudfront:ListOriginAccessControls",
+            "cloudfront:CreateOriginAccessControl"
         ],
         "no_server": [
             "iam:GetUser",
@@ -466,6 +471,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetObject",
             "s3:ListBucket",
             "dynamodb:CreateTable",
+            "cloudfront:ListDistributions",
+            "cloudfront:CreateDistribution",
+            "cloudfront:ListOriginAccessControls",
+            "cloudfront:CreateOriginAccessControl"
         ]
     }
 
@@ -791,7 +800,42 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"[green]Static website hosting initialized[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     console.print(f"Website endpoint: [cyan]{website_endpoint}")
 
-    console.rule(f"{step_index} - Configuring Cloudfront distribution ")
+    if aws_dataset_bucket is not None:
+
+        console.rule(f"{step_index} - Dataset bucket [cyan underline]{aws_dataset_bucket}[/cyan underline] creation")
+        step_index = step_index + 1
+
+        status.start()
+        status.update(f"Creating bucket")
+
+        try:
+            if aws_region == 'us-east-1':
+                dataset_bucket = s3_client.create_bucket(Bucket=aws_dataset_bucket)
+            else:
+                dataset_bucket = s3_client.create_bucket(
+                    Bucket=aws_dataset_bucket,
+                    CreateBucketConfiguration={'LocationConstraint': aws_region}
+                )
+            serialize_json(folder_aws_generated_path, f"bucket_{aws_dataset_bucket}.json", dataset_bucket)
+            console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {dataset_bucket['ResponseMetadata']['HTTPStatusCode']}.")
+        except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
+            console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
+
+        status.update(f"Updating public access configuration")
+
+        # Ensure public access settings allow policies
+        response = s3_client.put_public_access_block(
+            Bucket=aws_dataset_bucket,
+            PublicAccessBlockConfiguration={
+                'BlockPublicAcls': True,
+                'IgnorePublicAcls': True,
+                'BlockPublicPolicy': False,
+                'RestrictPublicBuckets': False
+            },
+        )
+        serialize_json(folder_aws_generated_path, f"bucket_{aws_dataset_bucket}_public_access_configuration.json", response)
+
+    console.rule(f"{step_index} - Configuring Cloudfront distribution for deploy bucket")
     step_index = step_index + 1
 
     cloudfront_client = boto3.Session(profile_name=profile_name).client('cloudfront')
@@ -871,6 +915,126 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Comment: [cyan]{distribution['Comment']}")
     cloudfront_endpoint = distribution['DomainName']
     serialize_json(folder_aws_generated_path, f"cloudfront_distribution_{distribution['Id']}.json", distribution)
+
+    if aws_dataset_bucket is not None:
+
+        console.rule(f"{step_index} - Configuring Cloudfront distribution for {aws_dataset_bucket}")
+        step_index = step_index + 1
+
+        cloudfront_client = boto3.Session(profile_name=profile_name).client('cloudfront')
+        origin_domain = f"{aws_dataset_bucket}.s3.us-east-2.amazonaws.com"
+        caller_reference = f"{aws_dataset_bucket}-distribution"
+        oac_name = f"{aws_dataset_bucket}-oac"
+
+        # Try to retrieve existing OAC
+        try:
+            oac_list_response = cloudfront_client.list_origin_access_controls()
+            existing_oacs = oac_list_response.get('OriginAccessControlList', {}).get('Items', [])
+            oac = next((o for o in existing_oacs if o['Name'] == oac_name), None)
+
+            if oac:
+                oac_id = oac['Id']
+                console.print(f"[yellow]Origin Access Control '{oac_name}' already exists[/yellow], ID: {oac_id}")
+            else:
+                oac_response = cloudfront_client.create_origin_access_control(
+                    OriginAccessControlConfig={
+                        'Name': oac_name,
+                        'OriginAccessControlOriginType': 's3',
+                        'SigningBehavior': 'always',
+                        'SigningProtocol': 'sigv4',
+                        'Description': f"OAC for {aws_dataset_bucket}"
+                    }
+                )
+                oac_id = oac_response['OriginAccessControl']['Id']
+                console.print(f"[green]Created new Origin Access Control '{oac_name}'[/green], ID: {oac_id}")
+                serialize_json(folder_aws_generated_path, f"origin_access_control_{oac_id}.json", oac_response)
+        except Exception as e:
+            console.print(f"[red]Failed to retrieve or create Origin Access Control[/red]: {e}")
+            raise
+
+        # Check if CloudFront distribution already exists
+        paginator = cloudfront_client.get_paginator('list_distributions')
+        distribution_found = False
+        distribution = None
+        cloudfront_endpoint = None
+
+        try:
+            for page in paginator.paginate():
+                for distribution_current in page['DistributionList'].get('Items', []):
+                    for origin in distribution_current['Origins']['Items']:
+                        if origin['DomainName'] == origin_domain:
+                            distribution_found = True
+                            distribution = distribution_current
+                            break
+                    if distribution_found:
+                        break
+                if distribution_found:
+                    break
+
+            if distribution_found:
+                distribution_id = distribution['Id']
+                cloudfront_endpoint = distribution['DomainName']
+                console.print(f"[yellow]CloudFront distribution already exists[/yellow], ID: {distribution_id}")
+                console.print(f"Domain name: [cyan]{cloudfront_endpoint}")
+                console.print(f"Comment: [cyan]{distribution.get('Comment', '')}")
+                serialize_json(folder_aws_generated_path, f"cloudfront_distribution_{distribution_id}.json", distribution)
+            else:
+                console.print(f"[green]No existing CloudFront distribution found for origin '{origin_domain}'[/green]")
+        except Exception as e:
+            console.print(f"[red]An error occurred while checking existing distributions[/red]: {e}")
+            raise
+
+    if distribution:
+        console.print(f"[yellow]CloudFront distribution already created for dataset bucket[/yellow], ID: {distribution['Id']}")
+        cloudfront_endpoint = distribution['DomainName']
+    else:
+        try:
+            response = cloudfront_client.create_distribution(
+                DistributionConfig={
+                    'CallerReference': caller_reference,
+                    'Comment': f"CloudFront distribution for {aws_dataset_bucket}",
+                    'Enabled': True,
+                    'Origins': {
+                        'Quantity': 1,
+                        'Items': [{
+                            'Id': f"S3-{aws_dataset_bucket}",
+                            'DomainName': origin_domain,
+                            'OriginAccessControlId': oac_id,
+                            'S3OriginConfig': {
+                                'OriginAccessIdentity': ''
+                            }
+                        }]
+                    },
+                    'DefaultCacheBehavior': {
+                        'TargetOriginId': f"S3-{aws_dataset_bucket}",
+                        'ViewerProtocolPolicy': 'redirect-to-https',
+                        'AllowedMethods': {
+                            'Quantity': 2,
+                            'Items': ['GET', 'HEAD'],
+                            'CachedMethods': {
+                                'Quantity': 2,
+                                'Items': ['GET', 'HEAD']
+                            }
+                        },
+                        'Compress': True,
+                        'ForwardedValues': {
+                            'QueryString': False,
+                            'Cookies': {'Forward': 'none'}
+                        },
+                        'MinTTL': 86400
+                    }
+                }
+            )
+            distribution = response['Distribution']
+            cloudfront_endpoint = distribution['DomainName']
+            console.print(f"[green]CloudFront distribution for dataset bucket created[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}")
+            serialize_json(folder_aws_generated_path, f"cloudfront_distribution_{distribution['Id']}.json", response)
+        except Exception as e:
+            console.print(f"[red]Failed to create CloudFront distribution[/red]: {e}")
+            raise
+
+    console.print(f"Domain name: [cyan]{cloudfront_endpoint}")
+    console.print(f"Comment: [cyan]{distribution['Comment']}")
 
     console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
     step_index = step_index + 1

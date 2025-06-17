@@ -148,33 +148,36 @@ The task requester can set the budget limit using the `budget_limit` environment
 
 ## Environment Variables
 
-The following table describes each environment variable that can be set in the environment file to customize the behavior. Path: `your_repo_folder/data/.env`
+The following table describes each environment variable that can be set in the environment file to customize the behavior.  
+**Path**: `your_repo_folder/data/.env`
 
-|          Variable          |                                                                                                                    Description                                                                                                                     |     Mandatory      | Value                                       |
-|:--------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------:|---------------------------------------------|
-|       `profile_name`       |                                                                    Name of the IAM profile created during Step #2. If unspecified, the variable will use the value: `default`.                                                                     |        :x:         | `your_iam_user`                             |
-|       `mail_contact`       |                                                                                            Contact mail to receive AWS budgeting related comunications                                                                                             | :heavy_check_mark: | Valid email address                         |
-|         `platform`         |                                                                       Platform on which deploy the crowdsourcing task. Set it to `none` if you recruit the workers manually.                                                                       | :heavy_check_mark: | `none` or `mturk` or `prolific` or `toloka` |
-|       `budget_limit`       |                                                                                        Maximum monthly money amount allowed to operate in USD; e.g., `5.0`                                                                                         | :heavy_check_mark: | Positive float number                       |
-|        `task_name`         |                                                                                                        Identifier of the crowdsourcing task                                                                                                        | :heavy_check_mark: | Any string                                  |
-|        `batch_name`        |                                                                                                        Identifier of a single task's batch                                                                                                         | :heavy_check_mark: | Any string                                  |
-|        `task_title`        |                                                                                                      Custom title for the crowdsourcing task                                                                                                       |        :x:         | Any string                                  |
-|       `batch_prefix`       |                                                                     Prefix of the identifiers of one or more task's batches. Use this variable to filter the final result set.                                                                     |        :x:         | Any string                                  |
-|        `admin_user`        |                                                                                                             Username of the admin user                                                                                                             | :heavy_check_mark: | Any string                                  |
-|      `admin_password`      |                                                                                                             Password of the admin user                                                                                                             | :heavy_check_mark: | Any string                                  |
-|        `aws_region`        |                                                                                                   Region of your AWS account; e.g., `us-east-1`                                                                                                    | :heavy_check_mark: | Valid AWS region identifier                 |
-|    `aws_private_bucket`    |                                                                                    Name of the private S3 bucket in which to store task configuration and data                                                                                     | :heavy_check_mark: | String unique across AWS                    |
-|    `aws_deploy_bucket`     |                                                                                          Name of the public S3 bucket in which to deploy task source code                                                                                          | :heavy_check_mark: | String unique across AWS                    |
-|      `server_config`       | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none`                 |
-|      `enable_solver`       |                                       Allows to deploy the HITs solver locally. Allows to provide a set of documents which will be automatically allocated into a set of HITs. Requires the usage of Docker.                                       |        :x:         | `true` or `false`                           |
-|      `enable_crawling`       |                                                                                        Enables the crawling of the results retrieved by the search engine.                                                                                         |        :x:         | `true` or `false`                           |
-| `prolific_completion_code` |                                                  Prolific study completion code. Provide here the code if you recruit crowd workers via Prolific. Required if the platform chosen is `prolific`.                                                   |        :x:         | Valid Prolific completion code              |
-| `toloka_oauth_token` |                                                                                     Token to access Toloka's API. Required if the platform chosen is `toloka`.                                                                                     |        :x:         | Valid Toloka OAuth token                    |
-|      `ip_info_token`       |                                                                                               API Key to use `ipinfo.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Info key                           |
-|  `ip_geolocation_api_key`  |                                                                                            API Key to use `ipgeolocation.io` tracking functionalities.                                                                                             |        :x:         | Valid IP Geolocation key                    |
-|      `ipapi_api_key`       |                                                                                                API Key to use `ipapi.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Api key                            |
-|     `user_stack_token`     |                                                                                        API Key to use `userstack.com` user agent detection functionalities.                                                                                        |        :x:         | Valid Userstack key                         |
-|       `bing_api_key`       |                                                                                                  API Key to use `BingWebSearch` search provider.                                                                                                   |        :x:         | Valid  Bing API Web Search Key              |
+| Variable | Description | Mandatory | Value |
+|:--------:|:------------|:---------:|:------|
+| `profile_name` | Name of the IAM profile created during Step #2. If unspecified, the default value is `default`. | ❌ | `your_iam_user` |
+| `mail_contact` | Contact email address to receive AWS budgeting-related communications. | ✅ | Valid email address |
+| `platform` | Platform on which the crowdsourcing task is deployed. Set to `none` if you recruit workers manually. | ✅ | `none`, `mturk`, `prolific`, or `toloka` |
+| `budget_limit` | Maximum monthly budget allowed, in USD (e.g., `5.0`). | ✅ | Positive float |
+| `task_name` | Identifier of the crowdsourcing task. | ✅ | Any string |
+| `batch_name` | Identifier of a single task batch. | ✅ | Any string |
+| `task_title` | Custom title for the crowdsourcing task. | ❌ | Any string |
+| `batch_prefix` | Prefix for the identifiers of one or more task batches. Use this to filter the final result set. | ❌ | Any string |
+| `admin_user` | Username of the admin user. | ✅ | Any string |
+| `admin_password` | Password of the admin user. | ✅ | Any string |
+| `aws_region` | Region of your AWS account (e.g., `us-east-1`). | ✅ | Valid AWS region identifier |
+| `aws_private_bucket` | Name of the private S3 bucket used to store task configuration and data. | ✅ | Unique string across AWS |
+| `aws_deploy_bucket` | Name of the public S3 bucket used to deploy the task source code. | ✅ | Unique string across AWS |
+| `aws_dataset_bucket` | Name of the optional S3 bucket used to store additional data for tasks. | ❌ | Unique string across AWS |
+| `server_config` | Specifies the worker behavior logging interface. Use `aws` for AWS-based logging, `custom` to provide your own endpoint, or `none` to disable logging. | ✅ | `aws`, `custom`, or `none` |
+| `enable_solver` | Enables deployment of the HITs solver locally. Allows automatic document allocation into HITs. Requires Docker. | ❌ | `true` or `false` |
+| `enable_crawling` | Enables crawling of results retrieved by the search engine. | ❌ | `true` or `false` |
+| `prolific_completion_code` | Prolific study completion code. Required if `prolific` is selected as the platform. | ❌ | Valid Prolific completion code |
+| `toloka_oauth_token` | Token to access the Toloka API. Required if `toloka` is selected as the platform. | ❌ | Valid Toloka OAuth token |
+| `ip_info_token` | API key for `ipinfo.com` tracking functionalities. | ❌ | Valid IPInfo API key |
+| `ip_geolocation_api_key` | API key for `ipgeolocation.io` tracking functionalities. | ❌ | Valid IPGeolocation API key |
+| `ipapi_api_key` | API key for `ipapi.com` tracking functionalities. | ❌ | Valid IPAPI API key |
+| `user_stack_token` | API key for `userstack.com` user-agent detection functionalities. | ❌ | Valid Userstack API key |
+| `bing_api_key` | API key for the `BingWebSearch` search provider. | ❌ | Valid Bing Web Search API key |
+
 
 ## Task Configuration
 
