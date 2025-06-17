@@ -3818,7 +3818,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-bootstrap/ng-bootstrap@npm:17":
+"@ng-bootstrap/ng-bootstrap@npm:17.0.1":
   version: 17.0.1
   resolution: "@ng-bootstrap/ng-bootstrap@npm:17.0.1"
   dependencies:
@@ -5687,7 +5687,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bootstrap@npm:^5.3.3":
+"bootstrap@npm:^5.3.6":
   version: 5.3.6
   resolution: "bootstrap@npm:5.3.6"
   peerDependencies:
@@ -6230,18 +6230,18 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:^3.830.0"
     "@funktechno/texthighlighter": "npm:^2.1.2"
     "@kolkov/angular-editor": "npm:^2.1.0"
-    "@ng-bootstrap/ng-bootstrap": "npm:17"
+    "@ng-bootstrap/ng-bootstrap": "npm:17.0.1"
     "@popperjs/core": "npm:^2.11.8"
     "@types/node": "npm:^20.10.5"
-    bootstrap: "npm:^5.3.3"
+    bootstrap: "npm:^5.3.6"
     crypto-es: "npm:^2.1.0"
     flat-angular: "npm:^1.6.0"
     material-icons: "npm:^1.13.14"
-    ngx-color-picker: "npm:16"
+    ngx-color-picker: "npm:16.0.0"
     ngx-cookie-service: "npm:^17.0.0"
     ngx-countdown: "npm:17"
-    ngx-device-detector: "npm:9"
-    ngx-file-helpers: "npm:13"
+    ngx-device-detector: "npm:9.0.0"
+    ngx-file-helpers: "npm:13.0.1"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.1"
     titleize: "npm:^4.0.0"
@@ -8770,7 +8770,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:16":
+"ngx-color-picker@npm:16.0.0":
   version: 16.0.0
   resolution: "ngx-color-picker@npm:16.0.0"
   dependencies:
@@ -8804,7 +8804,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:9":
+"ngx-device-detector@npm:9.0.0":
   version: 9.0.0
   resolution: "ngx-device-detector@npm:9.0.0"
   dependencies:
@@ -8816,7 +8816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:13":
+"ngx-file-helpers@npm:13.0.1":
   version: 13.0.1
   resolution: "ngx-file-helpers@npm:13.0.1"
   dependencies:
