@@ -154,30 +154,38 @@ export class Attribute {
     constructor(index: number, data: JSON) {
         this.index = index;
         this.name = data['name'];
-        this.name_pretty = 'name_pretty' in data ? data['name_pretty'] as string : titleize(data['name']);
-        this.is_video = data['is_video'] || false;
+        this.name_pretty = data['name_pretty'] || titleize(this.name);
+
+        /* unified video detection */
+        if ('is_video' in data) {
+            this.is_video = !!data['is_video'];
+        } else {
+            const n = this.name.toLowerCase();
+            this.is_video =
+                n.includes('video') ||  // video_url, video_uuid, …
+                n.includes('youtube') ||
+                n.endsWith('_url');
+        }
     }
 
-    public isImage(value: string): boolean {
-        if (this.name.toLowerCase().includes('image')) {
-            return /\.(png|jpe?g|gif|svg)$/i.test(value);
-        }
-        return false;
+    public isImage(v: string): boolean {
+        return this.name.toLowerCase().includes('image') && /\.(png|jpe?g|gif|svg)$/i.test(v);
     }
 }
 
 export class AttributeMain extends Attribute {
-    show;
+    show: boolean;
     annotate: boolean;
     required: boolean;
 
     constructor(index: number, data: JSON) {
         super(index, data);
-        this.show = data['show'] || false;
-        this.annotate = data['annotate'];
-        this.required = data['required'];
+        this.show = !!data['show'];
+        this.annotate = !!data['annotate'];
+        this.required = !!data['required'];
     }
 }
+
 
 export class DimensionPost {
     name: string;
