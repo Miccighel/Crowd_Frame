@@ -6230,13 +6230,13 @@ __metadata:
     ngx-color-picker: "npm:16.0.0"
     ngx-cookie-service: "npm:^17.1.0"
     ngx-countdown: "npm:17.1.1"
-    ngx-device-detector: "npm:9.0.0"
-    ngx-file-helpers: "npm:13.0.1"
+    ngx-device-detector: "npm:7.0.0"
+    ngx-file-helpers: "npm:12.0.0"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.2"
     tslib: "npm:^2.8.1"
     typescript: "npm:5.4.5"
-    zone.js: "npm:~0.15.1"
+    zone.js: "npm:~0.14.10"
   languageName: unknown
   linkType: soft
 
@@ -8702,27 +8702,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:9.0.0":
-  version: 9.0.0
-  resolution: "ngx-device-detector@npm:9.0.0"
+"ngx-device-detector@npm:7.0.0":
+  version: 7.0.0
+  resolution: "ngx-device-detector@npm:7.0.0"
   dependencies:
     tslib: "npm:^2.0.0"
   peerDependencies:
-    "@angular/common": ^19.0.0
-    "@angular/core": ^19.0.0
-  checksum: 10/e0af455227563f9afbf955dbe01a88efce95b99bea65f8d70378d5bf1f6dc920ca5b5fa97171199074ba9ec962cbb3188e4aafb762cb6243d7d65994440cff8d
+    "@angular/common": ^17.0.0
+    "@angular/core": ^17.0.0
+  checksum: 10/c9da70620b44f0150c57807929661c644a714defe99f7e72337ac6f42a10d42cd86e6b53fc88ad47d747b3ebc2b12f9644cb2787a8472725ec064f7f1bcfa28b
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:13.0.1":
-  version: 13.0.1
-  resolution: "ngx-file-helpers@npm:13.0.1"
+"ngx-file-helpers@npm:12.0.0":
+  version: 12.0.0
+  resolution: "ngx-file-helpers@npm:12.0.0"
   dependencies:
     tslib: "npm:^2.6.3"
   peerDependencies:
-    "@angular/common": ^19.0.0
-    "@angular/core": ^19.0.0
-  checksum: 10/b9e287d0614e6a22f39c3a9d1026fe2d72285bba577907940badae1c99e3ff3df21c9024fe452cda3e13d2ebe8e4c467713f4b00f43e27f40d3d8756856da81d
+    "@angular/common": ^18.0.0
+    "@angular/core": ^18.0.0
+  checksum: 10/7b648e640cf3e5003bc6931d6d82ff3a7d51ed44f6a7ff654a38c33044df3a84a4a7eb64be6aea81c2be197727f9714619539afdae468007f1ebb5306b75b8d6
   languageName: node
   linkType: hard
 
@@ -11397,9 +11397,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.15.1":
-  version: 0.15.1
-  resolution: "zone.js@npm:0.15.1"
-  checksum: 10/10f8b8651694e7c9484b32da677d4051b8aaa7e2cb3a6baa1f608ff789e249fbccca33820b0590f9d80a7bbfc860a3ae3a6969b5c433f77b1b66e896f3d5b4d5
+"zone.js@npm:~0.14.10":
+  version: 0.14.10
+  resolution: "zone.js@npm:0.14.10"
+  checksum: 10/a7bed2f9a7ce67ba4e70b03b7e59dc955e4d2d738570950c4a0e16fafb5c23c47d0c6ece84f6e871a0f77d81c26a051da566d09738ebfdab297f54b862ae0b5d
   languageName: node
   linkType: hard
