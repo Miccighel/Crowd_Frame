@@ -56,28 +56,32 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
             "aot": true,
             "allowedCommonJsDependencies": [
               "@funktechno/texthighlighter/lib"
             ],
-            "outputPath": "dist/Crowd_Frame",
+            "outputPath": {
+              "base": "dist/Crowd_Frame"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.app.json",
             "styles": [
               "src/styles.scss"
             ],
             "scripts": [],
-            "assets": ["src/assets"],
-            "vendorChunk": true,
+            "assets": [
+              "src/assets"
+            ],
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -101,8 +105,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "localize": ["en-US"],
               "i18nMissingTranslation": "error"
             },
@@ -127,8 +129,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "localize": ["it"],
               "i18nMissingTranslation": "error"
             },
@@ -139,7 +139,7 @@
           }
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
             "buildTarget": "Crowd_Frame:build"
@@ -160,7 +160,7 @@
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "Crowd_Frame:build"
           }

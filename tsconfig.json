@@ -1,12 +1,11 @@
 {
-	"compilerOptions": {
-		"allowSyntheticDefaultImports": true,
-		"resolveJsonModule": true,
+  "compilerOptions": {
+    "resolveJsonModule": true,
 		"baseUrl": "./",
-		"outDir": "./dist/out-tsc",
+    "outDir": "./dist/out-tsc",
+    "esModuleInterop": true,
 		"sourceMap": true,
-		"declaration": false,
-		"downlevelIteration": true,
+    "declaration": false,
 		"experimentalDecorators": true,
 		"module": "es2022",
 		"moduleResolution": "node",
