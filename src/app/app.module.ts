@@ -2,7 +2,7 @@
 import {NgModule, APP_INITIALIZER} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {HttpClientModule} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {ReactiveFormsModule, FormsModule} from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -85,8 +85,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         );
 }
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         BaseComponent,
         SkeletonComponent,
         SearchEngineBodyComponent,
@@ -134,10 +133,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         CountdownDialogComponent,
         DocumentVideoComponent
     ],
-    imports: [
-        BrowserModule,
+    bootstrap: [BaseComponent], imports: [BrowserModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         ReactiveFormsModule,
         FormsModule,
         AngularEditorModule,
@@ -148,9 +145,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ColorPickerModule,
         NgxUiLoaderModule,
         MatProgressSpinnerModule,
-        AppRoutingModule  // Always keep AppRoutingModule as the last import
-    ],
-    providers: [
+        AppRoutingModule // Always keep AppRoutingModule as the last import
+    ], providers: [
         SectionService,
         {
             provide: APP_INITIALIZER,
@@ -158,8 +154,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
             deps: [ActionLogger],
             multi: true,
         },
-    ],
-    bootstrap: [BaseComponent],  // Root component to bootstrap
-})
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 
 export class AppModule {}

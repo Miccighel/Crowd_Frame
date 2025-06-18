@@ -3,7 +3,7 @@ import {Injectable} from '@angular/core';
 import {from, Observable, of, toArray} from "rxjs";
 import {concatMap, map} from "rxjs/operators";
 /* HTTP handling modules */
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {PubmedSearchResponse} from "../../models/searchEngine/pubmedSearchResponse";
 import {BaseResponse} from "../../models/searchEngine/baseResponse";
 import {PubmedSummaryResponse} from '../../models/searchEngine/pubmedSummaryResponse';

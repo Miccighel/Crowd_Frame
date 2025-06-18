@@ -1,4 +1,4 @@
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
 import {S3Service} from "./aws/s3.service";

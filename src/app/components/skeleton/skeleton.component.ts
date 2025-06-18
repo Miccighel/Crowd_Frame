@@ -1,7 +1,7 @@
 /* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 
 /* Angular Material Components */
 import {MatFormField} from "@angular/material/form-field";

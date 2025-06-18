@@ -2,7 +2,7 @@
 import {Injectable} from '@angular/core';
 import {Observable, map} from "rxjs";
 /* HTTP handling modules */
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {BingWebSearchResponse} from '../../models/searchEngine/bingWebSearchResponse';
 import {BaseResponse} from "../../models/searchEngine/baseResponse";
 import {tap} from "rxjs/operators";

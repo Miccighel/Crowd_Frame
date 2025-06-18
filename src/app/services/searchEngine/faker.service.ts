@@ -2,7 +2,7 @@
 import {Injectable} from '@angular/core';
 import {from, mergeMap, Observable, of, toArray} from "rxjs";
 /* HTTP handling modules */
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {FakeSearchResponse} from "../../models/searchEngine/fakeSearchResponse";
 import {BaseResponse} from "../../models/searchEngine/baseResponse";
 import {concatMap, map} from "rxjs/operators";
