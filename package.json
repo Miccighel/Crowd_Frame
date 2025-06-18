@@ -47,7 +47,6 @@
     "ngx-ui-loader": "^13.0.0",
     "rxjs": "^7.8.1",
     "titleize": "^4.0.0",
-    "tree-model": "^1.0.7",
     "tslib": "^2.8.1",
     "util": "^0.12.5",
     "zone.js": "~0.14.10"
@@ -61,5 +60,5 @@
   "browser": {
     "crypto": false
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.2"
 }

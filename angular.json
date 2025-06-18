@@ -60,9 +60,7 @@
           "options": {
             "aot": true,
             "allowedCommonJsDependencies": [
-              "aws-sdk",
-              "@funktechno/texthighlighter/lib",
-              "tree-model"
+              "@funktechno/texthighlighter/lib"
             ],
             "outputPath": "dist/Crowd_Frame",
             "index": "src/index.html",

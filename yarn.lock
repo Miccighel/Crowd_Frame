@@ -6245,7 +6245,6 @@ __metadata:
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.1"
     titleize: "npm:^4.0.0"
-    tree-model: "npm:^1.0.7"
     tslib: "npm:^2.8.1"
     typescript: "npm:5.4.5"
     util: "npm:^0.12.5"
@@ -7081,13 +7080,6 @@ __metadata:
     common-path-prefix: "npm:^3.0.0"
     pkg-dir: "npm:^7.0.0"
   checksum: 10/52a456a80deeb27daa3af6e06059b63bdb9cc4af4d845fc6d6229887e505ba913cd56000349caa60bc3aa59dacdb5b4c37903d4ba34c75102d83cab330b70d2f
-  languageName: node
-  linkType: hard
-
-"find-insert-index@npm:0.0.1":
-  version: 0.0.1
-  resolution: "find-insert-index@npm:0.0.1"
-  checksum: 10/a77d17cfeb258c8b0618f92ec177baa2aa0ab5ef9525c27422d2b82828ab61ac1452000df0fbcabe75b2de4787133daefda573c9cab2efb15b2f517b29e79929
   languageName: node
   linkType: hard
 
@@ -8433,13 +8425,6 @@ __metadata:
   version: 1.4.1
   resolution: "merge2@npm:1.4.1"
   checksum: 10/7268db63ed5169466540b6fb947aec313200bcf6d40c5ab722c22e242f651994619bcd85601602972d3c85bd2cc45a358a4c61937e9f11a061919a1da569b0c2
-  languageName: node
-  linkType: hard
-
-"mergesort@npm:0.0.1":
-  version: 0.0.1
-  resolution: "mergesort@npm:0.0.1"
-  checksum: 10/f174d414944950b8d504ca7392790de74c8c6064398742a46ac3a90d993be5b1157476b14d34aa909277a939085997eb9941654efa5c4dc38aa145a7f64df7e7
   languageName: node
   linkType: hard
 
@@ -10885,16 +10870,6 @@ __metadata:
   bin:
     tree-kill: cli.js
   checksum: 10/49117f5f410d19c84b0464d29afb9642c863bc5ba40fcb9a245d474c6d5cc64d1b177a6e6713129eb346b40aebb9d4631d967517f9fbe8251c35b21b13cd96c7
-  languageName: node
-  linkType: hard
-
-"tree-model@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "tree-model@npm:1.0.7"
-  dependencies:
-    find-insert-index: "npm:0.0.1"
-    mergesort: "npm:0.0.1"
-  checksum: 10/c9794f9421e4568e34fc3de77ad9b17b893426cfcd72ea8c2a536641247ed7e3b3aa8c6c79daf1afff31504ebcd009cff62c3ce3739017425536d972aa338ed4
   languageName: node
   linkType: hard
 
