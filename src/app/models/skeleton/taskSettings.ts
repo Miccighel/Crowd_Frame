@@ -160,11 +160,7 @@ export class Attribute {
         if ('is_video' in data) {
             this.is_video = !!data['is_video'];
         } else {
-            const n = this.name.toLowerCase();
-            this.is_video =
-                n.includes('video') ||  // video_url, video_uuid, …
-                n.includes('youtube') ||
-                n.endsWith('_url');
+            this.is_video = false;
         }
     }
 
