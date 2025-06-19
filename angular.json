@@ -65,7 +65,10 @@
 							"browser": ""
 						},
 						"index": "src/index.html",
-						"polyfills": [],
+						"polyfills": [
+							"zone.js",
+							"@angular/localize/init"
+						],
 						"tsConfig": "tsconfig.app.json",
 						"styles": [
 							"src/styles.scss"
