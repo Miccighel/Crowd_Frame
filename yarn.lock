@@ -3876,10 +3876,10 @@ __metadata:
     bootstrap: "npm:^5.3.7"
     crypto-es: "npm:^2.1.0"
     material-icons: "npm:^1.13.14"
-    ngx-color-picker: "npm:16.0.0"
-    ngx-cookie-service: "npm:^17.1.0"
+    ngx-color-picker: "npm:18.0.0"
+    ngx-cookie-service: "npm:18.0.0"
     ngx-countdown: "npm:17.1.1"
-    ngx-device-detector: "npm:7.0.0"
+    ngx-device-detector: "npm:8.0.0"
     ngx-file-helpers: "npm:12.0.0"
     ngx-ui-loader: "npm:^13.0.0"
     rxjs: "npm:^7.8.2"
@@ -5182,28 +5182,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:16.0.0":
-  version: 16.0.0
-  resolution: "ngx-color-picker@npm:16.0.0"
+"ngx-color-picker@npm:18.0.0":
+  version: 18.0.0
+  resolution: "ngx-color-picker@npm:18.0.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/common": ">=9.0.0"
     "@angular/core": ">=9.0.0"
     "@angular/forms": ">=9.0.0"
-  checksum: 10/36441de4a08da5f4558c86952ebbd1a50872a7171c3ba9a9c238e3142438f079e3857f015b31b633497254983538b3d35dea114df1a7540c688381b00d9b27ab
+  checksum: 10/cebb77bf875ce10b9c2a0667cba251b7c508fcc81bf327336ad5400a3cb0a8ba6fc5753ed7f2fdd9f0712bf1500ec1921b0a9cbd28c8c2cecd90229b7c2b91bc
   languageName: node
   linkType: hard
 
-"ngx-cookie-service@npm:^17.1.0":
-  version: 17.1.0
-  resolution: "ngx-cookie-service@npm:17.1.0"
+"ngx-cookie-service@npm:18.0.0":
+  version: 18.0.0
+  resolution: "ngx-cookie-service@npm:18.0.0"
   dependencies:
     tslib: "npm:^2.6.2"
   peerDependencies:
-    "@angular/common": ^17.0.0
-    "@angular/core": ^17.0.0
-  checksum: 10/dcce14db6884cbed6c75115ce3a264d4c9a3688d0a927789e6441613a53b06693088ac17cf97e6a5cd55241d5a8d22989e407da14569b0ace867fe68d2d1b99d
+    "@angular/common": ^18.0.0-rc.0
+    "@angular/core": ^18.0.0-rc.0
+  checksum: 10/e48a76d558320fc34882e111fcd76ff37fdffe3ff3f586de6787a161eb0e3fc17ba9a597470cd90c2c29e3900f3b242c4c49be1d5ccb8fc2bdd5e8cc1620fa52
   languageName: node
   linkType: hard
 
@@ -5216,15 +5216,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:7.0.0":
-  version: 7.0.0
-  resolution: "ngx-device-detector@npm:7.0.0"
+"ngx-device-detector@npm:8.0.0":
+  version: 8.0.0
+  resolution: "ngx-device-detector@npm:8.0.0"
   dependencies:
     tslib: "npm:^2.0.0"
   peerDependencies:
-    "@angular/common": ^17.0.0
-    "@angular/core": ^17.0.0
-  checksum: 10/c9da70620b44f0150c57807929661c644a714defe99f7e72337ac6f42a10d42cd86e6b53fc88ad47d747b3ebc2b12f9644cb2787a8472725ec064f7f1bcfa28b
+    "@angular/common": ^18.0.0
+    "@angular/core": ^18.0.0
+  checksum: 10/6255ec4455a34299795259a59969137b6327911b426b08c36264f239ae36f900e66fef6dd7030fa35833e2aab02b19c3985b35eebb721f04054a52358399e5a8
   languageName: node
   linkType: hard
 
