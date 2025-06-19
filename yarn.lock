@@ -527,9 +527,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:^3.830.0":
-  version: 3.830.0
-  resolution: "@aws-sdk/client-s3@npm:3.830.0"
+"@aws-sdk/client-s3@npm:^3.832.0":
+  version: 3.832.0
+  resolution: "@aws-sdk/client-s3@npm:3.832.0"
   dependencies:
     "@aws-crypto/sha1-browser": "npm:5.2.0"
     "@aws-crypto/sha256-browser": "npm:5.2.0"
@@ -586,8 +586,10 @@ __metadata:
     "@smithy/util-stream": "npm:^4.2.2"
     "@smithy/util-utf8": "npm:^4.0.0"
     "@smithy/util-waiter": "npm:^4.0.5"
+    "@types/uuid": "npm:^9.0.1"
     tslib: "npm:^2.6.2"
-  checksum: 10/db8afdd6bec2f8626e24034b66115840a0930ad30cdb5ab6390d9c39af035bfa48c1e3cc7372d269170df144efbe5abe84d0832bd12d6ccf44b195d5d67f59b1
+    uuid: "npm:^9.0.1"
+  checksum: 10/072b21cdb8ec526c37daa0c4eeed2538c585a00e25ca54d32903c619457f73e74fd3d0767495444a5d52c0f5d17cfb10736f6d26e025f96ec97108ecbd934d99
   languageName: node
   linkType: hard
 
@@ -842,9 +844,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:^3.830.0":
-  version: 3.830.0
-  resolution: "@aws-sdk/lib-storage@npm:3.830.0"
+"@aws-sdk/lib-storage@npm:^3.832.0":
+  version: 3.832.0
+  resolution: "@aws-sdk/lib-storage@npm:3.832.0"
   dependencies:
     "@smithy/abort-controller": "npm:^4.0.4"
     "@smithy/middleware-endpoint": "npm:^4.1.11"
@@ -854,8 +856,8 @@ __metadata:
     stream-browserify: "npm:3.0.0"
     tslib: "npm:^2.6.2"
   peerDependencies:
-    "@aws-sdk/client-s3": ^3.830.0
-  checksum: 10/8f070b545d07512466541793410ce5bd22027e4f47e686d36fba979b86149c28d4d4717d79e177a5db39fca34d1ab9fd0027324f1af9349e0a3dfa70ed6348a3
+    "@aws-sdk/client-s3": ^3.832.0
+  checksum: 10/dcc868a049c8bddd07583b8c738d403716bbd5a4a0577d726e27c152c796804a559160b61cdb030228c637b40f9c75a2a19cb4ae54f20653b9d7f6266b87dcf9
   languageName: node
   linkType: hard
 
@@ -3337,12 +3339,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.10.5":
-  version: 20.17.52
-  resolution: "@types/node@npm:20.17.52"
+"@types/node@npm:^20.11.17":
+  version: 20.19.1
+  resolution: "@types/node@npm:20.19.1"
   dependencies:
-    undici-types: "npm:~6.19.2"
-  checksum: 10/e464dc40ec9fd8a6f45d8a80861bc92d7bb777caa305d141b5db6b82c3aa9e79e22cc051bd77ef9c7c0ceefd931dcb1ea70a5aa4c71daf9ce90c8379097406be
+    undici-types: "npm:~6.21.0"
+  checksum: 10/2369a96a832a6e8111d2b996c56fb1b78b27fad0879de3e344ae2835697464e001d6fe813a11902348fc7dc63b9510000f3d2cd4bedadf2d3fce7b7bb7903444
   languageName: node
   linkType: hard
 
@@ -3862,15 +3864,15 @@ __metadata:
     "@angular/platform-browser-dynamic": "npm:18.2.13"
     "@angular/router": "npm:18.2.13"
     "@aws-sdk/client-dynamodb": "npm:^3.830.0"
-    "@aws-sdk/client-s3": "npm:^3.830.0"
+    "@aws-sdk/client-s3": "npm:^3.832.0"
     "@aws-sdk/credential-providers": "npm:^3.830.0"
     "@aws-sdk/lib-dynamodb": "npm:^3.830.0"
-    "@aws-sdk/lib-storage": "npm:^3.830.0"
+    "@aws-sdk/lib-storage": "npm:^3.832.0"
     "@funktechno/texthighlighter": "npm:^2.1.2"
     "@kolkov/angular-editor": "npm:^2.1.0"
     "@ng-bootstrap/ng-bootstrap": "npm:17.0.1"
     "@popperjs/core": "npm:^2.11.8"
-    "@types/node": "npm:^20.10.5"
+    "@types/node": "npm:^20.11.17"
     bootstrap: "npm:^5.3.7"
     crypto-es: "npm:^2.1.0"
     material-icons: "npm:^1.13.14"
@@ -6418,13 +6420,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10/760f7d92fb383dbf7dee2443bf902f4365db2117f96f875cf809167f6103d55064de973db9f78fe8f31ec08fff52b2c969aee0d310939c0a3798ec75d0bca2e1
-  languageName: node
-  linkType: hard
-
-"undici-types@npm:~6.19.2":
-  version: 6.19.8
-  resolution: "undici-types@npm:6.19.8"
-  checksum: 10/cf0b48ed4fc99baf56584afa91aaffa5010c268b8842f62e02f752df209e3dea138b372a60a963b3b2576ed932f32329ce7ddb9cb5f27a6c83040d8cd74b7a70
   languageName: node
   linkType: hard
 
