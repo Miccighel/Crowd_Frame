@@ -86,56 +86,78 @@ export class DimensionComponent implements OnInit, OnChanges {
                 if (!dimension.pairwise) {
                     if (this.checkIfDimensionIsEnabledForPostAssessment(dimension.name)) {
                         if (dimension.scale) {
-                            let answerValue: string = ''
+                            let answerValue: any = '';
                             if (this.mostRecentDataRecord)
-                                answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value${controlSuffix}`]
+                                answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value${controlSuffix}`];
                             if (dimension.scale.type == "categorical") {
                                 if ((<ScaleCategorical>dimension.scale).multipleSelection) {
-                                    let answers = {}
-                                    let scale = (<ScaleCategorical>dimension.scale)
+                                    let answers = {};
+                                    let scale = (<ScaleCategorical>dimension.scale);
                                     scale.mapping.forEach((value, index) => {
-                                        answers[index] = false
+                                        answers[index] = false;
                                     });
-                                    controlsConfig[`${dimension.name}_list${controlSuffix}`] = this.formBuilder.group(answers)
-                                    controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required])
+                                    controlsConfig[`${dimension.name}_list${controlSuffix}`] = this.formBuilder.group(answers);
+                                    controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
                                 } else {
                                     controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
                                 }
                             }
 
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                            // FIX: Set interval value to min if not already set
+                            if (dimension.scale.type == "interval") {
+                                if (answerValue === '' || answerValue === undefined || answerValue === null)
+                                    answerValue = (dimension.scale as ScaleInterval).min;
+                                controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            }
+
+                            if (dimension.scale.type == "magnitude_estimation") {
+                                controlsConfig[`${dimension.name}_value${controlSuffix}`] =
+                                    new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                            }
                         }
                         if (dimension.justification) {
-                            let answerJustification: string = ''
+                            let answerJustification: string = '';
                             if (this.mostRecentDataRecord)
-                                answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification${controlSuffix}`]
-                            controlsConfig[`${dimension.name}_justification${controlSuffix}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
+                                answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification${controlSuffix}`];
+                            controlsConfig[`${dimension.name}_justification${controlSuffix}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)]);
                         }
                     }
                 } else {
                     for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
                         if (dimension.scale) {
-                            let answerValue: string = ''
+                            let answerValue: any = '';
                             if (this.mostRecentDataRecord)
-                                answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                                answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`];
+
+                            if (dimension.scale.type == "categorical") {
+                                controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            }
+
+                            // FIX: Set pairwise interval value to min if not already set
+                            if (dimension.scale.type == "interval") {
+                                if (answerValue === '' || answerValue === undefined || answerValue === null)
+                                    answerValue = (dimension.scale as ScaleInterval).min;
+                                controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            }
+
+                            if (dimension.scale.type == "magnitude_estimation") {
+                                controlsConfig[`${dimension.name}_value_element_${j}`] =
+                                    new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                            }
                         }
                         if (dimension.justification) {
-                            let answerJustification: string = ''
+                            let answerJustification: string = '';
                             if (this.mostRecentDataRecord)
-                                answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
-                            controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
+                                answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`];
+                            controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)]);
                         }
                     }
                 }
             }
         }
-        return controlsConfig
+        return controlsConfig;
     }
+
 
     ngOnInit() {
         this.task = this.sectionService.task
@@ -163,7 +185,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         })
         if (this.documentsFormsAdditional) {
             if (this.documentsFormsAdditional[this.documentIndex]) {
-                if (this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex- 1]) {
+                if (this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex - 1]) {
                     this.assessmentFormAdditional = this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex - 1]
                     this.formEmitter.emit({
                         "index": this.documentIndex,
@@ -238,28 +260,27 @@ export class DimensionComponent implements OnInit, OnChanges {
 
     /* #################### CATEGORICAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
     public detectCategoricalDimensionOnChange(eventData: { value?: any; target?: any; }) {
-        if (this.task.settings.attributesMain.some(attribute => attribute.is_video) && 
+        if (this.task.settings.attributesMain.some(attribute => attribute.is_video) &&
             this.task.dimensions.some(dimension => dimension.scale.type == "interval") &&
             this.task.dimensions.filter(dimension => dimension.scale && dimension.scale.type === "categorical").length > 1) {
             let currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value)
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             let previousValue = this.assessmentForm.controls[primaryCategoricalDimension.name.concat('_value').concat('')].value;
             if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
-                if (currentValue == primaryCategoricalDimension.scale.mapping[0].value) {  
+                if (currentValue == primaryCategoricalDimension.scale.mapping[0].value) {
                     let intervalDimension = this.getIntervalDimension();
                     let secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
-                    
+
                     if (intervalDimension.scale instanceof ScaleInterval) {
                         this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue(intervalDimension.scale.min);
                     }
                     if (secondaryCategoricalDimension.scale instanceof ScaleCategorical) {
                         this.assessmentForm.controls[secondaryCategoricalDimension.name.concat('_value').concat('')].setValue(secondaryCategoricalDimension.scale.mapping[0].value);
-                    }            
-                }
-                else if (previousValue == primaryCategoricalDimension.scale.mapping[0].value) {
+                    }
+                } else if (previousValue == primaryCategoricalDimension.scale.mapping[0].value) {
                     let intervalDimension = this.getIntervalDimension();
                     let secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
-                    
+
                     if (intervalDimension.scale instanceof ScaleInterval) {
                         this.assessmentForm.controls[intervalDimension.name.concat('_value').concat('')].setValue('');
                     }
@@ -269,14 +290,14 @@ export class DimensionComponent implements OnInit, OnChanges {
                 }
             }
         }
-    }    
+    }
 
     /* #################### INTERVAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
     public isVideoTimestampInterval(): boolean {
         return this.task.settings.attributesMain.some(attribute => attribute.is_video) && this.task.dimensions.some(dimension => dimension.scale.type == "categorical");
     }
 
-    public isVideoTypeLabelCategorical(currentCategoricalDimension : Dimension): boolean {
+    public isVideoTypeLabelCategorical(currentCategoricalDimension: Dimension): boolean {
         if (currentCategoricalDimension.scale && currentCategoricalDimension.scale instanceof ScaleCategorical) {
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             return this.task.settings.attributesMain.some(attribute => attribute.is_video) && currentCategoricalDimension.name != primaryCategoricalDimension.name;
@@ -312,7 +333,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         }
     }
 
-    public categoricalDimensionDisabled(currentDimension : Dimension): boolean {
+    public categoricalDimensionDisabled(currentDimension: Dimension): boolean {
         if (currentDimension.scale instanceof ScaleCategorical) {
             const primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
