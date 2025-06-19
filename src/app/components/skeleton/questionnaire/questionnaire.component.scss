@@ -1,199 +1,221 @@
 ::ng-deep .mat-horizontal-stepper-header {
-    pointer-events: none !important;
+	pointer-events: none !important;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-title {
-    padding-top: 1% !important;
-    padding-bottom: 1% !important;
-    margin-bottom: 0 !important;
-    margin-top: 0.5% !important;
-    font-weight: initial !important;
-    border-bottom: 1px solid rgba(0,0,0,.12);
-    font-size: 24px;
+	padding-top: 1% !important;
+	padding-bottom: 1% !important;
+	margin-bottom: 0 !important;
+	margin-top: 0.5% !important;
+	font-weight: initial !important;
+	border-bottom: 1px solid rgba(0, 0, 0, .12);
+	font-size: 24px;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-content {
-    margin-top: 1%;
-    margin-bottom: 1%;
+	margin-top: 1%;
+	margin-bottom: 1%;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version. */
 mat-checkbox {
-    padding-top: 0.5%;
-    padding-bottom: 0.5%;
-    font-size: 1.1em;
+	padding-top: 0.5%;
+	padding-bottom: 0.5%;
+	font-size: 1.1em;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-actions {
-    margin: 1% auto 1em auto;
-    width: 85%;
+	margin: 1% auto 1em auto;
+	width: 85%;
 }
 
 .questionnaire-standard {
-    margin-bottom: 1% !important;
+	margin-bottom: 1% !important;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 .question-number ::ng-deep .mat-form-field-infix {
-    border: 0 !important;
+	border: 0 !important;
 }
 
 /* Questionnaires form */
 
 mat-form-field {
-    width: 100%;
+	width: 100%;
 }
 
 .question-text {
-    font-size: 1.2em;
-    font-weight: normal;
+	font-size: 1.2em;
+	font-weight: normal;
 }
 
 .questionnaire-description {
-    margin-bottom: 1%;
+	margin-bottom: 1%;
 }
 
 .questionnaire-caption {
-    font-style: italic;
+	font-style: italic;
 }
 
 .question-free-text-tall {
-    margin-top: 5px;
+	margin-top: 5px;
 }
 
 .mat-divider {
-    margin-bottom: 1%;
+	margin-bottom: 1%;
 }
 
 .question label {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 .question-mcq span {
-    font-size: 1.1em;
+	font-size: 1.1em;
 }
 
 .questionnaire-value {
-    font-size: 1.1em;
+	font-size: 1.1em;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 ::ng-deep .question-checkbox-field .mat-form-field-infix {
-    display: none;
+	display: none;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 ::ng-deep .question-checkbox-field .mat-form-field-flex {
-    display: none;
+	display: none;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 ::ng-deep .question-checkbox-field .mat-form-field-underline {
-    display: none;
+	display: none;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 ::ng-deep .question-checkbox-field .mat-form-field-wrapper {
-    padding: 0;
+	padding: 0;
 }
 
 .question .question-detail {
-    box-shadow: none;
+	box-shadow: none;
 }
 
 .question-detail mat-panel-title {
-    text-transform: uppercase;
-    flex-grow: 0;
+	text-transform: uppercase;
+	flex-grow: 0;
 }
 
 .question-detail mat-panel-description {
-    font-weight: normal;
-    text-align: left;
+	font-weight: normal;
+	text-align: left;
 }
 
 .question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
-    padding-left: 0.75%;
+	padding-left: 0.75%;
 }
 
 .questionnaire-matrix {
-    margin-top: 2%;
+	margin-top: 2%;
 }
 
 .questionnaire-matrix .matrix-header {
-    border: 0;
-    box-shadow: 0 0 0 0;
-    border-radius: 0;
-    position: -webkit-sticky;
-    position: sticky;
-    background-color: white;
-    top: 0;
-    z-index: 1000;
-    display: flex;
+	border: 0;
+	box-shadow: 0 0 0 0;
+	border-radius: 0;
+	position: -webkit-sticky;
+	position: sticky;
+	background-color: white;
+	top: 0;
+	z-index: 1000;
+	display: flex;
 }
 
 .questionnaire-matrix .matrix-header-text {
-    font-size: 1.1em;
+	font-size: 1.1em;
 }
 
 .questionnaire-matrix .matrix-header-text-wide {
-    font-size: 1.1em;
-    padding-left: 20%;
+	font-size: 1.1em;
+	padding-left: 20%;
 }
 
 .questionnaire-matrix .matrix-header div {
-    display: flex !important;
-    justify-content:center;
-    flex-basis: 0;
-    flex-grow: 1;
-    overflow-wrap: break-word;
-    align-items: center;
-    flex-wrap: wrap;
+	display: flex !important;
+	justify-content: center;
+	flex-basis: 0;
+	flex-grow: 1;
+	overflow-wrap: break-word;
+	align-items: center;
+	flex-wrap: wrap;
 }
 
 .questionnaire-matrix .matrix-header div:first-child {
-    text-align: left;
-    flex-basis: 15%;
+	text-align: left;
+	flex-basis: 15%;
 }
 
 .questionnaire-matrix .radio-button-wide {
-    padding-left: 20%;
+	padding-left: 20%;
 }
 
 .questionnaire-matrix mat-radio-group {
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+	display: flex !important;
+	justify-content: center;
+	align-items: center;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .questionnaire-matrix mat-radio-group div {
-    padding: 1%;
-    flex-basis: 0;
-    flex-grow: 1;
-    display: flex !important;
-    overflow-wrap: break-word;
-    justify-content: center;
-    align-items: center;
+	padding: 1%;
+	flex-basis: 0;
+	flex-grow: 1;
+	display: flex !important;
+	overflow-wrap: break-word;
+	justify-content: center;
+	align-items: center;
 }
 
 .questionnaire-matrix mat-radio-group div:first-child {
-    flex-basis: 15%;
-    justify-content: flex-start;
+	flex-basis: 15%;
+	justify-content: flex-start;
 }
 
 .questionnaire-matrix mat-radio-group > div:first-child {
-    text-align: left;
-    width: 15%;
+	text-align: left;
+	width: 15%;
 }
 
 .questionnaire-matrix mat-radio-group > div p {
-    margin: 0;
+	margin: 0;
 }
 
 .indent {
-    margin-left: 2%;
-    margin-top: 1%;
+	margin-left: 2%;
+	margin-top: 1%;
+}
+
+.checked-summary {
+	display: flex;
+	align-items: center;
+	margin: 8px 0 1% 0;
+	font-size: 0.97em;
+	color: #495057;
+	background: #f8f9fa;
+	border-radius: 4px;
+	padding: 4px 8px;
+
+	.checked-summary-label {
+		font-weight: 500;
+		margin-right: 4px;
+		color: #616161;
+	}
+
+	.checked-summary-values {
+		font-style: italic;
+		color: #1565c0; // Material blue for accents
+	}
 }

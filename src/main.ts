@@ -1,13 +1,22 @@
-import { enableProdMode } from "@angular/core";
-import { platformBrowserDynamic } from "@angular/platform-browser-dynamic";
+/***************************************************************************************************
+ * Inline polyfills – moved here so the Angular builder produces ONE bundle (main.js)
+ ***************************************************************************************************/
+import '@angular/localize/init';   // i18n
+import 'zone.js';                 // Angular change-detection runtime
+
+/***************************************************************************************************
+ * Usual bootstrap code
+ ***************************************************************************************************/
+import { enableProdMode } from '@angular/core';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { AppModule } from './app/app.module';
 import { environment } from "../data/build/environments/environment";
 
-import { AppModule } from "./app/app.module";
-
 if (environment.production) {
-    enableProdMode();
+  enableProdMode();
 }
 
 platformBrowserDynamic()
-    .bootstrapModule(AppModule)
-    .catch((err) => console.error(err));
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err));

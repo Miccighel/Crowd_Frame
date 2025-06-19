@@ -2644,13 +2644,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             process.wait()
             os.remove(locale_file_existing_temp_path)
 
-    status.update(f"Executing build command, please wait")
+    status.update("Executing build command, please wait")
+
     command = None
     if language_code == 'en-US':
-        command = f"yarn run build --configuration=\"production\" --output-hashing=none --base-href /{task_name}/{batch_name}/"
+        command = f'yarn run build --configuration="production" --output-hashing=none --named-chunks=false --base-href /{task_name}/{batch_name}/'
     else:
-        command = f"yarn run build --configuration=\"production-{language_code}\" --output-hashing=none --base-href /{task_name}/{batch_name}/"
+        command = f'yarn run build --configuration="production-{language_code}" --output-hashing=none --named-chunks=false --base-href /{task_name}/{batch_name}/'
+
     console.print(f"Command: [green on black]{command}")
+
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
         line_clean = line.decode().strip()
@@ -2660,37 +2663,34 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(line_clean)
     process.wait()
 
-    status.update("Merging Javascript assets")
+    status.update("Copying Javascript asset")
+
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
+    polyfills_source = f"{folder_build_result}polyfills.js"
+    main_script_source = f"{folder_build_result}main.js"
+
     if os.path.exists(script_merged_file):
         os.remove(script_merged_file)
-    es_script_paths_temp = glob.glob(f"{folder_build_result}*.js")
-    es_scripts_order = [
-        'polyfills.js',
-        'runtime.js',
-        'main.js',
-    ]
-    es_script_paths = [None] * 3
-    for es_script_path in es_script_paths_temp:
-        if os.path.basename(es_script_path) == 'polyfills.js':
-            es_script_paths[0] = es_script_path
-        if os.path.basename(es_script_path) == 'runtime.js':
-            es_script_paths[1] = es_script_path
-        if os.path.basename(es_script_path) == 'main.js':
-            es_script_paths[2] = es_script_path
-    for es_script_path in es_script_paths_temp:
-        if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(
-                es_script_path) != 'main.js':
-            es_script_paths.append(es_script_path)
-    with open(script_merged_file, 'a') as outfile:
-        for script_current_file in es_script_paths:
-            if os.path.exists(script_current_file):
-                console.print(f"Processing file: [italic purple on black]{script_current_file}")
-                with open(script_current_file) as script:
-                    for line in script:
-                        outfile.write(line)
-            else:
-                console.print(f"File not detected: [italic purple on black]{script_current_file}")
+
+    with open(script_merged_file, 'a') as dst:
+        # first: tiny locale stub, if present
+        if os.path.exists(polyfills_source):
+            console.print(f"Processing file: [italic purple on black]{polyfills_source}")
+            with open(polyfills_source) as src:
+                for line in src:
+                    dst.write(line)
+        else:
+            console.print(f"File not detected: [italic purple on black]{polyfills_source}")
+
+        # second: full application
+        if os.path.exists(main_script_source):
+            console.print(f"Processing file: [italic purple on black]{main_script_source}")
+            with open(main_script_source) as src:
+                for line in src:
+                    dst.write(line)
+        else:
+            console.print(f"File not detected: [italic purple on black]{main_script_source}")
+
     console.print(f"Path: [italic]{script_merged_file}")
 
     status.update("Merging CSS assets")

@@ -1,29 +1,36 @@
 {
-  "compilerOptions": {
-    "resolveJsonModule": true,
+	"$schema": "./node_modules/@angular/compiler-cli/src/schemas/tsconfig.schema.json",
+	"compilerOptions": {
+		/* Paths & output */
 		"baseUrl": "./",
-    "outDir": "./dist/out-tsc",
-    "esModuleInterop": true,
-		"sourceMap": true,
-    "declaration": false,
-		"experimentalDecorators": true,
-		"module": "es2022",
-		"moduleResolution": "node",
-		"importHelpers": true,
+		"outDir": "./dist/out-tsc",
+		/* Build-system defaults (Angular 18 + esbuild) */
+		"moduleResolution": "bundler",
+		"module": "esnext",
 		"target": "ES2022",
-		"typeRoots": [
-			"node_modules/@types"
-		],
+		"importHelpers": true,
+		/* Interop & decorators */
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+		/* Diagnostics & safety nets (temporarily relaxed) */
+		"sourceMap": true,
+		"declaration": false,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitReturns": false,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": false,
+		"noPropertyAccessFromIndexSignature": false,
+		/* JSON imports & standard libs */
+		"resolveJsonModule": true,
 		"lib": [
-			"es2022",
+			"ES2022",
 			"dom"
-		],
-		"useDefineForClassFields": false
+		]
 	},
 	"angularCompilerOptions": {
-		"fullTemplateTypeCheck": true,
+		"strictTemplates": false,
 		"strictInjectionParameters": false,
-		"strictInputAccessModifiers": false,
-		"strictTemplates": false
+		"strictInputAccessModifiers": false
 	}
 }

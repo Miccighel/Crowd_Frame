@@ -1,6 +1,4 @@
-/* -------------------------------------------------------------------- */
-/* questionnaire.component.ts                                           */
-/* -------------------------------------------------------------------- */
+// questionnaire.component.ts
 
 import {
     ChangeDetectorRef,
@@ -8,52 +6,37 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
 } from '@angular/core';
 import {
     UntypedFormBuilder,
     UntypedFormControl,
     UntypedFormGroup,
-    Validators
+    Validators,
 } from '@angular/forms';
-
 import {SectionService} from '../../../services/section.service';
-import {UtilsService} from '../../../services/utils.service';
+import {LocalStorageService} from '../../../services/localStorage.service';
 
-import {Questionnaire} from '../../../models/skeleton/questionnaires/questionnaire';
+import {
+    Questionnaire,
+    QNode,
+    walkNode,
+    firstNode,
+    allNodes,
+    addChildNode,
+    dropNode,
+} from '../../../models/skeleton/questionnaires/questionnaire';
+import {Question} from '../../../models/skeleton/questionnaires/question';
 import {Task} from '../../../models/skeleton/task';
 import {Worker} from '../../../models/worker/worker';
-import {Question} from '../../../models/skeleton/questionnaires/question';
 import {DataRecord} from '../../../models/skeleton/dataRecord';
 
 import {MatStepper} from '@angular/material/stepper';
 
-import {
-    TreeNode,
-    walk,
-    first,
-    all,
-    addChild,
-    drop
-} from 'src/app/shared/utils/tree-utils.helper';
-
-interface QModel {
-    index?: number;
-    indexFull?: any;
-    name?: string;
-    nameFull?: string;
-    text?: string;
-    repeat?: boolean;
-    target?: string;
-    answers?: Record<string, string>;
-    position?: any;
-    questions?: TreeNode<QModel>[];
-}
-
 @Component({
     selector: 'app-questionnaire',
     templateUrl: './questionnaire.component.html',
-    styleUrls: ['./questionnaire.component.scss']
+    styleUrls: ['./questionnaire.component.scss'],
 })
 export class QuestionnaireComponent implements OnInit {
 
@@ -68,100 +51,98 @@ export class QuestionnaireComponent implements OnInit {
     }>();
 
     questionnaireForm!: UntypedFormGroup;
-    questionnaire    !: Questionnaire;
-    task             !: Task;
+    questionnaire!: Questionnaire;
+    task!: Task;
     mostRecentDataRecord: DataRecord | null = null;
-    nodes: TreeNode<QModel>[] = [];
+    nodes: QNode[] = [];
+    configurationSerialized = '';
 
     constructor(
         private cdr: ChangeDetectorRef,
         public sectionService: SectionService,
-        private util: UtilsService,
-        private fb: UntypedFormBuilder
+        private fb: UntypedFormBuilder,
+        private localStorageService: LocalStorageService,
     ) {
         this.task = this.sectionService.task;
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Lifecycle                                                          */
-
-    /* ------------------------------------------------------------------ */
-
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
         this.stepper.selectedIndex = this.worker.getPositionCurrent();
         this.sectionService.stepIndex = this.worker.getPositionCurrent();
-        this.mostRecentDataRecord =
-            this.task.retrieveMostRecentDataRecord('questionnaire',
-                this.questionnaireIndex) ?? null;
+        this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('questionnaire', this.questionnaireIndex) ?? null;
 
         if (this.questionnairesForm[this.questionnaireIndex]) {
             this.questionnaireForm = this.questionnairesForm[this.questionnaireIndex];
         } else {
             this.questionnaireForm = this.fb.group({});
-
-            walk(
-                this.questionnaire.treeCut as TreeNode<QModel>,
-                (node: TreeNode<QModel>) => {
-                    if (node === this.questionnaire.treeCut) return;
-                    if (!('position' in node.model)) {
-                        if (node.questions?.length) {
-                            for (const child of node.questions) {
-                                this.nodes.push(child);
-                                if (child.model.repeat) return false;
-                            }
-                        } else {
-                            this.nodes.push(node);
-                            if (node.model.repeat) return false;
-                        }
-                    }
-                },
-                this
-            );
-
-            for (const n of this.nodes) {
-                for (const q of this.questionnaire.questions) {
-                    if (n.model.nameFull === q.nameFull && !q.dropped) {
-                        this.initControl(q);
-                    }
+            walkNode(this.questionnaire.treeCut, n => {
+                if (n === this.questionnaire.treeCut) return;
+                if (!('position' in n)) {
+                    if (n.questions?.length) n.questions.forEach(c => this.nodes.push(c));
+                    else this.nodes.push(n);
                 }
-            }
+            });
+            this.nodes.forEach(n => {
+                const q = this.questionnaire.questions
+                    .find(x => x.nameFull === n.nameFull && !x.dropped);
+                if (q) this.initControl(q);
+            });
         }
 
         this.formEmitter.emit({form: this.questionnaireForm, action: null});
+        this.questionnaireForm.valueChanges
+            .subscribe(() => this.serializeConfiguration());
+        this.serializeConfiguration();
     }
-
-    /* ------------------------------------------------------------------ */
-    /* Control initialisation                                             */
-
-    /* ------------------------------------------------------------------ */
 
     private initControl(q: Question): void {
         if (q.type === 'section' || q.dependant) return;
-
         const name = q.nameFull;
         const validators: any[] = [];
-
         if (q.required) validators.push(Validators.required);
-        if (q.type === 'number')
-            validators.push(Validators.min(0), Validators.max(100));
+        if (q.type === 'number') validators.push(Validators.min(0), Validators.max(100));
         if (q.type === 'email') validators.push(Validators.email);
         if (q.repeat) {
             validators.push(Validators.min(0), Validators.max(q.times));
             if (!this.questionnaire.questionsToRepeat.includes(q))
                 this.questionnaire.questionsToRepeat.push(q);
         }
-
         const prevAns = this.mostRecentDataRecord?.loadAnswers() ?? {};
         const prevVal = prevAns[`${name}_answer`] ?? '';
-
         if (q.type === 'list') {
+            const options = Array.isArray(q.answers)
+                ? q.answers as string[]
+                : Object.values(q.answers ?? {});
+            // Create a map: {0: false, 1: false, ...}
             const answers: Record<number, boolean> = {};
-            q.answers.forEach((_v, idx) => (answers[idx] = false));
+            options.forEach((_v, idx) => answers[idx] = false);
+
+            // Retrieve previously checked indices (canonical: array of indices)
+            let checked: number[] = [];
+            if (Array.isArray(prevVal)) {
+                checked = prevVal;
+            } else if (prevVal && typeof prevVal === 'object') {
+                checked = Object.entries(prevVal)
+                    .filter(([_, v]) => !!v)
+                    .map(([k]) => Number(k));
+            } else if (typeof prevVal === 'string' && prevVal.length > 0 && prevVal !== '') {
+                // If saved as a stringified array or a single number as string
+                try {
+                    checked = JSON.parse(prevVal);
+                    if (!Array.isArray(checked)) checked = [Number(prevVal)];
+                } catch {
+                    checked = [Number(prevVal)];
+                }
+            }
+            // Set corresponding boxes to true
+            checked.forEach(idx => answers[idx] = true);
+
+            // Initialize controls
             this.questionnaireForm.addControl(`${name}_list`, this.fb.group(answers));
             this.questionnaireForm.addControl(
                 `${name}_answer`,
-                new UntypedFormControl(prevVal, [Validators.required])
+                new UntypedFormControl(checked, [Validators.required])
             );
         } else {
             this.questionnaireForm.addControl(
@@ -169,7 +150,6 @@ export class QuestionnaireComponent implements OnInit {
                 new UntypedFormControl(prevVal, validators)
             );
         }
-
         if (q.freeText) {
             const prevFree = prevAns[`${name}_free_text`] ?? '';
             this.questionnaireForm.addControl(
@@ -179,43 +159,48 @@ export class QuestionnaireComponent implements OnInit {
         }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Dependency handling                                                */
+    public handleCheckbox(q: Question, grpName: string): void {
+        const grp = this.questionnaireForm.get(grpName);
+        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
+        if (!grp || !ctrl) return;
 
-    /* ------------------------------------------------------------------ */
+        const checkedIndices = Object.entries(grp.value)
+            .filter(([_, v]) => v)
+            .map(([k]) => Number(k));
+
+        ctrl.setValue(checkedIndices);
+        ctrl.markAsTouched();
+    }
+
+    public displayCheckedLabels(q: Question): string {
+        const checkedIndices = this.questionnaireForm.get(`${q.nameFull}_answer`)?.value;
+        if (!Array.isArray(checkedIndices)) return '';
+        const options = Array.isArray(q.answers)
+            ? q.answers
+            : Object.values(q.answers ?? {});
+        return checkedIndices.map(idx => options[idx]).join(', ');
+    }
 
     public handleQuestionDependency(q: Question): boolean {
         if (!q.dependant) return true;
-
         this.questionnaire.questionDependencies[q.nameFull] = false;
-
-        walk(
-            this.questionnaire.treeCut as TreeNode<QModel>,
-            (node: TreeNode<QModel>) => {
-                if (node === this.questionnaire.treeCut) return;
-
-                if (node.model.name === q.target &&
-                    q.indexFull.includes(node.model.indexFull)) {
-
-                    const value = this.questionnaireForm
-                        .get(`${node.model.nameFull}_answer`)?.value ?? '';
-
-                    if (value !== '') {
-                        const label = node.model.answers?.[value];
-                        if (label === q.needed) {
-                            this.enableDependant(q);
-                            this.questionnaire.questionDependencies[q.nameFull] = true;
-                        }
-                    } else {
-                        this.questionnaireForm
-                            .get(`${q.nameFull}_answer`)?.clearValidators();
-                        this.questionnaire.questionDependencies[q.nameFull] = false;
+        walkNode(this.questionnaire.treeCut, node => {
+            if (node.name === q.target && q.indexFull && q.indexFull === q.indexFull) {
+                const value = this.questionnaireForm.get(`${node.nameFull}_answer`)?.value ?? '';
+                if (value !== '') {
+                    const label = Array.isArray(node.answers)
+                        ? (node.answers as string[])[value]
+                        : node.answers?.[value];
+                    if (label === q.needed) {
+                        this.enableDependant(q);
+                        this.questionnaire.questionDependencies[q.nameFull] = true;
                     }
+                } else {
+                    this.questionnaireForm.get(`${q.nameFull}_answer`)?.clearValidators();
+                    this.questionnaire.questionDependencies[q.nameFull] = false;
                 }
-            },
-            this
-        );
-
+            }
+        });
         Object.entries(this.questionnaire.questionDependencies).forEach(
             ([nf, ok]) => {
                 if (!ok) {
@@ -226,168 +211,66 @@ export class QuestionnaireComponent implements OnInit {
                 }
             }
         );
-
         return this.questionnaire.questionDependencies[q.nameFull];
     }
 
     private enableDependant(q: Question): void {
         const name = q.nameFull;
         const validators: any[] = [];
-
         if (q.required) validators.push(Validators.required);
-        if (q.type === 'number')
-            validators.push(Validators.min(0), Validators.max(100));
+        if (q.type === 'number') validators.push(Validators.min(0), Validators.max(100));
         if (q.type === 'email') validators.push(Validators.email);
-        if (q.repeat) {
-            validators.push(Validators.min(0), Validators.max(q.times));
-            if (!this.questionnaire.questionsToRepeat.includes(q))
-                this.questionnaire.questionsToRepeat.push(q);
-        }
-
         const prev = this.mostRecentDataRecord?.loadAnswers() ?? {};
         const prevVal = prev[`${name}_answer`] ?? '';
-
-        if (q.type === 'list') {
-            const answers: Record<number, boolean> = {};
-            q.answers.forEach((_v, idx) => (answers[idx] = false));
-            this.questionnaireForm.addControl(`${name}_list`, this.fb.group(answers));
-            this.questionnaireForm.addControl(
-                `${name}_answer`,
-                new UntypedFormControl(prevVal, [Validators.required])
-            );
-        } else {
-            this.questionnaireForm.addControl(
-                `${name}_answer`,
-                new UntypedFormControl(prevVal, validators)
-            );
-        }
-
+        const prevTxt = prev[`${name}_free_text`] ?? '';
+        this.questionnaireForm.addControl(
+            `${name}_answer`,
+            new UntypedFormControl(prevVal, validators)
+        );
         if (q.freeText) {
-            const prevFree = prev[`${name}_free_text`] ?? '';
             this.questionnaireForm.addControl(
                 `${name}_free_text`,
-                new UntypedFormControl(prevFree)
+                new UntypedFormControl(prevTxt)
             );
         }
     }
-
-    /* ------------------------------------------------------------------ */
-    /* Checkbox handler                                                   */
-
-    /* ------------------------------------------------------------------ */
-
-    public handleCheckbox(q: Question, groupName: string): void {
-        let anyChecked = false;
-        const grp = this.questionnaireForm.get(groupName);
-        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
-
-        Object.values(grp?.value ?? {}).forEach(v => (anyChecked ||= !!v));
-        ctrl?.setValue(anyChecked ? grp?.value : '');
-        ctrl?.markAsTouched();
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* Question repetition                                                */
-
-    /* ------------------------------------------------------------------ */
 
     public handleQuestionRepetition(q: Question): void {
         const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
         if (!ctrl) return;
-
         for (const repQ of this.questionnaire.questionsToRepeat) {
             const updatedVal = ctrl.value;
             for (const cur of this.questionnaire.questions) {
                 if (cur.target !== repQ.name) continue;
                 if (updatedVal > repQ.times) continue;
-
-                const targetNode = first(
-                    this.questionnaire.treeOriginal as TreeNode<QModel>,
-                    n => n.model.target === repQ.name
-                );
-                const childNodes = all(
-                    this.questionnaire.treeCut as TreeNode<QModel>,
-                    n => n.model.target === repQ.name
-                );
-                const parentNode = first(
-                    this.questionnaire.treeCut as TreeNode<QModel>,
-                    n => n.model.name === repQ.name
-                );
-
+                const targetNode = firstNode(this.questionnaire.treeOriginal, n => n.target === repQ.name);
+                const childNodes = allNodes(this.questionnaire.treeCut, n => n.target === repQ.name);
+                const parentNode = firstNode(this.questionnaire.treeCut, n => n.name === repQ.name);
                 if (!targetNode || !parentNode) continue;
-
-                /* --------------------------------- ADD branches */
                 if (updatedVal >= childNodes.length) {
                     for (let i = childNodes.length; i < updatedVal; i++) {
-
-                        const idxUpd = targetNode.model.indexFull.slice(0, -1).concat(i + 1);
-
-                        walk(
-                            targetNode,
-                            (node: TreeNode<QModel>) => {
-                                if (node.model.target === repQ.name) {
-                                    if (node.model.text?.includes(' nr. ')) {
-                                        node.model.text =
-                                            node.model.text.slice(0, -5).concat(' nr. ', `${i + 1}`);
-                                    } else {
-                                        node.model.text =
-                                            (node.model.text ?? '') + ' nr. ' + (i + 1).toString();
-                                    }
-                                }
-
-                                const idxSlice = node.model.indexFull.slice(idxUpd.length);
-                                const idxFullArr = idxUpd.concat(idxSlice);
-
-                                const newQ = new Question(
-                                    this.questionnaire.lastQuestionIndex,
-                                    node.model as any
-                                );
-                                newQ.indexFull = idxFullArr.join('.');   // <-- string now
-                                newQ.index = this.questionnaire.lastQuestionIndex;
-
-                                const suffixExists = new Array(repQ.times + 1)
-                                    .some(j => newQ.nameFull.includes(`_${j}`));
-
-                                newQ.nameFull = suffixExists
-                                    ? newQ.nameFull.slice(0, -2).concat('_', i.toString())
-                                    : newQ.nameFull.concat('_', i.toString());
-
-                                node.model.index = this.questionnaire.lastQuestionIndex;
-                                node.model.indexFull = idxFullArr;
-                                node.model.nameFull = newQ.nameFull;
-
-                                this.questionnaire.lastQuestionIndex++;
-                                this.questionnaire.questions.push(newQ);
-                            },
-                            this
-                        );
-
-                        addChild(parentNode, targetNode);
-                        for (const qst of this.questionnaire.questions) {
-                            if (!qst.dropped) this.initControl(qst);
-                        }
+                        const newBranch: QNode = JSON.parse(JSON.stringify(targetNode));
+                        // Always ensure indexFull is string
+                        const safeIndexFull = Array.isArray(parentNode.indexFull)
+                            ? parentNode.indexFull.join('.')
+                            : (parentNode.indexFull as string | undefined);
+                        this.questionnaire.updateIndicesForRepeat(newBranch, safeIndexFull, parentNode.nameFull, i);
+                        this.questionnaire.registerQuestionsFromNode(newBranch);
+                        addChildNode(parentNode, newBranch);
+                        this.questionnaire.questions
+                            .filter(qx => !qx.dropped)
+                            .forEach(qx => this.initControl(qx));
                         this.cdr.detectChanges();
                     }
-                }
-                /* --------------------------------- DROP branches */
-                else {
+                } else {
                     const toDrop = childNodes.at(-1);
                     if (!toDrop) continue;
-
-                    drop(this.questionnaire.treeCut as TreeNode<QModel>, toDrop);
-
+                    dropNode(this.questionnaire.treeCut, toDrop);
                     const removeQs: Question[] = [];
-                    walk(
-                        toDrop,
-                        (node: TreeNode<QModel>) => {
-                            const match = this.questionnaire.questions.find(
-                                qx => qx.index === node.model.index
-                            );
-                            if (match) removeQs.push(match);
-                        },
-                        this
-                    );
-
+                    walkNode(toDrop, node => {
+                        const m = this.questionnaire.questions.find(qx => qx.index === node.index);
+                        if (m) removeQs.push(m);
+                    });
                     for (const rem of removeQs) {
                         this.questionnaireForm.removeControl(`${rem.nameFull}_answer`);
                         this.questionnaireForm.removeControl(`${rem.nameFull}_free_text`);
@@ -402,15 +285,62 @@ export class QuestionnaireComponent implements OnInit {
         }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Navigation                                                         */
-
-    /* ------------------------------------------------------------------ */
-
     public handleQuestionnaireCompletion(
         action: 'Back' | 'Next' | 'Finish'
     ): void {
-        this.sectionService.stepIndex += action === 'Back' ? -1 : 1;
+        this.sectionService.stepIndex += (action === 'Back' ? -1 : 1);
         this.formEmitter.emit({form: this.questionnaireForm, action});
+    }
+
+    private serializeConfiguration(): void {
+        const cache = Object.keys(localStorage).filter(k => k.startsWith('questionnaire-'));
+        cache.forEach(k => this.localStorageService.removeItem(k));
+        const questionnairesJSON = JSON.parse(
+            JSON.stringify(this.questionnaireForm.get('questionnaires')?.value ?? [])
+        );
+        questionnairesJSON.forEach((questionnaire: any, qIdx: number) => {
+            switch (questionnaire.type) {
+                case 'crt':
+                    delete questionnaire.description;
+                    questionnaire.questions.forEach((q: any) => {
+                        q.type = 'number';
+                        q.required = true;
+                        delete q.answers;
+                    });
+                    delete questionnaire.mapping;
+                    break;
+                case 'likert':
+                    questionnaire.questions.forEach((q: any) => {
+                        delete q.answers;
+                        q.type = 'mcq';
+                        q.required = true;
+                        q.free_text = false;
+                        q.detail = null;
+                        q.show_detail = false;
+                    });
+                    break;
+                case 'standard':
+                    delete questionnaire.description;
+                    questionnaire.questions.forEach((q: any) => {
+                        const ans: string[] = [];
+                        q.answers.forEach((a: any) => ans.push(a.answer));
+                        q.answers = ans;
+                        q.type = 'mcq';
+                        q.required = true;
+                        q.free_text = false;
+                        q.detail = null;
+                        q.show_detail = false;
+                    });
+                    delete questionnaire.mapping;
+                    break;
+                default:
+                    break;
+            }
+            this.localStorageService.setItem(
+                `questionnaire-${qIdx}`,
+                JSON.stringify(questionnaire)
+            );
+        });
+        this.configurationSerialized = JSON.stringify(questionnairesJSON);
     }
 }
