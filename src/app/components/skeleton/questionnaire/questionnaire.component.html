@@ -1,26 +1,18 @@
-<!-- ------------------------------------------------------------------ -->
-<!-- questionnaire.component.html                                       -->
-<!-- ------------------------------------------------------------------ -->
-
 <ng-template matStepLabel>{{ questionnaire.index }}</ng-template>
 
 <div class="container" id="questionnaire-{{ questionnaire.index }}">
 	<form [formGroup]="questionnaireForm">
 		<mat-card appearance="outlined">
 
-			<!-- ------------------------------------------------------------ -->
-			<!-- Title                                                        -->
-			<!-- ------------------------------------------------------------ -->
 			<mat-card-title>
-        <span *ngIf="questionnaire.name_pretty">
-          {{ questionnaire.name_pretty }}
-        </span>
+                <span *ngIf="questionnaire.name_pretty">
+                    {{ questionnaire.name_pretty }}
+                </span>
 				<span *ngIf="!questionnaire.name_pretty">
-          <span i18n>Questionnaire</span> {{ questionnaire.index + 1 }}
-        </span>
+                    <span i18n>Questionnaire</span> {{ questionnaire.index + 1 }}
+                </span>
 			</mat-card-title>
 
-			<!-- description / caption templates ---------------------------- -->
 			<ng-template #descriptionTemplate let-description>
 				<div class="questionnaire-description" *ngIf="description">
 					<p class="question-text">{{ description }}</p>
@@ -33,14 +25,10 @@
 				</div>
 			</ng-template>
 
-			<!-- ------------------------------------------------------------ -->
-			<!-- Recursive question template                                  -->
-			<!-- ------------------------------------------------------------ -->
+			<!-- Recursive question template -->
 			<ng-template #questionTemplate let-question>
-
 				<div *ngIf="!question.dropped" class="indent">
 
-					<!-- BODY --------------------------------------------------- -->
 					<ng-container class="questionnaire-body"
 								  *ngIf="!question.dropped && handleQuestionDependency(question)">
 
@@ -48,7 +36,7 @@
 							{{ question.indexFull }} - {{ question.text }}
 						</p>
 
-						<!-- MCQ -------------------------------------------------- -->
+						<!-- MCQ -->
 						<div *ngIf="question.type === 'mcq'"
 							 class="question-box question-mcq">
 							<mat-radio-group class="radio-button-group question"
@@ -59,16 +47,14 @@
 									<span>{{ answer }}</span>
 								</mat-radio-button>
 							</mat-radio-group>
-
-							<ng-container
-									*ngIf="$any(questionnaireForm.get(question.nameFull + '_answer'))?.touched">
-								<app-error-message
-										[formField]="$any(questionnaireForm.get(question.nameFull + '_answer'))">
-								</app-error-message>
-							</ng-container>
+							<app-error-message
+									*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+									[formField]="questionnaireForm.get(question.nameFull + '_answer')"
+									class="app-error-message">
+							</app-error-message>
 						</div>
 
-						<!-- NUMBER ------------------------------------------------ -->
+						<!-- NUMBER -->
 						<div *ngIf="question.type === 'number'"
 							 class="question-box question-number">
 							<mat-form-field appearance="fill" class="questionnaire-value">
@@ -83,12 +69,14 @@
 									   (change)="handleQuestionRepetition(question)"
 									   [formControlName]="question.nameFull + '_answer'">
 								<app-error-message
-										[formField]="$any(questionnaireForm.get(question.nameFull + '_answer'))">
+										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
+										class="app-error-message">
 								</app-error-message>
 							</mat-form-field>
 						</div>
 
-						<!-- LIST / CHECKBOX -------------------------------------- -->
+						<!-- LIST / CHECKBOX -->
 						<ng-container *ngIf="question.type === 'list'">
 							<div class="question-box" [formGroupName]="question.nameFull + '_list'">
 								<div *ngFor="let answer of question.answers; let k = index">
@@ -104,12 +92,13 @@
 								<span class="checked-summary-values">{{ displayCheckedLabels(question) }}</span>
 							</div>
 							<app-error-message
-									[formField]="$any(questionnaireForm.get(question.nameFull + '_answer'))">
+									*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+									[formField]="questionnaireForm.get(question.nameFull + '_answer')"
+									class="app-error-message">
 							</app-error-message>
 						</ng-container>
 
-
-						<!-- DROPDOWN --------------------------------------------- -->
+						<!-- DROPDOWN -->
 						<div *ngIf="question.type === 'dropdown'" class="question-box">
 							<mat-form-field appearance="fill" class="questionnaire-value">
 								<mat-label><span i18n>Value</span></mat-label>
@@ -120,12 +109,14 @@
 									</mat-option>
 								</mat-select>
 								<app-error-message
-										[formField]="$any(questionnaireForm.get(question.nameFull + '_answer'))">
+										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
+										class="app-error-message">
 								</app-error-message>
 							</mat-form-field>
 						</div>
 
-						<!-- TEXT / EMAIL ----------------------------------------- -->
+						<!-- TEXT / EMAIL -->
 						<div *ngIf="question.type === 'text' || question.type === 'email'"
 							 class="question-box">
 							<mat-form-field appearance="fill" class="questionnaire-value width-100">
@@ -134,14 +125,16 @@
 										  placeholder="Write your answer here"
 										  rows="2"
 										  [formControlName]="question.nameFull + '_answer'">
-                </textarea>
+                                </textarea>
 								<app-error-message
-										[formField]="$any(questionnaireForm.get(question.nameFull + '_answer'))">
+										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
+										class="app-error-message">
 								</app-error-message>
 							</mat-form-field>
 						</div>
 
-						<!-- FREE TEXT ------------------------------------------- -->
+						<!-- FREE TEXT -->
 						<div *ngIf="question.free_text"
 							 class="{{ question.required ? 'question-free-text-tall' : 'question-free-text' }}">
 							<mat-form-field appearance="fill" class="questionnaire-value width-100">
@@ -150,14 +143,16 @@
 										  placeholder="Write any additional detail here"
 										  rows="2"
 										  [formControlName]="question.nameFull + '_free_text'">
-                </textarea>
+                                </textarea>
 								<app-error-message
-										[formField]="$any(questionnaireForm.get(question.nameFull + '_free_text'))">
+										*ngIf="questionnaireForm.get(question.nameFull + '_free_text')?.touched && questionnaireForm.get(question.nameFull + '_free_text')?.invalid"
+										[formField]="questionnaireForm.get(question.nameFull + '_free_text')"
+										class="app-error-message">
 								</app-error-message>
 							</mat-form-field>
 						</div>
 
-						<!-- DETAILS --------------------------------------------- -->
+						<!-- DETAILS -->
 						<mat-expansion-panel hideToggle
 											 *ngIf="question.detail"
 											 class="question-detail"
@@ -182,7 +177,7 @@
 					</ng-container>
 				</div>
 
-				<!-- recursive call ------------------------------------------ -->
+				<!-- recursive call -->
 				<div *ngIf="question.questions?.length" class="indent">
 					<ng-template
 							ngFor
@@ -190,12 +185,9 @@
 							[ngForTemplate]="questionTemplate">
 					</ng-template>
 				</div>
-
 			</ng-template>
 
-			<!-- ---------------------------------------------------------- -->
-			<!-- STANDARD questionnaire (matrix free)                       -->
-			<!-- ---------------------------------------------------------- -->
+			<!-- STANDARD questionnaire -->
 			<mat-card-content *ngIf="questionnaire.type === 'standard'"
 							  class="questionnaire-standard">
 
@@ -217,7 +209,7 @@
 				</ng-container>
 			</mat-card-content>
 
-			<!-- CRT questionnaire ---------------------------------------- -->
+			<!-- CRT questionnaire -->
 			<mat-card-content *ngIf="questionnaire.type === 'crt'">
 
 				<ng-template
@@ -238,12 +230,14 @@
 							   [formControlName]="q.name + '_answer'">
 					</mat-form-field>
 					<app-error-message
-							[formField]="$any(questionnaireForm.get(q.nameFull + '_answer'))">
+							*ngIf="questionnaireForm.get(q.nameFull + '_answer')?.touched && questionnaireForm.get(q.nameFull + '_answer')?.invalid"
+							[formField]="questionnaireForm.get(q.nameFull + '_answer')"
+							class="app-error-message">
 					</app-error-message>
 				</div>
 			</mat-card-content>
 
-			<!-- LIKERT questionnaire (matrix) ---------------------------- -->
+			<!-- LIKERT questionnaire -->
 			<mat-card-content *ngIf="questionnaire.type === 'likert'"
 							  class="questionnaire-matrix">
 
@@ -284,7 +278,7 @@
 				</mat-radio-group>
 			</mat-card-content>
 
-			<!-- Navigation buttons --------------------------------------- -->
+			<!-- Navigation buttons -->
 			<mat-card-actions>
 				<p class="form-note">
 					<button id="questionnaire-{{ questionnaire.index }}-button-previous"
@@ -298,11 +292,11 @@
 					<button id="questionnaire-{{ questionnaire.index }}-button-next"
 							mat-flat-button color="primary" matStepperNext
 							*ngIf="
-                    ((questionnaire.index < task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
-                    ((questionnaire.index <= task.questionnaireAmountStart - 1) && task.documentsAmount > 0) ||
-                    (questionnaire.index >= task.questionnaireAmountStart - 1 &&
-                     questionnaire.index < task.questionnaireAmount - 1 &&
-                     task.questionnaireAmountEnd > 0)"
+                        ((questionnaire.index < task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
+                        ((questionnaire.index <= task.questionnaireAmountStart - 1) && task.documentsAmount > 0) ||
+                        (questionnaire.index >= task.questionnaireAmountStart - 1 &&
+                        questionnaire.index < task.questionnaireAmount - 1 &&
+                        task.questionnaireAmountEnd > 0)"
 							[disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
 							(click)="handleQuestionnaireCompletion('Next')">
 						<span i18n>Next</span>
@@ -311,8 +305,8 @@
 					<button id="questionnaire-{{ questionnaire.index }}-button-finish"
 							mat-stroked-button color="accent" matStepperNext
 							*ngIf="
-                    ((questionnaire.index >= task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
-                    (questionnaire.index >= task.questionnaireAmount - 1 && task.questionnaireAmountEnd > 0)"
+                        ((questionnaire.index >= task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
+                        (questionnaire.index >= task.questionnaireAmount - 1 && task.questionnaireAmountEnd > 0)"
 							[disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
 							(click)="handleQuestionnaireCompletion('Finish')">
 						<span i18n>Finish</span>

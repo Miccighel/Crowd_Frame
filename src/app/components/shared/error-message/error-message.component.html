@@ -1,5 +1,5 @@
-<mat-error *ngIf="this.formField.invalid">
-    <div class="initial" *ngFor="let message of this.utilsService.getErrorMessage(this.formField)">
-        {{message}}
+<mat-error *ngIf="formField?.invalid && (formField.dirty || formField.touched)">
+    <div class="app-error-message" *ngFor="let message of utilsService.getErrorMessage(formField)">
+        {{ message }}
     </div>
 </mat-error>

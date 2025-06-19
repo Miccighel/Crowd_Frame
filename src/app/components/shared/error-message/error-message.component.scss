@@ -1,5 +1,14 @@
-mat-error {
-  font-size: 0.9rem;
+.app-error-message {
   display: block;
-  color:#f44336
+  color: #c62828; // Material Red 800
+  font-size: 0.95em;
+  margin: 4px 0 0 2px;
+  line-height: 1.4;
+  min-height: 18px;
+  padding-left: 2px;
+}
+
+:host ::ng-deep .mat-error {
+  background: none;
+  padding-left: 2px;
 }
