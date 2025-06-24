@@ -1,3 +1,7 @@
+<!-- ────────────────────────────────────────────────────────────
+     Re-usable template that prints a list of dimensions
+     (works for both initial and post-assessment forms)
+     ──────────────────────────────────────────────────────────── -->
 <ng-template #dimensionTemplate
              let-dimensions="dimensions"
              let-position="position"
@@ -5,237 +9,273 @@
              let-controlSuffix="controlSuffix">
 	<form [formGroup]="assessmentForm">
 
-		<div *ngFor="let dimension of dimensions; let i=index" class="dimension'">
+		<div *ngFor="let dimension of dimensions; let i = index" class="dimension">
 
+			<!-- ───────────────────────────── NON-PAIRWISE ───────────────────────────── -->
 			<ng-container *ngIf="!dimension.pairwise">
 
-				<!-- Dimensions markup (list style) -->
-				<div *ngIf="dimension.style.type=='list'" class="dimension">
+				<!-- ───────────── LIST STYLE ───────────── -->
+				<div *ngIf="dimension.style.type == 'list'" class="dimension">
 
-					<!-- Dimension search engine interface markup -->
+					<!-- Search-engine widget (optional) -->
 					<app-search-engine
 							[documentIndex]="documentIndex"
 							[dimensionIndex]="dimension.index"
-							[worker]="this.worker"
-							[searchEngineForms]="this.searchEngineForms"
-							[resultsRetrievedForms]="this.resultsRetrievedForms"
+							[worker]="worker"
+							[searchEngineForms]="searchEngineForms"
+							[resultsRetrievedForms]="resultsRetrievedForms"
 							(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
 					</app-search-engine>
 
-					<ng-container *ngIf="verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
+					<ng-container *ngIf="verifyUrlSelection(position) &&
+                               checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
 
-						<ng-container *ngIf="this.dimension.scale">
-							<div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-								<ng-container *ngIf="!this.postAssessment">
+						<!-- Optional instructions -->
+						<ng-container *ngIf="dimension.scale?.instructions as ins">
+							<div class="evaluation-instructions">
+								<!-- first time -->
+								<ng-container *ngIf="!postAssessment">
 									<h2>
-										<span *ngIf="this.dimension.scale.instructions.label">
-											{{ this.dimension.scale.instructions.label }} -
-										</span>
-										{{ this.dimension.scale.instructions.caption }}
+										<span *ngIf="ins.label">{{ ins.label }} – </span>{{ ins.caption }}
 									</h2>
 								</ng-container>
-								<ng-container *ngIf="this.postAssessment && this.dimension.scale.instructions.labelRepetition && this.dimension.scale.instructions.captionRepetition">
+
+								<!-- repetition -->
+								<ng-container *ngIf="postAssessment && ins.labelRepetition && ins.captionRepetition">
 									<h2>
-										<span *ngIf="this.dimension.scale.instructions.labelRepetition">
-											{{ this.dimension.scale.instructions.labelRepetition }} -
-										</span>
-										{{ this.dimension.scale.instructions.captionRepetition }}
+										<span *ngIf="ins.labelRepetition">{{ ins.labelRepetition }} – </span>{{ ins.captionRepetition }}
 									</h2>
 								</ng-container>
 							</div>
 						</ng-container>
 
+						<!-- Pretty name & description -->
 						<div *ngIf="dimension.name_pretty" class="dimension-name">
-							<div>
-								<h2>{{ this.utilsService.capitalize(dimension.name_pretty) }}</h2>
-							</div>
+							<h2>{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
 						</div>
+
 						<div *ngIf="dimension.description" class="dimension-container dimension-description">
 							<div class="dimension-content">
 								<p>{{ dimension.description }}</p>
-								<i class="dimension-example" *ngIf="dimension.example">
-									{{ dimension.example }}
-								</i>
+								<i class="dimension-example" *ngIf="dimension.example">{{ dimension.example }}</i>
 							</div>
 						</div>
 
+						<!-- ───────────── SCALE CONTROLS ───────────── -->
 						<div *ngIf="dimension.scale" class="dimension-container dimension-scale">
-
 							<div class="dimension-content">
 
-								<ng-container *ngIf="dimension.style.orientation=='vertical'">
+								<!-- ───── Vertical layout ───── -->
+								<ng-container *ngIf="dimension.style.orientation == 'vertical'">
 
-									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<ng-container *ngIf="this.isVideoTypeLabelCategorical(dimension)">
-											<div>
-												<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
-																 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-													<ng-container *ngIf="!dimension.scale.multipleSelection">
-														<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
-															<ng-container *ngIf="k !== 0">
-																<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
-																<mat-radio-button
-																		value="{{mapping.value}}"
-																		(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false);"
-																		[disabled]="this.categoricalDimensionDisabled(dimension)"
-																		[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
-																		[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-																	<span class="mapping-label">{{ mapping.label }}</span>
-																	<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
-																</mat-radio-button>
-															</ng-container>
-														</ng-container>
+									<!-- ─── Categorical ─── -->
+									<ng-container *ngIf="dimension.scale.type == 'categorical'">
+
+										<!-- video special-case -->
+										<ng-container *ngIf="isVideoTypeLabelCategorical(dimension); else normalCategorical">
+											<mat-radio-group class="radio-button-group"
+															 formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+												<ng-container *ngIf="!dimension.scale.multipleSelection">
+													<ng-container *ngFor="let mapping of dimension.scale.mapping">
+														<mat-divider *ngIf="mapping.separator" inset></mat-divider>
+														<mat-radio-button
+																value="{{ mapping.value }}"
+																[disabled]="categoricalDimensionDisabled(dimension)"
+																[attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                               task.settings.countdown_behavior == 'disable_forms'"
+																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
+																(change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
+															<span class="mapping-label">{{ mapping.label }}</span>
+															<span *ngIf="mapping.description">{{ ' (' + mapping.description + ')' }}</span>
+														</mat-radio-button>
 													</ng-container>
-													<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
-														<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
-															<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-																<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
-																	{{ mapping.label }}
-																</mat-checkbox>
-															</div>
+												</ng-container>
+
+												<!-- multi-choice -->
+												<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+													<div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
+														<div *ngFor="let mapping of dimension.scale.mapping; let k = index">
+															<mat-checkbox formControlName="{{ k }}"
+																		  (change)="handleCheckbox($event, dimension, k)">
+																{{ mapping.label }}
+															</mat-checkbox>
 														</div>
-														<mat-form-field>
-															<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-														</mat-form-field>
 													</div>
-												</mat-radio-group>
-											</div>
+													<mat-form-field>
+														<input matInput formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+													</mat-form-field>
+												</div>
+											</mat-radio-group>
 										</ng-container>
-										<ng-container *ngIf="!this.isVideoTypeLabelCategorical(dimension)">
-											<div>
-												<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
-																 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-													<ng-container *ngIf="!dimension.scale.multipleSelection">
-														<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
-															<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
-															<mat-radio-button
-																	value="{{mapping.value}}"
-																	(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); this.detectCategoricalDimensionOnChange($event);"
-																	[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
-																	[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-																<span class="mapping-label">{{ mapping.label }}</span>
-																<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
-															</mat-radio-button>
-														</ng-container>
+
+										<!-- regular categorical -->
+										<ng-template #normalCategorical>
+											<mat-radio-group class="radio-button-group"
+															 formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+												<ng-container *ngIf="!dimension.scale.multipleSelection">
+													<ng-container *ngFor="let mapping of dimension.scale.mapping">
+														<mat-divider *ngIf="mapping.separator" inset></mat-divider>
+														<mat-radio-button
+																value="{{ mapping.value }}"
+																[attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                               task.settings.countdown_behavior == 'disable_forms'"
+																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
+																(change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
+                                        detectCategoricalDimensionOnChange($event)">
+															<span class="mapping-label">{{ mapping.label }}</span>
+															<span *ngIf="mapping.description">{{ ' (' + mapping.description + ')' }}</span>
+														</mat-radio-button>
 													</ng-container>
-													<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
-														<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
-															<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-																<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
-																	{{ mapping.label }}
-																</mat-checkbox>
-															</div>
+												</ng-container>
+
+												<!-- multi-choice -->
+												<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+													<div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
+														<div *ngFor="let mapping of dimension.scale.mapping; let k = index">
+															<mat-checkbox formControlName="{{ k }}"
+																		  (change)="handleCheckbox($event, dimension, k)">
+																{{ mapping.label }}
+															</mat-checkbox>
 														</div>
-														<mat-form-field>
-															<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-														</mat-form-field>
 													</div>
-												</mat-radio-group>
-											</div>
-										</ng-container>
+													<mat-form-field>
+														<input matInput formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+													</mat-form-field>
+												</div>
+											</mat-radio-group>
+										</ng-template>
 									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='interval'">
-										<ng-container *ngIf="this.isVideoTimestampInterval()">
+
+									<!-- ─── Interval ─── -->
+									<ng-container *ngIf="dimension.scale.type == 'interval'">
+
+										<!-- video timestamp slider -->
+										<ng-container *ngIf="isVideoTimestampInterval(); else numericInterval">
 											<div class="scale-interval">
-												<mat-slider [disabled]="this.sliderDisabled()" min="{{this.task.dimensionIntervalMinValues[documentIndex]}}" max="{{this.task.dimensionIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}">
-													<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-														(change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
-														[attr.disabled]="(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')">
+												<mat-slider [disabled]="sliderDisabled()"
+															[min]="task.dimensionIntervalMinValues[documentIndex]"
+															[max]="task.dimensionIntervalMaxValues[documentIndex]"
+															[step]="dimension.scale.step">
+													<input matSliderThumb
+														   formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+														   (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+														   [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                  task.settings.countdown_behavior == 'disable_forms'">
 												</mat-slider>
-												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
-													Value: 00:00.00
-												</span>
-												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
-													Value: {{ this.videoTimestampVisualization(assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value) }}
-												</span>
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required') && !this.sliderDisabled()">
-													<br>
-													<span i18n>This field is required</span>
+
+												<span *ngIf="assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === ''">
+                          Value: 00:00.00
+                        </span>
+												<span *ngIf="assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== ''">
+                          Value:
+													{{ videoTimestampVisualization(assessmentForm.controls[dimension.name + '_value' + controlSuffix].value) }}
+                        </span>
+
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') && !sliderDisabled()">
+													<br><span>This field is required</span>
 												</mat-error>
 											</div>
 										</ng-container>
-										<ng-container *ngIf="!isVideoTimestampInterval()">
+
+										<!-- numeric slider -->
+										<ng-template #numericInterval>
 											<div class="scale-interval">
-												<mat-slider min="{{this.task.dimensionIntervalMinValues[documentIndex]}}" max="{{this.task.dimensionIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}" discrete>
-													<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-															(change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
-															[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
+												<mat-slider [min]="task.dimensionIntervalMinValues[documentIndex]"
+															[max]="task.dimensionIntervalMaxValues[documentIndex]"
+															[step]="dimension.scale.step"
+															discrete>
+													<input matSliderThumb
+														   formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+														   (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+														   [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                  task.settings.countdown_behavior == 'disable_forms'">
 												</mat-slider>
-												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
-													Value: #
-												</span>
-												<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
-													Value: {{ assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value }}
-												</span>
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
-													<span i18n>This field is required</span>
+												<span *ngIf="assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === ''">
+                          Value: #
+                        </span>
+												<span *ngIf="assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== ''">
+                          Value: {{ assessmentForm.controls[dimension.name + '_value' + controlSuffix].value }}
+                        </span>
+
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')">
+													<span>This field is required</span>
 												</mat-error>
 											</div>
-										</ng-container>
+										</ng-template>
 									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
+
+									<!-- ─── Magnitude estimation ─── -->
+									<ng-container *ngIf="dimension.scale.type == 'magnitude_estimation'">
 										<mat-form-field appearance="fill">
-											<mat-label><span i18n>Value</span></mat-label>
-											<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false)" class="magnitude_estimation"
-												   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
-												<span i18n>This field is required</span>
+											<mat-label>Value</mat-label>
+											<input matInput
+												   formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+												   (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+												   class="magnitude_estimation"
+												   [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                              task.settings.countdown_behavior == 'disable_forms'">
+
+											<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')">
+												<span>This field is required</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'isNumber')">
-												<span i18n>Value has to be a number (whole or decimal)</span>
+											<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'isNumber')">
+												<span>Value has to be a number (whole or decimal)</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'numberFormat')">
-												<span i18n>Numbers must be expressed in the international format, using a dot as the decimal separator and, optionally, comma as the thousands separator (e.g., 123,456.78)</span>
+											<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberFormat')">
+												<span>Numbers must use dot as decimal separator (e.g. 1,234.56)</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'numberGreaterThan')">
-												<span i18n>Value has to be greater than </span> {{ dimension.scale.min }}
+											<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberGreaterThan')">
+												<span>Value has to be greater than {{ dimension.scale.min }}</span>
 											</mat-error>
 										</mat-form-field>
 									</ng-container>
 
 								</ng-container>
-								<ng-container *ngIf="dimension.style.orientation=='horizontal'">
 
-									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-											<mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
-															  class="radio-button" value="{{mapping.value}}"
-															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false)"
-															  [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
+								<!-- ───── Horizontal layout (categorical implemented) ───── -->
+								<ng-container *ngIf="dimension.style.orientation == 'horizontal'">
+									<ng-container *ngIf="dimension.scale.type == 'categorical'">
+										<mat-radio-group formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+											<mat-radio-button *ngFor="let mapping of dimension.scale.mapping"
+															  class="radio-button"
+															  value="{{ mapping.value }}"
+															  (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+															  [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                         task.settings.countdown_behavior == 'disable_forms'">
 												<span class="mapping-label">{{ mapping.label }}</span>
-												<span *ngIf="mapping.description.length>0">({{ mapping.description }})</span>
+												<span *ngIf="mapping.description">{{ ' (' + mapping.description + ')' }}</span>
 											</mat-radio-button>
 										</mat-radio-group>
 									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='interval'">
-										<p>TO BE IMPLEMENTED</p>
-									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
-										<p>TO BE IMPLEMENTED</p>
-									</ng-container>
 
+									<!-- horizontal interval / magnitude placeholders -->
+									<ng-container *ngIf="dimension.scale.type == 'interval' || dimension.scale.type == 'magnitude_estimation'">
+										<p i18n>TO BE IMPLEMENTED</p>
+									</ng-container>
 								</ng-container>
 
 							</div>
 						</div>
 
+						<!-- ───────────── Justification ───────────── -->
 						<div *ngIf="dimension.justification" class="dimension-container dimension-justification">
 							<div class="dimension-content justification">
 								<div class="dimension-text-field">
 									<mat-form-field appearance="fill" class="width-100">
 										<mat-label>{{ dimension.justification.text }}</mat-label>
-										<textarea matInput rows="3" formControlName="{{(dimension.name).concat('_justification').concat(controlSuffix)}}"
-												  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, true)"
-										></textarea>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'required')">
-											<span i18n>This field is required</span>
+										<textarea matInput
+												  rows="3"
+												  formControlName="{{ dimension.name + '_justification' + controlSuffix }}"
+												  (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
+
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'required')">
+											<span>This field is required</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'longer')">
-											<span i18n>This justification must have at least</span> {{ dimension.justification.min_words }} <span i18n>words</span>.
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'longer')">
+											<span>This justification must have at least {{ dimension.justification.min_words }} words.</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'invalid')">
-											<span i18n>You cannot use the selected search engine url as part of the justification.</span>
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'invalid')">
+											<span>You cannot use the selected search-engine URL as part of the justification.</span>
 										</mat-error>
 									</mat-form-field>
 								</div>
@@ -243,209 +283,134 @@
 						</div>
 
 					</ng-container>
-
 				</div>
 
-
-				<!-- Dimensions markup (matrix style) -->
-				<div *ngIf="dimension.style.type=='matrix'">
-
-					<!-- Dimension search engine interface markup -->
-					<app-search-engine
-							[documentIndex]="documentIndex"
-							[dimensionIndex]="dimension.index"
-							[worker]="this.worker"
-							[searchEngineForms]="this.searchEngineForms"
-							[resultsRetrievedForms]="this.resultsRetrievedForms"
-							(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
-					</app-search-engine>
-
-					<ng-container *ngIf="verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
-
-						<div class="{{this.task.verifyDimensionsQuantity(position)==1 ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple'}}">
-
-							<ng-container *ngIf="dimension.scale">
-								<div *ngIf="dimension.scale.instructions" class="dimension-matrix-instructions evaluation-instructions">
-									<ng-container *ngIf="!this.postAssessment">
-										<h2>
-											<span *ngIf="this.dimension.scale.instructions.label">
-												{{ this.dimension.scale.instructions.label }} -
-											</span>
-											{{ this.dimension.scale.instructions.caption }}
-										</h2>
-									</ng-container>
-									<ng-container *ngIf="this.postAssessment && this.dimension.scale.instructions.labelRepetition && this.dimension.scale.instructions.captionRepetition">
-										<h2>
-											<span *ngIf="this.dimension.scale.instructions.labelRepetition">
-												{{ this.dimension.scale.instructions.labelRepetition }} -
-											</span>
-											{{ this.dimension.scale.instructions.captionRepetition }}
-										</h2>
-									</ng-container>
-									<div><p>{{ this.dimension.scale.instructions.text }}</p></div>
-								</div>
-							</ng-container>
-
-							<!-- Dimension assessment matrix header markup -->
-							<mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.retrieveFirstDimension(position).index == dimension.index ">
-								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}"></div>
-								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-									<div class="mapping-label" *ngIf="mapping.label">
-										<strong [innerHTML]="mapping.label"></strong>
-									</div>
-									<div *ngIf="mapping.description">
-										<span> ({{ mapping.description }})</span>
-									</div>
-								</div>
-							</mat-radio-group>
-
-							<!-- Dimension assessment fields markup -->
-							<div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
-								<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-									<div class="matrix-value name-pretty">
-										<p *ngIf="this.dimension.name_pretty"><strong><span *ngIf="!this.dimension.style.separator">{{ i + 1 }} - </span>{{ dimension.name_pretty }}</strong></p>
-										<ng-container *ngIf="dimension.description">
-											<div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
-												<p>{{ dimension.description }}</p>
-											</div>
-										</ng-container>
-										<ng-container *ngIf="dimension.example">
-											<div *ngIf="dimension.example.length>0" class="description-sub">
-												<i>{{ dimension.example }}</i>
-											</div>
-										</ng-container>
-									</div>
-									<div class="matrix-value-control" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-										<mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false)"></mat-radio-button>
-									</div>
-								</mat-radio-group>
-							</div>
-						</div>
-
-						<div *ngIf="dimension.justification" class="dimension-container dimension-justification">
-							<div class="dimension-content justification">
-								<div class="dimension-text-field">
-									<mat-form-field appearance="fill" class="width-100">
-										<mat-label>{{ dimension.justification.text }}</mat-label>
-										<textarea matInput rows="5"
-												  formControlName="{{(dimension.name).concat('_justification').concat(controlSuffix)}}"
-												  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, true)"
-										></textarea>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'required')">
-											<span i18n>This field is required</span>
-										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'longer')">
-											<span i18n>This justification must have at least</span> {{ dimension.justification.min_words }} <span i18n>words</span>.
-										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'invalid')">
-											<span i18n>You cannot use the selected search engine url as part of the justification.</span>
-										</mat-error>
-									</mat-form-field>
-								</div>
-							</div>
-						</div>
-
-					</ng-container>
-
+				<!-- ───────────── MATRIX STYLE (skeleton placeholder) ───────────── -->
+				<div *ngIf="dimension.style.type == 'matrix'">
+					<p i18n>TO BE IMPLEMENTED</p>
 				</div>
 
 			</ng-container>
 
+			<!-- ───────────────────────────── PAIRWISE ───────────────────────────── -->
 			<ng-container *ngIf="dimension.pairwise">
 
-				<div *ngIf="dimension.style.type=='list'" class="dimension">
-					<!--
-						@ChristianAbbondo
-						L'if di questo ng-templete verifica che si sia cliccato sulla dimension precedente prima di mostrare la dimension successiva
-						mentre se il document non è in modalità pairwise non succede nulla è rimane tutto come prima
-					-->
-					<ng-container *ngIf="unlockNextDimension(documentIndex,(dimension.index))">
+				<!-- LIST-style pairwise -->
+				<div *ngIf="dimension.style.type == 'list'" class="dimension">
+
+					<!-- show only when previous pairwise step unlocked -->
+					<ng-container *ngIf="unlockNextDimension(documentIndex, dimension.index)">
 
 						<div class="dimension-content-split">
 							<div class="dimension-name-center">
-								<mat-divider [inset]="true"></mat-divider>
-								<h2 *ngIf="!dimension.name_pretty">{{ this.utilsService.capitalize(dimension.name) }}</h2>
-								<h2 *ngIf="dimension.name_pretty">{{ this.utilsService.capitalize(dimension.name_pretty) }}</h2>
-								<mat-divider [inset]="true"></mat-divider>
+								<mat-divider inset></mat-divider>
+								<h2 *ngIf="!dimension.name_pretty">{{ utilsService.capitalize(dimension.name) }}</h2>
+								<h2 *ngIf="dimension.name_pretty">{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
+								<mat-divider inset></mat-divider>
 							</div>
 						</div>
 
 						<div *ngIf="dimension.description" class="dimension-name-center">
 							<div class="dimension-split-inside">
 								<p>{{ dimension.description }}</p>
-								<i *ngIf="dimension.example">
-									{{ dimension.example }}
-								</i>
+								<i *ngIf="dimension.example">{{ dimension.example }}</i>
 							</div>
 						</div>
 
+						<!-- search engine -->
 						<app-search-engine
 								[documentIndex]="documentIndex"
 								[dimensionIndex]="dimension.index"
-								[worker]="this.worker"
-								[searchEngineForms]="this.searchEngineForms"
-								[resultsRetrievedForms]="this.resultsRetrievedForms"
+								[worker]="worker"
+								[searchEngineForms]="searchEngineForms"
+								[resultsRetrievedForms]="resultsRetrievedForms"
 								(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
 						</app-search-engine>
 
+						<!-- scale controls -->
 						<div *ngIf="dimension.scale" class="dimension-container dimension-scale">
 							<div class="dimension-content-split">
 
-								<ng-container *ngIf="dimension.style.orientation=='vertical'">
+								<ng-container *ngIf="dimension.style.orientation == 'vertical'">
 
-									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-											<p class="spanDocument"><span i18n>Answer for Element</span> {{ k }}</p>
-											<mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group"
-															 formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
-												<mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
-																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); updateDimensionValueSelection(documentIndex,dimension.index,k)"
-																  [attr.disabled]="this.task.countdownsExpired[documentIndex]">
+									<!-- categorical vertical -->
+									<ng-container *ngIf="dimension.scale.type == 'categorical'">
+										<div class="dimension-split-inside dimension-box"
+											 *ngFor="let _ of task.documents[documentIndex].pairwise; let k = index">
+											<p><span i18n>Answer for Element</span> {{ k }}</p>
+
+											<mat-radio-group class="radio-button-group"
+															 formControlName="{{ dimension.name + '_value_element_' + k }}">
+												<mat-radio-button *ngFor="let mapping of dimension.scale.mapping"
+																  class="radio-button"
+																  value="{{ mapping.value }}"
+																  (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
+                                                    updateDimensionValueSelection(documentIndex, dimension.index, k)"
+																  [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                           task.settings.countdown_behavior == 'disable_forms'">
 													<span class="mapping-label">{{ mapping.label }}</span>
-													<span *ngIf="mapping.description.length>0">
-                                                    ({{ mapping.description }})
-                                                </span>
+													<span *ngIf="mapping.description">{{ ' (' + mapping.description + ')' }}</span>
 												</mat-radio-button>
 											</mat-radio-group>
 										</div>
 									</ng-container>
 
-									<ng-container *ngIf="dimension.scale.type=='interval'">
-										<div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-											<p class="spanDocument"><span i18n>Answer for Element</span> {{ k }}</p>
-											<label style="margin-left:10px;"><span
-													i18n> Selected value: </span>{{ assessmentForm.controls[(dimension.name).concat('_value_element_').concat(k)].value }}</label>
-											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
-												<input matSliderThumb formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false); updateDimensionValueSelection(documentIndex,dimension.index,k)"
-													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
+									<!-- interval vertical -->
+									<ng-container *ngIf="dimension.scale.type == 'interval'">
+										<div class="dimension-split-inside dimension-box"
+											 *ngFor="let _ of task.documents[documentIndex].pairwise; let k = index">
+											<p><span i18n>Answer for Element</span> {{ k }}</p>
+
+											<label style="margin-left:10px;">
+												<span i18n>Selected value:</span>
+												{{ assessmentForm.controls[dimension.name + '_value_element_' + k].value }}
+											</label>
+
+											<mat-slider [min]="dimension.scale.min"
+														[max]="dimension.scale.max"
+														[step]="dimension.scale.step"
+														discrete>
+												<input matSliderThumb
+													   formControlName="{{ dimension.name + '_value_element_' + k }}"
+													   (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
+                                         updateDimensionValueSelection(documentIndex, dimension.index, k)"
+													   [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                task.settings.countdown_behavior == 'disable_forms'">
 											</mat-slider>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
+
+											<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'required')">
 												<span i18n>This field is required</span>
 											</mat-error>
 										</div>
 									</ng-container>
 
-									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
-										<div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-											<p class="spanDocument"><span i18n>Answer for Element</span> {{ k }}</p>
+									<!-- magnitude estimation vertical -->
+									<ng-container *ngIf="dimension.scale.type == 'magnitude_estimation'">
+										<div class="dimension-split-inside dimension-box"
+											 *ngFor="let _ of task.documents[documentIndex].pairwise; let k = index">
+											<p><span i18n>Answer for Element</span> {{ k }}</p>
+
 											<mat-form-field appearance="fill" style="margin-left: 10px;">
 												<mat-label><span i18n>Value</span></mat-label>
-												<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+												<input matInput
+													   formControlName="{{ dimension.name + '_value_element_' + k }}"
+													   (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
+                                         updateDimensionValueSelection(documentIndex, dimension.index, k)"
 													   class="magnitude_estimation"
-													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
+													   [attr.disabled]="task.countdownsExpired[documentIndex] &&
+                                                task.settings.countdown_behavior == 'disable_forms'">
+
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'required')">
 													<span i18n>This field is required</span>
 												</mat-error>
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'isNumber')">
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'isNumber')">
 													<span i18n>Value has to be a number (whole or decimal)</span>
 												</mat-error>
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'numberFormat')">
-													<span i18n>Numbers must be expressed in the international format, using a dot as the decimal separator and, optionally, a comma as the thousands separator (e.g., 1,234.5)</span>
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'numberFormat')">
+													<span i18n>Numbers must use dot as decimal separator</span>
 												</mat-error>
-												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'numberGreaterThan')">
-													<span i18n>Value has to be greater than </span> {{ dimension.scale.min }}
+												<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'numberGreaterThan')">
+													<span i18n>Value has to be greater than</span> {{ dimension.scale.min }}
 												</mat-error>
 											</mat-form-field>
 										</div>
@@ -453,39 +418,37 @@
 
 								</ng-container>
 
-								<ng-container *ngIf="dimension.style.orientation=='horizontal'">
-									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<p i18n>TO BE IMPLEMENTED</p>
-									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='interval'">
-										<p i18n>TO BE IMPLEMENTED</p>
-									</ng-container>
-									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
-										<p i18n>TO BE IMPLEMENTED</p>
-									</ng-container>
+								<!-- horizontal pairwise placeholders -->
+								<ng-container *ngIf="dimension.style.orientation == 'horizontal'">
+									<p i18n>TO BE IMPLEMENTED</p>
 								</ng-container>
 
 							</div>
 						</div>
 
+						<!-- pairwise justification -->
 						<div *ngIf="dimension.justification" class="dimension-content-split">
-							<div *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index" class="dimension-box">
-								<p class="spanDocument"><span i18n>Justification for Element</span> {{ k }}</p>
+							<div class="dimension-box"
+								 *ngFor="let _ of task.documents[documentIndex].pairwise; let k = index">
+
+								<p><span i18n>Justification for Element</span> {{ k }}</p>
+
 								<div class="dimension-text-field" style="margin-left: 10px;">
 									<mat-form-field appearance="fill">
 										<mat-label>{{ dimension.justification.text }}</mat-label>
-										<textarea matInput rows="5"
-												  formControlName="{{dimension.name}}_justification_element_{{k}}"
-												  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, true)"
-										></textarea>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'required')">
+										<textarea matInput
+												  rows="5"
+												  formControlName="{{ dimension.name + '_justification_element_' + k }}"
+												  (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
+
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'required')">
 											<span i18n>This field is required</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'longer')">
-											<span i18n>This justification must have at least</span> {{ dimension.justification.min_words }} <span i18n>words</span>.
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'longer')">
+											<span i18n>This justification must have at least {{ dimension.justification.min_words }} words.</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'invalid')">
-											<span i18n>You cannot use the selected search engine url as part of the justification.</span>
+										<mat-error *ngIf="utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'invalid')">
+											<span i18n>You cannot use the selected search-engine URL as part of the justification.</span>
 										</mat-error>
 									</mat-form-field>
 								</div>
@@ -495,80 +458,48 @@
 					</ng-container>
 				</div>
 
-				<div *ngIf="dimension.style.type=='matrix'" class="dimension-matrix">
-					<p>TO BE IMPLEMENTED</p>
+				<!-- MATRIX-style pairwise placeholder -->
+				<div *ngIf="dimension.style.type == 'matrix'" class="dimension-matrix">
+					<p i18n>TO BE IMPLEMENTED</p>
 				</div>
-
 			</ng-container>
 
 		</div>
 	</form>
 </ng-template>
 
-<!-- Dimensions are then shown and filtered according to each position -->
 
+<!-- ─────────────────── INITIAL (non-post) RENDERING ─────────────────── -->
 <ng-container *ngIf="!postAssessment">
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
+	<!-- iterate over positions & types -->
+	<ng-container *ngFor="let pos of ['top','middle','bottom']">
+		<ng-container *ngFor="let kind of ['list','matrix']">
+			<ng-template
+					*ngIf="assessmentForm &&
+               filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0"
+					[ngTemplateOutlet]="dimensionTemplate"
+					[ngTemplateOutletContext]="{ dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+                                     position: pos,
+                                     assessmentForm: assessmentForm,
+                                     controlSuffix: '' }">
+			</ng-template>
+		</ng-container>
+	</ng-container>
 </ng-container>
 
+<!-- ─────────────────── POST-ASSESSMENT RENDERING ─────────────────── -->
 <ng-container *ngIf="postAssessment && followingAssessmentAllowed">
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
-	</ng-template>
+	<ng-container *ngFor="let pos of ['top','middle','bottom']">
+		<ng-container *ngFor="let kind of ['list','matrix']">
+			<ng-template
+					*ngIf="assessmentFormAdditional &&
+               filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0"
+					[ngTemplateOutlet]="dimensionTemplate"
+					[ngTemplateOutletContext]="{ dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+                                     position: pos,
+                                     assessmentForm: assessmentFormAdditional,
+                                     controlSuffix: '_post_' + postAssessmentIndex }">
+			</ng-template>
+		</ng-container>
+	</ng-container>
 </ng-container>
