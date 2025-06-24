@@ -55,9 +55,6 @@
     "@angular/compiler-cli": "19.2.14",
     "@types/node": "^20.11.17",
     "esbuild": "^0.25.5",
-    "ts-morph": "24.0.0",
-    "ts-node": "10.9.2",
-    "tsx": "^4.20.3",
     "typescript": "5.8.2"
   },
   "browser": {

@@ -25,9 +25,8 @@ import {MatDialog} from '@angular/material/dialog';
 /* Browser */
 import {Title} from "@angular/platform-browser";
 import {ConfigService} from "../../../services/config.service";
-//DynamoDB
+/* DynamoDB */
 import {DynamoDBService} from "../../../services/aws/dynamoDB.service";
-
 
 @Component({
     selector: 'app-document',
@@ -35,77 +34,49 @@ import {DynamoDBService} from "../../../services/aws/dynamoDB.service";
     styleUrls: ['./document.component.scss'],
     standalone: false
 })
-
 export class DocumentComponent implements OnInit {
 
     /* #################### SERVICES & CORE STUFF #################### */
 
-    /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
-
-    /* Service to detect user's device */
     sectionService: SectionService;
     dynamoDBService: DynamoDBService;
     utilsService: UtilsService
     titleService: Title
     configService: ConfigService
-    /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
-    /* Snackbar reference */
     snackBar: MatSnackBar;
-    /* Dialog reference */
     dialog: MatDialog;
 
     /* #################### INPUTS #################### */
 
-    /* Reference to the current worker performing the task */
-    @Input() worker: Worker;
-
-    /* Index of the current document */
-    @Input() documentIndex: number;
-    /* Array of assessment forms, one for each document */
-    @Input() documentsForm: Array<UntypedFormGroup>;
-    /* Array of additional assessment forms, one for each document.
-     * These forms are used when the configuration requires one or more post-assessment steps.
-     * Thus, if the post-assessment steps required are two, there will be two additional forms in addition to the base one. */
-    @Input() documentsFormsAdditional: Array<Array<UntypedFormGroup>>;
-
-    /* Array of search engine forms, one for each document */
-    @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
-    /* Array of forms for results retrieved, one for each document */
-    @Input() resultsRetrievedForms: Array<Array<Object>>;
-    /* MatStepper input for the component */
-    @Input() stepper: MatStepper;
+    @Input() worker!: Worker;
+    @Input() documentIndex!: number;
+    @Input() documentsForm!: Array<UntypedFormGroup>;
+    @Input() documentsFormsAdditional!: Array<Array<UntypedFormGroup>>;
+    @Input() searchEngineForms!: Array<Array<UntypedFormGroup>>;
+    @Input() resultsRetrievedForms!: Array<Array<Object>>;
+    @Input() stepper!: MatStepper;                       // may arrive after ngOnInit
 
     /* #################### LOCAL ATTRIBUTES #################### */
 
-    /* Reference to the business logic of the entire task */
     task: Task;
-    /* Reference to the document model */
-    document: Document;
+    document!: Document;
 
-    /* Base assessment form of the document */
-    assessmentForm: UntypedFormGroup;
-    /* Additional assessment forms for the document, one for each post-assessment step */
-    assessmentFormsAdditional: Array<UntypedFormGroup>;
+    assessmentForm!: UntypedFormGroup;
+    assessmentFormsAdditional!: Array<UntypedFormGroup>;
 
-    /* Available options to label an annotation */
-    annotationOptions: UntypedFormGroup;
-    @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
-
+    annotationOptions!: UntypedFormGroup;
+    @ViewChildren(AnnotatorOptionsComponent) annotatorOptions!: QueryList<AnnotatorOptionsComponent>;
     @ViewChildren(ElementPointwiseComponent) pointwiseComponents!: QueryList<ElementPointwiseComponent>;
 
-    /* Reference to the dimensions initialized for the current document. Used to handle countdown events. */
-    @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
-    /* Reference to the countdown element itself for the current document */
-    @ViewChild('countdownElement') countdown: CountdownComponent;
-    /* Counter used by handleCountdown to only handle "notify" events every 3 seconds */
+    @ViewChildren(DimensionComponent) dimensionsPointwise!: QueryList<DimensionComponent>;
+    @ViewChild('countdownElement') countdown!: CountdownComponent;
     countdownInterval!: number;
-    @ViewChild('countdownProgressBar') countdownProgressBar: MatProgressBar;
+    @ViewChild('countdownProgressBar') countdownProgressBar!: MatProgressBar;
 
     /* #################### EMITTERS #################### */
 
-    /* Emitter used to bounce back the base assessment form or the additional ones to the parent component */
     @Output() formEmitter: EventEmitter<Object>;
 
     constructor(
@@ -120,61 +91,84 @@ export class DocumentComponent implements OnInit {
         dynamoDBService: DynamoDBService,
         private elementRef: ElementRef
     ) {
-        this.changeDetector = changeDetector
-        this.sectionService = sectionService
-        this.utilsService = utilsService
-        this.titleService = titleService
-        this.dynamoDBService = dynamoDBService
-        this.configService = configService
-        this.formBuilder = formBuilder
+        this.changeDetector = changeDetector;
+        this.sectionService = sectionService;
+        this.utilsService = utilsService;
+        this.titleService = titleService;
+        this.dynamoDBService = dynamoDBService;
+        this.configService = configService;
+        this.formBuilder = formBuilder;
         this.formEmitter = new EventEmitter<Object>();
-        this.task = this.sectionService.task
+        this.task = this.sectionService.task;
         this.snackBar = snackBar;
         this.dialog = dialog;
     }
 
+    /* #################### LIFE-CYCLE #################### */
+
     ngOnInit(): void {
+
         this.document = this.task.documents[this.documentIndex];
-        this.assessmentFormsAdditional = this.documentsFormsAdditional[this.documentIndex]
-        /* The index of the stepper component must be set to the position where the worker eventually left off in the past. */
-        this.stepper.selectedIndex = this.worker.getPositionCurrent()
-        this.sectionService.stepIndex = this.worker.getPositionCurrent()
-        /* Since the worker might be coming back from a previous try, each post assessment configuration must be scanned to restore
-         * the boolean flags if there exist previous answers provided by the worker */
+        this.assessmentFormsAdditional = this.documentsFormsAdditional[this.documentIndex];
+
+        /* Guard for stepper not yet injected */
+        if (this.stepper) {
+            this.stepper.selectedIndex = this.worker.getPositionCurrent();
+        }
+        this.sectionService.stepIndex = this.worker.getPositionCurrent();
+
+        /* Restore previous post assessments if any */
         for (let attributePostAssessment of this.task.settings.attributesPost) {
-            let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, attributePostAssessment.index + 1)
-            if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
-                if (attributePostAssessment.index == 0) {
-                    this.task.initialAssessmentFormInteraction[this.documentIndex][0] = true
-                    this.task.followingAssessmentAllowed[this.documentIndex][0] = true
+            const mostRecent = this.task.retrieveMostRecentAnswersForPostAssessment(
+                this.documentIndex,
+                attributePostAssessment.index + 1
+            );
+            if (Object.keys(mostRecent).length > 0) {
+                if (attributePostAssessment.index === 0) {
+                    this.task.initialAssessmentFormInteraction[this.documentIndex][0] = true;
+                    this.task.followingAssessmentAllowed[this.documentIndex][0] = true;
                 }
-                this.task.initialAssessmentFormInteraction[this.documentIndex][attributePostAssessment.index + 1] = true
-                this.task.followingAssessmentAllowed[this.documentIndex][attributePostAssessment.index + 1] = true
+                this.task.initialAssessmentFormInteraction[this.documentIndex][attributePostAssessment.index + 1] = true;
+                this.task.followingAssessmentAllowed[this.documentIndex][attributePostAssessment.index + 1] = true;
             }
         }
+
         this.countdownInterval = 0;
     }
 
     ngAfterViewInit() {
-        /* We start the countdown at the current position if it's a document */
+
+        /* Start / handle countdowns */
         const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
-        if (currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && this.task.countdownsStarted[this.documentIndex])
-            this.countdown.begin();
+        if (currentElement.elementType === 'S'
+            && this.documentIndex === currentElement.elementIndex
+            && this.countdown) {
 
-        if (currentElement["elementType"] === "S" && this.documentIndex === currentElement["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]) {
-            this.openCountdownDialog();
-        }
-
-        this.stepper.selectionChange.subscribe((event) => {
-            const element = this.task.getElementIndex(event.selectedIndex);
-            if (element["elementType"] === "S" && this.documentIndex === element["elementIndex"] && this.countdown && !this.task.countdownsStarted[this.documentIndex]) {
+            if (this.task.countdownsStarted[this.documentIndex]) {
+                this.countdown.begin();
+            } else {
                 this.openCountdownDialog();
             }
-        });
+        }
 
-        if (this.task.settings.countdown_modality)
-            this.countdownProgressBar.value = (this.task.documentsCountdownTime[this.documentIndex] / this.task.documentsStartCountdownTime[this.documentIndex]) * 100
+        /* Subscribe only when the stepper is available */
+        if (this.stepper) {
+            this.stepper.selectionChange.subscribe(event => {
+                const element = this.task.getElementIndex(event.selectedIndex);
+                if (element.elementType === 'S'
+                    && this.documentIndex === element.elementIndex
+                    && this.countdown
+                    && !this.task.countdownsStarted[this.documentIndex]) {
+                    this.openCountdownDialog();
+                }
+            });
+        }
 
+        if (this.task.settings.countdown_modality && this.countdownProgressBar) {
+            this.countdownProgressBar.value =
+                (this.task.documentsCountdownTime[this.documentIndex] /
+                    this.task.documentsStartCountdownTime[this.documentIndex]) * 100;
+        }
     }
 
     /* #################### ANSWERS, ASSESSMENT FORMS, & POST ASSESSMENT #################### */
@@ -357,7 +351,9 @@ export class DocumentComponent implements OnInit {
         const okJump = documentCheckGold && typeof documentCheckGold["jump"] === 'string';
 
         const videos = this.elementRef.nativeElement.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-        videos.forEach(video => { video.pause();});
+        videos.forEach(video => {
+            video.pause();
+        });
 
         if ((action === "Next" || action === "Finish") && (okMessage || okJump)) {
             const documentsForm = this.documentsForm.slice();

@@ -1,319 +1,321 @@
 <ng-template matStepLabel>{{ questionnaire.index }}</ng-template>
 
 <div class="container" id="questionnaire-{{ questionnaire.index }}">
-	<form [formGroup]="questionnaireForm">
-		<mat-card appearance="outlined">
+  <ng-container *ngIf="ready && questionnaireForm">
+    <form [formGroup]="questionnaireForm">
+      <mat-card appearance="outlined">
 
-			<mat-card-title>
-                <span *ngIf="questionnaire.name_pretty">
-                    {{ questionnaire.name_pretty }}
-                </span>
-				<span *ngIf="!questionnaire.name_pretty">
-                    <span i18n>Questionnaire</span> {{ questionnaire.index + 1 }}
-                </span>
-			</mat-card-title>
+        <mat-card-title>
+          <span *ngIf="questionnaire.name_pretty">
+            {{ questionnaire.name_pretty }}
+          </span>
+          <span *ngIf="!questionnaire.name_pretty">
+            <span i18n>Questionnaire</span> {{ questionnaire.index + 1 }}
+          </span>
+        </mat-card-title>
 
-			<ng-template #descriptionTemplate let-description>
-				<div class="questionnaire-description" *ngIf="description">
-					<p class="question-text">{{ description }}</p>
-				</div>
-			</ng-template>
+        <ng-template #descriptionTemplate let-description>
+          <div class="questionnaire-description" *ngIf="description">
+            <p class="question-text">{{ description }}</p>
+          </div>
+        </ng-template>
 
-			<ng-template #captionTemplate let-caption>
-				<div class="questionnaire-caption" *ngIf="caption">
-					<p class="question-text">{{ caption }}</p>
-				</div>
-			</ng-template>
+        <ng-template #captionTemplate let-caption>
+          <div class="questionnaire-caption" *ngIf="caption">
+            <p class="question-text">{{ caption }}</p>
+          </div>
+        </ng-template>
 
-			<!-- Recursive question template -->
-			<ng-template #questionTemplate let-question>
-				<div *ngIf="!question.dropped" class="indent">
+        <!-- Recursive question template -->
+        <ng-template #questionTemplate let-question>
+          <div *ngIf="!question.dropped" class="indent">
 
-					<ng-container class="questionnaire-body"
-								  *ngIf="!question.dropped && handleQuestionDependency(question)">
+            <ng-container class="questionnaire-body"
+                          *ngIf="!question.dropped && handleQuestionDependency(question)">
 
-						<p class="question-text">
-							{{ question.indexFull }} - {{ question.text }}
-						</p>
+              <p class="question-text">
+                {{ question.indexFull }} - {{ question.text }}
+              </p>
 
-						<!-- MCQ -->
-						<div *ngIf="question.type === 'mcq'"
-							 class="question-box question-mcq">
-							<mat-radio-group class="radio-button-group question"
-											 [formControlName]="question.nameFull + '_answer'">
-								<mat-radio-button *ngFor="let answer of question.answers; let k = index"
-												  class="radio-button"
-												  [value]="k">
-									<span>{{ answer }}</span>
-								</mat-radio-button>
-							</mat-radio-group>
-							<app-error-message
-									*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
-									[formField]="questionnaireForm.get(question.nameFull + '_answer')"
-									class="app-error-message">
-							</app-error-message>
-						</div>
+              <!-- MCQ -->
+              <div *ngIf="question.type === 'mcq'" class="question-box question-mcq">
+                <mat-radio-group class="radio-button-group question"
+                                 [formControlName]="question.nameFull + '_answer'">
+                  <mat-radio-button *ngFor="let answer of question.answers; let k = index"
+                                    class="radio-button"
+                                    [value]="k">
+                    <span>{{ answer }}</span>
+                  </mat-radio-button>
+                </mat-radio-group>
+                <app-error-message
+                  *ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched
+                          && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+                  [formField]="questionnaireForm.get(question.nameFull + '_answer')"
+                  class="app-error-message">
+                </app-error-message>
+              </div>
 
-						<!-- NUMBER -->
-						<div *ngIf="question.type === 'number'"
-							 class="question-box question-number">
-							<mat-form-field appearance="fill" class="questionnaire-value">
-								<input *ngIf="!question.repeat"
-									   matInput type="number" placeholder="Choose a number"
-									   min="0"
-									   [formControlName]="question.nameFull + '_answer'">
-								<input *ngIf="question.repeat"
-									   matInput type="number" placeholder="Choose a number"
-									   min="0"
-									   [max]="question.times"
-									   (change)="handleQuestionRepetition(question)"
-									   [formControlName]="question.nameFull + '_answer'">
-								<app-error-message
-										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
-										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
-										class="app-error-message">
-								</app-error-message>
-							</mat-form-field>
-						</div>
+              <!-- NUMBER -->
+              <div *ngIf="question.type === 'number'" class="question-box question-number">
+                <mat-form-field appearance="fill" class="questionnaire-value">
+                  <input *ngIf="!question.repeat"
+                         matInput type="number" placeholder="Choose a number"
+                         min="0"
+                         [formControlName]="question.nameFull + '_answer'">
+                  <input *ngIf="question.repeat"
+                         matInput type="number" placeholder="Choose a number"
+                         min="0"
+                         [max]="question.times"
+                         (change)="handleQuestionRepetition(question)"
+                         [formControlName]="question.nameFull + '_answer'">
+                  <app-error-message
+                    *ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched
+                            && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+                    [formField]="questionnaireForm.get(question.nameFull + '_answer')"
+                    class="app-error-message">
+                  </app-error-message>
+                </mat-form-field>
+              </div>
 
-						<!-- LIST / CHECKBOX -->
-						<ng-container *ngIf="question.type === 'list'">
-							<div class="question-box" [formGroupName]="question.nameFull + '_list'">
-								<div *ngFor="let answer of question.answers; let k = index">
-									<mat-checkbox
-											[formControlName]="k"
-											(change)="handleCheckbox(question, question.nameFull + '_list')">
-										{{ answer }}
-									</mat-checkbox>
-								</div>
-							</div>
-							<div class="checked-summary" *ngIf="displayCheckedLabels(question)">
-								<span class="checked-summary-label"><span i18n>Selected:</span></span>
-								<span class="checked-summary-values">{{ displayCheckedLabels(question) }}</span>
-							</div>
-							<app-error-message
-									*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
-									[formField]="questionnaireForm.get(question.nameFull + '_answer')"
-									class="app-error-message">
-							</app-error-message>
-						</ng-container>
+              <!-- LIST / CHECKBOX -->
+              <ng-container *ngIf="question.type === 'list'">
+                <div class="question-box" [formGroupName]="question.nameFull + '_list'">
+                  <div *ngFor="let answer of question.answers; let k = index">
+                    <mat-checkbox
+                      [formControlName]="k"
+                      (change)="handleCheckbox(question, question.nameFull + '_list')">
+                      {{ answer }}
+                    </mat-checkbox>
+                  </div>
+                </div>
+                <div class="checked-summary" *ngIf="displayCheckedLabels(question)">
+                  <span class="checked-summary-label"><span i18n>Selected:</span></span>
+                  <span class="checked-summary-values">{{ displayCheckedLabels(question) }}</span>
+                </div>
+                <app-error-message
+                  *ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched
+                          && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+                  [formField]="questionnaireForm.get(question.nameFull + '_answer')"
+                  class="app-error-message">
+                </app-error-message>
+              </ng-container>
 
-						<!-- DROPDOWN -->
-						<div *ngIf="question.type === 'dropdown'" class="question-box">
-							<mat-form-field appearance="fill" class="questionnaire-value">
-								<mat-label><span i18n>Value</span></mat-label>
-								<mat-select [formControlName]="question.nameFull + '_answer'">
-									<mat-option *ngFor="let answer of question.answers"
-												[value]="answer">
-										{{ answer }}
-									</mat-option>
-								</mat-select>
-								<app-error-message
-										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
-										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
-										class="app-error-message">
-								</app-error-message>
-							</mat-form-field>
-						</div>
+              <!-- DROPDOWN -->
+              <div *ngIf="question.type === 'dropdown'" class="question-box">
+                <mat-form-field appearance="fill" class="questionnaire-value">
+                  <mat-label><span i18n>Value</span></mat-label>
+                  <mat-select [formControlName]="question.nameFull + '_answer'">
+                    <mat-option *ngFor="let answer of question.answers" [value]="answer">
+                      {{ answer }}
+                    </mat-option>
+                  </mat-select>
+                  <app-error-message
+                    *ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched
+                            && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+                    [formField]="questionnaireForm.get(question.nameFull + '_answer')"
+                    class="app-error-message">
+                  </app-error-message>
+                </mat-form-field>
+              </div>
 
-						<!-- TEXT / EMAIL -->
-						<div *ngIf="question.type === 'text' || question.type === 'email'"
-							 class="question-box">
-							<mat-form-field appearance="fill" class="questionnaire-value width-100">
-								<mat-label><span i18n>Answer</span></mat-label>
-								<textarea matInput
-										  placeholder="Write your answer here"
-										  rows="2"
-										  [formControlName]="question.nameFull + '_answer'">
-                                </textarea>
-								<app-error-message
-										*ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
-										[formField]="questionnaireForm.get(question.nameFull + '_answer')"
-										class="app-error-message">
-								</app-error-message>
-							</mat-form-field>
-						</div>
+              <!-- TEXT / EMAIL -->
+              <div *ngIf="question.type === 'text' || question.type === 'email'"
+                   class="question-box">
+                <mat-form-field appearance="fill" class="questionnaire-value width-100">
+                  <mat-label><span i18n>Answer</span></mat-label>
+                  <textarea matInput
+                            placeholder="Write your answer here"
+                            rows="2"
+                            [formControlName]="question.nameFull + '_answer'">
+                  </textarea>
+                  <app-error-message
+                    *ngIf="questionnaireForm.get(question.nameFull + '_answer')?.touched
+                            && questionnaireForm.get(question.nameFull + '_answer')?.invalid"
+                    [formField]="questionnaireForm.get(question.nameFull + '_answer')"
+                    class="app-error-message">
+                  </app-error-message>
+                </mat-form-field>
+              </div>
 
-						<!-- FREE TEXT -->
-						<div *ngIf="question.free_text"
-							 class="{{ question.required ? 'question-free-text-tall' : 'question-free-text' }}">
-							<mat-form-field appearance="fill" class="questionnaire-value width-100">
-								<mat-label><span i18n>Other</span></mat-label>
-								<textarea matInput
-										  placeholder="Write any additional detail here"
-										  rows="2"
-										  [formControlName]="question.nameFull + '_free_text'">
-                                </textarea>
-								<app-error-message
-										*ngIf="questionnaireForm.get(question.nameFull + '_free_text')?.touched && questionnaireForm.get(question.nameFull + '_free_text')?.invalid"
-										[formField]="questionnaireForm.get(question.nameFull + '_free_text')"
-										class="app-error-message">
-								</app-error-message>
-							</mat-form-field>
-						</div>
+              <!-- FREE TEXT -->
+              <div *ngIf="question.free_text"
+                   class="{{ question.required ? 'question-free-text-tall' : 'question-free-text' }}">
+                <mat-form-field appearance="fill" class="questionnaire-value width-100">
+                  <mat-label><span i18n>Other</span></mat-label>
+                  <textarea matInput
+                            placeholder="Write any additional detail here"
+                            rows="2"
+                            [formControlName]="question.nameFull + '_free_text'">
+                  </textarea>
+                  <app-error-message
+                    *ngIf="questionnaireForm.get(question.nameFull + '_free_text')?.touched
+                            && questionnaireForm.get(question.nameFull + '_free_text')?.invalid"
+                    [formField]="questionnaireForm.get(question.nameFull + '_free_text')"
+                    class="app-error-message">
+                  </app-error-message>
+                </mat-form-field>
+              </div>
 
-						<!-- DETAILS -->
-						<mat-expansion-panel hideToggle
-											 *ngIf="question.detail"
-											 class="question-detail"
-											 (opened)="question.show_detail = true"
-											 (closed)="question.show_detail = false">
-							<mat-expansion-panel-header class="mat-button">
-								<mat-panel-title>
-									{{ question.show_detail ? 'Hide details' : 'Show details' }}
-								</mat-panel-title>
-								<mat-panel-description>
-									{{ question.detail.text }}
-								</mat-panel-description>
-							</mat-expansion-panel-header>
-							<div class="question-detail-element"
-								 *ngFor="let element of question.detail.elements">
-								{{ element.key }}
-								<ul>
-									<li *ngFor="let item of element.items">{{ item }}</li>
-								</ul>
-							</div>
-						</mat-expansion-panel>
-					</ng-container>
-				</div>
+              <!-- DETAILS -->
+              <mat-expansion-panel hideToggle *ngIf="question.detail"
+                                   class="question-detail"
+                                   (opened)="question.show_detail = true"
+                                   (closed)="question.show_detail = false">
+                <mat-expansion-panel-header class="mat-button">
+                  <mat-panel-title>
+                    {{ question.show_detail ? 'Hide details' : 'Show details' }}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{ question.detail.text }}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="question-detail-element"
+                     *ngFor="let element of question.detail.elements">
+                  {{ element.key }}
+                  <ul>
+                    <li *ngFor="let item of element.items">{{ item }}</li>
+                  </ul>
+                </div>
+              </mat-expansion-panel>
+            </ng-container>
+          </div>
 
-				<!-- recursive call -->
-				<div *ngIf="question.questions?.length" class="indent">
-					<ng-template
-							ngFor
-							[ngForOf]="question.questions"
-							[ngForTemplate]="questionTemplate">
-					</ng-template>
-				</div>
-			</ng-template>
+          <!-- recursive call -->
+          <div *ngIf="question.questions?.length" class="indent">
+            <ng-template
+              ngFor
+              [ngForOf]="question.questions"
+              [ngForTemplate]="questionTemplate">
+            </ng-template>
+          </div>
+        </ng-template>
 
-			<!-- STANDARD questionnaire -->
-			<mat-card-content *ngIf="questionnaire.type === 'standard'"
-							  class="questionnaire-standard">
+        <!-- STANDARD questionnaire -->
+        <mat-card-content *ngIf="questionnaire.type === 'standard'" class="questionnaire-standard">
 
-				<ng-template
-						[ngTemplateOutlet]="descriptionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="descriptionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
+          </ng-template>
 
-				<ng-template
-						[ngTemplateOutlet]="captionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="captionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
+          </ng-template>
 
-				<ng-container *ngFor="let q of questionnaire.treeCut.questions">
-					<ng-template
-							[ngTemplateOutlet]="questionTemplate"
-							[ngTemplateOutletContext]="{ $implicit: q }">
-					</ng-template>
-				</ng-container>
-			</mat-card-content>
+          <ng-container *ngFor="let q of questionnaire.treeCut.questions">
+            <ng-template
+              [ngTemplateOutlet]="questionTemplate"
+              [ngTemplateOutletContext]="{ $implicit: q }">
+            </ng-template>
+          </ng-container>
+        </mat-card-content>
 
-			<!-- CRT questionnaire -->
-			<mat-card-content *ngIf="questionnaire.type === 'crt'">
+        <!-- CRT questionnaire -->
+        <mat-card-content *ngIf="questionnaire.type === 'crt'">
 
-				<ng-template
-						[ngTemplateOutlet]="descriptionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="descriptionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
+          </ng-template>
 
-				<ng-template
-						[ngTemplateOutlet]="captionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="captionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
+          </ng-template>
 
-				<div *ngFor="let q of questionnaire.questions" class="question-box">
-					<p class="question-text">{{ q.text }}</p>
-					<mat-form-field appearance="fill">
-						<mat-label><span i18n>Answer</span></mat-label>
-						<input matInput type="number" placeholder="0" min="0" max="100"
-							   [formControlName]="q.name + '_answer'">
-					</mat-form-field>
-					<app-error-message
-							*ngIf="questionnaireForm.get(q.nameFull + '_answer')?.touched && questionnaireForm.get(q.nameFull + '_answer')?.invalid"
-							[formField]="questionnaireForm.get(q.nameFull + '_answer')"
-							class="app-error-message">
-					</app-error-message>
-				</div>
-			</mat-card-content>
+          <div *ngFor="let q of questionnaire.questions" class="question-box">
+            <p class="question-text">{{ q.text }}</p>
+            <mat-form-field appearance="fill">
+              <mat-label><span i18n>Answer</span></mat-label>
+              <input matInput type="number" placeholder="0" min="0" max="100"
+                     [formControlName]="q.name + '_answer'">
+            </mat-form-field>
+            <app-error-message
+              *ngIf="questionnaireForm.get(q.nameFull + '_answer')?.touched
+                      && questionnaireForm.get(q.nameFull + '_answer')?.invalid"
+              [formField]="questionnaireForm.get(q.nameFull + '_answer')"
+              class="app-error-message">
+            </app-error-message>
+          </div>
+        </mat-card-content>
 
-			<!-- LIKERT questionnaire -->
-			<mat-card-content *ngIf="questionnaire.type === 'likert'"
-							  class="questionnaire-matrix">
+        <!-- LIKERT questionnaire -->
+        <mat-card-content *ngIf="questionnaire.type === 'likert'" class="questionnaire-matrix">
 
-				<ng-template
-						[ngTemplateOutlet]="descriptionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="descriptionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.description }">
+          </ng-template>
 
-				<ng-template
-						[ngTemplateOutlet]="captionTemplate"
-						[ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
-				</ng-template>
+          <ng-template
+            [ngTemplateOutlet]="captionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: questionnaire.caption }">
+          </ng-template>
 
-				<div class="matrix-header">
-					<div></div>
-					<div *ngFor="let map of questionnaire.mappings">
-						<strong [class.matrix-header-text-wide]="map.spacing"
-								class="matrix-header-text">{{ map.label }}</strong>
-					</div>
-				</div>
+          <div class="matrix-header">
+            <div></div>
+            <div *ngFor="let map of questionnaire.mappings">
+              <strong [class.matrix-header-text-wide]="map.spacing"
+                      class="matrix-header-text">{{ map.label }}</strong>
+            </div>
+          </div>
 
-				<mat-radio-group
-						aria-labelledby="radio-button-label"
-						*ngFor="let q of questionnaire.questions; let m = index"
-						[formControlName]="q.name + '_answer'">
-					<div>
-						<p class="question-text">
-							<span *ngIf="q.showIndex">{{ m + 1 }} - </span>{{ q.text }}
-						</p>
-					</div>
-					<div *ngFor="let map of questionnaire.mappings">
-						<mat-radio-button
-								class="radio-button"
-								[class.radio-button-wide]="map.spacing"
-								[value]="map.value">
-						</mat-radio-button>
-					</div>
-				</mat-radio-group>
-			</mat-card-content>
+          <mat-radio-group aria-labelledby="radio-button-label"
+                           *ngFor="let q of questionnaire.questions; let m = index"
+                           [formControlName]="q.name + '_answer'">
+            <div>
+              <p class="question-text">
+                <span *ngIf="q.showIndex">{{ m + 1 }} - </span>{{ q.text }}
+              </p>
+            </div>
+            <div *ngFor="let map of questionnaire.mappings">
+              <mat-radio-button
+                class="radio-button"
+                [class.radio-button-wide]="map.spacing"
+                [value]="map.value">
+              </mat-radio-button>
+            </div>
+          </mat-radio-group>
+        </mat-card-content>
 
-			<!-- Navigation buttons -->
-			<mat-card-actions>
-				<p class="form-note">
-					<button id="questionnaire-{{ questionnaire.index }}-button-previous"
-							mat-flat-button color="primary" matStepperPrevious
-							*ngIf="questionnaire.index > 0 && questionnaire.allow_back"
-							[disabled]="sectionService.taskCompleted"
-							(click)="handleQuestionnaireCompletion('Back')">
-						<span i18n>Back</span>
-					</button>
+        <!-- Navigation buttons -->
+        <mat-card-actions>
+          <p class="form-note">
+            <button id="questionnaire-{{ questionnaire.index }}-button-previous"
+                    mat-flat-button color="primary" matStepperPrevious
+                    *ngIf="questionnaire.index > 0 && questionnaire.allow_back"
+                    [disabled]="sectionService.taskCompleted"
+                    (click)="handleQuestionnaireCompletion('Back')">
+              <span i18n>Back</span>
+            </button>
 
-					<button id="questionnaire-{{ questionnaire.index }}-button-next"
-							mat-flat-button color="primary" matStepperNext
-							*ngIf="
-                        ((questionnaire.index < task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
-                        ((questionnaire.index <= task.questionnaireAmountStart - 1) && task.documentsAmount > 0) ||
-                        (questionnaire.index >= task.questionnaireAmountStart - 1 &&
-                        questionnaire.index < task.questionnaireAmount - 1 &&
-                        task.questionnaireAmountEnd > 0)"
-							[disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
-							(click)="handleQuestionnaireCompletion('Next')">
-						<span i18n>Next</span>
-					</button>
+            <button id="questionnaire-{{ questionnaire.index }}-button-next"
+                    mat-flat-button color="primary" matStepperNext
+                    *ngIf="
+                      ((questionnaire.index < task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
+                      ((questionnaire.index <= task.questionnaireAmountStart - 1) && task.documentsAmount > 0) ||
+                      (questionnaire.index >= task.questionnaireAmountStart - 1 &&
+                       questionnaire.index < task.questionnaireAmount - 1 &&
+                       task.questionnaireAmountEnd > 0)"
+                    [disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
+                    (click)="handleQuestionnaireCompletion('Next')">
+              <span i18n>Next</span>
+            </button>
 
-					<button id="questionnaire-{{ questionnaire.index }}-button-finish"
-							mat-stroked-button color="accent" matStepperNext
-							*ngIf="
-                        ((questionnaire.index >= task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
-                        (questionnaire.index >= task.questionnaireAmount - 1 && task.questionnaireAmountEnd > 0)"
-							[disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
-							(click)="handleQuestionnaireCompletion('Finish')">
-						<span i18n>Finish</span>
-					</button>
-				</p>
-			</mat-card-actions>
+            <button id="questionnaire-{{ questionnaire.index }}-button-finish"
+                    mat-stroked-button color="accent" matStepperNext
+                    *ngIf="
+                      ((questionnaire.index >= task.questionnaireAmountStart - 1) && task.documentsAmount == 0) ||
+                      (questionnaire.index >= task.questionnaireAmount - 1 && task.questionnaireAmountEnd > 0)"
+                    [disabled]="!questionnaireForm.valid || sectionService.taskCompleted"
+                    (click)="handleQuestionnaireCompletion('Finish')">
+              <span i18n>Finish</span>
+            </button>
+          </p>
+        </mat-card-actions>
 
-		</mat-card>
-	</form>
+      </mat-card>
+    </form>
+  </ng-container>
 </div>
