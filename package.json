@@ -37,6 +37,7 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.7",
     "crypto-es": "^2.1.0",
+    "esbuild": "^0.25.5",
     "material-icons": "^1.13.14",
     "ngx-color-picker": "18.0.0",
     "ngx-cookie-service": "18.0.0",
