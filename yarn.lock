@@ -139,20 +139,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:18.2.14":
-  version: 18.2.14
-  resolution: "@angular/cdk@npm:18.2.14"
+"@angular/cdk@npm:19.2.18":
+  version: 19.2.18
+  resolution: "@angular/cdk@npm:19.2.18"
   dependencies:
     parse5: "npm:^7.1.2"
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": ^18.0.0 || ^19.0.0
-    "@angular/core": ^18.0.0 || ^19.0.0
+    "@angular/common": ^19.0.0 || ^20.0.0
+    "@angular/core": ^19.0.0 || ^20.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  dependenciesMeta:
-    parse5:
-      optional: true
-  checksum: 10/a17b4638dc517f604f940db29510104f2795f0ed06607cadb6f67e76a000b23ddd6a6d3a58d55b413e762e6681021653fbc16c02a568f37ded32dc89adfa7e0e
+  checksum: 10/98046c9d968dcbf1b2b4fdd247b442f1d7cc02190c7cbcbf4b973caacb71e24be0c1ee280152bac009c0b343058f44003863af36eeb3bbb7680cfd739d96d1f6
   languageName: node
   linkType: hard
 
@@ -272,20 +269,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:18.2.14":
-  version: 18.2.14
-  resolution: "@angular/material@npm:18.2.14"
+"@angular/material@npm:19.2.18":
+  version: 19.2.18
+  resolution: "@angular/material@npm:19.2.18"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/animations": ^18.0.0 || ^19.0.0
-    "@angular/cdk": 18.2.14
-    "@angular/common": ^18.0.0 || ^19.0.0
-    "@angular/core": ^18.0.0 || ^19.0.0
-    "@angular/forms": ^18.0.0 || ^19.0.0
-    "@angular/platform-browser": ^18.0.0 || ^19.0.0
+    "@angular/cdk": 19.2.18
+    "@angular/common": ^19.0.0 || ^20.0.0
+    "@angular/core": ^19.0.0 || ^20.0.0
+    "@angular/forms": ^19.0.0 || ^20.0.0
+    "@angular/platform-browser": ^19.0.0 || ^20.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/2bf0928536ad2653985de54687b3984482e3743f1963901752d715aaf1961f14cb7b691c568190bca6e4de5206d4c5952bd2f4e29815dc57d7fe47bd37cf9f7d
+  checksum: 10/7ef973543175973f30ade82b6d5cf2d29b3371cf84fc484d8182141a05573a853c03944aa1aab611d2af1aa4b56749e3f1bd1c64f53f2ef6e076bd513fcd7eeb
   languageName: node
   linkType: hard
 
@@ -4175,7 +4171,7 @@ __metadata:
   dependencies:
     "@angular/animations": "npm:^19.2.14"
     "@angular/build": "npm:^19.2.15"
-    "@angular/cdk": "npm:18.2.14"
+    "@angular/cdk": "npm:19.2.18"
     "@angular/cli": "npm:19.2.15"
     "@angular/common": "npm:19.2.14"
     "@angular/compiler": "npm:19.2.14"
@@ -4183,7 +4179,7 @@ __metadata:
     "@angular/core": "npm:19.2.14"
     "@angular/forms": "npm:19.2.14"
     "@angular/localize": "npm:19.2.14"
-    "@angular/material": "npm:18.2.14"
+    "@angular/material": "npm:19.2.18"
     "@angular/platform-browser": "npm:19.2.14"
     "@angular/platform-browser-dynamic": "npm:19.2.14"
     "@angular/router": "npm:19.2.14"
