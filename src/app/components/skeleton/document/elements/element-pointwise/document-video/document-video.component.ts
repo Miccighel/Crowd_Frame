@@ -10,7 +10,8 @@ import {
 @Component({
     selector: 'app-document-video',
     templateUrl: './document-video.component.html',
-    styleUrls: ['./document-video.component.scss']
+    styleUrls: ['./document-video.component.scss'],
+    standalone: false
 })
 export class DocumentVideoComponent implements OnInit {
     /* #################### INPUTS #################### */

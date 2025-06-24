@@ -24,7 +24,8 @@ import {TaskSettingsStepComponent} from "./generator-steps/task-settings-step/ta
 @Component({
     selector: 'app-generator',
     templateUrl: './generator.component.html',
-    styleUrls: ['./generator.component.scss']
+    styleUrls: ['./generator.component.scss'],
+    standalone: false
 })
 
 /*

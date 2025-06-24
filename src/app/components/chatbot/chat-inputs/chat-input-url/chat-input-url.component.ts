@@ -18,6 +18,7 @@ import { Subject } from "rxjs";
     templateUrl: "chat-input-url.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-url.component.css"],
+    standalone: false
 })
 export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
     @ViewChild("urlValueInput", { static: true }) urlValueInput!: ElementRef;

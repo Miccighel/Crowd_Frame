@@ -26,6 +26,7 @@ import { S3Service } from "../../../../services/aws/s3.service";
     selector: "app-worker-checks",
     templateUrl: "./worker-checks-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    standalone: false
 })
 export class WorkerChecksStepComponent implements OnInit {
     configService: ConfigService;

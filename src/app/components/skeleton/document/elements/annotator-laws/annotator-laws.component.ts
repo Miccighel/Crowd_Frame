@@ -19,7 +19,8 @@ import {doHighlight} from "@funktechno/texthighlighter/lib";
     selector: 'app-annotator-laws',
     templateUrl: './annotator-laws.component.html',
     styleUrls: ['./annotator-laws.component.scss', '../../document.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AnnotatorLawsComponent {
 

@@ -7,8 +7,8 @@ import { EvaluationInstruction } from "src/app/models/skeleton/instructions/eval
 @Component({
     selector: "chat-instruction-modal",
     templateUrl: "chat-instruction-modal.component.html",
-
     styleUrls: ["./chat-instruction-modal.component.css"],
+    standalone: false
 })
 export class ChatInstructionModalComponent {
     public instructions: BaseInstruction[];

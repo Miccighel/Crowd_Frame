@@ -36,6 +36,7 @@ import {FakerService} from "../../../../../../services/searchEngine/faker.servic
     selector: "app-search-engine-body",
     templateUrl: "./search-engine-body.component.html",
     styleUrls: ["./search-engine-body.component.scss"],
+    standalone: false
 })
 
 /*

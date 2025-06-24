@@ -42,6 +42,7 @@ interface AnnotatorType {
     selector: "app-dimensions-step",
     templateUrl: "./dimensions-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    standalone: false
 })
 export class DimensionsStepComponent implements OnInit {
     configService: ConfigService;

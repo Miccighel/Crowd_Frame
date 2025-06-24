@@ -32,6 +32,7 @@ interface QuestionnairePosition {
     selector: "app-questionnaire-step",
     templateUrl: "./questionnaire-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    standalone: false
 })
 export class QuestionnaireStepComponent implements OnInit {
     configService: ConfigService;

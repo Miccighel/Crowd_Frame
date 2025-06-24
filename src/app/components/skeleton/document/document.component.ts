@@ -31,7 +31,8 @@ import {DynamoDBService} from "../../../services/aws/dynamoDB.service";
 @Component({
     selector: 'app-document',
     templateUrl: './document.component.html',
-    styleUrls: ['./document.component.scss']
+    styleUrls: ['./document.component.scss'],
+    standalone: false
 })
 
 export class DocumentComponent implements OnInit {

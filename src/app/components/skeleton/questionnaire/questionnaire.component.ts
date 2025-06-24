@@ -35,6 +35,7 @@ import {MatStepper} from '@angular/material/stepper';
     selector: 'app-questionnaire',
     templateUrl: './questionnaire.component.html',
     styleUrls: ['./questionnaire.component.scss'],
+    standalone: false
 })
 export class QuestionnaireComponent implements OnInit {
 

@@ -53,6 +53,7 @@ import {Title} from "@angular/platform-browser";
     animations: [fadeIn],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 
 /*

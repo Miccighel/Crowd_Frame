@@ -15,7 +15,8 @@ import {LocalStorageService} from "../../../../services/localStorage.service";
 @Component({
     selector: 'app-summary-step',
     templateUrl: './summary-step.component.html',
-    styleUrls: ['../../generator.component.scss']
+    styleUrls: ['../../generator.component.scss'],
+    standalone: false
 })
 export class SummaryStepComponent implements OnInit {
 

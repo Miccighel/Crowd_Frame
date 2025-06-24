@@ -11,7 +11,8 @@ import {Task} from "../../../../../models/skeleton/task";
 @Component({
     selector: 'app-element-pairwise',
     templateUrl: './element-pairwise.component.html',
-    styleUrls: ['./element-pairwise.component.scss', '../../document.component.scss']
+    styleUrls: ['./element-pairwise.component.scss', '../../document.component.scss'],
+    standalone: false
 })
 export class ElementPairwiseComponent implements OnInit {
 

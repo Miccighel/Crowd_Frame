@@ -26,7 +26,8 @@ import {Worker} from '../../../../../models/worker/worker';
 @Component({
     selector: 'app-element-pointwise',
     templateUrl: './element-pointwise.component.html',
-    styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss']
+    styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss'],
+    standalone: false
 })
 export class ElementPointwiseComponent implements OnInit {
     /* #################### SERVICES & CORE STUFF #################### */

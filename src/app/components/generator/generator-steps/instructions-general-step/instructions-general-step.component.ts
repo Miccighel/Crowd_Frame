@@ -12,7 +12,8 @@ import {Questionnaire} from "../../../../models/skeleton/questionnaires/question
 @Component({
     selector: 'app-instructions-step',
     templateUrl: './instructions-general-step.component.html',
-    styleUrls: ['../../generator.component.scss']
+    styleUrls: ['../../generator.component.scss'],
+    standalone: false
 })
 export class InstructionsGeneralStep implements OnInit {
 

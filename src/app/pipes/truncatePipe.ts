@@ -1,7 +1,10 @@
 /* Core */
 import {Pipe, PipeTransform} from "@angular/core";
 /* Pipes */
-@Pipe({name: 'truncate'})
+@Pipe({
+    name: 'truncate',
+    standalone: false
+})
 
 /*
  * This class provides an implementation for a Pipe which can be used to truncate texts

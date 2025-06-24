@@ -11,6 +11,7 @@ import {
     templateUrl: "chat-input-button.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-button.component.css"],
+    standalone: false
 })
 export class ChatInputButtonComponent {
     @Input() public text = "N.D";

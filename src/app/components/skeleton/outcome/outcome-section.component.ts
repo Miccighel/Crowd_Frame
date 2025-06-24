@@ -11,7 +11,8 @@ import {UtilsService} from "../../../services/utils.service";
 @Component({
     selector: 'app-outcome-section',
     templateUrl: './outcome-section.component.html',
-    styleUrls: ['./outcome-section.component.scss']
+    styleUrls: ['./outcome-section.component.scss'],
+    standalone: false
 })
 export class OutcomeSectionComponent implements OnInit {
 

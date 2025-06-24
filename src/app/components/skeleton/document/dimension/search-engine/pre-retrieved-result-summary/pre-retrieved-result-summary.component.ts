@@ -12,7 +12,8 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
     selector: 'app-pre-retrieved-result-summary',
     templateUrl: './pre-retrieved-result-summary.component.html',
     styleUrls: ['./pre-retrieved-result-summary.component.scss'],
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class PreRetrievedResultSummaryComponent implements OnInit, OnDestroy {
 

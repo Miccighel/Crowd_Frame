@@ -10,6 +10,7 @@ import {
     selector: "chat-input-text",
     templateUrl: "chat-input-text.component.html",
     styleUrls: ["./chat-input-text.component.scss"],
+    standalone: false
 })
 export class ChatInputTextComponent {
     @Output() public send = new EventEmitter();

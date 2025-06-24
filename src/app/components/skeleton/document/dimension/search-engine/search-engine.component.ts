@@ -17,7 +17,8 @@ import {ConfigService} from "../../../../../services/config.service";
 @Component({
     selector: 'app-search-engine',
     templateUrl: './search-engine.component.html',
-    styleUrls: ['./search-engine.component.scss']
+    styleUrls: ['./search-engine.component.scss'],
+    standalone: false
 })
 export class SearchEngineComponent implements OnInit {
 

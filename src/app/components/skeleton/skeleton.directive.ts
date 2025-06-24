@@ -6,7 +6,10 @@ import {ActionLogger} from "../../services/userActionLogger.service";
 import {fromEvent} from "rxjs";
 import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} from "rxjs/operators";
 
-@Directive({selector: "button"})
+@Directive({
+    selector: "button",
+    standalone: false
+})
 export class ButtonDirective {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
@@ -33,7 +36,10 @@ export class ButtonDirective {
 }
 
 
-@Directive({selector: "app-skeleton"})
+@Directive({
+    selector: "app-skeleton",
+    standalone: false
+})
 export class SkeletonDirective implements AfterViewInit {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }
@@ -303,7 +309,10 @@ export class SkeletonDirective implements AfterViewInit {
     }
 }
 
-@Directive({selector: 'input[type="text"]'})
+@Directive({
+    selector: 'input[type="text"]',
+    standalone: false
+})
 export class InputDirective implements AfterViewInit {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }
@@ -344,7 +353,10 @@ export class InputDirective implements AfterViewInit {
     }
 }
 
-@Directive({selector: "mat-radio-group"})
+@Directive({
+    selector: "mat-radio-group",
+    standalone: false
+})
 export class RadioDirective implements AfterViewInit {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }
@@ -367,7 +379,10 @@ export class RadioDirective implements AfterViewInit {
     }
 }
 
-@Directive({selector: "app-search-engine-body"})
+@Directive({
+    selector: "app-search-engine-body",
+    standalone: false
+})
 export class SearchEngineBodyDirective {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }

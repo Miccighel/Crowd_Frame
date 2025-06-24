@@ -11,6 +11,7 @@ import {
     templateUrl: "chat-input-select.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-select.component.css"],
+    standalone: false
 })
 export class ChatInputSelectComponent implements OnInit {
     @Input() public options: { label: string; value: any }[];

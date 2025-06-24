@@ -44,6 +44,7 @@ import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-m
     animations: [fadeIn],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ChatWidgetComponent implements OnInit {
     @ViewChild("chatbody") chatbody!: ElementRef;

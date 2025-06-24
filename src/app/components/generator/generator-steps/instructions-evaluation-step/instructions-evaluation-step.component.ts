@@ -13,7 +13,8 @@ import {SearchEngineSettings} from "../../../../models/searchEngine/searchEngine
 @Component({
     selector: 'app-instructions-evaluation-step',
     templateUrl: './instructions-evaluation-step.component.html',
-    styleUrls: ['../../generator.component.scss']
+    styleUrls: ['../../generator.component.scss'],
+    standalone: false
 })
 
 export class InstructionsEvaluationStepComponent implements OnInit {

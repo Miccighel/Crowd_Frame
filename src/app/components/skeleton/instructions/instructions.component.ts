@@ -18,6 +18,7 @@ export interface DialogData {
     selector: 'app-instructions',
     templateUrl: 'instructions.component.html',
     styleUrls: ['instructions.component.scss'],
+    standalone: false
 })
 
 /*
@@ -71,7 +72,8 @@ export class InstructionsComponent implements OnInit {
     selector: 'app-instructions-dialog',
     styleUrls: ['instructions-dialog.component.scss'],
     templateUrl: 'instructions-dialog.component.html',
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 
 /*

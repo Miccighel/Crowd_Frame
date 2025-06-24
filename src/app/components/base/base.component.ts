@@ -12,7 +12,8 @@ import {Task} from "../../models/skeleton/task";
     selector: 'app-base',
     templateUrl: './base.component.html',
     styleUrls: ['./base.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class BaseComponent implements OnInit, OnDestroy {
     currentComponent;

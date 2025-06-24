@@ -6,9 +6,10 @@ export interface DialogData {
 }
 
 @Component({
-  selector: 'app-countdown-dialog',
-  templateUrl: './countdown-dialog.component.html',
-  styleUrls: ['./countdown-dialog.component.scss']
+    selector: 'app-countdown-dialog',
+    templateUrl: './countdown-dialog.component.html',
+    styleUrls: ['./countdown-dialog.component.scss'],
+    standalone: false
 })
 export class CountdownDialogComponent {
     constructor(private dialogRef: MatDialogRef<CountdownDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {}

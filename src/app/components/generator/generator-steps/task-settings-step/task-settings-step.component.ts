@@ -32,6 +32,7 @@ interface BatchNode {
     selector: "app-task-settings-step",
     templateUrl: "./task-settings-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    standalone: false
 })
 export class TaskSettingsStepComponent implements OnInit {
 

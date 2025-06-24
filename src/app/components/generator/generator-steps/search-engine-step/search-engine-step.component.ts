@@ -22,6 +22,7 @@ interface SourceType {
     selector: "app-search-engine-step",
     templateUrl: "./search-engine-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    standalone: false
 })
 export class SearchEngineStepComponent implements OnInit {
     configService: ConfigService;

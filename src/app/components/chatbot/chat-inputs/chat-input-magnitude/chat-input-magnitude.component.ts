@@ -15,6 +15,7 @@ import { MagnitudeDimensionInfo } from "src/app/models/conversational/common.mod
     templateUrl: "chat-input-magnitude.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-magnitude.component.css"],
+    standalone: false
 })
 export class ChatInputMagnitudeComponent implements OnInit {
     public lowerBound = false;

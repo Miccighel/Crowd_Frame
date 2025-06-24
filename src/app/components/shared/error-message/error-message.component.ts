@@ -5,7 +5,8 @@ import {UtilsService} from "../../../services/utils.service";
 @Component({
     selector: 'app-error-message',
     templateUrl: './error-message.component.html',
-    styleUrls: ['./error-message.component.scss']
+    styleUrls: ['./error-message.component.scss'],
+    standalone: false
 })
 export class ErrorMessageComponent implements OnInit {
 

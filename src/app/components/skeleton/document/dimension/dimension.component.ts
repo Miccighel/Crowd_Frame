@@ -17,7 +17,8 @@ import {DataRecord} from "../../../../models/skeleton/dataRecord";
 @Component({
     selector: 'app-dimension',
     templateUrl: './dimension.component.html',
-    styleUrls: ['./dimension.component.scss', '../document.component.scss']
+    styleUrls: ['./dimension.component.scss', '../document.component.scss'],
+    standalone: false
 })
 
 export class DimensionComponent implements OnInit, OnChanges {

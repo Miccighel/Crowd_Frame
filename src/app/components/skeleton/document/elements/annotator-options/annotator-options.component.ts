@@ -15,7 +15,8 @@ import {UtilsService} from "../../../../../services/utils.service";
     selector: 'app-annotator-options',
     templateUrl: './annotator-options.component.html',
     styleUrls: ['./annotator-options.component.scss', '../../document.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AnnotatorOptionsComponent implements OnInit {
 

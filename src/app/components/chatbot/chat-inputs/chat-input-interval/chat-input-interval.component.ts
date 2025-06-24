@@ -14,6 +14,7 @@ import { IntervalDimensionInfo } from "src/app/models/conversational/common.mode
     templateUrl: "chat-input-interval.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-interval.component.css"],
+    standalone: false
 })
 export class ChatInputIntervalComponent implements OnInit {
     public range = [0, 10];
