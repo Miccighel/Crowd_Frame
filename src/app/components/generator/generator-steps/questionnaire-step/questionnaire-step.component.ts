@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 import {
@@ -125,7 +126,7 @@ export class QuestionnaireStepComponent implements OnInit {
     /* STEP #1 - Questionnaires */
 
     questionnaires(): UntypedFormArray {
-        return this.formStep.get("questionnaires") as UntypedFormArray;
+        return this.formStep?.get("questionnaires") as UntypedFormArray;
     }
 
     addQuestionnaire(
@@ -173,13 +174,13 @@ export class QuestionnaireStepComponent implements OnInit {
     }
 
     updateQuestionnaire(questionnaireIndex) {
-        let questionnaire = this.questionnaires().at(questionnaireIndex);
+        let questionnaire = this.questionnaires()?.at(questionnaireIndex);
 
         this.questions(questionnaireIndex).clear();
         this.mapping(questionnaireIndex).clear();
 
         this.addQuestion(questionnaireIndex);
-        if (questionnaire.get("type").value == "likert") {
+        if (questionnaire?.get("type").value == "likert") {
             this.addMapping(questionnaireIndex);
         }
     }
@@ -187,9 +188,7 @@ export class QuestionnaireStepComponent implements OnInit {
     /* SUB ELEMENT: Questions */
 
     questions(questionnaireIndex: number): UntypedFormArray {
-        return this.questionnaires()
-            .at(questionnaireIndex)
-            .get("questions") as UntypedFormArray;
+        return this.questionnaires()?.at(questionnaireIndex)?.get("questions") as UntypedFormArray;
     }
 
     addQuestion(
@@ -219,7 +218,7 @@ export class QuestionnaireStepComponent implements OnInit {
             for (let answer of question.answers)
                 this.addAnswer(questionnaireIndex, questionIndex, answer);
         if (
-            this.questionnaires().at(questionnaireIndex).get("type").value ==
+            this.questionnaires()?.at(questionnaireIndex)?.get("type").value ==
                 "standard" &&
             this.questions(questionnaireIndex).length == 0
         ) {
@@ -240,9 +239,7 @@ export class QuestionnaireStepComponent implements OnInit {
         questionnaireIndex: number,
         questionIndex: number
     ): UntypedFormArray {
-        return this.questions(questionnaireIndex)
-            .at(questionIndex)
-            .get("answers") as UntypedFormArray;
+        return this.questions(questionnaireIndex)?.at(questionIndex)?.get("answers") as UntypedFormArray;
     }
 
     addAnswer(
@@ -268,9 +265,7 @@ export class QuestionnaireStepComponent implements OnInit {
     /* SUB ELEMENT: Mappings  */
 
     mapping(questionnaireIndex: number): UntypedFormArray {
-        return this.questionnaires()
-            .at(questionnaireIndex)
-            .get("mapping") as UntypedFormArray;
+        return this.questionnaires()?.at(questionnaireIndex)?.get("mapping") as UntypedFormArray;
     }
 
     addMapping(questionnaireIndex: number) {
@@ -296,8 +291,8 @@ export class QuestionnaireStepComponent implements OnInit {
             serializedQuestionnaires.forEach((questionnaireKey) =>
                 this.localStorageService.removeItem(questionnaireKey)
             );
-        let questionnairesJSON = JSON.parse(
-            JSON.stringify(this.formStep.get("questionnaires").value)
+        let questionnairesJSON = JSON?.parse(
+            JSON?.stringify(this.formStep?.get("questionnaires").value)
         );
         questionnairesJSON.forEach((questionnaire, questionnaireIndex) => {
             switch (questionnaire.type) {

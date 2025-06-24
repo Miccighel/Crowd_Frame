@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import {
@@ -88,7 +89,7 @@ export class DimensionsStepComponent implements OnInit {
         this.taskModality = value;
         if (this.taskModality != "pairwise") {
             for (let dimension of this.dimensions().controls) {
-                dimension.get("pairwise").setValue(false);
+                dimension?.get("pairwise")?.setValue(false);
             }
         }
     }
@@ -160,7 +161,7 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     dimensions(): UntypedFormArray {
-        return this.formStep.get("dimensions") as UntypedFormArray;
+        return this.formStep?.get("dimensions") as UntypedFormArray;
     }
 
     addDimension(dimensionIndex = null, dimension = null as Dimension) {
@@ -351,48 +352,40 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     resetJustification(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        dim.get("justification").get("text").setValue("");
-        dim.get("justification").get("min_words").setValue("");
+        let dim = this.dimensions()?.at(dimensionIndex);
+        dim?.get("justification")?.get("text")?.setValue("");
+        dim?.get("justification")?.get("min_words")?.setValue("");
 
-        if (dim.get("setJustification").value == false) {
-            dim.get("justification").get("text").clearValidators();
-            dim.get("justification").get("min_words").clearValidators();
+        if (dim?.get("setJustification").value == false) {
+            dim?.get("justification")?.get("text")?.clearValidators();
+            dim?.get("justification")?.get("min_words")?.clearValidators();
         } else {
-            dim.get("justification")
-                .get("text")
-                .setValidators(Validators.required);
-            dim.get("justification")
-                .get("min_words")
-                .setValidators(Validators.required);
+            dim?.get("justification")?.get("text")?.setValidators(Validators.required);
+            dim?.get("justification")?.get("min_words")?.setValidators(Validators.required);
         }
-        dim.get("justification").get("text").updateValueAndValidity();
-        dim.get("justification").get("min_words").updateValueAndValidity();
+        dim?.get("justification")?.get("text")?.updateValueAndValidity();
+        dim?.get("justification")?.get("min_words")?.updateValueAndValidity();
     }
 
     resetUrl(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        this.instructionsUrl(dimensionIndex).get("label").setValue("");
-        this.instructionsUrl(dimensionIndex).get("caption").setValue("");
-        this.instructionsUrl(dimensionIndex).get("text").setValue("");
-        this.instructionsUrl(dimensionIndex)
-            .get("text")
-            .updateValueAndValidity();
+        let dim = this.dimensions()?.at(dimensionIndex);
+        this.instructionsUrl(dimensionIndex)?.get("label")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("caption")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("text")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("text")?.updateValueAndValidity();
     }
 
     instructionsUrl(dimensionIndex): UntypedFormGroup {
-        let dim = this.dimensions().at(dimensionIndex);
-        return dim.get(`url`).get("instructions") as UntypedFormGroup;
+        let dim = this.dimensions()?.at(dimensionIndex);
+        return dim?.get(`url`)?.get("instructions") as UntypedFormGroup;
     }
 
     resetInstructionUrl(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        this.instructionsUrl(dimensionIndex).get("label").setValue("");
-        this.instructionsUrl(dimensionIndex).get("caption").setValue("");
-        this.instructionsUrl(dimensionIndex).get("text").setValue("");
-        this.instructionsUrl(dimensionIndex)
-            .get("text")
-            .updateValueAndValidity();
+        let dim = this.dimensions()?.at(dimensionIndex);
+        this.instructionsUrl(dimensionIndex)?.get("label")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("caption")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("text")?.setValue("");
+        this.instructionsUrl(dimensionIndex)?.get("text")?.updateValueAndValidity();
     }
 
     resetScale(dimensionIndex) {
@@ -401,99 +394,97 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     updateScale(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
+        let dim = this.dimensions()?.at(dimensionIndex);
 
-        if (dim.get("setScale").value == false) {
-            dim.get("scale").get("type").clearValidators();
-            dim.get("setStyle").setValue(false);
-            dim.get("setStyle").disable();
+        if (dim?.get("setScale").value == false) {
+            dim?.get("scale")?.get("type")?.clearValidators();
+            dim?.get("setStyle")?.setValue(false);
+            dim?.get("setStyle")?.disable();
         } else {
-            dim.get("scale").get("type").setValidators(Validators.required);
+            dim?.get("scale")?.get("type")?.setValidators(Validators.required);
         }
 
-        dim.get("scale").get("min").setValue("");
-        dim.get("scale").get("min").clearValidators();
-        dim.get("scale").get("min").updateValueAndValidity();
+        dim?.get("scale")?.get("min")?.setValue("");
+        dim?.get("scale")?.get("min")?.clearValidators();
+        dim?.get("scale")?.get("min")?.updateValueAndValidity();
 
-        dim.get("scale").get("max").setValue("");
-        dim.get("scale").get("max").clearValidators();
-        dim.get("scale").get("max").updateValueAndValidity();
+        dim?.get("scale")?.get("max")?.setValue("");
+        dim?.get("scale")?.get("max")?.clearValidators();
+        dim?.get("scale")?.get("max")?.updateValueAndValidity();
 
-        dim.get("scale").get("step").setValue("");
-        dim.get("scale").get("step").clearValidators();
-        dim.get("scale").get("step").updateValueAndValidity();
+        dim?.get("scale")?.get("step")?.setValue("");
+        dim?.get("scale")?.get("step")?.clearValidators();
+        dim?.get("scale")?.get("step")?.updateValueAndValidity();
 
         this.dimensionMapping(dimensionIndex).clear();
 
         if (
-            dim.get("setScale").value == true &&
-            dim.get("scale").get("type").value == "categorical"
+            dim?.get("setScale").value == true &&
+            dim?.get("scale")?.get("type").value == "categorical"
         ) {
             this.addDimensionMapping(dimensionIndex);
         }
 
-        if (dim.get("setScale").value == true) {
-            switch (dim.get("scale").get("type").value) {
+        if (dim?.get("setScale").value == true) {
+            switch (dim?.get("scale")?.get("type").value) {
                 case "categorical":
-                    dim.get("setStyle").enable();
-                    dim.get("style").get("styleType").enable();
-                    dim.get("style").get("styleType").setValue("list");
-                    dim.get("style").get("position").enable();
-                    dim.get("style").get("position").setValue("middle");
-                    dim.get("style").get("orientation").enable();
-                    dim.get("style").get("orientation").setValue("vertical");
+                    dim?.get("setStyle")?.enable();
+                    dim?.get("style")?.get("styleType")?.enable();
+                    dim?.get("style")?.get("styleType")?.setValue("list");
+                    dim?.get("style")?.get("position")?.enable();
+                    dim?.get("style")?.get("position")?.setValue("middle");
+                    dim?.get("style")?.get("orientation")?.enable();
+                    dim?.get("style")?.get("orientation")?.setValue("vertical");
                     this.updateStyleType(dimensionIndex);
                     break;
                 case "interval":
-                    dim.get("setStyle").enable();
-                    dim.get("style").get("styleType").setValue("list");
-                    dim.get("style").get("styleType").disable();
-                    dim.get("style").get("position").enable();
-                    dim.get("style").get("position").setValue("middle");
-                    dim.get("style").get("orientation").setValue("vertical");
-                    dim.get("style").get("orientation").disable();
+                    dim?.get("setStyle")?.enable();
+                    dim?.get("style")?.get("styleType")?.setValue("list");
+                    dim?.get("style")?.get("styleType")?.disable();
+                    dim?.get("style")?.get("position")?.enable();
+                    dim?.get("style")?.get("position")?.setValue("middle");
+                    dim?.get("style")?.get("orientation")?.setValue("vertical");
+                    dim?.get("style")?.get("orientation")?.disable();
                     this.updateStyleType(dimensionIndex);
                     break;
                 case "magnitude_estimation":
-                    dim.get("setStyle").enable();
-                    dim.get("style").get("styleType").setValue("list");
-                    dim.get("style").get("styleType").disable();
-                    dim.get("style").get("position").enable();
-                    dim.get("style").get("position").setValue("middle");
-                    dim.get("style").get("orientation").setValue("vertical");
-                    dim.get("style").get("orientation").disable();
+                    dim?.get("setStyle")?.enable();
+                    dim?.get("style")?.get("styleType")?.setValue("list");
+                    dim?.get("style")?.get("styleType")?.disable();
+                    dim?.get("style")?.get("position")?.enable();
+                    dim?.get("style")?.get("position")?.setValue("middle");
+                    dim?.get("style")?.get("orientation")?.setValue("vertical");
+                    dim?.get("style")?.get("orientation")?.disable();
                     this.updateStyleType(dimensionIndex);
                     break;
                 default:
-                    dim.get("setStyle").disable();
+                    dim?.get("setStyle")?.disable();
             }
         }
     }
 
     resetMultipleSelection(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        if (dim.get("scale").get("setMultipleSelection").value == true) {
-            dim.get("scale").get("multiple_selection").setValue(true);
+        let dim = this.dimensions()?.at(dimensionIndex);
+        if (dim?.get("scale")?.get("setMultipleSelection").value == true) {
+            dim?.get("scale")?.get("multiple_selection")?.setValue(true);
         } else {
-            dim.get("scale").get("multiple_selection").setValue(false);
+            dim?.get("scale")?.get("multiple_selection")?.setValue(false);
         }
     }
 
     instructionsScale(dimensionIndex): UntypedFormGroup {
-        let dim = this.dimensions().at(dimensionIndex);
-        return dim.get(`scale`).get("instructions") as UntypedFormGroup;
+        let dim = this.dimensions()?.at(dimensionIndex);
+        return dim?.get(`scale`)?.get("instructions") as UntypedFormGroup;
     }
 
     resetInstructionScale(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        if (dim.get("scale").get("setInstructions").value == true) {
-            this.instructionsScale(dimensionIndex).get("label").setValue("");
-            this.instructionsScale(dimensionIndex).get("caption").setValue("");
-            this.instructionsScale(dimensionIndex).get("text").setValue("");
+        let dim = this.dimensions()?.at(dimensionIndex);
+        if (dim?.get("scale")?.get("setInstructions").value == true) {
+            this.instructionsScale(dimensionIndex)?.get("label")?.setValue("");
+            this.instructionsScale(dimensionIndex)?.get("caption")?.setValue("");
+            this.instructionsScale(dimensionIndex)?.get("text")?.setValue("");
         } else {
-            this.instructionsScale(dimensionIndex)
-                .get("text")
-                .clearValidators();
+            this.instructionsScale(dimensionIndex)?.get("text")?.clearValidators();
         }
     }
 
@@ -502,59 +493,50 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     updateStyleType(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        let styleType = dim.get("style").get("styleType").value;
-        if (dim.get("setStyle").value == true) {
-            dim.get("style")
-                .get("styleType")
-                .setValidators(Validators.required);
-            dim.get("style").get("position").setValidators(Validators.required);
-            dim.get("style")
-                .get("orientation")
-                .setValidators(Validators.required);
-            dim.get("style")
-                .get("separator")
-                .setValidators(Validators.required);
+        let dim = this.dimensions()?.at(dimensionIndex);
+        let styleType = dim?.get("style")?.get("styleType").value;
+        if (dim?.get("setStyle").value == true) {
+            dim?.get("style")?.get("styleType")?.setValidators(Validators.required);
+            dim?.get("style")?.get("position")?.setValidators(Validators.required);
+            dim?.get("style")?.get("orientation")?.setValidators(Validators.required);
+            dim?.get("style")?.get("separator")?.setValidators(Validators.required);
             switch (styleType) {
                 case "matrix":
-                    dim.get("style").get("orientation").setValue("vertical");
-                    dim.get("style").get("orientation").disable();
-                    dim.get("style").get("separator").enable();
+                    dim?.get("style")?.get("orientation")?.setValue("vertical");
+                    dim?.get("style")?.get("orientation")?.disable();
+                    dim?.get("style")?.get("separator")?.enable();
                     break;
                 case "list":
-                    if (dim.get("scale").get("type")) {
+                    if (dim?.get("scale")?.get("type")) {
                         if (
-                            dim.get("scale").get("type").value == "categorical"
+                            dim?.get("scale")?.get("type").value == "categorical"
                         ) {
-                            dim.get("style").get("orientation").enable();
+                            dim?.get("style")?.get("orientation")?.enable();
                         } else {
-                            dim.get("style").get("orientation").disable();
+                            dim?.get("style")?.get("orientation")?.disable();
                         }
                     }
-                    dim.get("style").get("separator").disable();
-                    dim.get("style").get("separator").setValue(false);
+                    dim?.get("style")?.get("separator")?.disable();
+                    dim?.get("style")?.get("separator")?.setValue(false);
                     break;
                 default:
-                    dim.get("style").get("position").setValue("middle");
-                    dim.get("style").get("orientation").disable();
-                    dim.get("style").get("orientation").setValue("vertical");
-                    dim.get("style").get("separator").disable();
-                    dim.get("style").get("separator").setValue(false);
+                    dim?.get("style")?.get("position")?.setValue("middle");
+                    dim?.get("style")?.get("orientation")?.disable();
+                    dim?.get("style")?.get("orientation")?.setValue("vertical");
+                    dim?.get("style")?.get("separator")?.disable();
+                    dim?.get("style")?.get("separator")?.setValue(false);
             }
-            dim.get("style").get("styleType").updateValueAndValidity();
-            dim.get("style").get("position").updateValueAndValidity();
-            dim.get("style").get("orientation").updateValueAndValidity();
-            dim.get("style").get("separator").updateValueAndValidity();
+            dim?.get("style")?.get("styleType")?.updateValueAndValidity();
+            dim?.get("style")?.get("position")?.updateValueAndValidity();
+            dim?.get("style")?.get("orientation")?.updateValueAndValidity();
+            dim?.get("style")?.get("separator")?.updateValueAndValidity();
         }
     }
 
     /* SUB ELEMENT: Mapping */
 
     dimensionMapping(dimensionIndex: number): UntypedFormArray {
-        return this.dimensions()
-            .at(dimensionIndex)
-            .get("scale")
-            .get("mapping") as UntypedFormArray;
+        return this.dimensions()?.at(dimensionIndex)?.get("scale")?.get("mapping") as UntypedFormArray;
     }
 
     addDimensionMapping(dimensionIndex: number, mapping = null as Mapping) {
@@ -592,8 +574,8 @@ export class DimensionsStepComponent implements OnInit {
                 this.localStorageService.removeItem(key)
             );
 
-        let dimensionsJSON = JSON.parse(
-            JSON.stringify(this.formStep.get("dimensions").value)
+        let dimensionsJSON = JSON?.parse(
+            JSON?.stringify(this.formStep?.get("dimensions").value)
         );
 
         dimensionsJSON.forEach((dimension, dimensionIndex) => {

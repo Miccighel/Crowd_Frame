@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {from, mergeMap, Observable, of, toArray} from "rxjs";
@@ -43,14 +44,14 @@ export class FakerService {
         this.query = query;
         let endpointCurrent = `${this.endPoint}1`;
 
-        return this.client.get<FakeSearchResponse>(endpointCurrent).pipe(
+        return this.client.get<FakeSearchResponse>(endpointCurrent)?.pipe(
             concatMap((response: FakeSearchResponse) => {
                 const firstRequestData = response; // Store the data from the first request
-                return from(this.generateRandomIDs(this.SEARCH_AMOUNT)).pipe(
+                return from(this.generateRandomIDs(this.SEARCH_AMOUNT))?.pipe(
                     /* Execute the HTTP requests in parallel */
                     mergeMap(id => {
                         let endpointCurrent = `${this.endPoint}${id}`;
-                        return this.client.get(endpointCurrent).pipe(
+                        return this.client?.get(endpointCurrent)?.pipe(
                             map(additionalResponse => {
                                 return { id, additionalResponse };
                             })

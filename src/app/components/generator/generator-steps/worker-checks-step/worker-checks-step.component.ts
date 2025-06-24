@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {
     ChangeDetectorRef,
@@ -158,7 +159,7 @@ export class WorkerChecksStepComponent implements OnInit {
     }
 
     batches(): UntypedFormArray {
-        return this.formStep.get("batches") as UntypedFormArray;
+        return this.formStep?.get("batches") as UntypedFormArray;
     }
 
     addBatch(batchNode) {
@@ -177,30 +178,30 @@ export class WorkerChecksStepComponent implements OnInit {
                 : "",
         });
         if (batchNode["blacklist"]) {
-            control.get("whitelist").setValue(false);
-            control.get("whitelist").disable();
+            control?.get("whitelist")?.setValue(false);
+            control?.get("whitelist")?.disable();
         }
         if (batchNode["whitelist"]) {
-            control.get("blacklist").setValue(false);
-            control.get("blacklist").disable();
+            control?.get("blacklist")?.setValue(false);
+            control?.get("blacklist")?.disable();
         }
         this.batches().push(control, { emitEvent: false });
     }
 
     resetBlacklist(batchIndex) {
-        let batch = this.batches().at(batchIndex);
-        if (batch.get("blacklist").value == true) {
-            batch.get("whitelist").setValue(false);
-            batch.get("whitelist").disable();
+        let batch = this.batches()?.at(batchIndex);
+        if (batch?.get("blacklist").value == true) {
+            batch?.get("whitelist")?.setValue(false);
+            batch?.get("whitelist")?.disable();
         } else {
-            batch.get("whitelist").enable();
+            batch?.get("whitelist")?.enable();
         }
-        this.batchesTree.forEach((taskNode, taskIndex) => {
-            taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if (batch.get("name").value == batchNode["batch"]) {
+        this.batchesTree?.forEach((taskNode, taskIndex) => {
+            taskNode["batches"]?.forEach((batchNode, batchIndex) => {
+                if (batch?.get("name").value == batchNode["batch"]) {
                     this.batchesTree[taskIndex]["batches"][batchIndex][
                         "blacklist"
-                    ] = batch.get("blacklist").value;
+                    ] = batch?.get("blacklist").value;
                     this.localStorageService.setItem(
                         "batches-tree",
                         JSON.stringify(this.batchesTree)
@@ -212,19 +213,19 @@ export class WorkerChecksStepComponent implements OnInit {
     }
 
     resetWhitelist(batchIndex) {
-        let batch = this.batches().at(batchIndex);
-        if (batch.get("whitelist").value == true) {
-            batch.get("blacklist").setValue(false);
-            batch.get("blacklist").disable();
+        let batch = this.batches()?.at(batchIndex);
+        if (batch?.get("whitelist").value == true) {
+            batch?.get("blacklist")?.setValue(false);
+            batch?.get("blacklist")?.disable();
         } else {
-            batch.get("blacklist").enable();
+            batch?.get("blacklist")?.enable();
         }
-        this.batchesTree.forEach((taskNode, taskIndex) => {
-            taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if (batch.get("name").value == batchNode["batch"]) {
+        this.batchesTree?.forEach((taskNode, taskIndex) => {
+            taskNode["batches"]?.forEach((batchNode, batchIndex) => {
+                if (batch?.get("name").value == batchNode["batch"]) {
                     this.batchesTree[taskIndex]["batches"][batchIndex][
                         "whitelist"
-                    ] = batch.get("whitelist").value;
+                    ] = batch?.get("whitelist").value;
                     this.localStorageService.setItem(
                         "batches-tree",
                         JSON.stringify(this.batchesTree)

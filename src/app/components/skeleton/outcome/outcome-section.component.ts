@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
@@ -73,10 +74,10 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     public performCommentSaving() {
-        if (this.commentForm.get('comment').valid) {
-            this.commentEmitter.emit(this.commentForm.get('comment').value)
+        if (this.commentForm?.get('comment').valid) {
+            this.commentEmitter?.emit(this.commentForm?.get('comment').value)
         }
-        this.commentForm.get('comment').markAsTouched()
+        this.commentForm?.get('comment')?.markAsTouched()
     }
 
     public validateComment(control: UntypedFormControl) {

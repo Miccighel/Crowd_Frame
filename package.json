@@ -10,7 +10,9 @@
     "production:it": "ng serve --configuration=production-it",
     "build": "ng build",
     "build:it": "ng build --configuration=development-it",
-    "translate": "ng extract-i18n --output-path src/locale"
+    "translate": "ng extract-i18n --output-path src/locale",
+    "lint": "ng lint",
+    "fix:strict-forms": "yarn tsx scripts/strict-forms-codemod.ts && yarn lint --fix"
   },
   "private": true,
   "dependencies": {
@@ -53,6 +55,9 @@
     "@angular/compiler-cli": "19.2.14",
     "@types/node": "^20.11.17",
     "esbuild": "^0.25.5",
+    "ts-morph": "24.0.0",
+    "ts-node": "10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "5.8.2"
   },
   "browser": {

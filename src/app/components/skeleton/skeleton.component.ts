@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
@@ -198,9 +199,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     private fetchExternalData() {
-        return this.client.get("https://1.0.0.1/cdn-cgi/trace", {responseType: "text"}).pipe(
+        return this.client?.get("https://1.0.0.1/cdn-cgi/trace", {responseType: "text"})?.pipe(
             tap(cloudflareData => this.worker.updateProperties("cloudflare", cloudflareData)),
-            catchError(() => this.client.get("https://api64.ipify.org?format=json")),
+            catchError(() => this.client?.get("https://api64.ipify.org?format=json")),
             catchError(() => of(null)),
             tap(ipifyData => {
                 if (ipifyData) {
@@ -1043,7 +1044,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
                 if (completedElementType == "S")
-                    this.documentComponent.get(completedElementIndex).annotatorOptions.first.handleNotes();
+                    this.documentComponent?.get(completedElementIndex).annotatorOptions.first?.handleNotes();
             }
         }
 
@@ -1088,11 +1089,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             if (completedElementType == "S") {
                 let countdown = null;
                 if (this.task.settings.countdownTime >= 0)
-                    countdown = Math.round(Number(this.documentComponent.get(completedElementIndex).countdown.i.value) / 1000);
+                    countdown = Math?.round(Number(this.documentComponent?.get(completedElementIndex).countdown.i.value) / 1000);
                 let additionalAnswers = {}
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
-                    Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
-                        additionalAnswers[controlName] = assessmentFormAdditional.get(controlName).value
+                    Object.keys(assessmentFormAdditional.controls)?.forEach(controlName => {
+                        additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value
                     });
                 }
                 let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, additionalAnswers, countdown, action);
@@ -1165,7 +1166,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         completedDocumentData: { elementType: string, elementIndex: number, overallIndex: any, elementLabel: string },
         action: string
     ) {
-        const getCountdown = (index: number) => this.documentComponent.get(index).countdown;
+        const getCountdown = (index: number) => this.documentComponent?.get(index).countdown;
         const pauseCountdown = (index: number) => {
             const countdown = getCountdown(index);
             if (!this.task.countdownsExpired[index])

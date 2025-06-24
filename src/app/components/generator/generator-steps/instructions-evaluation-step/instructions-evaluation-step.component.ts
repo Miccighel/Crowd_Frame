@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
@@ -103,19 +104,19 @@ export class InstructionsEvaluationStepComponent implements OnInit {
     }
 
     element(): UntypedFormGroup {
-        return this.formStep.get('element') as UntypedFormGroup;
+        return this.formStep?.get('element') as UntypedFormGroup;
     }
 
     resetElement() {
-        this.formStep.get('element').get('label').setValue('')
-        this.formStep.get('element').get('caption').setValue('')
-        this.formStep.get('element').get('text').setValue('')
-        this.formStep.get('element').get('text').updateValueAndValidity()
+        this.formStep?.get('element')?.get('label')?.setValue('')
+        this.formStep?.get('element')?.get('caption')?.setValue('')
+        this.formStep?.get('element')?.get('text')?.setValue('')
+        this.formStep?.get('element')?.get('text')?.updateValueAndValidity()
     }
 
     /* STEP #4 - Evaluation Instructions */
     instructions(): UntypedFormArray {
-        return this.formStep.get(`instructions`) as UntypedFormArray;
+        return this.formStep?.get(`instructions`) as UntypedFormArray;
     }
 
     addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {

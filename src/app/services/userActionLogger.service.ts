@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
@@ -107,7 +108,7 @@ export class ActionLogger {
         let details = {
             ua: navigator.userAgent
         }
-        this.http.get('https://api.ipify.org/?format=json').subscribe(res => {
+        this.http?.get('https://api.ipify.org/?format=json')?.subscribe(res => {
             details['ip'] = res['ip']
             this.log('context', details)
         })

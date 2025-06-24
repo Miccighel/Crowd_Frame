@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 import {
     ChangeDetectorRef,
     Component,
@@ -79,13 +80,12 @@ export class QuestionnaireComponent implements OnInit {
             // --- ENSURE FULL TREE (INCLUDING REPEATS) IS RESTORED FROM HISTORY ---
             // Loop over all repeatable questions in the questionnaire
             this.questionnaire.questions
-                .filter(q => q.repeat)
-                .forEach(q => {
+                            .filter(q => q.repeat)?.forEach(q => {
                     const repeatCount = Number(prevAnswers[`${q.nameFull}_answer`]);
                     if (repeatCount && repeatCount > 1) {
                         // Add a temp control to allow handleQuestionRepetition to work
-                        if (!this.questionnaireForm.get(`${q.nameFull}_answer`)) {
-                            this.questionnaireForm.addControl(
+                        if (!this.questionnaireForm?.get(`${q.nameFull}_answer`)) {
+                            this.questionnaireForm?.addControl(
                                 `${q.nameFull}_answer`,
                                 new UntypedFormControl(repeatCount)
                             );
@@ -144,20 +144,20 @@ export class QuestionnaireComponent implements OnInit {
             opts.forEach((_v, idx) => answers[idx] = !!(prevVal && typeof prevVal === 'object' ? prevVal[idx] : false));
             // Restore checked boxes from saved values
 
-            this.questionnaireForm.addControl(`${name}_list`, this.fb.group(answers));
-            this.questionnaireForm.addControl(
+            this.questionnaireForm?.addControl(`${name}_list`, this.fb.group(answers));
+            this.questionnaireForm?.addControl(
                 `${name}_answer`,
                 new UntypedFormControl(prevVal, [Validators.required])
             );
         } else {
-            this.questionnaireForm.addControl(
+            this.questionnaireForm?.addControl(
                 `${name}_answer`,
                 new UntypedFormControl(prevVal, validators)
             );
         }
         if (q.freeText) {
             const prevFree = prevAns[`${name}_free_text`] ?? '';
-            this.questionnaireForm.addControl(
+            this.questionnaireForm?.addControl(
                 `${name}_free_text`,
                 new UntypedFormControl(prevFree)
             );
@@ -166,8 +166,8 @@ export class QuestionnaireComponent implements OnInit {
 
     public handleCheckbox(q: Question, grpName: string): void {
         let anyChecked = false;
-        const grp = this.questionnaireForm.get(grpName);
-        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
+        const grp = this.questionnaireForm?.get(grpName);
+        const ctrl = this.questionnaireForm?.get(`${q.nameFull}_answer`);
         Object.values(grp?.value ?? {}).forEach(v => anyChecked ||= !!v);
         // Store the full object only if something is checked
         ctrl?.setValue(anyChecked ? grp?.value : '');
@@ -175,7 +175,7 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public displayCheckedLabels(q: Question): string {
-        const answerObj = this.questionnaireForm.get(`${q.nameFull}_answer`)?.value;
+        const answerObj = this.questionnaireForm?.get(`${q.nameFull}_answer`)?.value;
         if (!answerObj || typeof answerObj !== 'object') return '';
         // Find which boxes are checked
         const checkedIndices = Object.entries(answerObj)
@@ -194,7 +194,7 @@ export class QuestionnaireComponent implements OnInit {
         this.questionnaire.questionDependencies[q.nameFull] = false;
         walkNode(this.questionnaire.treeCut, node => {
             if (node.name === q.target && q.indexFull && q.indexFull === q.indexFull) {
-                const value = this.questionnaireForm.get(`${node.nameFull}_answer`)?.value ?? '';
+                const value = this.questionnaireForm?.get(`${node.nameFull}_answer`)?.value ?? '';
                 if (value !== '') {
                     const label = Array.isArray(node.answers)
                         ? (node.answers as string[])[value]
@@ -204,15 +204,15 @@ export class QuestionnaireComponent implements OnInit {
                         this.questionnaire.questionDependencies[q.nameFull] = true;
                     }
                 } else {
-                    this.questionnaireForm.get(`${q.nameFull}_answer`)?.clearValidators();
+                    this.questionnaireForm?.get(`${q.nameFull}_answer`)?.clearValidators();
                     this.questionnaire.questionDependencies[q.nameFull] = false;
                 }
             }
         });
-        Object.entries(this.questionnaire.questionDependencies).forEach(
+        Object.entries(this.questionnaire.questionDependencies)?.forEach(
             ([nf, ok]) => {
                 if (!ok) {
-                    const ctrl = this.questionnaireForm.get(`${nf}_answer`);
+                    const ctrl = this.questionnaireForm?.get(`${nf}_answer`);
                     ctrl?.clearValidators();
                     ctrl?.setErrors(null);
                     ctrl?.setValue('');
@@ -231,12 +231,12 @@ export class QuestionnaireComponent implements OnInit {
         const prev = this.mostRecentDataRecord?.loadAnswers() ?? {};
         const prevVal = prev[`${name}_answer`] ?? '';
         const prevTxt = prev[`${name}_free_text`] ?? '';
-        this.questionnaireForm.addControl(
+        this.questionnaireForm?.addControl(
             `${name}_answer`,
             new UntypedFormControl(prevVal, validators)
         );
         if (q.freeText) {
-            this.questionnaireForm.addControl(
+            this.questionnaireForm?.addControl(
                 `${name}_free_text`,
                 new UntypedFormControl(prevTxt)
             );
@@ -244,7 +244,7 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionRepetition(q: Question): void {
-        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
+        const ctrl = this.questionnaireForm?.get(`${q.nameFull}_answer`);
         if (!ctrl) return;
         for (const repQ of this.questionnaire.questionsToRepeat) {
             const updatedVal = ctrl.value;
@@ -270,7 +270,7 @@ export class QuestionnaireComponent implements OnInit {
                         this.cdr.detectChanges();
                     }
                 } else {
-                    const toDrop = childNodes.at(-1);
+                    const toDrop = childNodes?.at(-1);
                     if (!toDrop) continue;
                     dropNode(this.questionnaire.treeCut, toDrop);
                     const removeQs: Question[] = [];
@@ -302,8 +302,8 @@ export class QuestionnaireComponent implements OnInit {
     private serializeConfiguration(): void {
         const cache = Object.keys(localStorage).filter(k => k.startsWith('questionnaire-'));
         cache.forEach(k => this.localStorageService.removeItem(k));
-        const questionnairesJSON = JSON.parse(
-            JSON.stringify(this.questionnaireForm.get('questionnaires')?.value ?? [])
+        const questionnairesJSON = JSON?.parse(
+            JSON?.stringify(this.questionnaireForm?.get('questionnaires')?.value ?? [])
         );
         questionnairesJSON.forEach((questionnaire: any, qIdx: number) => {
             switch (questionnaire.type) {

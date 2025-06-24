@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core modules */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, QueryList, ViewChildren, Inject, ViewEncapsulation} from "@angular/core";
 import {of} from "rxjs";
@@ -383,8 +384,8 @@ export class SearchEngineBodyComponent implements OnInit {
                     break;
             }
         } else {
-            this.queryValue = this.preRetrievedResults.at(0).queryText
-            this.lastQueryValue = this.preRetrievedResults.at(0).queryText
+            this.queryValue = this.preRetrievedResults?.at(0).queryText
+            this.lastQueryValue = this.preRetrievedResults?.at(0).queryText
             this.queryEmitter.emit({
                 "text": this.lastQueryValue,
                 "encoded": encodeURIComponent(this.lastQueryValue)
@@ -566,7 +567,7 @@ export class SearchEngineBodyComponent implements OnInit {
             this.dataSource.loadData(this.lastQueryValue, this.resultsAmount, false)
         }
         if (this.preRetrievedResults.length > 0) {
-            this.query.setValue(this.preRetrievedResults.at(0).queryText)
+            this.query?.setValue(this.preRetrievedResults?.at(0).queryText)
             this.performWebSearch()
             this.query.disable()
         }
@@ -615,7 +616,7 @@ export class SearchEngineBodyComponent implements OnInit {
     }
 
     public loadCookie(identifier: string) {
-        return this.cookieService.get(identifier);
+        return this.cookieService?.get(identifier);
     }
 
     /* UTF-8 URL decode for special characters in URL */

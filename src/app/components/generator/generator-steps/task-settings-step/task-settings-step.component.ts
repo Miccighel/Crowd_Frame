@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from "@angular/core";
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
@@ -389,34 +390,32 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     updateLogger() {
-        if (this.formStep.get("logger").value == true) {
-            this.formStep
-                .get("server_endpoint")
-                .addValidators([Validators.required]);
+        if (this.formStep?.get("logger").value == true) {
+            this.formStep?.get("server_endpoint")?.addValidators([Validators.required]);
         } else {
-            this.formStep.get("server_endpoint").clearValidators();
+            this.formStep?.get("server_endpoint")?.clearValidators();
         }
-        this.formStep.get("server_endpoint").updateValueAndValidity();
+        this.formStep?.get("server_endpoint")?.updateValueAndValidity();
     }
 
     updateLoggerOption(el: string, action: string) {
         let truthValue =
-            this.formStep.get("logger_option").value[el][action] != true;
+            this.formStep?.get("logger_option").value[el][action] != true;
         if (action == "general") {
-            for (let key in this.formStep.get("logger_option").value[el]) {
-                let value = this.formStep.get("logger_option").value;
+            for (let key in this.formStep?.get("logger_option").value[el]) {
+                let value = this.formStep?.get("logger_option").value;
                 value[el][key] = truthValue;
-                this.formStep.get("logger_option").setValue(value);
+                this.formStep?.get("logger_option")?.setValue(value);
             }
         } else {
-            let value = this.formStep.get("logger_option").value;
+            let value = this.formStep?.get("logger_option").value;
             value[el][action] = truthValue;
-            this.formStep.get("logger_option").setValue(value);
+            this.formStep?.get("logger_option")?.setValue(value);
         }
     }
 
     updateServerEndpoint() {
-        return this.formStep.get("server_endpoint").value;
+        return this.formStep?.get("server_endpoint").value;
     }
 
     updateHitsFile(hits = null) {
@@ -563,9 +562,8 @@ export class TaskSettingsStepComponent implements OnInit {
                 });
             }
 
-            this.documentsOptions()
-                .get("min_docs_repetitions")
-                .valueChanges.subscribe((data) => {
+            this.documentsOptions()?.get("min_docs_repetitions")
+                            .valueChanges?.subscribe((data) => {
                 if (data != null) this.updateWorkerNumber(data);
             });
 
@@ -588,8 +586,8 @@ export class TaskSettingsStepComponent implements OnInit {
                 }
             });
             for (let category of this.docCategories().controls) {
-                if (!this.categoryIsBalanced(category.get("name").value))
-                    category.get("selected").disable();
+                if (!this?.categoryIsBalanced(category?.get("name").value))
+                    category?.get("selected")?.disable();
             }
             this.resetWorkerAssignment();
 
@@ -613,17 +611,17 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     hitAttributes() {
-        return this.formStep.get("attributes") as UntypedFormArray;
+        return this.formStep?.get("attributes") as UntypedFormArray;
     }
 
     addHitAttribute(name: string, attribute : AttributeMain = null) {
-        this.hitAttributes().push(
-            this._formBuilder.group({
+        this.hitAttributes()?.push(
+            this._formBuilder?.group({
                 name: attribute ? attribute.name : name,
                 name_pretty: attribute ? attribute.name_pretty ? attribute.name_pretty : "" : "",
                 show: attribute ? attribute.show : true,
-                annotate: attribute ? this.formStep.get("setAnnotator").value ? attribute.annotate : false : false,
-                required: attribute ? this.formStep.get("setAnnotator").value ? attribute.required : false : false,
+                annotate: attribute ? this.formStep?.get("setAnnotator").value ? attribute.annotate : false : false,
+                required: attribute ? this.formStep?.get("setAnnotator").value ? attribute.required : false : false,
             })
         );
         this.resetHitAttributes();
@@ -631,50 +629,50 @@ export class TaskSettingsStepComponent implements OnInit {
 
     resetHitAttributes() {
         for (let attribute of this.hitAttributes().controls) {
-            if (this.formStep.get("setAnnotator").value == false) {
-                attribute.get("annotate").disable();
-                attribute.get("annotate").setValue(false);
-                attribute.get("required").disable();
-                attribute.get("required").setValue(false);
+            if (this.formStep?.get("setAnnotator").value == false) {
+                attribute?.get("annotate")?.disable();
+                attribute?.get("annotate")?.setValue(false);
+                attribute?.get("required")?.disable();
+                attribute?.get("required")?.setValue(false);
             } else {
-                attribute.get("annotate").enable();
-                attribute.get("required").enable();
+                attribute?.get("annotate")?.enable();
+                attribute?.get("required")?.enable();
             }
         }
     }
 
     updateHitAttribute(attributeIndex) {
-        let attribute = this.hitAttributes().at(attributeIndex);
-        if (attribute.get("show").value == true) {
-            attribute.get("annotate").enable();
-            attribute.get("required").enable();
+        let attribute = this.hitAttributes()?.at(attributeIndex);
+        if (attribute?.get("show").value == true) {
+            attribute?.get("annotate")?.enable();
+            attribute?.get("required")?.enable();
         } else {
-            attribute.get("annotate").disable();
-            attribute.get("required").disable();
-            attribute.get("annotate").setValue(false);
-            attribute.get("required").setValue(false);
+            attribute?.get("annotate")?.disable();
+            attribute?.get("required")?.disable();
+            attribute?.get("annotate")?.setValue(false);
+            attribute?.get("required")?.setValue(false);
         }
-        if (attribute.get("annotate").value == true) {
-            attribute.get("required").enable();
+        if (attribute?.get("annotate").value == true) {
+            attribute?.get("required")?.enable();
         } else {
-            attribute.get("required").disable();
-            attribute.get("required").setValue(false);
+            attribute?.get("required")?.disable();
+            attribute?.get("required")?.setValue(false);
         }
         this.resetHitAttributes();
     }
 
     documentsOptions(): UntypedFormGroup {
-        return this.formStep.get("documents") as UntypedFormGroup;
+        return this.formStep?.get("documents") as UntypedFormGroup;
     }
 
     docCategories(): UntypedFormArray {
-        return this.documentsOptions().get(
+        return this.documentsOptions()?.get(
             "doc_categories"
         ) as UntypedFormArray;
     }
 
     docCategory(valueIndex) {
-        return this.docCategories().at(valueIndex);
+        return this.docCategories()?.at(valueIndex);
     }
 
     existsIdentificationAttribute(docs) {
@@ -760,18 +758,18 @@ export class TaskSettingsStepComponent implements OnInit {
 
     resetWorkerAssignment() {
         for (let category of this.docCategories().controls) {
-            category.get("worker_assignment").disable();
+            category?.get("worker_assignment")?.disable();
         }
     }
 
     updateDocCategory(categoryIndex) {
-        let category = this.docCategories().at(categoryIndex);
-        if (category.get("selected").value == true) {
-            category.get("worker_assignment").enable();
-            category.get("worker_assignment").setValue(1);
+        let category = this.docCategories()?.at(categoryIndex);
+        if (category?.get("selected").value == true) {
+            category?.get("worker_assignment")?.enable();
+            category?.get("worker_assignment")?.setValue(1);
         } else {
-            category.get("worker_assignment").setValue(0);
-            category.get("worker_assignment").disable();
+            category?.get("worker_assignment")?.setValue(0);
+            category?.get("worker_assignment")?.disable();
         }
     }
 
@@ -791,10 +789,10 @@ export class TaskSettingsStepComponent implements OnInit {
         // This array stores the number of documents to be judged for each selected category
         let hitDimensions = [];
         for (let category of this.docCategories().controls) {
-            if (category.get("selected").value == true) {
-                let name = category.get("name").value;
-                let worker_assignment = Math.round(
-                    category.get("worker_assignment").value
+            if (category?.get("selected").value == true) {
+                let name = category?.get("name").value;
+                let worker_assignment = Math?.round(
+                    category?.get("worker_assignment").value
                 );
                 let values = this.docsCategoriesValues[name].length;
                 hitDimensions.push(worker_assignment * values);
@@ -813,10 +811,10 @@ export class TaskSettingsStepComponent implements OnInit {
                 // All the values in the hitDimensions array are equals
                 this.hitDimension = hitDimensions[0];
                 for (let category of this.docCategories().controls) {
-                    category.get("selected").disable();
-                    category.get("worker_assignment").disable();
+                    category?.get("selected")?.disable();
+                    category?.get("worker_assignment")?.disable();
                 }
-                let min_docs_rep = this.documentsOptions().get(
+                let min_docs_rep = this.documentsOptions()?.get(
                     "min_docs_repetitions"
                 ).value;
                 let min_workers_number = Math.ceil(
@@ -824,7 +822,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 );
 
                 let workers_number =
-                    this.documentsOptions().get("workers_number");
+                    this.documentsOptions()?.get("workers_number");
                 workers_number.setValue(min_workers_number);
                 workers_number.addValidators(
                     Validators.min(min_workers_number)
@@ -839,15 +837,15 @@ export class TaskSettingsStepComponent implements OnInit {
     resetCategorySelection() {
         this.hitDimension = 0;
         this.resetWorkerAssignment();
-        this.documentsOptions().get("min_docs_repetitions").setValue(1);
-        this.documentsOptions().get("workers_number").setValue("");
+        this.documentsOptions()?.get("min_docs_repetitions")?.setValue(1);
+        this.documentsOptions()?.get("workers_number")?.setValue("");
         for (let category of this.docCategories().controls) {
-            if (this.categoryIsBalanced(category.get("name").value))
-                category.get("selected").enable();
-            category.get("selected").setValue(false);
-            category.get("worker_assignment").setValue(0);
+            if (this?.categoryIsBalanced(category?.get("name").value))
+                category?.get("selected")?.enable();
+            category?.get("selected")?.setValue(false);
+            category?.get("worker_assignment")?.setValue(0);
         }
-        let workers_number = this.documentsOptions().get("workers_number");
+        let workers_number = this.documentsOptions()?.get("workers_number");
         workers_number.clearValidators();
         workers_number.addValidators(Validators.min(1));
         this.solutionStatus = "";
@@ -858,28 +856,28 @@ export class TaskSettingsStepComponent implements OnInit {
             let min_workers_number = Math.ceil(
                 (this.docsDetected * min_docs_rep) / this.hitDimension
             );
-            let workers_number = this.documentsOptions().get("workers_number");
+            let workers_number = this.documentsOptions()?.get("workers_number");
             workers_number.setValue(min_workers_number);
             workers_number.addValidators(Validators.min(min_workers_number));
         }
     }
 
     sendRequestToHitSolver() {
-        let min_docs_rep = this.documentsOptions().get(
+        let min_docs_rep = this.documentsOptions()?.get(
             "min_docs_repetitions"
         ).value;
         let selectedCategories = [];
         let selectedWorkerAssignment = [];
         for (let category of this.docCategories().controls) {
-            if (category.get("selected").value == true) {
-                let name = category.get("name").value;
-                let worker_assignment = category.get("worker_assignment").value;
+            if (category?.get("selected").value == true) {
+                let name = category?.get("name").value;
+                let worker_assignment = category?.get("worker_assignment").value;
                 selectedCategories.push(name);
                 selectedWorkerAssignment[name] = worker_assignment;
             }
         }
         let workers_number =
-            this.documentsOptions().get("workers_number").value;
+            this.documentsOptions()?.get("workers_number").value;
         let req = this.HitsSolverService.createRequest(
             this.docsParsed,
             this.identificationAttribute,
@@ -954,64 +952,56 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     resetCountdown() {
-        if (this.formStep.get("setCountdownTime").value == false) {
-            this.formStep.get("countdown_time").setValue("");
-            this.formStep.get("countdown_time").clearValidators();
-            this.formStep.get("countdown_time").updateValueAndValidity();
-            this.formStep.get("countdown_behavior").setValue("");
-            this.formStep.get("countdown_behavior").clearValidators();
-            this.formStep.get("countdown_behavior").updateValueAndValidity();
+        if (this.formStep?.get("setCountdownTime").value == false) {
+            this.formStep?.get("countdown_time")?.setValue("");
+            this.formStep?.get("countdown_time")?.clearValidators();
+            this.formStep?.get("countdown_time")?.updateValueAndValidity();
+            this.formStep?.get("countdown_behavior")?.setValue("");
+            this.formStep?.get("countdown_behavior")?.clearValidators();
+            this.formStep?.get("countdown_behavior")?.updateValueAndValidity();
         } else {
-            this.formStep
-                .get("countdown_time")
-                .setValidators([
+            this.formStep?.get("countdown_time")?.setValidators([
                     Validators.required,
                     this.utilsService.positiveOrZeroNumber.bind(this),
                 ]);
-            this.formStep.get("countdown_time").updateValueAndValidity();
-            this.formStep
-                .get("countdown_behavior")
-                .setValidators([Validators.required]);
-            this.formStep.get("countdown_behavior").updateValueAndValidity();
+            this.formStep?.get("countdown_time")?.updateValueAndValidity();
+            this.formStep?.get("countdown_behavior")?.setValidators([Validators.required]);
+            this.formStep?.get("countdown_behavior")?.updateValueAndValidity();
         }
         this.resetAdditionalTimes();
     }
 
     resetAdditionalTimes() {
-        if (this.formStep.get("setAdditionalTimes").value == false) {
-            this.formStep.get("countdown_modality").setValue("");
-            this.formStep.get("countdown_modality").clearValidators();
-            this.formStep.get("countdown_modality").updateValueAndValidity();
-            this.formStep.get("countdown_attribute").setValue("");
-            this.formStep.get("countdown_attribute").clearValidators();
-            this.formStep.get("countdown_attribute").updateValueAndValidity();
+        if (this.formStep?.get("setAdditionalTimes").value == false) {
+            this.formStep?.get("countdown_modality")?.setValue("");
+            this.formStep?.get("countdown_modality")?.clearValidators();
+            this.formStep?.get("countdown_modality")?.updateValueAndValidity();
+            this.formStep?.get("countdown_attribute")?.setValue("");
+            this.formStep?.get("countdown_attribute")?.clearValidators();
+            this.formStep?.get("countdown_attribute")?.updateValueAndValidity();
             this.countdownAttributeValues().clear();
             this.countdownAttributeValues().updateValueAndValidity();
             this.countdownPositionValues().clear();
             this.countdownPositionValues().updateValueAndValidity();
         } else {
-            this.formStep
-                .get("countdown_modality")
-                .setValidators([Validators.required]);
-            if (this.formStep.get("countdown_modality").value == "attribute")
-                this.formStep
-                    .get("countdown_attribute")
-                    .setValidators([Validators.required]);
+            this.formStep?.get("countdown_modality")?.setValidators([Validators.required]);
+            if (this.formStep?.get("countdown_modality").value == "attribute")
+                this.formStep?.get("countdown_attribute")?.setValidators([Validators.required]);
         }
     }
 
     countdownAttributeValues() {
-        return this.formStep.get(
+        return this.formStep?.get(
             "countdown_attribute_values"
         ) as UntypedFormArray;
     }
 
     updateCountdownModality() {
-        if (this.formStep.get("countdown_modality").value == "attribute") {
+        if (this.formStep?.get("countdown_modality").value == "attribute") {
             this.countdownPositionValues().clear();
         } else {
-            this.formStep.get("countdown_attribute").setValue(false);
-            this.formStep.get("countdown_attribute").clearValidators();
+            this.formStep?.get("countdown_attribute")?.setValue(false);
+            this.formStep?.get("countdown_attribute")?.clearValidators();
             this.countdownAttributeValues().clear();
             this.countdownAttributeValues().updateValueAndValidity();
             this.updateCountdownPosition();
@@ -1027,7 +1017,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.countdownAttributeValues().push(control);
         } else {
             this.countdownAttributeValues().clear();
-            let chosenAttribute = this.formStep.get(
+            let chosenAttribute = this.formStep?.get(
                 "countdown_attribute"
             ).value;
             let values = this.hitsAttributesValues[chosenAttribute];
@@ -1042,7 +1032,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     countdownPositionValues() {
-        return this.formStep.get(
+        return this.formStep?.get(
             "countdown_position_values"
         ) as UntypedFormArray;
     }
@@ -1067,12 +1057,12 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     annotator() {
-        return this.formStep.get("annotator") as UntypedFormGroup;
+        return this.formStep?.get("annotator") as UntypedFormGroup;
     }
 
     setAnnotatorType() {
         if (
-            this.annotator().get("type").value == "options" &&
+            this.annotator()?.get("type").value == "options" &&
             this.annotatorOptionValues().length == 0
         ) {
             this.annotatorOptionValues().push(
@@ -1086,12 +1076,12 @@ export class TaskSettingsStepComponent implements OnInit {
 
     resetAnnotator() {
         for (let attributeControl of this.hitAttributes().controls) {
-            attributeControl.get("annotate").setValue(false);
+            attributeControl?.get("annotate")?.setValue(false);
         }
-        if (this.formStep.get("setAnnotator").value == false) {
-            this.annotator().get("type").setValue("");
-            this.annotator().get("type").clearValidators();
-            this.annotator().get("type").clearAsyncValidators();
+        if (this.formStep?.get("setAnnotator").value == false) {
+            this.annotator()?.get("type")?.setValue("");
+            this.annotator()?.get("type")?.clearValidators();
+            this.annotator()?.get("type")?.clearAsyncValidators();
             for (
                 let index = 0;
                 index < this.annotatorOptionValues().controls.length;
@@ -1100,16 +1090,16 @@ export class TaskSettingsStepComponent implements OnInit {
                 this.removeAnnotatorOptionValue(index);
             }
         } else {
-            this.annotator().get("type").setValidators([Validators.required]);
+            this.annotator()?.get("type")?.setValidators([Validators.required]);
             this.setAnnotatorType();
         }
-        this.annotator().get("type").updateValueAndValidity();
+        this.annotator()?.get("type")?.updateValueAndValidity();
         this.resetHitAttributes();
     }
 
     /* SUB ELEMENT: Annotator */
     annotatorOptionValues(): UntypedFormArray {
-        return this.formStep.get("annotator").get("values") as UntypedFormArray;
+        return this.formStep?.get("annotator")?.get("values") as UntypedFormArray;
     }
 
     addOptionValue(option = null as Object) {
@@ -1139,7 +1129,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     messages(): UntypedFormArray {
-        return this.formStep.get("messages") as UntypedFormArray;
+        return this.formStep?.get("messages") as UntypedFormArray;
     }
 
     addMessage(message = null) {

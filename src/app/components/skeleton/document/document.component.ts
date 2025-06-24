@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild, ElementRef} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
@@ -321,8 +322,8 @@ export class DocumentComponent implements OnInit {
         const currentElement = this.task.getElementIndex(this.worker.getPositionCurrent());
         let additionalAnswers = {}
         for (let assessmentFormAdditional of this.documentsFormsAdditional[currentElement['elementIndex']]) {
-            Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
-                additionalAnswers[controlName] = assessmentFormAdditional.get(controlName).value
+            Object.keys(assessmentFormAdditional.controls)?.forEach(controlName => {
+                additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value
             });
         }
         let documentPayload = this.task.buildTaskDocumentPayload(currentElement, this.documentsForm[currentElement['elementIndex']].value, additionalAnswers, Math.round(Number(timeLeft) / 1000), "Update");

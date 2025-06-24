@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 export class HitRequest{
 
     id: string;
@@ -55,7 +56,7 @@ export class HitRequest{
             let worker_id = `W${i}`;
             let worker_properties = new Array<WorkerProperty>();
             for(let property of this.properties){
-                worker_properties.push(new WorkerProperty(property.getId(), property.getLevels().at(0)))
+                worker_properties?.push(new WorkerProperty(property.getId(), property.getLevels()?.at(0)))
             }
             this.workers.push(new HitWorker(worker_id, workers_expertise, worker_properties));
         }

@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
@@ -118,7 +119,7 @@ export class LoaderComponent implements OnInit {
         /* |--------- WORKER ATTRIBUTES - INITIALIZATION ---------| */
 
         let url = new URL(window.location.href);
-        this.workerIdentifier = url.searchParams.get("workerID");
+        this.workerIdentifier = url.searchParams?.get("workerID");
 
         /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
@@ -130,7 +131,7 @@ export class LoaderComponent implements OnInit {
             "password": this.password
         });
 
-        this.adminAccess = url.searchParams.get("admin") == 'true'
+        this.adminAccess = url.searchParams?.get("admin") == 'true'
         if (this.adminAccess)
             this.ngxService.startLoader('main')
 
@@ -188,7 +189,7 @@ export class LoaderComponent implements OnInit {
      * This function retrieves the string associated to an error code thrown by a form field validator.
      */
     public checkFormControl(form: UntypedFormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
+        return form?.get(field)?.hasError(key);
     }
 
 }

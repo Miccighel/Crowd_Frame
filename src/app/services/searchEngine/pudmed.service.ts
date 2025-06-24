@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {from, Observable, of, toArray} from "rxjs";
@@ -63,7 +64,7 @@ export class PubmedService {
         /* The user query is saved */
         this.query = query;
         let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}&api_key=${this.apiKey}`
-        return this.client.get<PubmedSearchResponse>(endpointSearch).pipe(
+        return this.client.get<PubmedSearchResponse>(endpointSearch)?.pipe(
             concatMap((response: PubmedSearchResponse) => {
                 const articleIds = response.esearchresult.idlist;
                 const firstRequestData = response; // Store the data from the first request
@@ -72,11 +73,11 @@ export class PubmedService {
                     return of({firstRequestData, additionalResponses: []});
                 }
                 /* Turn the list of article IDs into a stream of article IDs */
-                return from(articleIds).pipe(
+                return from(articleIds)?.pipe(
                     /* For each article ID, execute the HTTP request in sequence */
                     concatMap(articleId => {
                             let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}&api_key=${this.apiKey}`
-                            return this.client.get(endpointSummary).pipe(
+                            return this.client?.get(endpointSummary)?.pipe(
                                 map(additionalResponse => {
                                     return ({articleId, additionalResponse});
                                 })

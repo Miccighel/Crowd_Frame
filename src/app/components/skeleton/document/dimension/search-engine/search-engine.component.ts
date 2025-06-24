@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
@@ -77,7 +78,7 @@ export class SearchEngineComponent implements OnInit {
             let controlsConfig = {};
             if (this.dimension.url) {
                 let urlValue = ''
-                if(mostRecentDataRecord)
+                if (mostRecentDataRecord)
                     urlValue = mostRecentDataRecord.loadAnswers()[`${this.dimension.name}_url`]
                 controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl(urlValue, [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             }
@@ -100,7 +101,9 @@ export class SearchEngineComponent implements OnInit {
     public validateSearchEngineUrl(workerUrlFormControl: UntypedFormControl) {
         /* If the stepped is initialized to something the task is started */
         if (this.stepper) {
-            if (this.stepper.selectedIndex >= this.task.questionnaireAmountStart && this.stepper.selectedIndex < this.task.questionnaireAmountStart + this.task.documentsAmount) {
+            const idx = this.stepper?.selectedIndex ?? 0;
+            if (idx >= this.task.questionnaireAmountStart &&
+                idx < this.task.questionnaireAmountStart + this.task.documentsAmount) {
                 /* If the worker has interacted with the form control of a dimension */
                 if (this.task.currentDimension) {
                     let currentDocument = this.stepper.selectedIndex - this.task.questionnaireAmountStart;
@@ -134,12 +137,12 @@ export class SearchEngineComponent implements OnInit {
 
     public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)
-        this.searchEngineForm.get(dimension.name.concat("_url")).enable();
+        this.searchEngineForm?.get(dimension.name.concat("_url"))?.enable();
     }
 
     public handleSearchEngineSelectedResponse(selectedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineSelectedResponse(selectedResponseData, document, dimension)
-        this.searchEngineForm.get(dimension.name.concat("_url")).setValue(selectedResponseData['url']);
+        this.searchEngineForm?.get(dimension.name.concat("_url"))?.setValue(selectedResponseData['url']);
         this.urlSelectedEmitter.emit(true)
         this.formEmitter.emit(this.searchEngineForm)
     }

@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
@@ -71,11 +72,11 @@ export class ElementPairwiseComponent implements OnInit {
         if (element.hasAttribute('style')) {
             element.removeAttribute('style')
             this.task.documentsPairwiseSelection[documentIndex][elementIndex] = false
-            this.selectionForms[documentIndex].get(`element_${elementIndex}_selected`).setValue(false)
+            this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`)?.setValue(false)
         } else {
             element.style.backgroundColor = "#B6BDE2"
             this.task.documentsPairwiseSelection[documentIndex][elementIndex] = true
-            this.selectionForms[documentIndex].get(`element_${elementIndex}_selected`).setValue(true)
+            this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`)?.setValue(true)
         }
         if (!this.task.checkAtLeastOneDocumentSelected(documentIndex)) {
             this.selectionForms[documentIndex].setErrors({'invalid': true})
@@ -88,7 +89,7 @@ export class ElementPairwiseComponent implements OnInit {
     }
 
     public handleCheckbox(documentIndex: number, elementIndex: number) {
-        let elementSelection = this.selectionForms[documentIndex].get(`element_${elementIndex}_selected`).value
+        let elementSelection = this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`).value
         let element = document.getElementById(`element-${documentIndex}-${elementIndex}`)
         if (elementSelection) {
             this.task.documentsPairwiseSelection[documentIndex][elementIndex] = true

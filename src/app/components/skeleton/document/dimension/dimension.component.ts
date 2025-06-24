@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
@@ -232,9 +233,9 @@ export class DimensionComponent implements OnInit, OnChanges {
                 if (this.assessmentForm) {
                     this.assessmentForm.disable()
                     let currentForm = this.getCurrentAssessmentForm()
-                    Object.entries(currentForm.controls).forEach(([controlName, control], index) => {
+                    Object.entries(currentForm.controls)?.forEach(([controlName, control], index) => {
                         if (controlName.concat(controlSuffix) in controlsConfig)
-                            controlsConfig[controlName.concat(controlSuffix)].setValue(currentForm.get(controlName).value);
+                            controlsConfig[controlName.concat(controlSuffix)]?.setValue(currentForm?.get(controlName).value);
                     });
                     this.assessmentFormAdditional = this.formBuilder.group(controlsConfig)
                     this.assessmentFormValidityEmitter.emit({
@@ -458,8 +459,8 @@ export class DimensionComponent implements OnInit, OnChanges {
         for (let dimension of dimensionsToCheck) {
             if (dimension.url) {
                 let currentAssessmentForm = this.getCurrentAssessmentForm()
-                if (currentAssessmentForm.get(dimension.name.concat("_url"))) {
-                    let value = currentAssessmentForm.get(dimension.name.concat("_url")).value
+                if (currentAssessmentForm?.get(dimension.name.concat("_url"))) {
+                    let value = currentAssessmentForm?.get(dimension.name.concat("_url")).value
                     if (!value)
                         result = false
                 }
@@ -471,8 +472,8 @@ export class DimensionComponent implements OnInit, OnChanges {
     public storeSearchEngineUrl(urlFormGroup, dimensionIndex) {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
             let currentAssessmentForm = this.getCurrentAssessmentForm()
-            if (!currentAssessmentForm.get(key) && this.task.dimensions[dimensionIndex].url) {
-                currentAssessmentForm.addControl(key, urlFormGroup.get(key))
+            if (!currentAssessmentForm?.get(key) && this.task.dimensions[dimensionIndex].url) {
+                currentAssessmentForm?.addControl(key, urlFormGroup?.get(key))
                 if (!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex] = []
                 this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup
             }
@@ -486,9 +487,9 @@ export class DimensionComponent implements OnInit, OnChanges {
     public handleCheckbox(data, dimension, index) {
         let controlValid = false
         let currentAssessmentForm = this.getCurrentAssessmentForm()
-        let formGroup = currentAssessmentForm.get(dimension.name.concat('_list'))
-        let formControl = currentAssessmentForm.get(dimension.name.concat('_value'))
-        formGroup.get(index.toString()).setValue(data['checked'])
+        let formGroup = currentAssessmentForm?.get(dimension.name.concat('_list'))
+        let formControl = currentAssessmentForm?.get(dimension.name.concat('_value'))
+        formGroup?.get(index.toString())?.setValue(data['checked'])
         for (const [key, value] of Object.entries(formGroup.value)) {
             if (value)
                 controlValid = true

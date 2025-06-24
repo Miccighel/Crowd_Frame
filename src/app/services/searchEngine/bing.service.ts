@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {Observable, map} from "rxjs";
@@ -77,13 +78,13 @@ export class BingService {
         }
 
         let endpointWithParameters = `${this.endPoint}?q=${this.query}&count=${count}&offset=${offset}&mkt=en-us`
-        return this.client.get<BingWebSearchResponse>(endpointWithParameters, {headers: this.headers, observe: 'response'}).pipe(
+        return this.client.get<BingWebSearchResponse>(endpointWithParameters, {headers: this.headers, observe: 'response'})?.pipe(
             tap(response => {
-                let currentClientId = response.headers.get('X-MSEdge-ClientID')
+                let currentClientId = response.headers?.get('X-MSEdge-ClientID')
                 if (currentClientId)
-                    this.msEdgeClientID = response.headers.get('X-MSEdge-ClientID')
-                this.bingAPIMarket = response.headers.get('BingAPIs-Market')
-                this.bingAPITraceId = response.headers.get('BingAPIs-TraceId')
+                    this.msEdgeClientID = response.headers?.get('X-MSEdge-ClientID')
+                this.bingAPIMarket = response.headers?.get('BingAPIs-Market')
+                this.bingAPITraceId = response.headers?.get('BingAPIs-TraceId')
             }),
             map(response => {
                 response.body.clientId = this.msEdgeClientID

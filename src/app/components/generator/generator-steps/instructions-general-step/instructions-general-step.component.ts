@@ -1,3 +1,4 @@
+// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
@@ -88,7 +89,7 @@ export class InstructionsGeneralStep implements OnInit {
 
     /* STEP #3 - General Instructions */
     instructions(): UntypedFormArray {
-        return this.formStep.get(`instructions`) as UntypedFormArray;
+        return this.formStep?.get(`instructions`) as UntypedFormArray;
     }
 
     addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {
@@ -107,7 +108,7 @@ export class InstructionsGeneralStep implements OnInit {
     serializeConfiguration() {
         let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`instruction-general-`))
         if (serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
-        let instructionsJSON = JSON.parse(JSON.stringify(this.formStep.get(`instructions`).value));
+        let instructionsJSON = JSON?.parse(JSON?.stringify(this.formStep?.get(`instructions`).value));
         instructionsJSON.forEach((instruction, instructionIndex) => {
             if (instruction.caption == '') instruction.caption = false
             this.localStorageService.setItem(`instruction-general-${instructionIndex}`, JSON.stringify(instruction))
