@@ -1,5 +1,5 @@
 /* Core Angular imports */
-import {NgModule, APP_INITIALIZER} from '@angular/core';
+import { NgModule, inject, provideAppInitializer } from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -148,12 +148,10 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         AppRoutingModule // Always keep AppRoutingModule as the last import
     ], providers: [
         SectionService,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: initActionLogger,
-            deps: [ActionLogger],
-            multi: true,
-        },
+        provideAppInitializer(() => {
+        const initializerFn = (initActionLogger)(inject(ActionLogger));
+        return initializerFn();
+      }),
         provideHttpClient(withInterceptorsFromDi()),
     ] })
 
