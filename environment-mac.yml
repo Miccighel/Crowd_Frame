@@ -73,15 +73,19 @@ dependencies:
   - pip:
       - annotated-types==0.7.0
       - anyio==3.7.1
+      - boto3-stubs==1.38.37
       - cachetools==5.5.2
       - cattrs==24.1.3
       - datefinder==0.7.3
+      - docopt==0.6.2
       - docstring-parser==0.16
       - filelock==3.18.0
       - h11==0.12.0
       - httpcore==0.15.0
       - httpx==0.23.0
       - ipinfo==5.1.1
+      - lxml==5.4.0
+      - pandas-stubs==2.2.3.250527
       - pycountry==24.6.1
       - pydantic==2.11.4
       - pydantic-core==2.33.2
@@ -95,4 +99,5 @@ dependencies:
       - toloka-kit==1.2.3
       - typing-extensions==4.13.2
       - typing-inspection==0.4.0
+      - xlf-merge==0.1.6
 prefix: /Users/michaelsoprano/miniconda3/envs/Crowd_Frame

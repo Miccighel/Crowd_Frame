@@ -58,7 +58,14 @@
 					"options": {
 						"aot": true,
 						"allowedCommonJsDependencies": [
-							"@funktechno/texthighlighter/lib"
+							"@aws-sdk/lib-storage",
+							"@aws-sdk/util-user-agent-browser",
+							"@aws-sdk/core",
+							"@aws-sdk/endpoint-cache",
+							"@funktechno/texthighlighter/lib",
+							"bowser",
+							"fast-xml-parser",
+							"mnemonist/lru-cache"
 						],
 						"outputPath": {
 							"base": "dist/Crowd_Frame",

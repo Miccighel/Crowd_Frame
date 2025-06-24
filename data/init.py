@@ -3,7 +3,6 @@
 
 import json
 import pprint
-
 import docker
 import os
 import pandas as pd
@@ -18,6 +17,7 @@ import textwrap
 import boto3
 import time
 import warnings
+import filecmp
 from mako.template import Template
 from python_on_whales import DockerClient
 from datetime import datetime
@@ -2450,7 +2450,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         model = Template(filename=f"{folder_build_mturk_path}model.html")
         if 'results_retrieved' in search_engine_config:
-            if len(search_engine_config['results_retrieved'])>0:
+            if len(search_engine_config['results_retrieved']) > 0:
                 mturk_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=cloudfront_endpoint)
             else:
                 mturk_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
@@ -2534,7 +2534,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         model = Template(filename=f"{folder_build_toloka_path}model.html")
         if 'results_retrieved' in search_engine_config:
-            if len(search_engine_config['results_retrieved'])>0:
+            if len(search_engine_config['results_retrieved']) > 0:
                 toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=cloudfront_endpoint)
             else:
                 toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
@@ -2663,51 +2663,63 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(line_clean)
     process.wait()
 
-    status.update("Copying Javascript asset")
+    status.update("Merging Javascript assets (via esbuild single bundle)")
 
+    # Set asset paths
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
     polyfills_source = f"{folder_build_result}polyfills.js"
     main_script_source = f"{folder_build_result}main.js"
+    entry_script_source = f"{folder_build_result}entry-for-esbuild.js"
+    temp_bundle_file = f"{script_merged_file}.tmp"
 
-    if os.path.exists(script_merged_file):
-        os.remove(script_merged_file)
+    # Remove previous temp files, if any
+    for path in [entry_script_source, temp_bundle_file]:
+        if os.path.exists(path):
+            os.remove(path)
 
-    with open(script_merged_file, 'a') as dst:
-        # first: tiny locale stub, if present
+    # Require main.js to exist
+    if not os.path.exists(main_script_source):
+        console.print(f"[bold red]main.js not found, cannot continue![/bold red]")
+        raise RuntimeError("main.js not found after Angular build")
+
+    # Compose entry file for esbuild
+    with open(entry_script_source, "w") as entry_file:
         if os.path.exists(polyfills_source):
-            console.print(f"Processing file: [italic purple on black]{polyfills_source}")
-            with open(polyfills_source) as src:
-                for line in src:
-                    dst.write(line)
+            console.print(f"Entry will include: [italic purple on black]{polyfills_source}")
+            entry_file.write("import './polyfills.js';\n")
         else:
-            console.print(f"File not detected: [italic purple on black]{polyfills_source}")
+            console.print(f"[yellow]Warning: polyfills.js not detected, proceeding without it[/yellow]")
+        console.print(f"Entry will include: [italic purple on black]{main_script_source}")
+        entry_file.write("import './main.js';\n")
 
-        # second: full application
-        if os.path.exists(main_script_source):
-            console.print(f"Processing file: [italic purple on black]{main_script_source}")
-            with open(main_script_source) as src:
-                for line in src:
-                    dst.write(line)
+    # Run esbuild into temp file
+    esbuild_cmd = (
+        f"npx esbuild {entry_script_source} --bundle --outfile={temp_bundle_file} --format=esm"
+    )
+    console.print(f"Running esbuild: [green on black]{esbuild_cmd}")
+    status.update("Running esbuild to create single JS bundle (temp file)")
+
+    try:
+        result = subprocess.run(esbuild_cmd, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            console.print(f"[bold red]esbuild bundling failed![/bold red]")
+            console.print(result.stderr)
+            raise RuntimeError("esbuild failed")
+
+        # If previous bundle exists, compare before overwriting
+        if os.path.exists(script_merged_file) and filecmp.cmp(temp_bundle_file, script_merged_file, shallow=False):
+            console.print("[green]No changes in JS bundle, skipping overwrite[/green]")
+            os.remove(temp_bundle_file)
         else:
-            console.print(f"File not detected: [italic purple on black]{main_script_source}")
+            shutil.move(temp_bundle_file, script_merged_file)
+            console.print(f"[cyan]Bundle updated: {script_merged_file}[/cyan]")
 
-    console.print(f"Path: [italic]{script_merged_file}")
-
-    status.update("Merging CSS assets")
-    styles_merged_file = f"{folder_build_deploy_path}styles.css"
-    if os.path.exists(styles_merged_file):
-        os.remove(styles_merged_file)
-    css_styles_paths = glob.glob(f"{folder_build_result}*.css")
-    with open(styles_merged_file, 'a') as outfile:
-        for style_current_file in css_styles_paths:
-            if os.path.exists(style_current_file):
-                console.print(f"Processing file: [italic cyan on black]{style_current_file}")
-                with open(style_current_file) as style:
-                    for line in style:
-                        outfile.write(line)
-            else:
-                console.print(f"File not detected: [italic purple on black]{style_current_file}")
-    console.print(f"Path: [italic underline]{styles_merged_file}")
+    finally:
+        # Cleanup: always remove temp entry file and temp bundle (if not already removed)
+        if os.path.exists(entry_script_source):
+            os.remove(entry_script_source)
+        if os.path.exists(temp_bundle_file):
+            os.remove(temp_bundle_file)
 
     console.print("Deleting build folder")
     folder_build_result = folder_build_result.replace(f"/Crowd_Frame/{language_code}/", '')
@@ -2998,8 +3010,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if 'results_retrieved' in search_engine_config:
 
-        if len(search_engine_config['results_retrieved'])>0:
-
+        if len(search_engine_config['results_retrieved']) > 0:
             console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
             step_index = step_index + 1
 
@@ -3036,7 +3047,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"[bold white on black]http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com/{task_name}/{batch_name}/")
 
     if 'results_retrieved' in search_engine_config:
-        if len(search_engine_config['results_retrieved'])>0:
-
+        if len(search_engine_config['results_retrieved']) > 0:
             console.print(f"Cloudfront Endpoint")
             console.print(f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/")
