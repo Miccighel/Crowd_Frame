@@ -326,7 +326,7 @@ export class Task {
         this.overtime = new Array<number>(this.documentsAmount);
         for (let index = 0; index < this.documents.length; index++) {
             this.documentsCountdownTime[index] = this.settings.countdownTime;
-            if (this.mostRecentDataRecordsForDocuments[index]){
+            if (this.mostRecentDataRecordsForDocuments[index]) {
                 this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
                 this.documentsStartCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeStart();
                 this.countdownsStarted[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownStarted();
@@ -334,16 +334,16 @@ export class Task {
                 this.countdownExpiredTimestamp[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownExpiredTimestamp();
                 this.overtime[index] = this.mostRecentDataRecordsForDocuments[index].loadOvertime();
             } else {
-                if(this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0){
+                if (this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0) {
                     const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index][this.settings.countdown_attribute]);
-                    if(element != undefined){
+                    if (element != undefined) {
                         this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
 
-                if(this.settings.countdown_modality === "position" && this.settings.countdown_position_values.length > 0){
+                if (this.settings.countdown_modality === "position" && this.settings.countdown_position_values.length > 0) {
                     const element = this.settings.countdown_position_values.find(item => item["position"] === this.documents[index].index);
-                    if(element != undefined){
+                    if (element != undefined) {
                         this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
                     }
                 }
@@ -353,7 +353,7 @@ export class Task {
                 this.countdownExpiredTimestamp[index] = -1;
                 this.overtime[index] = 0;
             }
-            
+
         }
 
         this.documentsPairwiseSelection = new Array<Array<boolean>>(
@@ -445,7 +445,7 @@ export class Task {
             if (intervalDimesions.scale instanceof ScaleInterval) {
                 for (let index = 0; index < this.documentsAmount; index++) {
                     /* Check if there is a video attribute in the task attributes and a HITS element called "video_duration"*/
-                    if(this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index]['video_duration']) {
+                    if (this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index]['video_duration']) {
                         /* Set the max interval value to the duration of the video */
                         this.dimensionIntervalMaxValues[index] = this.documents[index]['video_duration'];
                     }
@@ -753,9 +753,9 @@ export class Task {
         }
 
         /* If the document has an (expired) countdown and the modality is hide_attributes, we compute the excess time */
-        if(this.hasCountdown() && this.settings.countdown_behavior === 'hide_attributes' && this.countdownsExpired[currentDocument]){
+        if (this.hasCountdown() && this.settings.countdown_behavior === 'hide_attributes' && this.countdownsExpired[currentDocument]) {
             const element = [...Array(this.getElementsNumber()).keys()].find(i => this.getElementIndex(i).elementIndex == currentDocument);
-            if(this.overtime[currentDocument] > 0)
+            if (this.overtime[currentDocument] > 0)
                 this.overtime[currentDocument] += timeInSeconds - Math.max(this.timestampsStart[element][this.timestampsStart[element].length - 1], prevSelectionTimestamp, this.countdownExpiredTimestamp[currentDocument])
             else
                 this.overtime[currentDocument] = timeInSeconds - this.countdownExpiredTimestamp[currentDocument]
@@ -956,12 +956,12 @@ export class Task {
             const groupToUpdate = this.searchEngineRetrievedResponses[document.index]["data"].findIndex(group => group.query === query && group.dimension === dimension.index && group.document === document.index)
             if (groupToUpdate != -1) {
                 const responseToUpdate = this.searchEngineRetrievedResponses[document.index]["data"][groupToUpdate]['response'].findIndex(response => response.url === visitedResponseData['url'] && response.name === visitedResponseData['name'])
-                if (responseToUpdate != -1){
+                if (responseToUpdate != -1) {
                     this.searchEngineRetrievedResponses[document.index]["data"][groupToUpdate]["response"][responseToUpdate]['visited'] = true
                 }
             }
         }
-          
+
     }
 
     public retrieveSearchEnginePreRetrievedResults(documentIndex: number) {
@@ -1171,7 +1171,7 @@ export class Task {
         /* General info about task */
         /* Given that a scenario involves pre-retrieving a set of search results, the resulting payload can become too big for DynamoDB.
         *  Therefore, the set of pre-retrieved results is simplified using their IDs only and stored under the search_engine_results_retrieved key. */
-        let searchEngineSettingsCopy = { ...this.searchEngineSettings };
+        let searchEngineSettingsCopy = {...this.searchEngineSettings};
         let preRetrievedResultsSimplified = {}
         for (let preRetrievedResult of searchEngineSettingsCopy.pre_retrieved_results) {
             if (!(preRetrievedResult.elementID in preRetrievedResultsSimplified))
@@ -1325,7 +1325,32 @@ export class Task {
         return data;
     }
 
-    public hasCountdown(){
+    public hasCountdown() {
         return this.settings.countdownTime >= 0;
     }
+
+    /** ------------------------------------------------------------------
+     *  Return the effective countdown seconds for the given document.
+     *  Handles the three modalities:
+     *    • global  (settings.countdownTime > 0)
+     *    • attribute-based  (countdown_modality === "attribute")
+     *    • position-based   (countdown_modality === "position")
+     *  Falls back to 0 when no countdown applies.
+     *  ---------------------------------------------------------------- */
+    public getCountdownSeconds(docIndex: number): number {
+        // 1 – global countdown
+        if (this.settings.countdownTime > 0) {
+            return this.settings.countdownTime;
+        }
+
+        // 2 – attribute / position (already computed in initializeDocuments)
+        if (Array.isArray(this.documentsStartCountdownTime) &&
+            typeof this.documentsStartCountdownTime[docIndex] === 'number') {
+            return this.documentsStartCountdownTime[docIndex];
+        }
+
+        // 3 – no countdown for this document
+        return 0;
+    }
+
 }
