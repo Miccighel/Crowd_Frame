@@ -2,7 +2,7 @@
 /* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 /* Angular Material Components */
 import {MatFormField} from "@angular/material/form-field";
@@ -109,7 +109,28 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
 
-    @ViewChild("stepper", {static: false}) stepper: MatStepper;
+    private _stepper!: MatStepper;                 // actual holder
+
+    @ViewChild('stepper', {static: false})
+    set stepperSetter(stepper: MatStepper | undefined) {
+        if (!stepper) {
+            return;
+        }                    // view not ready yet
+        this._stepper = stepper;                     // keep a reference
+
+        /* ----  RESTORE LAST POSITION  -------------------------------- */
+        const last = this.worker?.getPositionCurrent() ?? 0;
+        this._stepper.selectedIndex = last;
+        this.sectionService.stepIndex = last;
+
+        /* Force CD so that bindings inside the newly-selected step update */
+        this.changeDetector.detectChanges();
+    }
+
+    /* Expose a readonly getter elsewhere in the class if you still use `this.stepper` */
+    get stepper(): MatStepper | undefined {
+        return this._stepper;
+    }
 
     /* Array of form references, one for each document within a Hit */
     documentsForm: Array<UntypedFormGroup>;
@@ -655,13 +676,28 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      * This function enables the task when the worker clicks on "Proceed" inside the main instructions page.
      */
     public enableTask() {
+        /* The main-instructions card is now dismissed */
         this.sectionService.taskInstructionsRead = true;
-        if (this.configService.environment.taskTitle != 'none') {
-            this.titleService.setTitle(`${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+
+        /* Update the browser tab title – keeps your original logic */
+        if (this.configService.environment.taskTitle !== "none") {
+            this.titleService.setTitle(
+                `${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.worker.getPositionCurrent()).elementType}${this.worker.getPositionCurrent()}`
+            );
         } else {
-            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+            this.titleService.setTitle(
+                `${this.configService.environment.taskName}: ${this.task.getElementIndex(this.worker.getPositionCurrent()).elementType}${this.worker.getPositionCurrent()}`
+            );
         }
-        this.showSnackbar("If you have a very slow internet connection, please wait a few seconds for the page to load.", "Dismiss", 8000);
+
+        /* Helper message */
+        this.showSnackbar(
+            "If you have a very slow internet connection, please wait a few seconds for the page to load.",
+            "Dismiss",
+            8000
+        );
+
+        /* Start the timer for the very first element */
         this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
     }
 
