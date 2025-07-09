@@ -1,5 +1,5 @@
 /* Importing Bootstrap SCSS file. */
-@import "bootstrap/scss/bootstrap";
+@use "bootstrap/scss/bootstrap";
 
 * {
     --primary: #084887;
