@@ -73,7 +73,6 @@ export class ElementPointwiseComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        console.log("Loaded attributes:", this.task.settings.attributesMain);
 
         this.attributeForPostAssessment = this.task.getAttributeForPostAssessmentStep(this.postAssessmentIndex - 1);
 
