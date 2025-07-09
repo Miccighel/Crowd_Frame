@@ -170,13 +170,13 @@ export class Attribute {
 }
 
 export class AttributeMain extends Attribute {
-    show: boolean;
+    show: boolean | string[]
     annotate: boolean;
     required: boolean;
 
     constructor(index: number, data: JSON) {
         super(index, data);
-        this.show = !!data['show'];
+        this.show = data['show'];
         this.annotate = !!data['annotate'];
         this.required = !!data['required'];
     }

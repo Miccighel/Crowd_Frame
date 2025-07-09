@@ -1,11 +1,10 @@
 <!-- TEMPLATE: Video rendering block -->
 <ng-template #videoAttributeBlock let-documentIndex="documentIndex">
 	<ng-container *ngFor="let attribute of task.settings.attributesMain">
-		<ng-container *ngIf="attribute.is_video && attribute.show">
-			<div *ngIf="task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)"
-				 class="attribute">
-				<p class="attribute-label">
 
+		<ng-container *ngIf="attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
+			<div class="attribute">
+				<p class="attribute-label">
 					<!-- YouTube videos -->
 					<ng-container *ngIf="task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
 						<div class="video-container">
@@ -18,7 +17,6 @@
 							</iframe>
 						</div>
 					</ng-container>
-
 					<!-- Direct / local video files -->
 					<ng-container *ngIf="!task.documents[documentIndex][attribute.name]?.includes('youtube.com')">
 						<app-document-video
@@ -29,13 +27,11 @@
 								(metadataLoaded)="onVideoMetadataLoadedFromChild($event)">
 						</app-document-video>
 					</ng-container>
-
 				</p>
 			</div>
 		</ng-container>
 	</ng-container>
 </ng-template>
-
 
 <!-- CASE: Countdown expired AND behavior is to hide attributes -->
 <ng-container *ngIf="task.countdownsExpired?.[documentIndex] &&
@@ -50,7 +46,6 @@
 	</mat-card>
 </ng-container>
 
-
 <!-- CASE: Show content if NOT hidden -->
 <ng-container *ngIf="!(task.countdownsExpired?.[documentIndex] &&
                        task.settings.countdown_behavior === 'hide_attributes')">
@@ -64,22 +59,18 @@
                     !postAssessment &&
                     hasRenderableNonVideoAttributes(documentIndex)">
 			<ng-container *ngFor="let attribute of task.settings.attributesMain">
-				<ng-container *ngIf="!attribute.is_video &&
-                                     task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
+				<ng-container *ngIf="!attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
 					<div class="attribute">
 						<p class="attribute-label" style="white-space: pre-line">
-
 							<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}:</strong>
 							<strong *ngIf="!attribute.name_pretty">
 								{{ attribute.name.split('_').join(' ') | titlecase }}:
 							</strong>
-
 							<!-- image attributes -->
 							<ng-container *ngIf="attribute.isImage(task.documents[documentIndex][attribute.name])">
 								<br>
 								<img [src]="task.documents[documentIndex][attribute.name]" alt="attribute.name">
 							</ng-container>
-
 							<!-- plain-text attributes -->
 							<span *ngIf="!attribute.isImage(task.documents[documentIndex][attribute.name])">
                                 {{ task.documents[documentIndex][attribute.name] }}
@@ -91,11 +82,8 @@
 		</div>
 
 		<!-- VIDEO ATTRIBUTES -->
-		<ng-container *ngTemplateOutlet="videoAttributeBlock;
-                           context:{ documentIndex: documentIndex }">
-		</ng-container>
+		<ng-container *ngTemplateOutlet="videoAttributeBlock; context:{ documentIndex: documentIndex }"></ng-container>
 	</ng-container>
-
 
 	<!-- CASE: Countdown enabled (seconds > 0) -->
 	<ng-container *ngIf="task.getCountdownSeconds(documentIndex) > 0">
@@ -112,22 +100,18 @@
                         !postAssessment &&
                         hasRenderableNonVideoAttributes(documentIndex)">
 				<ng-container *ngFor="let attribute of task.settings.attributesMain">
-					<ng-container *ngIf="!attribute.is_video &&
-                                         task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
+					<ng-container *ngIf="!attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)">
 						<div class="attribute">
 							<p class="attribute-label" style="white-space: pre-line">
-
 								<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}:</strong>
 								<strong *ngIf="!attribute.name_pretty">
 									{{ attribute.name.split('_').join(' ') | titlecase }}:
 								</strong>
-
 								<!-- image attributes -->
 								<ng-container *ngIf="attribute.isImage(task.documents[documentIndex][attribute.name])">
 									<br>
 									<img [src]="task.documents[documentIndex][attribute.name]" alt="attribute.name">
 								</ng-container>
-
 								<!-- plain-text attributes -->
 								<span *ngIf="!attribute.isImage(task.documents[documentIndex][attribute.name])">
                                     {{ task.documents[documentIndex][attribute.name] }}
@@ -139,13 +123,10 @@
 			</div>
 
 			<!-- VIDEO ATTRIBUTES -->
-			<ng-container *ngTemplateOutlet="videoAttributeBlock;
-                               context:{ documentIndex: documentIndex }">
-			</ng-container>
+			<ng-container *ngTemplateOutlet="videoAttributeBlock; context:{ documentIndex: documentIndex }"></ng-container>
 		</ng-container>
 	</ng-container>
 </ng-container>
-
 
 <!-- CASE: Post-assessment content -->
 <ng-container *ngIf="postAssessment && initialAssessmentFormInteraction">

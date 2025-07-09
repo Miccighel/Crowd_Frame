@@ -1061,7 +1061,29 @@ export class Task {
     }
 
     public checkCurrentTaskType(document: Document, taskTypesList) {
-        return !taskTypesList ? taskTypesList !== false : taskTypesList === true || taskTypesList.some(type => type.toLowerCase() === document.params['task_type'].toLowerCase())
+        // Explicitly hidden
+        if (taskTypesList === false) return false;
+
+        // Always visible
+        if (taskTypesList === true) return true;
+
+        // If not defined (null or undefined), attribute is visible
+        // Change to 'return false;' if you prefer to hide by default
+        if (taskTypesList == null) return true;
+
+        // If an array
+        if (Array.isArray(taskTypesList)) {
+            // Empty array = never visible
+            if (taskTypesList.length === 0) return false;
+
+            // Visible only if document type matches one in the array
+            return taskTypesList.some(
+                type => type.toLowerCase() === document.params['task_type'].toLowerCase()
+            );
+        }
+
+        // Fallback: not visible
+        return false;
     }
 
     /* #################### POST ASSESSMENT #################### */
@@ -1338,19 +1360,26 @@ export class Task {
      *  Falls back to 0 when no countdown applies.
      *  ---------------------------------------------------------------- */
     public getCountdownSeconds(docIndex: number): number {
-        // 1 – global countdown
-        if (this.settings.countdownTime > 0) {
-            return this.settings.countdownTime;
+        // Standardize main countdown time
+        let countdownTime = Number(this.settings.countdownTime);
+
+        // If not a positive number, treat as disabled (0)
+        if (isNaN(countdownTime) || countdownTime <= 0) {
+            countdownTime = 0;
         }
 
-        // 2 – attribute / position (already computed in initializeDocuments)
-        if (Array.isArray(this.documentsStartCountdownTime) &&
-            typeof this.documentsStartCountdownTime[docIndex] === 'number') {
+        // If there is a per-document override, use it (if it's a valid number)
+        if (
+            Array.isArray(this.documentsStartCountdownTime) &&
+            typeof this.documentsStartCountdownTime[docIndex] === 'number' &&
+            !isNaN(this.documentsStartCountdownTime[docIndex]) &&
+            this.documentsStartCountdownTime[docIndex] > 0
+        ) {
             return this.documentsStartCountdownTime[docIndex];
         }
 
-        // 3 – no countdown for this document
-        return 0;
+        // Otherwise, use the standardized global countdownTime (0 = disabled)
+        return countdownTime;
     }
 
 }
