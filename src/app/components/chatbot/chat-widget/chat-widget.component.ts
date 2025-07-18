@@ -35,6 +35,7 @@ import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modal.component";
 import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
+import {Worker} from "../../../models/worker/worker";
 
 // Main
 @Component({
@@ -57,7 +58,7 @@ export class ChatWidgetComponent implements OnInit {
     disableSearchEngine: EventEmitter<boolean> = new EventEmitter<boolean>();
     readUrlValue: EventEmitter<void> = new EventEmitter<void>();
 
-    @Input() private worker!: any;
+    @Input() public worker : Worker;
     task: Task;
     changeDetector: ChangeDetectorRef;
     ngxService: NgxUiLoaderService;

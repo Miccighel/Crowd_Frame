@@ -1,4 +1,4 @@
-<mat-card id="search-engine-body-{{documentIndex}}"
+<mat-card id="search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
 		  [ngClass]="task.settings.modality=='conversational' ? 'search-engine-body p-2' : 'search-engine-body'"
 		  [formGroup]="searchForm">
 	<ng-container *ngIf="this.task.settings.modality=='conversational'">

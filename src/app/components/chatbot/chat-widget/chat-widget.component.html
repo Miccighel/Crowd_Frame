@@ -150,9 +150,12 @@
 
 	<div class="search-engine">
 		<app-search-engine-body
+				[dimension]="this.task.dimensions[dimensionIndex]"
+				[worker]="this.worker"
 				[resetEvent]="resetSearchEngine"
 				[disableEvent]="disableSearchEngine"
-				(selectedRowEmitter)="getUrl($event)" (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+				(selectedRowEmitter)="getUrl($event)"
+				(resultEmitter)="storeSearchEngineRetrievedResponse($event)"
 				(queryEmitter)="storeSearchEngineUserQuery($event)">
 		</app-search-engine-body>
 	</div>

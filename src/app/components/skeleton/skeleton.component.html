@@ -62,7 +62,9 @@
 
 <ng-container *ngIf="this.sectionService.taskInstructionsRead">
     <!-- Chatbot -->
-    <chat-widget *ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted" [worker]="worker"></chat-widget>
+    <chat-widget
+			*ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted"
+			[worker]="worker"></chat-widget>
     <!-- Task body section -->
     <mat-horizontal-stepper
             *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="false"
