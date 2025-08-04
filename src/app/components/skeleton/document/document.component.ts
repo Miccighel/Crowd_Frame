@@ -75,7 +75,7 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
     private _stepper?: MatStepper;
     @Input() set stepper(value: MatStepper | undefined) {
         this._stepper = value;
-        if (value) {
+        if (value && this.document) {
             this.initStepperPosition();
             this.hookStepperSelection();
         }
@@ -146,8 +146,11 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         }
 
-        /* stepper may already be available */
-        this.initStepperPosition();
+        /* now that everything is ready, finish stepper hookup if it arrived first */
+        if (this.stepper && this.document) {
+            this.initStepperPosition();
+            this.hookStepperSelection();
+        }
     }
 
     ngAfterViewInit(): void {

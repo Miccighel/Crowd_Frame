@@ -37,7 +37,7 @@
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
         <mat-card-content
-                *ngIf="this.sectionService.checkCompleted &&this.task.instructionsGeneral">
+                *ngIf="this.sectionService.checkCompleted && this.task.instructionsGeneral">
             <div *ngFor="let instruction of this.task.instructionsGeneral;let i = index">
                 <h1 *ngIf="instruction['caption']">
                     {{ instruction["caption"] }}

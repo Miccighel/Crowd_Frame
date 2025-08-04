@@ -914,102 +914,148 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      */
     public performReset() {
 
+        /* Start the loading spinner */
+        this.ngxService.startLoader('skeleton-inner');
 
-        /* The loading spinner is started */
-        this.ngxService.startLoader("skeleton-inner");
-
+        /* Reset status flags */
         this.sectionService.taskFailed = false;
         this.sectionService.taskSuccessful = false;
         this.sectionService.taskCompleted = false;
         this.sectionService.taskStarted = true;
 
-        /* Decrease the remaining tries amount*/
-        this.task.settings.allowed_tries = this.task.settings.allowed_tries - 1;
+        /* Update try counters */
+        this.task.tryCurrent += 1;
 
-        /* Increases the current try document_index */
-        this.task.tryCurrent = this.task.tryCurrent + 1;
-
-        /* The countdowns are set back to 0 */
-        if (this.task.settings.countdownTime >= 0) {
-            if (this.documentComponent[0].countdown.left > 0) {
-                this.documentComponent[0].countdown.resume();
-            }
+        /* Restart countdown on the first document (if present) */
+        if (this.task.settings.countdownTime >= 0 &&
+            this.documentComponent?.[0]?.countdown?.left! > 0) {
+            this.documentComponent[0].countdown.resume();
         }
 
-        this.outcomeSection.commentSent = false;
-
-        this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
-        this.worker.setParameter("try_current", String(this.task.tryCurrent));
+        /* Compute and persist metadata */
+        const triesLeft = this.task.settings.allowed_tries - this.task.tryCurrent;
+        this.worker.setParameter('try_left', String(triesLeft));
+        this.worker.setParameter('try_current', String(this.task.tryCurrent));
 
         let jumpIndex = this.computeJumpIndex()
         this.worker.setParameter('position_current', String(jumpIndex))
 
-        this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
-
-        /* Trigger change detection to restore the stepper reference. */
+        /* Force change detection so we still have a valid Stepper ref */
         this.changeDetector.detectChanges();
-        /* Set the stepper document_index to the first questionnaire if only questionnaires are present in the task.
-           If there are documents too, jump to the first one with the parameter reset_jump set to true, if it exists; otherwise, jump to the first document. */
-        this.stepper.selectedIndex = 0
-        this.sectionService.stepIndex = 0
 
-        for (let i = 0; i < jumpIndex; i++) {
-            this.stepper.next()
-            this.sectionService.stepIndex += 1
+        /* Jump straight to the desired step (no intermediate instantiation) */
+        this.stepper.selectedIndex = jumpIndex;
+        this.sectionService.stepIndex = jumpIndex;
+
+        /* Stop the spinner */
+        this.ngxService.stopLoader('skeleton-inner');
+
+        /* Store the new start timestamp (initialise array slot on first use) */
+        if (!this.task.timestampsStart[jumpIndex]) {
+            this.task.timestampsStart[jumpIndex] = [];
         }
-
-        /* The loading spinner is stopped */
-        this.ngxService.stopLoader("skeleton-inner");
-
         this.task.timestampsStart[jumpIndex].push(Date.now() / 1000);
+
     }
 
+    /**
+     * Computes the index to jump to on reset.
+     *
+     * Logic:
+     * - Prefer jumping to the first document with "reset_jump" if set; otherwise, to the first document.
+     * - Never land on or before a questionnaire where allow_back is false or absent (locked questionnaires).
+     * - Performs validity and timing checks for each step before the jump.
+     *
+     * Returns:
+     * - The safest index to jump to, respecting locked questionnaires and workflow requirements.
+     */
     public computeJumpIndex() {
-        let jumpIndex = 0
-        if (this.task.documentsAmount != 0) {
-            jumpIndex += this.task.questionnaireAmountStart
+        let jumpIndex = 0;
 
+        // If there are documents, jump to the first document (after questionnaires).
+        if (this.task.documentsAmount !== 0) {
+            jumpIndex += this.task.questionnaireAmountStart;
+
+            // If a document has reset_jump set, prefer jumping there.
             for (let i = 0; i < this.task.documents.length; i++) {
                 const doc = this.task.documents[i];
-                if (doc["params"]["reset_jump"] == true) {
-                    jumpIndex += doc["index"]
-                    break
+                if (doc["params"]["reset_jump"] === true) {
+                    jumpIndex += doc["index"];
+                    break;
                 }
             }
         }
 
-        let lastAllowBackIdx = 0
-        let failChecksCurrent = false
-        let objAllowBack
-        let objFormValidity
-        let timeCheckAmount = this.task.getTimesCheckAmount();
-        for (let i = 0; i <= jumpIndex; i++) {
-            let idx = null
-            if (i >= this.task.questionnaireAmountStart && i < this.task.questionnaireAmountStart + this.task.documentsAmount) {
-                objAllowBack = this.task.documents[i - this.task.questionnaireAmountStart]["params"]
-                objFormValidity = this.documentsForm[i - this.task.questionnaireAmountStart]
+        // Track the last questionnaire index with allow_back === false (or undefined), i.e., locked.
+        let lastLockedQuestionnaireIdx = -1;
+
+        // Tracks if any previous checks have failed, to restrict how far back we can go.
+        let failChecksCurrent = false;
+
+        // Used for referencing current step's allow_back setting and form validity.
+        let objAllowBack;
+        let objFormValidity;
+
+        // Compute the total number of steps.
+        const totalSteps = this.task.questionnaireAmount + this.task.documentsAmount;
+
+        // Get the allowed time for each check.
+        const timeCheckAmount = this.task.getTimesCheckAmount();
+
+        // Iterate over all steps up to and including jumpIndex (or until totalSteps).
+        for (let i = 0; i <= jumpIndex && i < totalSteps; i++) {
+            let idx = null;
+            let isQuestionnaire = false;
+
+            // Determine whether this step is a document or a questionnaire and get relevant references.
+            if (
+                i >= this.task.questionnaireAmountStart &&
+                i < this.task.questionnaireAmountStart + this.task.documentsAmount
+            ) {
+                // Document step
+                objFormValidity = this.documentsForm[i - this.task.questionnaireAmountStart];
             } else {
-                idx = i < this.task.questionnaireAmountStart ? i : i - this.task.documentsAmount
-                objAllowBack = this.task.questionnaires[idx]
-                objFormValidity = this.questionnairesForm[idx]
+                // Questionnaire step
+                isQuestionnaire = true;
+                idx = i < this.task.questionnaireAmountStart ? i : i - this.task.documentsAmount;
+                objAllowBack = this.task.questionnaires[idx];
+                objFormValidity = this.questionnairesForm[idx];
             }
 
-            /* If it is a questionnaire, the check has to be done before. */
-            if (idx != null)
-                failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
+            /* For questionnaires: perform checks before evaluating allow_back. */
+            if (isQuestionnaire) {
+                failChecksCurrent =
+                    failChecksCurrent ||
+                    objFormValidity.valid === false ||
+                    this.task.timestampsElapsed[i] < timeCheckAmount[i];
 
-            if (objAllowBack["allow_back"] == false) {
-                if (failChecksCurrent)
-                    return Math.min(lastAllowBackIdx, this.task.questionnaireAmount + this.task.documentsAmount - 1)
-
-                lastAllowBackIdx = idx == null ? i : i + 1
+                /* If allow_back is absent or false, treat as locked (no back allowed).
+                   We must not allow jumping to or before this questionnaire on reset. */
+                if (!objAllowBack["allow_back"]) {
+                    lastLockedQuestionnaireIdx = i;
+                }
+            } else {
+                /* For documents: perform checks after evaluating allow_back (not needed for allow_back). */
+                failChecksCurrent =
+                    failChecksCurrent ||
+                    objFormValidity.valid === false ||
+                    this.task.timestampsElapsed[i] < timeCheckAmount[i];
             }
-
-            /* If it is a document, the check has to be done after. */
-            if (idx == null)
-                failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
         }
-        return Math.min(jumpIndex, this.task.questionnaireAmount + this.task.documentsAmount - 1)
+
+        /*
+         * If the computed jumpIndex is before or at a locked questionnaire step,
+         * jump to the first step immediately after the last locked questionnaire (if possible).
+         * This ensures we never land on or before a locked questionnaire.
+         */
+        if (lastLockedQuestionnaireIdx >= 0 && jumpIndex <= lastLockedQuestionnaireIdx) {
+            return lastLockedQuestionnaireIdx + 1 < totalSteps ? lastLockedQuestionnaireIdx + 1 : lastLockedQuestionnaireIdx;
+        }
+
+        /*
+         * Otherwise, jump to the intended step, but never go beyond the last valid step.
+         */
+        return Math.min(jumpIndex, totalSteps - 1);
     }
 
     public storeQuestionnaireForm(data, stepIndex) {
@@ -1104,8 +1150,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("paid", String(true));
                     this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                 } else {
-                    this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - 1));
-                    this.worker.setParameter("try_current", String(this.task.tryCurrent + 1));
+                    const triesLeft = this.task.settings.allowed_tries - this.task.tryCurrent;
+                    this.worker.setParameter("try_left", String(triesLeft));
+                    this.worker.setParameter("try_current", String(this.task.tryCurrent));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", this.task.settings.allowed_tries - this.task.tryCurrent > 0 ? StatusCodes.TASK_FAILED_WITH_TRIES : StatusCodes.TASK_FAILED_NO_TRIES);
