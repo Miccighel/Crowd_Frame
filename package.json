@@ -54,7 +54,7 @@
     "@angular/build": "^19.2.15",
     "@angular/compiler-cli": "19.2.14",
     "@types/node": "^20.11.17",
-    "esbuild": "^0.25.5",
+    "esbuild": "^0.25.8",
     "typescript": "5.8.2"
   },
   "browser": {

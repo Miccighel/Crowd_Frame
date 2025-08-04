@@ -2694,7 +2694,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     # Run esbuild into temp file
     esbuild_cmd = (
-        f"npx esbuild {entry_script_source} --bundle --outfile={temp_bundle_file} --format=esm"
+        f"yarn esbuild {entry_script_source} --bundle --outfile={temp_bundle_file} --format=esm"
     )
     console.print(f"Running esbuild: [green on black]{esbuild_cmd}")
     status.update("Running esbuild to create single JS bundle (temp file)")
