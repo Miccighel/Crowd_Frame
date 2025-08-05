@@ -1,286 +1,360 @@
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
 
+/* ===============================
+   GENERAL LAYOUT & BODY
+   =============================== */
+
 html, body {
-  height: 100%;
+	height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  font-size: medium;
-  background-color: #00000009;
+	margin: 0;
+	font-family: Roboto, "Helvetica Neue", sans-serif;
+	font-size: medium;
+	background-color: #00000009;
 }
 
 img {
-  max-width: 100%;
-  height: auto;
+	max-width: 100%;
+	height: auto;
 }
 
-button {
-  text-transform: uppercase !important;
-}
+/* ===============================
+   ANGULAR MATERIAL CUSTOMIZATIONS
+   =============================== */
 
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-mat-horizontal-stepper {
-  background: transparent !important;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
-mat-card-content mat-form-field label {
-  font-weight: bold;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
-mat-card-title {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  margin-bottom: 0.5% !important;
-  font-weight: initial !important;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
+/* Card Styles */
 mat-card {
-  margin: auto;
+	margin: auto;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
+mat-card-title {
+	padding-top: 1% !important;
+	padding-bottom: 1% !important;
+	margin-bottom: 0.5% !important;
+	font-weight: initial !important;
+}
+
+mat-card-content mat-form-field label {
+	font-weight: bold;
+}
+
 mat-card-actions {
-  margin-top: 1%;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
-.mat-radio-label {
-  white-space: normal !important;
+	margin-top: 1%;
 }
 
 .mat-mdc-card > .mat-mdc-card-actions:last-child {
-  margin-bottom: 1em !important;
+	margin-bottom: 1em !important;
 }
 
-.mat-mdc-dialog-container h2 {
-  font-weight: lighter;
-}
-
-.mat-mdc-dialog-container h2 {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  border-top: 1px solid rgba(0, 0, 0, .12);
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
-  font-weight: lighter !important;
-}
-
-.form-note {
-  margin: 0;
-}
-
-.angular-editor {
-  margin-bottom: 10px;
-}
-
-.highlight-green {
-  background-color: rgb(158, 255, 123);
-}
-
-.highlight-orange {
-  background-color: rgb(255, 127, 80);
-}
-
-.instruction-example {
-  margin-left: 2%;
-}
-
-.gray-background {
-  background-color: #F0F0F0;
-}
-
-.highlight-yellow {
-  background-color: #FFFF7B;
-}
-
-.remove-highlight {
-  background-color: #F36060;
-}
-
-.replace-highlight {
-  background-color: #FFA500;
-}
-
-.insert-highlight {
-  background-color: #DFF652;
-}
-
-.highlighted-green {
-  background-color: rgb(158, 255, 123);
-}
-
-.highlighted-orange {
-  background-color: rgb(255, 127, 80);
-}
-
-.image-example {
-  text-align: center;
-  text-decoration: solid;
-  margin: auto;
-  max-width: 70%;
-}
-
-.radio-button-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.radio-button-group-horizontal {
-  display: inline;
-}
-
-.radio-button {
-  margin-top: 3px;
-  margin-bottom: 3px;
-}
-
-.text-lighter {
-  font-weight: lighter;
-}
-
-.checkbox {
-  padding-left: 24px;
-  padding-bottom: 12px;
-}
-
-.initial {
-  font-weight: initial;
-}
-
-.lighter {
-  font-weight: lighter;
-}
-
-.border {
-  border: 1px solid #ddd;
-}
-
-.indent {
-  margin-left: 5px;
-}
-
-.double-indent {
-  margin-left: 12px;
-}
-
-.left {
-  text-align: left;
-}
-
-.center {
-  text-align: center;
-}
-
-.right {
-  align-self: flex-end;
-}
-
-.width-100 {
-  width: 100% !important;
-}
-
-.width-75 {
-  width: 75% !important;
-}
-
-.width-20 {
-  width: 20% !important;
-}
-
-.p-0 {
-  padding: 0 !important;
-}
-
-.p-2px {
-  padding: 2px !important;
-}
-
-.p-5px {
-  padding: 5px !important;
-}
-
-.p-16px {
-  padding: 16px !important;
-}
-
-.pr-16px {
-  padding-right: 16px !important;
-}
-
-.mt-0 {
-  margin-top: 0 !important;
-}
-
-.m-8px {
-  margin: 8px !important;
-}
-
-.mt-8px {
-  margin-top: 8px !important;
-}
-
-.mt-16px {
-  margin-top: 16px !important;
-}
-
-.mb-0 {
-  margin-bottom: 0 !important;
-}
-
-.mb-8px {
-  margin-bottom: 8px !important;
-}
-
-.mb-16px {
-  margin-bottom: 16px !important;
-}
-
-.mat-elevation-z3 {
-  box-shadow: 0px 3px 3px -2px rgba(0, 0, 0, 0.2),0px 3px 4px 0px rgba(0, 0, 0, 0.14),0px 1px 8px 0px rgba(0, 0, 0, 0.12) !important;
+/* Stepper & Progress Bar */
+mat-horizontal-stepper {
+	background: transparent !important;
 }
 
 .mat-horizontal-content-container {
-  overflow: visible !important;
-}
-.mdc-linear-progress__bar {
-  transition: transform 1000ms linear !important;
-}
-.countdown-dialog-backdrop {
-  background-color: rgba(0, 0, 0, 1) !important;
+	overflow: visible !important;
 }
 
-.skeleton {
-  background: #e2e5e7;
-  background-image: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.5),
-      rgba(255, 255, 255, 0)
-  );
-  background-size: 200% 100%;
-  background-repeat: no-repeat;
-  border-radius: 4px;
-  display: inline-block;
-  line-height: 1;
-  width: 100%;
-  animation: skeleton-loading 1.5s infinite;
+mat-progress-bar, .mdc-linear-progress__bar {
+	transition: transform 1000ms linear !important;
+	/* You may wish to separate mat-progress-bar's color customizations if any */
 }
-.skeleton-card{
-  min-height: 200px;
+
+.countdown-dialog-backdrop {
+	background-color: rgba(0, 0, 0, 1) !important;
+}
+
+/* Dialog & Expansion Panel */
+.mat-mdc-dialog-container h2 {
+	font-weight: lighter;
+	padding-top: 1% !important;
+	padding-bottom: 1% !important;
+	border-top: 1px solid rgba(0, 0, 0, .12);
+	border-bottom: 1px solid rgba(0, 0, 0, .12);
+	font-weight: lighter !important;
+}
+
+.generator-accordion mat-expansion-panel {
+	border-radius: 0;
+}
+
+/* Material List & Radio Customizations */
+.mat-radio-label {
+	white-space: normal !important;
+}
+
+mat-list-item.step-valid {
+	background-color: green;
+	color: white;
+}
+
+mat-list-item.step-invalid {
+	background-color: darkred;
+	color: white;
+}
+
+mat-list-item span {
+	color: white;
+}
+
+mat-list-item span.step-validity-check {
+	text-transform: uppercase;
+}
+
+/* ===============================
+   COMPONENT & FEATURE SECTIONS
+   =============================== */
+
+/* Form Notes & Editor */
+.form-note {
+	margin: 0;
+}
+
+.angular-editor {
+	margin-bottom: 10px;
+}
+
+/* Checkbox Group */
+.checkbox {
+	padding-left: 24px;
+	padding-bottom: 12px;
+}
+
+/* Radio Group */
+.radio-button-group {
+	display: flex;
+	flex-direction: column;
+}
+
+.radio-button-group-horizontal {
+	display: inline;
+}
+
+.radio-button {
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+/* Instruction Examples */
+.instruction-example {
+	margin-left: 2%;
+}
+
+/* Skeleton Loader */
+.skeleton {
+	background: #e2e5e7;
+	background-image: linear-gradient(
+					90deg,
+					rgba(255, 255, 255, 0),
+					rgba(255, 255, 255, 0.5),
+					rgba(255, 255, 255, 0)
+	);
+	background-size: 200% 100%;
+	background-repeat: no-repeat;
+	border-radius: 4px;
+	display: inline-block;
+	line-height: 1;
+	width: 100%;
+	animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-card {
+	min-height: 200px;
 }
 
 @keyframes skeleton-loading {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+/* Image Examples */
+.image-example {
+	text-align: center;
+	text-decoration: solid;
+	margin: auto;
+	max-width: 70%;
+}
+
+/* ===============================
+   COLOR UTILITY CLASSES
+   =============================== */
+
+.gray-background {
+	background-color: #F0F0F0;
+}
+
+.highlight-green,
+.highlighted-green {
+	background-color: rgb(158, 255, 123);
+}
+
+.highlight-orange,
+.highlighted-orange {
+	background-color: rgb(255, 127, 80);
+}
+
+.highlight-yellow {
+	background-color: #FFFF7B;
+}
+
+.remove-highlight {
+	background-color: #F36060;
+}
+
+.replace-highlight {
+	background-color: #FFA500;
+}
+
+.insert-highlight {
+	background-color: #DFF652;
+}
+
+/* ===============================
+   TYPOGRAPHY & SPACING UTILITIES
+   =============================== */
+
+.text-lighter {
+	font-weight: lighter;
+}
+
+.initial {
+	font-weight: initial;
+}
+
+.lighter {
+	font-weight: lighter;
+}
+
+.mt-0 {
+	margin-top: 0 !important;
+}
+
+.mt-8px {
+	margin-top: 8px !important;
+}
+
+.mt-16px {
+	margin-top: 16px !important;
+}
+
+.mb-0 {
+	margin-bottom: 0 !important;
+}
+
+.mb-8px {
+	margin-bottom: 8px !important;
+}
+
+.mb-16px {
+	margin-bottom: 16px !important;
+}
+
+.m-8px {
+	margin: 8px !important;
+}
+
+.p-0 {
+	padding: 0 !important;
+}
+
+.p-2px {
+	padding: 2px !important;
+}
+
+.p-5px {
+	padding: 5px !important;
+}
+
+.p-16px {
+	padding: 16px !important;
+}
+
+.pr-16px {
+	padding-right: 16px !important;
+}
+
+.width-100 {
+	width: 100% !important;
+}
+
+.width-75 {
+	width: 75% !important;
+}
+
+.width-20 {
+	width: 20% !important;
+}
+
+.border {
+	border: 1px solid #ddd;
+}
+
+.indent {
+	margin-left: 5px;
+}
+
+.double-indent {
+	margin-left: 12px;
+}
+
+.left {
+	text-align: left;
+}
+
+.center {
+	text-align: center;
+}
+
+.right {
+	align-self: flex-end;
+}
+
+/* ===============================
+   HIGHLIGHTED TEXT
+   =============================== */
+
+.highlight-green {
+	background-color: rgb(158, 255, 123);
+}
+
+.highlight-orange {
+	background-color: rgb(255, 127, 80);
+}
+
+.highlight-yellow {
+	background-color: #FFFF7B;
+}
+
+.remove-highlight {
+	background-color: #F36060;
+}
+
+.replace-highlight {
+	background-color: #FFA500;
+}
+
+.insert-highlight {
+	background-color: #DFF652;
+}
+
+.highlighted-green {
+	background-color: rgb(158, 255, 123);
+}
+
+.highlighted-orange {
+	background-color: rgb(255, 127, 80);
+}
+
+/* ===============================
+   MISC & CODE
+   =============================== */
+
+code {
+	font-size: 14px;
 }

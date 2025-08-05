@@ -1,5 +1,3 @@
-
-/* TODO(mdc-migration): The following rule targets internal classes of slider that may no longer apply for the MDC version. */
 mat-slider {
     width: 100%;
 }
@@ -12,13 +10,11 @@ mat-slider {
     align-items: center;
     justify-content: center;
 }
-/* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version. */
-.chat-input-button .mat-button-wrapper {
+.chat-input-button.mat-mdc-button {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
 button.active {
     background: var(--light) !important;
     color: var(--primary) !important;
@@ -27,30 +23,28 @@ button.inactive {
     background: var(--light) !important;
     color: var(--grey) !important;
 }
-
-/* TODO(mdc-migration): The following rule targets internal classes of slider that may no longer apply for the MDC version. */
-.mat-accent .mat-slider-track-fill {
-    background-color: var(--light) !important;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of slider that may no longer apply for the MDC version. */
-.mat-slider-thumb-label {
-    background-color: var(--light) !important;
-    color: var(--primary) !important;
-    border: var(--primary) solid 2px !important;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of slider that may no longer apply for the MDC version. */
-.mat-slider-thumb {
-    background-color: var(--light) !important;
-    color: var(--primary) !important;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of slider that may no longer apply for the MDC version. */
-.mat-slider-thumb-label-text {
-    opacity: 1 !important;
-    color: var(--primary) !important;
-}
 #min-max {
     color: var(--light);
+}
+
+.chat-slider {
+    /* Angular Material MDC slider CSS custom properties */
+    --mdc-slider-active-track-color:        var(--light);
+    --mdc-slider-handle-color:              var(--light);
+    --mdc-slider-label-container-color:     var(--light);
+    --mdc-slider-label-label-text-color:    var(--primary);
+
+    /* Optional (example): shape, thickness */
+    --mdc-slider-active-track-height:       6px;
+    /* If you want a border or shadow tweak, see Option B below */
+}
+
+::ng-deep .chat-slider .mdc-slider__thumb,
+::ng-deep .chat-slider .mdc-slider__thumb-knob {
+    border: 2px solid var(--primary) !important;
+}
+
+/* Optional: value indicator (bubble) tweaks if variables aren't enough */
+::ng-deep .chat-slider .mdc-slider__value-indicator {
+    border: 2px solid var(--primary) !important;
 }

@@ -1,4 +1,3 @@
-// TODO(strict-forms): auto-guarded by codemod – review if needed.
 import {Injectable} from "@angular/core";
 import {AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn} from "@angular/forms";
 

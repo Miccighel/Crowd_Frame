@@ -1,5 +1,3 @@
-// TODO(strict-forms): auto-guarded by codemod – review if needed.
-
 /* #################### IMPORTS #################### */
 
 /* Angular Core */

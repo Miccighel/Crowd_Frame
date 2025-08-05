@@ -1,4 +1,3 @@
-// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {from, mergeMap, Observable, of, toArray} from "rxjs";

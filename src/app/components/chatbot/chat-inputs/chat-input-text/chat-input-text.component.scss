@@ -1,4 +1,5 @@
 @import "material-icons/iconfont/material-icons.css";
+
 .chat-input-button {
     margin: 14px 12px;
     float: right;
@@ -7,18 +8,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version. */
-    .mat-button-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
 }
 
 .chat-input-text input {
     padding: 0 0 0 14px;
     border: none;
     width: 100%;
+
     &::placeholder {
         color: var(--transparentLight);
     }
@@ -30,10 +26,10 @@
 
     background: none !important;
     color: var(--light);
+}
 
-    .input-active .floating-label {
-        color: var(--transparentLight);
-    }
+.input-active .floating-label {
+    color: var(--transparentLight);
 }
 
 button {

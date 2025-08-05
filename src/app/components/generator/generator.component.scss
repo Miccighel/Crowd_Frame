@@ -1,14 +1,11 @@
 /* |--- GENERAL STYLES --| */
 
-
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card {
   margin-right: 1%;
   margin-left: 1%;
   margin-bottom: 1%;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-content {
   margin: 1%;
 }
@@ -17,55 +14,40 @@ mat-card-header mat-card-title {
   margin-bottom: 1%;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-actions {
   margin: 1%;
   padding-top: 1%;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of progress-bar that may no longer apply for the MDC version. */
 mat-progress-bar {
   background-color: #76ff03;
   color: #76ff03;
 }
 
-#cloneTask {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  z-index: 100;
-}
-
 /* |--- STEP 6: TASK SETTINGS - STYLES  --| */
 
 .hit-attributes {
-  /* TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version. */
   mat-checkbox {
     width: 150px;
   }
-
 }
 
 /* |--- STEP 8: SUMMARY - STYLES  --| */
 
-/* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version. */
 mat-list-item.step-valid {
   background-color: green;
   color: white;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version. */
 mat-list-item.step-invalid {
   background-color: darkred;
   color: white;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version. */
 mat-list-item span {
   color: white;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version. */
 mat-list-item span.step-validity-check {
   text-transform: uppercase;
 }
@@ -76,4 +58,11 @@ mat-list-item span.step-validity-check {
 
 code {
   font-size: 14px;
+}
+
+#cloneTask {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
 }

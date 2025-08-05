@@ -1,36 +1,46 @@
-<div class="row" [ngClass]="readOnly ? 'input-inactive' : 'input-active'"id="inputComponent">
-    <div class="col-2 d-flex align-items-center" id="min-max">
-        Min:&nbsp; {{ range[0] }}
-    </div>
-    <div class="col-6 d-flex align-items-center">
-        <mat-slider
-            thumbLabel
-            [min]="range[0]"
-            [max]="range[1]"
-            [step]="step"
-            [displayWith]="formatLabel"
-             #ngSlider><input matSliderThumb (input)="onInputChange({source: ngSliderThumb, parent: ngSlider, value: ngSliderThumb.value})" #ngSliderThumb="matSliderThumb" /><input matSliderThumb [value]="value"
-        /></mat-slider>
-    </div>
-    <div class="col-2 d-flex align-items-center" id="min-max">
-        Max:&nbsp; {{ range[1] }}
-    </div>
-    <div class="col-2">
-        <button
-            mat-mini-fab
-            type="submit"
-            class="chat-input-button"
-            [disabled]="readOnly"
-            [ngClass]="readOnly ? 'inactive' : 'active'"
-            (click)="onSubmit()"
-            
-        >
-            <mat-icon
-                aria-hidden="false"
-                aria-label="Send message"
-                fontIcon="send"
-                >send</mat-icon
-            >
-        </button>
-    </div>
+<div class="row" [ngClass]="readOnly ? 'input-inactive' : 'input-active'" id="inputComponent">
+	<div class="col-2 d-flex align-items-center" id="min-max">
+		Min:&nbsp; {{ range[0] }}
+	</div>
+	<div class="col-6 d-flex align-items-center">
+		<mat-slider
+				class="chat-slider mat-accent"
+				thumbLabel
+				[min]="range[0]"
+				[max]="range[1]"
+				[step]="step"
+				[displayWith]="formatLabel"
+                #ngSlider
+		>
+			<input
+					matSliderThumb
+					(input)="onInputChange({source: ngSliderThumb, parent: ngSlider, value: ngSliderThumb.value})"
+                    #ngSliderThumb="matSliderThumb"
+			/>
+			<input matSliderThumb [value]="value"/>
+		</mat-slider>
+	</div>
+
+	<div class="col-2 d-flex align-items-center" id="min-max">
+		Max:&nbsp; {{ range[1] }}
+	</div>
+	<div class="col-2">
+		<button
+				mat-mini-fab
+				type="submit"
+				class="chat-input-button"
+				[disabled]="readOnly"
+				[ngClass]="readOnly ? 'inactive' : 'active'"
+				(click)="onSubmit()"
+
+		>
+			<mat-icon
+					aria-hidden="false"
+					aria-label="Send message"
+					fontIcon="send"
+			>send
+			</mat-icon
+			>
+		</button>
+	</div>
 </div>

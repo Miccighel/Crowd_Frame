@@ -1,4 +1,3 @@
-// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Core */
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 import {

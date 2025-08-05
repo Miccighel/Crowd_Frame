@@ -7,7 +7,6 @@
  *  − Original repeat / dependency / serialisation logic preserved.
  *  ########################################################################### */
 
-// TODO(strict-forms): auto-guarded by codemod – reviewed & finalised.
 import {
     ChangeDetectorRef,
     Component,

@@ -1,4 +1,3 @@
-// TODO(strict-forms): auto-guarded by codemod – review if needed.
 /* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
