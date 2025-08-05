@@ -420,22 +420,20 @@ export class SearchEngineBodyComponent implements OnInit, AfterViewInit {
                 this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.preRetrievedResults.length;
                 this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.preRetrievedResults.length;
                 this.searchInProgress = false;
-                if (!this.previousDataRecord) {
-                    for (let preRetrievedResult of this.preRetrievedResults) {
-                        let baseResponse = new BaseResponse(preRetrievedResult.pageUrl, preRetrievedResult.pageName, preRetrievedResult.pageSnippet, false);
-                        baseResponse.setParameter('resultUUID', preRetrievedResult.resultUUID);
-                        this.baseResponses.push(baseResponse);
-                    }
-                    this.resultEmitter.emit({
-                        "decodedResponses": this.baseResponses,
-                        "estimatedMatches": this.estimatedMatches,
-                        "resultsRetrieved": this.preRetrievedResults.length,
-                        "resultsToSkip": resultsToSkip,
-                        "resultsAmount": this.resultsAmount,
-                        "pageIndex": this.paginator.pageIndex,
-                        "pageSize": this.paginator.pageSize,
-                    });
+                for (let preRetrievedResult of this.preRetrievedResults) {
+                    let baseResponse = new BaseResponse(preRetrievedResult.pageUrl, preRetrievedResult.pageName, preRetrievedResult.pageSnippet, false);
+                    baseResponse.setParameter('resultUUID', preRetrievedResult.resultUUID);
+                    this.baseResponses.push(baseResponse);
                 }
+                this.resultEmitter.emit({
+                    "decodedResponses": this.baseResponses,
+                    "estimatedMatches": this.estimatedMatches,
+                    "resultsRetrieved": this.preRetrievedResults.length,
+                    "resultsToSkip": resultsToSkip,
+                    "resultsAmount": this.resultsAmount,
+                    "pageIndex": this.paginator.pageIndex,
+                    "pageSize": this.paginator.pageSize,
+                });
                 return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
             });
         }

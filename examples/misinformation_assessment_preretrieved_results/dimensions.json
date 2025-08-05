@@ -1,0 +1,61 @@
+[
+	{
+		"name": "truthfulness",
+		"gold": true,
+		"justification": false,
+		"url": {
+			"enable": true,
+			"instructions": {
+				"label": "B",
+				"caption": "Use the results from the search engine provided below and select the most relevant one.",
+				"text": false
+			}
+		},
+		"scale": {
+			"type": "categorical",
+			"instructions": {
+				"label": "C",
+				"caption": "Now, evaluate the overall truthfulness of the statement",
+				"text": false
+			},
+			"mapping": [
+				{
+					"label": "Lie",
+					"description": "",
+					"value": "0"
+				},
+				{
+					"label": "False",
+					"description": "",
+					"value": "1"
+				},
+				{
+					"label": "Barely True",
+					"description": "",
+					"value": "2"
+				},
+				{
+					"label": "Half True",
+					"description": "",
+					"value": "3"
+				},
+				{
+					"label": "Mostly True",
+					"description": "",
+					"value": "4"
+				},
+				{
+					"label": "True",
+					"description": "",
+					"value": "5"
+				}
+			]
+		},
+		"style": {
+			"type": "list",
+			"position": "top",
+			"orientation": "vertical",
+			"separator": true
+		}
+	}
+]

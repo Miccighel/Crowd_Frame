@@ -1,0 +1,12 @@
+{
+    "instructions": [
+        {
+            "caption": "A - Read the statement carefully",
+            "text": "",
+            "task_type": [
+                "Main"
+            ]
+        }
+    ],
+    "element": false
+}

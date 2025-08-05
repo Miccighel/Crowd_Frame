@@ -1,0 +1,406 @@
+{
+    "source": "BingWebSearch",
+    "domains_filter": [],
+    "results_retrieved": {
+        "GOLD_HIGH": [
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "c3093555-5dfc-42c7-a42e-524648ffea44",
+                "page_name": "Fact-check: Is Abbott right Texas has 90% high school graduation rate?",
+                "page_snippet": "0:00. 1:16. Gov. Greg Abbott: Texas' public high school graduation rate is at 90% overall. PolitiFact Texas ruling: True. Here's why: Gov. Greg Abbott's reelection campaign lauded education in ...",
+                "page_url": "https://www.statesman.com/story/news/politics/politifact/2022/07/03/fact-check-abbott-right-texas-has-90-high-school-graduation-rate/9862957002/",
+                "page_summary": "<ul><li>Gov. Greg Abbott's campaign claimed that Texas' public high school graduation rate is at 90% overall.</li><li>According to the Texas Education Agency, the four-year longitudinal graduation rate for the class of 2016-2017 was 90.3%.</li><li>This means that 90.3% of students who started ninth grade in 2016-2017 graduated within four years, while the remaining 10% either continued school, received a high school equivalency certificate, or dropped out.</li><li>The graduation rate varies by demographic group, with economically disadvantaged students graduating at a slightly lower rate (87.5%) than non-economically disadvantaged students (93.5%).</li><li>Abbott and his predecessor Rick Perry have long highlighted Texas' high school graduation rate as a success story for the state's education system.</li><li>Experts attribute the improvement in graduation rates to a variety of factors, including the state's aggressive approach to turning around low-performing high schools and the adoption of career- and college-readiness models.</li></ul>",
+                "page_title": "Fact-check: Is Abbott right Texas has 90% high school graduation rate?",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "52365d64-321c-47a1-adc8-8089263aa75f",
+                "page_name": "Fact-check: Does Texas have a 90% high school graduation rate?",
+                "page_snippet": "Gov. Greg Abbott’s reelection campaign lauded education in Texas, with a May 15 video touting Blue Ribbon public schools, U.S. News ranking four Texas high schools among the top 50 STEM high schools, and the Texas public high school graduation rate. “Governor @GregAbbott_TX has lead education to a brighter future,” Abbott’s campaign ...",
+                "page_url": "https://www.texasstandard.org/stories/fact-check-does-texas-have-a-90-high-school-graduation-rate/",
+                "page_summary": "<ul><li>The document discusses the fact-check of Texas' public high school graduation rate, which is reported to be at 90% overall.</li><li>The article cites data from the Texas Education Agency to support the claim.</li><li>The report also mentions the Governor's campaign touting the state's education system and the high school graduation rate.</li><li>The article concludes that the claim of a 90% high school graduation rate in Texas is accurate.</li></ul>",
+                "page_title": " Fact-check: Does Texas have a 90% high school graduation rate? |  Texas Standard",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "88ed8842-13f7-441a-bfd3-7fb91b68d3a6",
+                "page_name": "COE - Public High School Graduation Rates - National Center for ...",
+                "page_snippet": "In school year 2019–20, the U.S. average adjusted cohort graduation rate (ACGR) for public high school students was 87 percent, the highest it has been since the rate was first measured in 2010–11 (79 percent). Asian/Pacific Islander students had the highest ACGR (93 percent), followed by White (90 percent), Hispanic (83 percent), Black (81 ...",
+                "page_url": "https://nces.ed.gov/programs/coe/indicator/coi/high-school-graduation-rates",
+                "page_summary": "<ul><li>The document discusses the adjusted cohort graduation rate (ACGR) for public high school students in the United States, with a focus on the overall rate and rates for different racial/ethnic groups.</li><li>The ACGR for public high school students in Texas is not available due to non-reporting.</li><li>The document provides information on the ACGR for different states and the District of Columbia, including the range of ACGRs and the difference between 2018-19 and 2019-20.</li><li>The ACGR for students of different racial/ethnic groups is also provided, showing that the ACGR varies by group.</li><li>The document notes that the ACGR has increased over time, from 79% in 2010-11 to 87% in 2019-20, with an average increase of about 1 percentage point per year.</li></ul>",
+                "page_title": "COE - Public High School Graduation Rates - National Center for ...",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "c5f84e72-d4c6-4013-b183-d13ef0927955",
+                "page_name": "Completion, Graduation, and Dropout | Texas Education Agency",
+                "page_snippet": "Completion, Graduation, and Dropout. The Texas Education Agency (TEA) produces a variety of resources related to graduates and dropouts in Texas public schools, including data and information on longitudinal graduation and dropout rates, annual dropout rates, annual leavers, individual graduation committees, graduation summaries, year-to-year ...",
+                "page_url": "https://tea.texas.gov/reports-and-data/school-performance/accountability-research/completion-graduation-and-dropout",
+                "page_summary": "<ul><li>The Texas Education Agency provides information on completion, graduation, and dropout rates for Texas public high schools.</li><li>The overall graduation rate for Texas public high schools is 90%.</li><li>The agency also provides information on student demographics, academic performance, and college readiness.</li><li>Additionally, the agency offers resources for parents and students, such as financial aid and scholarships.</li><li>The website also includes data on teacher certification and evaluations.</li></ul>",
+                "page_title": "Completion, Graduation, and Dropout | Texas Education Agency",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "a8c14e4e-0e0c-4364-a163-ecb50abd220a",
+                "page_name": "| Office of the Texas Governor | Greg Abbott",
+                "page_snippet": "Texas is home to 11 of the top 100 public high schools. Texas is home to four of the top 50 STEM public high schools in the nation. Texas teachers are among the best in the nation. More than 330,000 Texas students took AP exams in 2023; 54% were Black or Hispanic students. Texas’ high school graduation rate is among the highest in the nation.",
+                "page_url": "https://gov.texas.gov/top-texas-touts-education",
+                "page_summary": "<ul><li>Texas has a high graduation rate</li><li>Texas has many top-ranked universities</li><li>Texas has a strong education system</li><li>Texas has a large number of students taking AP exams</li><li>Texas has a diverse student population</li></ul>",
+                "page_title": " | Office of the Texas Governor | Greg Abbott",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "bc54c454-b02d-47ad-92d1-7a6ebf9c001b",
+                "page_name": "Completion, Graduation, and Dropout Data - Texas Education Agency",
+                "page_snippet": "The annual dropout rate is the percentage of students in a specified grade range who drop out of school during one school year. This data set includes both the number and rate of annual dropouts for all Grade 7-12 students and various student groups. Annual dropout data searches and downloads are available for the following years.",
+                "page_url": "https://tea.texas.gov/reports-and-data/school-performance/accountability-research/completion-graduation-and-dropout/completion-graduation-and-dropout-data",
+                "page_summary": "<ul><li>The Texas public high school graduation rate is at 90% overall.</li><li>The class of 2022 has a four-year graduation rate of 90.3%.</li><li>The class of 2021 has a four-year graduation rate of 89.3%.</li><li>The class of 2020 has a four-year graduation rate of 88.3%.</li><li>The class of 2019 has a four-year graduation rate of 87.3%.</li><li>The class of 2018 has a four-year graduation rate of 86.3%.</li><li>The class of 2017 has a four-year graduation rate of 85.3%.</li><li>The class of 2016 has a four-year graduation rate of 84.3%.</li><li>The class of 2015 has a four-year graduation rate of 83.3%.</li><li>The class of 2014 has a four-year graduation rate of 82.3%.</li><li>The class of 2013 has a four-year graduation rate of 81.3%.</li><li>The class of 2012 has a four-year graduation rate of 80.3%.</li><li>The class of 2011 has a four-year graduation rate of 79.3%.</li><li>The class of 2010 has a four-year graduation rate of 78.3%.</li><li>The class of 2009 has a four-year graduation rate of 77.3%.</li><li>The class of 2008 has a four-year graduation rate of 76.3%.</li><li>The class of 2007 has a four-year graduation rate of 75.3%.</li><li>The class of 2006 has a four-year graduation rate of 74.3%.</li><li>The class of 2005 has a four-year graduation rate of 73.3%.</li><li>The class of 2004 has a four-year graduation rate of 72.3%.</li><li>The class of 2003 has a four-year graduation rate of 71.3%.</li><li>The class of 2002 has a four-year graduation rate of 70.3%.</li><li>The class of 2001 has a four-year graduation rate of 69.3%.</li><li>The class of 2000 has a four-year graduation rate of 68.3%.</li></ul>",
+                "page_title": "Completion, Graduation, and Dropout Data - Texas Education Agency",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "cc351e79-0932-41a6-9f44-de0e823a5f3e",
+                "page_name": "Four-Year Graduation and Dropout Data, Class of 2020",
+                "page_snippet": "The Excel (.xlsx) files below include four-year graduation and dropout data by race/ethnicity, gender, economic status, and other student groups (e.g., at-risk and English learners) for all campuses, districts, or counties in the state. Each file includes three worksheets that can be accessed using the tabs at the bottom of the workbook.",
+                "page_url": "https://tea.texas.gov/reports-and-data/school-performance/accountability-research/completion-graduation-and-dropout/four-year-graduation-and-dropout-data-class-of-2020",
+                "page_summary": "<ul><li>The document is about the four-year graduation and dropout data for the class of 2020 in Texas.</li><li>The graduation rate for the class of 2020 is 90% overall.</li><li>The document provides data on graduation and dropout rates by race/ethnicity, gender, economic status, and other student groups.</li><li>The data is presented in three worksheets: campus-level data, district-level data, and county-level data.</li><li>The document also includes an overview of the data and a data dictionary defining the variable names in the dataset.</li></ul>",
+                "page_title": "Four-Year Graduation and Dropout Data, Class of 2020 | Texas Education Agency",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "f4fe86ce-843c-4271-826b-464197b0d8eb",
+                "page_name": "The 10-year graduation rate shows year-over-year gains, ranking Texas ...",
+                "page_snippet": "According to the Texas Education Agency (TEA), the four-year public high school graduation rates in Texas have been trending upward for more than ten years. From 2010 to 2020, graduation rates have improved each year, increasing from 84.3% to 90.3%, ranking 3rd nationally. Sources: TEA.Texas.gov.",
+                "page_url": "https://www.fotps.org/post/the-10-year-graduation-rate-shows-year-over-year-gains-ranking-texas-3rd-nationally-1",
+                "page_summary": "<ul><li>Texas public high school graduation rate has increased over the past decade</li><li>Graduation rate is now at 90.3%</li><li>Texas ranks 3rd nationally for graduation rate</li><li>Improvement seen each year from 2010 to 2020</li><li>Source: Texas Education Agency (TEA)</li></ul>",
+                "page_title": "The 10-year graduation rate shows year-over-year gains, ranking Texas 3rd nationally",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "471fe208-73de-4ba9-891b-a3131910947c",
+                "page_name": "SA2020 | Increase High School Graduation | SA2020",
+                "page_snippet": "Bexar County's high school graduation rate improved year-over-year from 2010 to 2020. In 2021, it dipped for the first time. In 2022, that decline continued. ... 90%: 2021: 88%: 2022: 88%: straightenUnit of Measurement. High School Graduation Rate. history_eduSource. Texas Education Agency. mapGeography. Bexar County School Districts and ...",
+                "page_url": "https://sa2020.org/indicator/high-school-graduation",
+                "page_summary": "<ul><li>The document discusses the improvement of high school graduation rates in Bexar County, Texas.</li><li>The graduation rate has increased to 90%, with a slight dip in 2021 and 2022 due to the COVID-19 pandemic.</li><li>There are racial inequities in education, with Asian and white students having a higher graduation rate than Hispanic and African American students.</li><li>SA2020 promotes best practices in collecting inclusive demographic data and encourages the use of data to drive decisions.</li></ul>",
+                "page_title": "SA2020 | Increase High School Graduation | SA2020",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "74d37f50-6001-4ded-8a54-9f6c6455c022",
+                "page_name": "Texas | Texas Public Schools | The Texas Tribune",
+                "page_snippet": "As of the 2021-2022 school year, there were 5,402,928 students in Texas.53.5% of students were considered at risk of dropping out of school, and 21.9% of students were enrolled in bilingual and English language learning programs.. In the Class of 2021, 90% of students received their high school diploma on time or earlier. The dropout rate for students in grades 9-12 was 2.4% during the 2020 ...",
+                "page_url": "https://schools.texastribune.org/states/tx/",
+                "page_summary": "<ul><li>The document provides information on the public high school graduation rate in Texas, with a focus on the class of 2021. The graduation rate is reported as 90%, with 53.5% of students considered at risk of dropping out of school. The document also includes demographic information on the student population, such as race and ethnicity, and highlights the percentage of students enrolled in certain programs, including bilingual and English language learning programs. Additionally, the document provides information on academic performance, including SAT and ACT scores, and the average teacher salary and experience. Finally, the document includes information on higher education outcomes and dropout rates for students in grades 9-12.</li></ul>",
+                "page_title": "Texas | Texas Public Schools | The Texas Tribune",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "c3093555-5dfc-42c7-a42e-524648ffea44",
+                "page_name": "Fact-check: Is Abbott right Texas has 90% high school graduation rate?",
+                "page_snippet": "0:00. 1:16. Gov. Greg Abbott: Texas' public high school graduation rate is at 90% overall. PolitiFact Texas ruling: True. Here's why: Gov. Greg Abbott's reelection campaign lauded education in ...",
+                "page_url": "https://www.statesman.com/story/news/politics/politifact/2022/07/03/fact-check-abbott-right-texas-has-90-high-school-graduation-rate/9862957002/",
+                "page_summary": "<ul><li>Gov. Greg Abbott's campaign claimed that Texas' public high school graduation rate is at 90% overall.</li><li>According to the Texas Education Agency, the four-year longitudinal graduation rate for the class of 2016-2017 was 90.3%.</li><li>This means that 90.3% of students who started ninth grade in 2016-2017 graduated within four years, while the remaining 10% either continued school, received a high school equivalency certificate, or dropped out.</li><li>The graduation rate varies by demographic group, with economically disadvantaged students graduating at a slightly lower rate (87.5%) than non-economically disadvantaged students (93.5%).</li><li>Abbott and his predecessor Rick Perry have long highlighted Texas' high school graduation rate as a success story for the state's education system.</li><li>Experts attribute the improvement in graduation rates to a variety of factors, including the state's aggressive approach to turning around low-performing high schools and the adoption of career- and college-readiness models.</li></ul>",
+                "page_title": "Fact-check: Is Abbott right Texas has 90% high school graduation rate?",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "52365d64-321c-47a1-adc8-8089263aa75f",
+                "page_name": "Fact-check: Does Texas have a 90% high school graduation rate?",
+                "page_snippet": "Gov. Greg Abbott’s reelection campaign lauded education in Texas, with a May 15 video touting Blue Ribbon public schools, U.S. News ranking four Texas high schools among the top 50 STEM high schools, and the Texas public high school graduation rate. “Governor @GregAbbott_TX has lead education to a brighter future,” Abbott’s campaign ...",
+                "page_url": "https://www.texasstandard.org/stories/fact-check-does-texas-have-a-90-high-school-graduation-rate/",
+                "page_summary": "<ul><li>The document discusses the fact-check of Texas' public high school graduation rate, which is reported to be at 90% overall.</li><li>The article cites data from the Texas Education Agency to support the claim.</li><li>The report also mentions the Governor's campaign touting the state's education system and the high school graduation rate.</li><li>The article concludes that the claim of a 90% high school graduation rate in Texas is accurate.</li></ul>",
+                "page_title": " Fact-check: Does Texas have a 90% high school graduation rate? |  Texas Standard",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "88ed8842-13f7-441a-bfd3-7fb91b68d3a6",
+                "page_name": "COE - Public High School Graduation Rates - National Center for ...",
+                "page_snippet": "In school year 2019–20, the U.S. average adjusted cohort graduation rate (ACGR) for public high school students was 87 percent, the highest it has been since the rate was first measured in 2010–11 (79 percent). Asian/Pacific Islander students had the highest ACGR (93 percent), followed by White (90 percent), Hispanic (83 percent), Black (81 ...",
+                "page_url": "https://nces.ed.gov/programs/coe/indicator/coi/high-school-graduation-rates",
+                "page_summary": "<ul><li>The document discusses the adjusted cohort graduation rate (ACGR) for public high school students in the United States, with a focus on the overall rate and rates for different racial/ethnic groups.</li><li>The ACGR for public high school students in Texas is not available due to non-reporting.</li><li>The document provides information on the ACGR for different states and the District of Columbia, including the range of ACGRs and the difference between 2018-19 and 2019-20.</li><li>The ACGR for students of different racial/ethnic groups is also provided, showing that the ACGR varies by group.</li><li>The document notes that the ACGR has increased over time, from 79% in 2010-11 to 87% in 2019-20, with an average increase of about 1 percentage point per year.</li></ul>",
+                "page_title": "COE - Public High School Graduation Rates - National Center for ...",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "c5f84e72-d4c6-4013-b183-d13ef0927955",
+                "page_name": "Completion, Graduation, and Dropout | Texas Education Agency",
+                "page_snippet": "Completion, Graduation, and Dropout. The Texas Education Agency (TEA) produces a variety of resources related to graduates and dropouts in Texas public schools, including data and information on longitudinal graduation and dropout rates, annual dropout rates, annual leavers, individual graduation committees, graduation summaries, year-to-year ...",
+                "page_url": "https://tea.texas.gov/reports-and-data/school-performance/accountability-research/completion-graduation-and-dropout",
+                "page_summary": "<ul><li>The Texas Education Agency provides information on completion, graduation, and dropout rates for Texas public high schools.</li><li>The overall graduation rate for Texas public high schools is 90%.</li><li>The agency also provides information on student demographics, academic performance, and college readiness.</li><li>Additionally, the agency offers resources for parents and students, such as financial aid and scholarships.</li><li>The website also includes data on teacher certification and evaluations.</li></ul>",
+                "page_title": "Completion, Graduation, and Dropout | Texas Education Agency",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "bc54c454-b02d-47ad-92d1-7a6ebf9c001b",
+                "page_name": "Completion, Graduation, and Dropout Data - Texas Education Agency",
+                "page_snippet": "The annual dropout rate is the percentage of students in a specified grade range who drop out of school during one school year. This data set includes both the number and rate of annual dropouts for all Grade 7-12 students and various student groups. Annual dropout data searches and downloads are available for the following years.",
+                "page_url": "https://tea.texas.gov/reports-and-data/school-performance/accountability-research/completion-graduation-and-dropout/completion-graduation-and-dropout-data",
+                "page_summary": "<ul><li>The Texas public high school graduation rate is at 90% overall.</li><li>The class of 2022 has a four-year graduation rate of 90.3%.</li><li>The class of 2021 has a four-year graduation rate of 89.3%.</li><li>The class of 2020 has a four-year graduation rate of 88.3%.</li><li>The class of 2019 has a four-year graduation rate of 87.3%.</li><li>The class of 2018 has a four-year graduation rate of 86.3%.</li><li>The class of 2017 has a four-year graduation rate of 85.3%.</li><li>The class of 2016 has a four-year graduation rate of 84.3%.</li><li>The class of 2015 has a four-year graduation rate of 83.3%.</li><li>The class of 2014 has a four-year graduation rate of 82.3%.</li><li>The class of 2013 has a four-year graduation rate of 81.3%.</li><li>The class of 2012 has a four-year graduation rate of 80.3%.</li><li>The class of 2011 has a four-year graduation rate of 79.3%.</li><li>The class of 2010 has a four-year graduation rate of 78.3%.</li><li>The class of 2009 has a four-year graduation rate of 77.3%.</li><li>The class of 2008 has a four-year graduation rate of 76.3%.</li><li>The class of 2007 has a four-year graduation rate of 75.3%.</li><li>The class of 2006 has a four-year graduation rate of 74.3%.</li><li>The class of 2005 has a four-year graduation rate of 73.3%.</li><li>The class of 2004 has a four-year graduation rate of 72.3%.</li><li>The class of 2003 has a four-year graduation rate of 71.3%.</li><li>The class of 2002 has a four-year graduation rate of 70.3%.</li><li>The class of 2001 has a four-year graduation rate of 69.3%.</li><li>The class of 2000 has a four-year graduation rate of 68.3%.</li></ul>",
+                "page_title": "Completion, Graduation, and Dropout Data - Texas Education Agency",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "a8c14e4e-0e0c-4364-a163-ecb50abd220a",
+                "page_name": "| Office of the Texas Governor | Greg Abbott",
+                "page_snippet": "Texas is home to 11 of the top 100 public high schools. Texas is home to four of the top 50 STEM public high schools in the nation. Texas teachers are among the best in the nation. More than 330,000 Texas students took AP exams in 2023; 54% were Black or Hispanic students. Texas’ high school graduation rate is among the highest in the nation.",
+                "page_url": "https://gov.texas.gov/top-texas-touts-education",
+                "page_summary": "<ul><li>Texas has a high graduation rate</li><li>Texas has many top-ranked universities</li><li>Texas has a strong education system</li><li>Texas has a large number of students taking AP exams</li><li>Texas has a diverse student population</li></ul>",
+                "page_title": " | Office of the Texas Governor | Greg Abbott",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "f4fe86ce-843c-4271-826b-464197b0d8eb",
+                "page_name": "The 10-year graduation rate shows year-over-year gains, ranking Texas ...",
+                "page_snippet": "According to the Texas Education Agency (TEA), the four-year public high school graduation rates in Texas have been trending upward for more than ten years. From 2010 to 2020, graduation rates have improved each year, increasing from 84.3% to 90.3%, ranking 3rd nationally. Sources: TEA.Texas.gov.",
+                "page_url": "https://www.fotps.org/post/the-10-year-graduation-rate-shows-year-over-year-gains-ranking-texas-3rd-nationally-1",
+                "page_summary": "<ul><li>Texas public high school graduation rate has increased over the past decade</li><li>Graduation rate is now at 90.3%</li><li>Texas ranks 3rd nationally for graduation rate</li><li>Improvement seen each year from 2010 to 2020</li><li>Source: Texas Education Agency (TEA)</li></ul>",
+                "page_title": "The 10-year graduation rate shows year-over-year gains, ranking Texas 3rd nationally",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "471fe208-73de-4ba9-891b-a3131910947c",
+                "page_name": "SA2020 | Increase High School Graduation | SA2020",
+                "page_snippet": "Bexar County's high school graduation rate improved year-over-year from 2010 to 2020. In 2021, it dipped for the first time. In 2022, that decline continued. ... 90%: 2021: 88%: 2022: 88%: straightenUnit of Measurement. High School Graduation Rate. history_eduSource. Texas Education Agency. mapGeography. Bexar County School Districts and ...",
+                "page_url": "https://sa2020.org/indicator/high-school-graduation",
+                "page_summary": "<ul><li>The document discusses the improvement of high school graduation rates in Bexar County, Texas.</li><li>The graduation rate has increased to 90%, with a slight dip in 2021 and 2022 due to the COVID-19 pandemic.</li><li>There are racial inequities in education, with Asian and white students having a higher graduation rate than Hispanic and African American students.</li><li>SA2020 promotes best practices in collecting inclusive demographic data and encourages the use of data to drive decisions.</li></ul>",
+                "page_title": "SA2020 | Increase High School Graduation | SA2020",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            },
+            {
+                "fact_check_id": "GOLD_HIGH",
+                "result_uuid": "74d37f50-6001-4ded-8a54-9f6c6455c022",
+                "page_name": "Texas | Texas Public Schools | The Texas Tribune",
+                "page_snippet": "As of the 2021-2022 school year, there were 5,402,928 students in Texas.53.5% of students were considered at risk of dropping out of school, and 21.9% of students were enrolled in bilingual and English language learning programs.. In the Class of 2021, 90% of students received their high school diploma on time or earlier. The dropout rate for students in grades 9-12 was 2.4% during the 2020 ...",
+                "page_url": "https://schools.texastribune.org/states/tx/",
+                "page_summary": "<ul><li>The document provides information on the public high school graduation rate in Texas, with a focus on the class of 2021. The graduation rate is reported as 90%, with 53.5% of students considered at risk of dropping out of school. The document also includes demographic information on the student population, such as race and ethnicity, and highlights the percentage of students enrolled in certain programs, including bilingual and English language learning programs. Additionally, the document provides information on academic performance, including SAT and ACT scores, and the average teacher salary and experience. Finally, the document includes information on higher education outcomes and dropout rates for students in grades 9-12.</li></ul>",
+                "page_title": "Texas | Texas Public Schools | The Texas Tribune",
+                "query_text": "Texas' public high school graduation rate is at 90% overall."
+            }
+        ],
+        "GOLD_LOW": [
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "75c17019-742d-4cd7-bd37-b90136cbb65a",
+                "page_name": "A Putin spokesman says 'Russia has never attacked anyone ... - Poynter",
+                "page_snippet": "Peskov said, “Russia has never attacked anyone throughout its history.” Historians cite upwards of a dozen examples dating back to the 1500s in which Russia or the Soviet Union attacked ...",
+                "page_url": "https://www.poynter.org/fact-checking/2022/russia-never-attacked-anyone-false/",
+                "page_summary": "<ul><li>Russian President Vladimir Putin's spokesman claimed that Russia has never attacked anyone in history.</li><li>However, historians have cited numerous examples of Russian attacks dating back to the 1500s.</li><li>Examples include the Russian Empire's expansion into various territories throughout history.</li><li>The claim is considered 'blatantly false' and'very familiar' from Soviet-era textbooks.</li><li>Historians agree that the statement ignores centuries of Russian attacks.</li></ul>",
+                "page_title": "A Putin spokesman says 'Russia has never attacked anyone.' That statement ignores centuries of Russian attacks. - Poynter",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "313703e5-92ff-4125-9bb0-75b658377866",
+                "page_name": "Fact check: Putin spokesman says Russia 'never attacked anyone ... - WRAL",
+                "page_snippet": "\"We remind you that Russia has never attacked anyone throughout its history,\" Dmitry Peskov said in an interview on the Russia-1 television channel, according to the Russian news service TASS.",
+                "page_url": "https://www.wral.com/story/fact-check-putin-spokesman-says-russia-never-attacked-anyone-throughout-its-history/20158983/",
+                "page_summary": "<ul><li>The document is a fact check of a statement made by a spokesperson for Russian President Vladimir Putin, claiming that Russia has never attacked anyone throughout its history.</li><li>Historians cite upwards of a dozen examples dating back to the 1500s in which Russia or the Soviet Union attacked another country without being militarily attacked first.</li><li>The statement is rated as 'Pants on Fire' because it is false and misleading.</li><li>The document provides evidence and context to challenge the statement and provide a more accurate understanding of Russia's history of military actions.</li></ul>",
+                "page_title": "Fact check: Putin spokesman says Russia 'never attacked anyone throughout its history'",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "41b104c3-cbc2-4b1c-bbfc-a79ad5ca4b63",
+                "page_name": "The claim that \"Russia, throughout all of its history, has never ...",
+                "page_snippet": "He made this claim on February 20th on Russian state television, a day before Russia formally recognized the independence of two separatist territories in Eastern Ukraine. The video can be seen ...",
+                "page_url": "https://www.newswise.com/articles/the-claim-that-russia-throughout-all-of-its-history-has-never-attacked-anyone-is-false",
+                "page_summary": "<ul><li>The claim that Russia has never attacked anyone is false.</li><li>Russia has a history of provoking war and military aggression against its neighbors.</li><li>Russia has attacked Moldova, Georgia, and Ukraine in recent years.</li><li>The annexation of Crimea by Russia in 2014 was not accepted by most other nations.</li><li>Thousands of extra soldiers were sent to Crimea in February 2014, and civilian 'volunteers' also moved in secretly and with complete success.</li></ul>",
+                "page_title": "The claim that \"Russia, throughout all of its history, has never attacked anyone\" is false",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "7d945403-623e-402d-9c47-de2f4e68a47e",
+                "page_name": "Russia has never attacked anyone, Putin spokesperson says. That’s ...",
+                "page_snippet": "“We remind you that Russia has never attacked anyone throughout its history,” Dmitry Peskov said in an interview on the Russia-1 television channel, according to the Russian news service TASS ...",
+                "page_url": "https://www.tampabay.com/news/nation-world/2022/02/22/russia-has-never-attacked-anyone-putin-spokesperson-says-thats-blatantly-false/",
+                "page_summary": "<ul><li>Russia has never attacked anyone</li><li>according to Putin's spokesperson</li><li>but historians say this is false</li><li>Russia has a history of military aggression</li><li>including the Livonian War, the Great Northern War, and the annexation of Crimea</li></ul>",
+                "page_title": "Russia has never attacked anyone, Putin spokesperson says. That’s ‘blatantly false.’",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "494c0077-20e2-4209-b0ab-08c4a8eae30c",
+                "page_name": "Dmitry Peskov - Wikiquote",
+                "page_snippet": "We remind you that Russia has never attacked anyone throughout its history. And Russia, which has survived so many wars, is the last country in Europe that even wants to utter the word ‘war.’ \"Russian spokesman’s statement ignores centuries of Russian attacks\", 21 February 2022",
+                "page_url": "https://en.wikiquote.org/wiki/Dmitry_Peskov",
+                "page_summary": "<ul><li>Russia has never attacked anyone throughout its history.</li><li>Russian troops do not target civilian targets.</li><li>Many people who support the Ukrainian government are traitors and will disappear on their own.</li><li>The current special military operation in Ukraine is aimed at getting rid of the military potential of Ukraine and ensuring that Ukraine becomes a neutral country.</li><li>The Russian military is targeting only military objects in Ukraine and does not hit civilian targets.</li></ul>",
+                "page_title": "Dmitry Peskov - Wikiquote",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "69953715-48b7-446b-8bc0-b9bac1c802d3",
+                "page_name": "The Facts on Russian Invasions in History - Substack",
+                "page_snippet": "“We remind you that Russia has never attacked anyone throughout its history. And Russia, which has survived so many wars, is the last country in Europe that wants to speak at all, even pronounce the word ‘war’” Let us look at two things, in order to define the historic facts around Russian and Soviet history with other nations.",
+                "page_url": "https://stateoftheworld.substack.com/p/the-facts-on-russian-invasions-in",
+                "page_summary": "<ul><li>The Facts on Russian Invasions in History</li><li>Russian President Vladimir Putin's inaccurate speech about Ukraine</li><li>Russia's recognition of the independence of two sections of eastern Ukraine</li><li>Moscow's occupation of eastern Ukraine</li></ul>",
+                "page_title": "The Facts on Russian Invasions in History - Substack",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "536a5b9a-2a5f-47da-a8a0-66cceb93f6fa",
+                "page_name": "Russian Spokesman Dmitry Peskov Said That - LatestLY",
+                "page_snippet": "The latest Tweet by PolitiFact states, &#039;Russian spokesman Dmitry Peskov said that “Russia has never attacked anyone throughout its history.” There are at least a dozen examples to contradict that since the 1500s. ...&#039; 🔎 Russian Spokesman Dmitry Peskov Said That \"Russia Has Never Attacked Anyone Throughout ... - Latest Tweet by PolitiFact.",
+                "page_url": "https://www.latestly.com/socially/social-viral/fact-check/russian-spokesman-dmitry-peskov-said-that-russia-has-never-attacked-anyone-throughout-latest-tweet-by-politifact-3391503.html",
+                "page_summary": "<ul><li>Russian spokesman Dmitry Peskov said that Russia has never attacked anyone throughout its history.</li><li>The statement was made in response to a question about Russia's military actions in Ukraine and other countries.</li><li>Peskov emphasized that Russia has always been a peaceful nation and has never initiated aggression against other countries.</li><li>He also mentioned that Russia has been a victim of aggression itself, citing examples such as the Mongol invasion and the Nazi occupation during World War II.</li><li>Peskov concluded by saying that Russia will continue to work towards maintaining peace and stability in the world.</li></ul>",
+                "page_title": "Russian Spokesman Dmitry Peskov Said That - LatestLY",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "4dde50b0-ab1d-4eb0-980b-697436d51bdc",
+                "page_name": "UW faculty offer expertise on Putin’s war on Ukraine in ... - CREECA",
+                "page_snippet": "Posted on March 2, 2022. Leading up to and amid Putin’s war on Ukraine, UW faculty members have been lending their expertise on Russia, Ukraine, and other post-Soviet states to various news outlets, including Paul Castañeda Dower (Agricultural and Applied Economics), Ted Gerber (Sociology), Yoshiko M. Herrera (Political Science), Francine ...",
+                "page_url": "https://creeca.wisc.edu/2022-02-creeca-faculty-ukraine-crisis/",
+                "page_summary": "<ul><li>Russia's invasion of Ukraine</li><li>Putin's war on Ukraine</li><li>Ukraine-Russia conflict</li><li>Russia's aggression towards Ukraine</li><li>Ukraine's fight against Russia</li></ul>",
+                "page_title": "UW faculty offer expertise on Putin’s war on Ukraine in media and outreach – CREECA – UW–Madison",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "4e673ba9-36c8-4267-9a24-4673126ec9b8",
+                "page_name": "Russia has never attacked anyone throughout its history",
+                "page_snippet": "2.8K subscribers in the adultsnew community. A tight-knit sub acting as a communal diary for young adults. We have personal conversations, make…",
+                "page_url": "https://www.reddit.com/r/adultsnew/comments/sywd1m/russia_has_never_attacked_anyone_throughout_its/",
+                "page_summary": "<ul><li>Russia has never attacked anyone throughout its history</li><li>The statement is false</li><li>There have been several instances where Russia has attacked other countries</li><li>Here are some examples:</li><li>In 19th century, Russia invaded Poland and Ukraine multiple times</li><li>In World War II, Russia fought against Germany and Japan</li><li>After the war, Russia annexed several territories from its neighbors</li><li>Currently, Russia is involved in the conflict in eastern Ukraine and Syria</li><li>It's important to note that these actions were taken by the Russian government, not the people of Russia.</li></ul>",
+                "page_title": "Russia has never attacked anyone throughout its history",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            },
+            {
+                "fact_check_id": "GOLD_LOW",
+                "result_uuid": "e3279839-e9e7-4afc-ac2f-694cf58b2413",
+                "page_name": "Russia Says Has No Plans for Aggression, Has Never ... - Islam Times",
+                "page_snippet": "But we remind you that Russia has never attacked anyone throughout its history,\" Peskov said in an interview on Russian television on Sunday. \"And Russia, which has survived so many wars, is the last country in Europe that wants to speak about, even say the word 'war',\" the spokesman added.",
+                "page_url": "https://www.islamtimes.org/en/news/980016/russia-says-has-no-plans-for-aggression-never-attacked-anyone-in-its-history",
+                "page_summary": "<ul><li>Russia denies plans for aggression and highlights its history of never attacking anyone.</li><li>Kremlin spokesman Dmitri Peskov emphasizes reason and urges the West to remember history.</li><li>Russia is the last country in Europe that wants to speak about or even say the word 'war’.</li><li>Peskov's comments follow months of speculation by officials and media in the US and among their NATO allies that Russia is preparing to launch an all-out attack against Ukraine.</li><li>The 'attack deadline' passed without incident, prompting outlets to establish a new deadline, now said to be sometime after February 20.</li><li>US President Joe Biden declared that he was 'convinced' that Russia's Vladimir Putin had'made the decision' to invade Ukraine 'in the coming days'.</li><li>British Prime Minister Boris Johnson claimed that Russia was planning 'the biggest war in Europe since 1945'.</li><li>The fabled 'Russian invasion' has yet to commence, but there has been a dramatic escalation of tensions in Eastern Ukraine.</li><li>The Donbass militias fear an all-out invasion by Kiev may be imminent and have begun an evacuation of their civilian populations to Russia, while calling up reserves.</li><li>Western leaders and media have remained largely silent on the Donbass escalation, while Kiev has blamed Moscow, claiming that Russia is artificially fomenting tensions.</li><li>Putin called on Ukraine's leaders to sit down with the Donbass breakaways as soon as possible for peace talks.</li></ul>",
+                "page_title": "Russia Says Has No Plans for Aggression, Has Never Attacked Anyone in Its History - Islam Times",
+                "query_text": "“Russia has never attacked anyone throughout its history.”"
+            }
+        ],
+		"ron-desantis-wrong-that-boosters-make-covid-19-inf": [
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "a5d63e08-5be3-47d6-8447-8275172f4640",
+                "page_name": "As COVID cases rise, doctors worry about the consequences of ... - PBS",
+                "page_snippet": "“Every booster you take, you’re more likely to get COVID as a result of it,” said DeSantis, one of several political leaders who have consistently and without evidence challenged the safety ...",
+                "page_url": "https://www.pbs.org/newshour/health/as-covid-cases-rise-doctors-worry-about-the-consequences-of-misinformation",
+                "page_summary": "<ul><li>Doctors worry about the consequences of misinformation about COVID vaccines</li><li>Vaccine uptake remains low despite rising COVID cases</li><li>Political leaders have consistently and without evidence challenged the safety and efficacy of the vaccines</li><li>Public health experts and doctors are concerned about the impact of misinformation on how people perceive the virus and tools designed to protect individuals and communities</li><li>U.S. wastewater surveillance data shows that COVID cases have risen to second-highest levels since the pandemic began</li><li>Around 10,000 people died from COVID in December and hospitalizations rose by more than 40 percent in the Americas and across Europe</li><li>Just 17 percent of eligible U.S. adults and children have gotten the updated vaccines</li><li>Misinformation and disinformation are fueling 'a vaccine revolution right now' in ways that Michael Osterholm, an epidemiologist, has not seen in his 50 years of work as an epidemiologist</li><li>The public is battle-weary with pandemic fatigue and misinformation plays 'a major role in vaccine hesitancy and the extent to which people trust institutions and the media'</li><li>Public health experts and doctors are concerned about the impact of misinformation on personal health decisions</li></ul>",
+                "page_title": "As COVID cases rise, doctors worry about the consequences of misinformation | PBS NewsHour",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "6634122c-9caa-4fad-8b4a-1be6eb8eb669",
+                "page_name": "The bivalent booster vaccine does not increase chances of ... - Poynter",
+                "page_snippet": "The study found that the bivalent booster is 30% effective in preventing infection from the virus. The researchers did find that there could be an association between the number of prior vaccine ...",
+                "page_url": "https://www.poynter.org/fact-checking/2023/florida-governor-ron-desantis-bivalent-booster-infection/",
+                "page_summary": "<ul><li>The document is a fact check of a claim made by Ron DeSantis that taking the bivalent booster vaccine increases the likelihood of getting COVID-19. The fact check found that the study did not support this claim and that the bivalent booster is 30% effective in preventing infection from the virus.</li><li>The study found that there could be an association between the number of prior vaccine doses and an increased risk of contracting COVID-19, but the bivalent booster is not the cause of this association.</li><li>The authors of the study stated that it is not designed to evaluate the association between the bivalent booster and the risk of infection.</li><li>The fact check concluded that DeSantis' claim is false and that the bivalent booster is not linked to an increased risk of COVID-19.</li></ul>",
+                "page_title": "The bivalent booster vaccine does not increase chances of COVID-19 infection - Poynter",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "f7989cae-04e0-4b2a-828a-f534d0e2c4d7",
+                "page_name": "PolitiFact FL: DeSantis is wrong that boosters make COVID infection ...",
+                "page_snippet": "DeSantis said, \"Every booster you take, you’re more likely to get COVID as a result of it.\" Experts say there is no hard evidence that infection is greater in people who have had boosters. Part of the reason is that determining infection rates among all members of society is difficult. Most studies rely on younger and healthier patients, who ...",
+                "page_url": "https://health.wusf.usf.edu/health-news-florida/2024-01-22/politifact-fl-desantis-is-wrong-that-boosters-make-covid-infection-more-likely",
+                "page_summary": "<ul><li>There is no evidence to suggest that boosters actually increase the risk of COVID-19 infection.</li><li>Determining infection rates among all members of society is difficult.</li><li>Most studies rely on younger and healthier patients, who are not necessarily typical.</li><li>People who are not getting vaccinated or tested simply won’t be counted, skewing attempts at comparisons.</li><li>Experts say there is no hard evidence that infection is greater in people who have had boosters.</li></ul>",
+                "page_title": "PolitiFact FL: DeSantis is wrong that boosters make COVID infection more likely | Health News Florida",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "3a75b1e2-0cbe-476d-93ce-408bebc1bc1c",
+                "page_name": "DeSantis said boosters make COVID-19 infection more likely | Fact check",
+                "page_snippet": "DeSantis said, “Every booster you take, you’re more likely to get COVID as a result of it.” Experts say there is no hard evidence that infection is greater in people who have had boosters.",
+                "page_url": "https://www.tampabay.com/news/florida-politics/2024/01/27/desantis-said-boosters-make-covid-19-infection-more-likely-fact-check/",
+                "page_summary": "<ul><li>There is no evidence that COVID-19 infection is more likely in people who have received boosters.</li><li>Experts say Gov. Ron DeSantis' claim that boosters increase the risk of infection is incorrect.</li><li>COVID-19 vaccines, including boosters, are designed to prevent severe disease, not infection.</li><li>The most recent boosters have been shown to significantly reduce COVID-19 hospitalizations in people over 65.</li></ul>",
+                "page_title": "DeSantis said boosters make COVID-19 infection more likely | Fact check",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "04ec2941-4874-467a-aca0-8d0f7b81fb6e",
+                "page_name": "Ron DeSantis wrong that boosters make COVID-19 infection more likely",
+                "page_snippet": "He said people who get the vaccine are likelier to get sick. \"Every booster you take, you’re more likely to get COVID as a result of it,\" DeSantis said. He said something similar in January 2023 ...",
+                "page_url": "https://www.statesman.com/story/news/politics/politifact/2024/01/22/ron-desantis-wrong-that-boosters-make-covid-19-infection-more-likely/72288936007/",
+                "page_summary": "<ul><li>Ron DeSantis made a false claim that taking boosters increases the likelihood of getting COVID-19.</li><li>Experts say the vaccines are designed to prevent severe illness, not infection.</li><li>The most recent boosters have been shown to significantly reduce COVID-19 hospitalizations in people over 65.</li><li>DeSantis' comments suggest he is holding the vaccine to an unrealistic standard of complete protection against infection.</li><li>The Cleveland Clinic study did not find a link between getting the shot and having a higher risk of contracting COVID-19.</li></ul>",
+                "page_title": "Ron DeSantis wrong that boosters make COVID-19 infection more likely",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "51119bb5-9992-4af7-914e-2614d2a7600d",
+                "page_name": "PolitiFact FL: Boosters don't make COVID-19 infection more likely | WUSF",
+                "page_snippet": "DeSantis said, \"Every booster you take, you’re more likely to get COVID as a result of it.\" Experts say there is no hard evidence that infection is greater in people who have had boosters. Part of the reason is that determining infection rates among all members of society is difficult. Most studies rely on younger and healthier patients, who ...",
+                "page_url": "https://www.wusf.org/politics-issues/2024-01-19/politifact-fl-desantis-wrong-boosters-covid-19-infection-more-likely",
+                "page_summary": "<ul><li>There is no evidence to suggest that boosters increase the risk of COVID-19 infection.</li><li>Studies have found that getting more boosters does not increase the risk of getting sick with COVID-19.</li><li>Experts say that the data does not support the claim that taking boosters leads to more frequent infections.</li><li>The population tested in the Cleveland Clinic study was not representative of the general public, and therefore the study cannot be extrapolated to the population at large.</li><li>Good studies of infection are hard to do because it is hard to conduct real-world experiments that gauge infection rates, especially for vulnerable populations.</li></ul>",
+                "page_title": "PolitiFact FL: Boosters don't make COVID-19 infection more likely | WUSF ",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "3fb39a7b-e486-4b77-99ee-82d578d7a8c1",
+                "page_name": "Ron DeSantis wrong that boosters make COVID-19 infection more likely",
+                "page_snippet": "DeSantis urged caution about the coronavirus vaccine that medical officials and most doctors still urge Americans to get. He said people who get the vaccine are likelier to get sick. “Every ...",
+                "page_url": "https://www.dallasnews.com/news/politifact/2024/01/20/ron-desantis-wrong-that-boosters-make-covid-19-infection-more-likely/",
+                "page_summary": "<ul><li>The article states that there is no evidence to suggest that boosters increase the risk of COVID-19 infection.</li><li>Experts say that determining infection rates among all members of society is difficult, making it hard to compare those who have received boosters to those who haven't.</li><li>The statement 'Every booster you take, you're more likely to get COVID as a result of it' is false, according to the article.</li><li>The article cites Jill Roberts, an associate professor in the College of Public Health, Global and Planetary Health at the University of South Florida, who says that the vaccine doesn't cover every strain of the virus, which is why frequent updating is needed.</li><li>The article concludes that DeSantis' statement is incorrect and that there is no evidence to support the claim that boosters lead to more frequent infections.</li></ul>",
+                "page_title": "Ron DeSantis wrong that boosters make COVID-19 infection more likely",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "06ecb263-f2c6-424b-a1a3-a35fb9387f6c",
+                "page_name": "DeSantis Makes Baseless Claim: ‘Every Booster You Take, You ... - MSN",
+                "page_snippet": "DeSantis went on to say, \"Every booster you take, you're more likely to get COVID as a result of it.\" There is no evidence that receiving a COVID-19 booster shot causes one to contract the virus.",
+                "page_url": "https://www.msn.com/en-us/health/other/desantis-makes-baseless-claim-every-booster-you-take-you-re-more-likely-to-get-covid/ar-AA1nbiJr",
+                "page_summary": "<ul><li>Florida Governor Ron DeSantis made a baseless claim that getting vaccinated increases the risk of getting COVID-19.</li><li>The claim is not supported by scientific evidence and has been repeatedly debunked by health experts.</li><li>The Centers for Disease Control and Prevention (CDC) and the World Health Organization (WHO) have both stated that vaccines are safe and effective in preventing the spread of COVID-19.</li><li>The CDC has also confirmed that there is no evidence to suggest that getting vaccinated increases the risk of getting COVID-19.</li><li>Despite this, DeSantis continues to make false claims about the safety of vaccines and their effectiveness in preventing the spread of COVID-19.</li><li>Experts warn that such false claims can lead to a decrease in vaccination rates, which could have serious consequences for public health.</li></ul>",
+                "page_title": "DeSantis Makes Baseless Claim: ‘Every Booster You Take, You ... - MSN",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "0579ed99-a1ec-4524-ac76-3ab423ee5a28",
+                "page_name": "Florida covid boosters: Surgeon General warns against use of new ...",
+                "page_snippet": "09/13/2023 06:21 PM EDT. TALLAHASSEE, Fla. — Gov. Ron DeSantis’ hand-picked surgeon general on Wednesday warned healthy adults under the age of 65 against taking a new Covid-19 booster ...",
+                "page_url": "https://www.politico.com/news/2023/09/13/florida-surgeon-general-fda-covid-booster-00115781",
+                "page_summary": "<ul><li>The Florida Surgeon General advises against using new Covid-19 boosters for healthy adults under 65 due to concerns over safety and effectiveness.</li><li>The guidance contradicts the Centers for Disease Control and Food and Drug Administration.</li><li>The Surgeon General has been criticized by the medical community for his previous claims about vaccine safety.</li><li>Experts argue that there is still a need for mitigation measures to prevent severe illness and death from Covid-19, even among healthy individuals.</li></ul>",
+                "page_title": "Florida covid boosters: Surgeon General warns against use of new boosters - POLITICO",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            },
+            {
+                "fact_check_id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+                "result_uuid": "bfdc77ac-5910-4525-9495-0025dc506deb",
+                "page_name": "DeSantis warns against Covid-19 boosters for people under 65 ... - CNN",
+                "page_snippet": "Florida Gov. Ron DeSantis’ administration is advising people under the age of 65 against getting the new Covid-19 booster shots from Pfizer/BioNTech and Moderna, contradicting federal health ...",
+                "page_url": "https://www.cnn.com/2023/09/13/politics/desantis-covid-booster-florida-2024/index.html",
+                "page_summary": "<ul><li>Florida Governor Ron DeSantis and the state's surgeon general advise against using the new COVID-19 boosters for people under 65 due to concerns about their safety and effectiveness.</li><li>The CDC recommends that everyone over the age of 6 months get one of the new boosters, but DeSantis and Ladapo disagree with this recommendation.</li><li>The FDA has approved the new boosters, but DeSantis and Ladapo believe they are not safe for people under 65.</li><li>There is a lack of data on the long-term effects of the new boosters, and DeSantis and Ladapo want to wait for more information before recommending them for young people.</li><li>Some experts are concerned that the new boosters could lead to an increase in COVID-19 cases among young people, as they may not provide adequate protection against the virus.</li></ul>",
+                "page_title": "DeSantis warns against Covid-19 boosters for people under 65 contradicting CDC guidance | CNN Politics",
+                "query_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”"
+            }
+        ]
+    },
+    "results_retrieved_settings": {
+        "display_modality": "link",
+        "attribute_summary": false
+    }
+}

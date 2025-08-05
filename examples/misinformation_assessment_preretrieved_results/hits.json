@@ -1,0 +1,46 @@
+[
+	{
+		"unit_id": "unit_0",
+		"token_input": "CVGHGQAZGFV",
+		"token_output": "JELRXTNBWQD",
+		"documents_number": 3,
+		"documents": [
+			{
+				"id": "ron-desantis-wrong-that-boosters-make-covid-19-inf",
+				"speaker_id": "ron-desantis",
+				"fact_check_ground_truth_label": "false",
+				"fact_check_ground_truth_value": "1",
+				"statement_text": "“Every booster you take, you’re more likely to get COVID as a result of it.”",
+				"statement_date": "2024-01-17",
+				"statement_date_parsed": "January 17, 2024",
+				"speaker_full_name": "Ron DeSantis",
+				"speaker_party": "REP",
+				"scrape_identifier": "politifact_2024-04-03"
+			},
+			{
+				"id": "GOLD_LOW",
+				"speaker_id": "dmitry-peskov",
+				"fact_check_ground_truth_label": "pants-on-fire",
+				"fact_check_ground_truth_value": "0",
+				"statement_text": "“Russia has never attacked anyone throughout its history.”",
+				"statement_date": "2022-02-20",
+				"statement_date_parsed": "February 20, 2022",
+				"speaker_full_name": "Dmitry Peskov",
+				"speaker_party": "",
+				"scrape_identifier": "nan"
+			},
+			{
+				"id": "GOLD_HIGH",
+				"speaker_id": "greg-abbott",
+				"fact_check_ground_truth_label": "true",
+				"fact_check_ground_truth_value": "5",
+				"statement_text": "Texas' public high school graduation rate is at 90% overall.",
+				"statement_date": "2022-05-15",
+				"statement_date_parsed": "May 15, 2022",
+				"speaker_full_name": "Greg Abbott",
+				"speaker_party": "REP",
+				"scrape_identifier": "nan"
+			}
+		]
+	}
+]
