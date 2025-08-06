@@ -1,55 +1,69 @@
 <ngx-ui-loader [loaderId]="'main'"
-                [bgsColor]="'#3f51b5'"
-               [fgsColor]="'#3f51b5'"
-               [pbColor]="'#3f51b5'"
-               [fgsSize]="150"
-               [bgsPosition]="'bottom-right'"
-               [bgsSize]="80"
-               [bgsType]="'ball-spin-clockwise'"
-               [text]="'Initializing application...'"
-               [textColor]="'#FFFFFF'"
-               [textPosition]="'bottom-center'"
+  [bgsColor]="'#3f51b5'"
+  [fgsColor]="'#3f51b5'"
+  [pbColor]="'#3f51b5'"
+  [fgsSize]="150"
+  [bgsPosition]="'bottom-right'"
+  [bgsSize]="80"
+  [bgsType]="'ball-spin-clockwise'"
+  [text]="'Initializing application...'"
+  [textColor]="'#FFFFFF'"
+  [textPosition]="'bottom-center'"
 ></ngx-ui-loader>
 
-<mat-grid-list *ngIf="(this.adminAccess && this.actionChosen == null)" cols="1" rowHeight="fit" id="selection-grid">
-  <mat-grid-tile class="green-theme">
-    <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')"><span i18n>Generate</span></button>
-  </mat-grid-tile>
-  <mat-grid-tile>
-    <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')"><span i18n>Perform</span></button>
-  </mat-grid-tile>
-</mat-grid-list>
-<div class="login-section green-theme" *ngIf="(this.adminAccess && this.actionChosen=='generate' && !this.loginSuccessful)">
-  <form [formGroup]="loginForm">
-    <mat-card appearance="outlined">
-      <mat-card-content>
-        <mat-form-field>
-          <mat-label>
-            <span i18n>Insert your username</span>
-          </mat-label>
-          <input matInput type="text" placeholder="your_username" formControlName="username">
-          <mat-error *ngIf="checkFormControl(loginForm,'username', 'required')">
-            <span i18n>This field is required</span>
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>
-            <span i18n>Insert your password</span>
-          </mat-label>
-          <input matInput type="password" placeholder="your_password" formControlName="password">
-          <mat-error *ngIf="checkFormControl(loginForm,'password', 'required')">
-            <span i18n>This field is required</span>
-          </mat-error>
-        </mat-form-field>
-        <mat-error *ngIf="this.loginPerformed && !loginSuccessful">
-          <span i18n>Invalid credentials</span>
-        </mat-error>
-      </mat-card-content>
-      <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()"><span i18n>Login</span></button>
-      </mat-card-actions>
-    </mat-card>
-  </form>
-</div>
-<app-generator *ngIf="(this.adminAccess && this.loginSuccessful)"></app-generator>
-<app-skeleton *ngIf="(this.adminAccess && this.actionChosen=='perform' ) || (!this.adminAccess)"></app-skeleton>
+@if ((this.adminAccess && this.actionChosen == null)) {
+  <mat-grid-list cols="1" rowHeight="fit" id="selection-grid">
+    <mat-grid-tile class="green-theme">
+      <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')"><span i18n>Generate</span></button>
+    </mat-grid-tile>
+    <mat-grid-tile>
+      <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')"><span i18n>Perform</span></button>
+    </mat-grid-tile>
+  </mat-grid-list>
+}
+@if ((this.adminAccess && this.actionChosen=='generate' && !this.loginSuccessful)) {
+  <div class="login-section green-theme">
+    <form [formGroup]="loginForm">
+      <mat-card appearance="outlined">
+        <mat-card-content>
+          <mat-form-field>
+            <mat-label>
+              <span i18n>Insert your username</span>
+            </mat-label>
+            <input matInput type="text" placeholder="your_username" formControlName="username">
+            @if (checkFormControl(loginForm,'username', 'required')) {
+              <mat-error>
+                <span i18n>This field is required</span>
+              </mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>
+              <span i18n>Insert your password</span>
+            </mat-label>
+            <input matInput type="password" placeholder="your_password" formControlName="password">
+            @if (checkFormControl(loginForm,'password', 'required')) {
+              <mat-error>
+                <span i18n>This field is required</span>
+              </mat-error>
+            }
+          </mat-form-field>
+          @if (this.loginPerformed && !loginSuccessful) {
+            <mat-error>
+              <span i18n>Invalid credentials</span>
+            </mat-error>
+          }
+        </mat-card-content>
+        <mat-card-actions>
+          <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()"><span i18n>Login</span></button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </div>
+}
+@if ((this.adminAccess && this.loginSuccessful)) {
+  <app-generator></app-generator>
+}
+@if ((this.adminAccess && this.actionChosen=='perform' ) || (!this.adminAccess)) {
+  <app-skeleton></app-skeleton>
+}

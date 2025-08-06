@@ -1,114 +1,105 @@
 <form [formGroup]="formStep">
-    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-        <mat-card-header>
-            <mat-card-title><span i18n>Step #4: Evaluation Instructions</span></mat-card-title>
-            <mat-card-subtitle><span i18n>Fourth, define all the evaluation instructions here</span></mat-card-subtitle>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content>
+  <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+    <mat-card-header>
+      <mat-card-title><span i18n>Step #4: Evaluation Instructions</span></mat-card-title>
+      <mat-card-subtitle><span i18n>Fourth, define all the evaluation instructions here</span></mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
 
-            <!-- Element -->
-            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setElement" (change)="resetElement()">
-                <span i18n>Element</span>
-            </mat-slide-toggle>
+      <!-- Element -->
+      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setElement" (change)="resetElement()">
+        <span i18n>Element</span>
+      </mat-slide-toggle>
 
-            <div *ngIf="formStep.get('setElement').value" formGroupName="element">
-                <h2 class="initial"><span i18n>Element Instructions</span></h2>
+      @if (formStep.get('setElement').value) {
+        <div formGroupName="element">
+          <h2 class="initial"><span i18n>Element Instructions</span></h2>
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0">
+                <mat-form-field matLine class="width-100" appearance="fill">
+                  <mat-label><span i18n>Label</span></mat-label>
+                  <input matInput type="text" formControlName="label">
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0">
+                <mat-form-field matLine class="width-100" appearance="fill">
+                  <mat-label><span i18n>Caption</span></mat-label>
+                  <input matInput type="text" formControlName="caption">
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0">
+                <mat-form-field matLine class="width-100" appearance="fill">
+                  <mat-label><span i18n>Text</span></mat-label>
+                  <input matInput type="text" formControlName="text">
+                  <app-error-message [formField]="this.element().get('text')"></app-error-message>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+        </div>
+      }
 
+
+      <div formArrayName="instructions">
+
+        @for (instruction of instructions().controls; track instruction; let instructionIndex = $index) {
+          <div [formGroupName]="instructionIndex">
+            <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+              <mat-card-header>
+                <mat-card-title class="lighter"><span i18n>Instruction</span> {{instructionIndex + 1}}</mat-card-title>
+              </mat-card-header>
+              <mat-divider></mat-divider>
+              <mat-card-content>
+                <!-- Caption -->
                 <table class="width-100 mt-8px">
-                    <tr>
-                        <td class="p-0">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Label</span></mat-label>
-                                <input matInput type="text" formControlName="label">
-                            </mat-form-field>
-                        </td>
-                    </tr>
+                  <tr>
+                    <td class="p-0">
+                      <mat-form-field matLine class="width-100" appearance="fill">
+                        <mat-label><span i18n>Caption</span></mat-label>
+                        <input matInput type="text" formControlName="caption">
+                      </mat-form-field>
+                    </td>
+                  </tr>
                 </table>
-                <table class="width-100 mt-8px">
-                    <tr>
-                        <td class="p-0">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Caption</span></mat-label>
-                                <input matInput type="text" formControlName="caption">
-                            </mat-form-field>
-                        </td>
-                    </tr>
-                </table>
-                <table class="width-100 mt-8px">
-                    <tr>
-                        <td class="p-0">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Text</span></mat-label>
-                                <input matInput type="text" formControlName="text">
-                                
-                                    <app-error-message [formField]="this.element().get('text')"></app-error-message>
-                                
-                            </mat-form-field>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-
-            <div formArrayName="instructions">
-
-                <div *ngFor="let instruction of instructions().controls; let instructionIndex = index" [formGroupName]="instructionIndex">
-
-                    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-                        <mat-card-header>
-                            <mat-card-title class="lighter"><span i18n>Instruction</span> {{instructionIndex + 1}}</mat-card-title>
-                        </mat-card-header>
-                        <mat-divider></mat-divider>
-                        <mat-card-content>
-
-                            <!-- Caption -->
-                            <table class="width-100 mt-8px">
-                                <tr>
-                                    <td class="p-0">
-                                        <mat-form-field matLine class="width-100" appearance="fill">
-                                            <mat-label><span i18n>Caption</span></mat-label>
-                                            <input matInput type="text" formControlName="caption">
-                                        </mat-form-field>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <div>
-                                <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
-                                
-                                    <app-error-message [formField]="instruction.get('text')"></app-error-message>
-                                
-                            </div>
-
-                        </mat-card-content>
-
-                        <mat-divider></mat-divider>
-
-                        <mat-card-actions class="right">
-                            <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
-                                <span i18n>Remove Instruction</span>
-                            </button>
-                        </mat-card-actions>
-
-                    </mat-card>
-
+                <div>
+                  <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
+                  <app-error-message [formField]="instruction.get('text')"></app-error-message>
                 </div>
+              </mat-card-content>
+              <mat-divider></mat-divider>
+              <mat-card-actions class="right">
+                <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
+                  <span i18n>Remove Instruction</span>
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        }
 
-            </div>
+      </div>
 
-            <button mat-flat-button color="primary" (click)="addInstruction()">
-                <span i18n>Add Instruction</span>
-            </button>
+      <button mat-flat-button color="primary" (click)="addInstruction()">
+        <span i18n>Add Instruction</span>
+      </button>
 
-        </mat-card-content>
+    </mat-card-content>
 
-        <mat-divider></mat-divider>
+    <mat-divider></mat-divider>
 
-        <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
-            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
-        </mat-card-actions>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+      <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
+    </mat-card-actions>
 
-    </mat-card>
+  </mat-card>
 </form>

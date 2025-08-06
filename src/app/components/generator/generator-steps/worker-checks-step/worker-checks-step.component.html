@@ -1,81 +1,91 @@
 <form [formGroup]="this.formStep">
-    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-        <mat-card-header>
-            <mat-card-title><span i18n>Step #7: Worker Checks</span></mat-card-title>
-            <mat-card-subtitle><span i18n>Seventh, define all Worker Checks here</span></mat-card-subtitle>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content>
+  <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+    <mat-card-header>
+      <mat-card-title><span i18n>Step #7: Worker Checks</span></mat-card-title>
+      <mat-card-subtitle><span i18n>Seventh, define all Worker Checks here</span></mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
 
-            <mat-slide-toggle color="primary" class="mb-16px" formControlName="block">
-                <span i18n>Enable Worker Blacklist</span>
-            </mat-slide-toggle>
+      <mat-slide-toggle color="primary" class="mb-16px" formControlName="block">
+        <span i18n>Enable Worker Blacklist</span>
+      </mat-slide-toggle>
 
-            <mat-divider [inset]="true"></mat-divider>
+      <mat-divider [inset]="true"></mat-divider>
 
-            <p><span i18n>Select the IDs to consider by pressing</span> <i><span i18n> SPACE</span></i></p>
+      <p><span i18n>Select the IDs to consider by pressing</span> <i><span i18n> SPACE</span></i></p>
 
-            <!-- Blacklist -->
+      <!-- Blacklist -->
 
-            <mat-form-field class="width-100" appearance="fill">
-                <mat-label><span i18n>Worker IDs Blacklisted</span></mat-label>
-                <mat-chip-grid #blacklistChips formControlName="blacklist" multiple>
-                    <mat-chip-row *ngFor="let workerId of this.blacklistedWorkerId" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}}
-                        <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
-                    </mat-chip-row>
-                    <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
-                </mat-chip-grid>
-            </mat-form-field>
+      <mat-form-field class="width-100" appearance="fill">
+        <mat-label><span i18n>Worker IDs Blacklisted</span></mat-label>
+        <mat-chip-grid #blacklistChips formControlName="blacklist" multiple>
+          @for (workerId of this.blacklistedWorkerId; track workerId) {
+            <mat-chip-row [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}}
+              <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
+            </mat-chip-row>
+          }
+          <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+        </mat-chip-grid>
+      </mat-form-field>
 
-            <mat-divider [inset]="true"></mat-divider>
+      <mat-divider [inset]="true"></mat-divider>
 
-            <!-- Whitelist -->
-            <mat-form-field class="width-100" appearance="fill">
-                <mat-label><span i18n>Worker IDs Whitelisted</span></mat-label>
-                <mat-chip-grid #whitelistChips formControlName="whitelist" multiple>
-                    <mat-chip-row *ngFor="let workerId of this.whitelistedWorkerId" [removable]="true" (removed)="removeWhitelistedId(workerId)">{{workerId}}
-                        <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
-                    </mat-chip-row>
-                    <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
-                </mat-chip-grid>
-            </mat-form-field>
+      <!-- Whitelist -->
+      <mat-form-field class="width-100" appearance="fill">
+        <mat-label><span i18n>Worker IDs Whitelisted</span></mat-label>
+        <mat-chip-grid #whitelistChips formControlName="whitelist" multiple>
+          @for (workerId of this.whitelistedWorkerId; track workerId) {
+            <mat-chip-row [removable]="true" (removed)="removeWhitelistedId(workerId)">{{workerId}}
+              <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
+            </mat-chip-row>
+          }
+          <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+        </mat-chip-grid>
+      </mat-form-field>
 
-            <mat-divider [inset]="true"></mat-divider>
+      <mat-divider [inset]="true"></mat-divider>
 
-            <h3 class="lighter"><span i18n>Batches</span></h3>
+      <h3 class="lighter"><span i18n>Batches</span></h3>
 
-            <div formArrayName="batches" class="mt-16px">
-                <mat-progress-bar *ngIf="this.batches().controls.length<=0 " mode="indeterminate"></mat-progress-bar>
-                <ng-container *ngIf="this.batches().controls.length>0">
-                    <div *ngFor="let taskNode of this.batchesTree">
-                        <mat-accordion class="generator-accordion">
-                            <mat-expansion-panel>
-                                <mat-expansion-panel-header>
-                                    <mat-panel-title>
-                                        {{taskNode['task']}}
-                                    </mat-panel-title>
-                                    <mat-panel-description>
-                                    </mat-panel-description>
-                                </mat-expansion-panel-header>
-                                <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
-                                    <mat-label>{{batch["batch"]}} </mat-label>
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
-                                </div>
-                            </mat-expansion-panel>
-                        </mat-accordion>
+      <div formArrayName="batches" class="mt-16px">
+        @if (this.batches().controls.length<=0 ) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+        @if (this.batches().controls.length>0) {
+          @for (taskNode of this.batchesTree; track taskNode) {
+            <div>
+              <mat-accordion class="generator-accordion">
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      {{taskNode['task']}}
+                    </mat-panel-title>
+                    <mat-panel-description>
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+                  @for (batch of taskNode['batches']; track batch; let batchIndex = $index) {
+                    <div [formGroupName]="batch['counter']">
+                      <mat-label>{{batch["batch"]}} </mat-label>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
                     </div>
-                </ng-container>
+                  }
+                </mat-expansion-panel>
+              </mat-accordion>
             </div>
+          }
+        }
+      </div>
 
-        </mat-card-content>
+    </mat-card-content>
 
-        <mat-divider></mat-divider>
+    <mat-divider></mat-divider>
 
-        <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
-            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
-        </mat-card-actions>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+      <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
+    </mat-card-actions>
 
-    </mat-card>
+  </mat-card>
 </form>

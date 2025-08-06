@@ -1,18 +1,22 @@
 <div class="modal-body" id="modal-instructions">
-    <div *ngIf="instructions.length > 0">
-        <div *ngFor="let instruction of instructions">
-            <h2>{{ instruction.caption }}</h2>
-            <div><p [innerHTML]="instruction.text"></p></div>
+  @if (instructions.length > 0) {
+    <div>
+      @for (instruction of instructions; track instruction) {
+        <div>
+          <h2>{{ instruction.caption }}</h2>
+          <div><p [innerHTML]="instruction.text"></p></div>
         </div>
+      }
     </div>
+  }
 </div>
 <div class="modal-footer">
-    <button
-        style="width: 100%"
-        type="button"
-        class="btn btn-primary"
-        (click)="activeModal.close('')"
+  <button
+    style="width: 100%"
+    type="button"
+    class="btn btn-primary"
+    (click)="activeModal.close('')"
     >
-        Close
-    </button>
+    Close
+  </button>
 </div>

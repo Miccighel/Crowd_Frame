@@ -1,39 +1,41 @@
 <div
-    class="row py-1"
-    id="select-component"
-    [ngClass]="readOnly ? 'input-inactive' : 'input-active'"
->
-    <div class="col-10">
-        <mat-form-field appearance="none" class="select">
-            <mat-select
-                [(value)]="selected"
-                [disabled]="readOnly"
-                disableOptionCentering
-                panelClass="optionsPanel"
-                placeholder="Select an option"
-                floatlLabel="never"
+  class="row py-1"
+  id="select-component"
+  [ngClass]="readOnly ? 'input-inactive' : 'input-active'"
+  >
+  <div class="col-10">
+    <mat-form-field appearance="none" class="select">
+      <mat-select
+        [(value)]="selected"
+        [disabled]="readOnly"
+        disableOptionCentering
+        panelClass="optionsPanel"
+        placeholder="Select an option"
+        floatlLabel="never"
+        >
+        @for (option of options; track option) {
+          <mat-option [value]="option">
+            {{ option.label }}</mat-option
             >
-                <mat-option *ngFor="let option of options" [value]="option">
-                    {{ option.label }}</mat-option
-                >
-            </mat-select>
-        </mat-form-field>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
     <div class="col-2 send-message">
-        <button
-            mat-mini-fab
-            type="submit"
-            class="chat-input-button"
-            [disabled]="readOnly || !selected"
-            [ngClass]="readOnly || !selected ? 'inactive' : 'active'"
-            (click)="onSubmit()"
+      <button
+        mat-mini-fab
+        type="submit"
+        class="chat-input-button"
+        [disabled]="readOnly || !selected"
+        [ngClass]="readOnly || !selected ? 'inactive' : 'active'"
+        (click)="onSubmit()"
         >
-            <mat-icon
-                aria-hidden="false"
-                aria-label="Send message"
-                fontIcon="send"
-                >send</mat-icon
-            >
+        <mat-icon
+          aria-hidden="false"
+          aria-label="Send message"
+          fontIcon="send"
+          >send</mat-icon
+          >
         </button>
+      </div>
     </div>
-</div>

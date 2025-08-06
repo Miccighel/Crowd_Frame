@@ -1,40 +1,48 @@
-<div *ngIf="this.dimension.url" class="search-engine">
-    <ng-container *ngIf="this.dimension.url.enable">
-        <div *ngIf="this.dimension.url.instructions" class="evaluation-instructions">
-            <h2>{{this.dimension.url.instructions.label}} - {{this.dimension.url.instructions.caption}}</h2>
-            <div><p>{{this.dimension.url.instructions.text}}</p></div>
+@if (this.dimension.url) {
+  <div class="search-engine">
+    @if (this.dimension.url.enable) {
+      @if (this.dimension.url.instructions) {
+        <div class="evaluation-instructions">
+          <h2>{{this.dimension.url.instructions.label}} - {{this.dimension.url.instructions.caption}}</h2>
+          <div><p>{{this.dimension.url.instructions.text}}</p></div>
         </div>
-        <form [formGroup]="this.searchEngineForm">
-            <!-- Dimension search engine interface markup -->
-            <div>
-                <div>
-                    <app-search-engine-body
-                            id="app-search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
-                            (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                            (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
-                            (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                            (visitedRowEmitter)="handleSearchEngineVisitedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                            [worker]="this.worker"
-                            [resultsRetrievedForms]="this.resultsRetrievedForms"
-                            [dimension]="this.dimension"
-                            [documentIndex]="documentIndex"
-                    >
-                    </app-search-engine-body>
-                    <!-- Dimension search engine url field markup (hidden) -->
-                    <mat-form-field class="url-field">
-                        <input #urlField matInput type="text" formControlName="{{(this.dimension.name).concat('_url')}}">
-                        <button mat-icon-button matPrefix>
-                            <mat-icon>{{'arrow_right_alt'}}</mat-icon>
-                        </button>
-                        <mat-error *ngIf="this.utilsService.hasError(searchEngineForm,(this.dimension.name).concat('_url'), 'required')">
-                            <span i18n>This field is required</span>
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
-                            <span i18n>Please select (or copy & paste) one of the URLs shown above.</span>
-                        </mat-error>
-                    </mat-form-field>
-                </div>
-            </div>
-        </form>
-    </ng-container>
-</div>
+      }
+      <form [formGroup]="this.searchEngineForm">
+        <!-- Dimension search engine interface markup -->
+        <div>
+          <div>
+            <app-search-engine-body
+              id="app-search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
+              (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
+              (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
+              (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
+              (visitedRowEmitter)="handleSearchEngineVisitedResponse($event, this.task.documents[documentIndex], this.dimension)"
+              [worker]="this.worker"
+              [resultsRetrievedForms]="this.resultsRetrievedForms"
+              [dimension]="this.dimension"
+              [documentIndex]="documentIndex"
+              >
+            </app-search-engine-body>
+            <!-- Dimension search engine url field markup (hidden) -->
+            <mat-form-field class="url-field">
+              <input #urlField matInput type="text" formControlName="{{(this.dimension.name).concat('_url')}}">
+              <button mat-icon-button matPrefix>
+                <mat-icon>{{'arrow_right_alt'}}</mat-icon>
+              </button>
+              @if (this.utilsService.hasError(searchEngineForm,(this.dimension.name).concat('_url'), 'required')) {
+                <mat-error>
+                  <span i18n>This field is required</span>
+                </mat-error>
+              }
+              @if (this.utilsService.hasError(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')) {
+                <mat-error>
+                  <span i18n>Please select (or copy & paste) one of the URLs shown above.</span>
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+}

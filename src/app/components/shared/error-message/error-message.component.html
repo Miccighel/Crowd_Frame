@@ -1,5 +1,9 @@
-<mat-error *ngIf="formField?.invalid && (formField.dirty || formField.touched)">
-    <div class="app-error-message" *ngFor="let message of utilsService.getErrorMessage(formField)">
+@if (formField?.invalid && (formField.dirty || formField.touched)) {
+  <mat-error>
+    @for (message of utilsService.getErrorMessage(formField); track message) {
+      <div class="app-error-message">
         {{ message }}
-    </div>
-</mat-error>
+      </div>
+    }
+  </mat-error>
+}

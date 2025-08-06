@@ -1,34 +1,42 @@
 <!-- Evaluation instructions markup -->
-<ng-container *ngIf="this.task.instructionsEvaluation.element" class="evaluation-instructions">
+@if (this.task.instructionsEvaluation.element) {
+  <ng-container class="evaluation-instructions">
     <h2>{{this.task.instructionsEvaluation.element.label}} - {{this.task.instructionsEvaluation.element.caption}}</h2>
     <div><p>{{this.task.instructionsEvaluation.element.text}}</p></div>
-</ng-container>
-<div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
-    <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
+  </ng-container>
+}
+@if (this.task.instructionsEvaluation.instructions.length>0) {
+  <div class="evaluation-instructions">
+    @for (instruction of this.task.instructionsEvaluation.instructions; track instruction) {
+      <div>
         <h2>{{instruction.caption}}</h2>
         <div><p [innerHTML]="instruction.text"></p></div>
-    </div>
-</div>
+      </div>
+    }
+  </div>
+}
 
 <h2 class="pairwise-title"><span i18n>Select an element</span></h2>
 <form [formGroup]="this.selectionForms[documentIndex]">
-    <ng-container *ngFor="let element of this.task.documents[documentIndex]['pairwise']; let j=index">
-        <div class="pairwise-cointainer">
-            <div id="element-{{documentIndex}}-{{j}}" class="element-box" (click)="selectElement(documentIndex, j);">
-                <h2 class="element-box-title"><span i18n>Element</span> {{j}}</h2>
-                <div class="element-box-values">
-                    <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
-                            <span class="element-value-caption" *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
-                                <label><strong>{{attribute.name_pretty}}</strong>:</label>
-                                {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
-                            </span>
-                    </ng-container>
-                </div>
-            </div>
-            <mat-checkbox class="element-checkbox" formControlName="element_{{j}}_selected" (change)="handleCheckbox(documentIndex, j)" disableRipple="true">
-                <span class="element-checkbox-selection-text"><span i18n>Select</span></span>
-            </mat-checkbox>
+  @for (element of this.task.documents[documentIndex]['pairwise']; track element; let j = $index) {
+    <div class="pairwise-cointainer">
+      <div id="element-{{documentIndex}}-{{j}}" class="element-box" (click)="selectElement(documentIndex, j);">
+        <h2 class="element-box-title"><span i18n>Element</span> {{j}}</h2>
+        <div class="element-box-values">
+          @for (attribute of this.task.settings.attributesMain; track attribute; let k = $index) {
+            @if (this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)) {
+              <span class="element-value-caption">
+                <label><strong>{{attribute.name_pretty}}</strong>:</label>
+                {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
+              </span>
+            }
+          }
         </div>
-    </ng-container>
+      </div>
+      <mat-checkbox class="element-checkbox" formControlName="element_{{j}}_selected" (change)="handleCheckbox(documentIndex, j)" disableRipple="true">
+        <span class="element-checkbox-selection-text"><span i18n>Select</span></span>
+      </mat-checkbox>
+    </div>
+  }
 </form>
 

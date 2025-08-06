@@ -1,8 +1,10 @@
 <div id="task-instructions" mat-dialog-content>
-  <ng-container *ngFor="let instruction of this.instructions; let i=index">
-    <h1 *ngIf="instruction['caption']">{{instruction["caption"]}}</h1>
+  @for (instruction of this.instructions; track instruction; let i = $index) {
+    @if (instruction['caption']) {
+      <h1>{{instruction["caption"]}}</h1>
+    }
     <span [innerHTML]="instruction['text']"></span>
-  </ng-container>
+  }
 </div>
 <div class="close-button">
   <button mat-flat-button color="primary" (click)="closeInstructions()"><span i18n>Close</span></button>

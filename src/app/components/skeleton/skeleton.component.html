@@ -18,94 +18,114 @@
 </ng-template>
 
 
-<app-outcome-section
-        *ngIf="!this.sectionService.taskAllowed"
-        [worker]="this.worker"
-        [triesAllowed]="this.task.settings.allowed_tries"
-        [tryCurrent]="this.task.tryCurrent"
-        [messages]="this.task.settings.messages"
-        [tokenInput]="this.task.tokenInput"
-        [tokenOutput]="this.task.tokenOutput"
-        (commentEmitter)="storeComment($event)"
-        (performReset)="this.performReset()"
-></app-outcome-section>
+@if (!this.sectionService.taskAllowed) {
+  <app-outcome-section
+    [worker]="this.worker"
+    [triesAllowed]="this.task.settings.allowed_tries"
+    [tryCurrent]="this.task.tryCurrent"
+    [messages]="this.task.settings.messages"
+    [tokenInput]="this.task.tokenInput"
+    [tokenOutput]="this.task.tokenOutput"
+    (commentEmitter)="storeComment($event)"
+    (performReset)="this.performReset()"
+  ></app-outcome-section>
+}
 
 <!-- First instruction page shown when the worker starts the skeleton -->
-<div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted">
+@if (this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted) {
+  <div class="instructions-section">
     <mat-card appearance="outlined">
-        <mat-card-content *ngIf="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      @if (!this.sectionService.checkCompleted || !this.task.instructionsGeneral) {
+        <mat-card-content>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
+      }
+      @if (this.sectionService.checkCompleted && this.task.instructionsGeneral) {
         <mat-card-content
-                *ngIf="this.sectionService.checkCompleted && this.task.instructionsGeneral">
-            <div *ngFor="let instruction of this.task.instructionsGeneral;let i = index">
-                <h1 *ngIf="instruction['caption']">
-                    {{ instruction["caption"] }}
+          >
+          @for (instruction of this.task.instructionsGeneral; track instruction; let i = $index) {
+            <div>
+              @if (instruction['caption']) {
+                <h1>
+                  {{ instruction["caption"] }}
                 </h1>
-                <p [innerHTML]="instruction.text"></p>
+              }
+              <p [innerHTML]="instruction.text"></p>
             </div>
+          }
         </mat-card-content>
-        <mat-card-actions>
-            <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-                <span i18n>Start</span>
-            </button>
-        </mat-card-actions>
+      }
+      <mat-card-actions>
+        <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
+          <span i18n>Start</span>
+        </button>
+      </mat-card-actions>
     </mat-card>
-</div>
+  </div>
+}
 
 <!-- Instructions modal shown on the top  -->
-<app-instructions
-        [task]="this.task"
-        [worker]="this.worker"
-        *ngIf="this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational'"
-></app-instructions>
+@if (this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational') {
+  <app-instructions
+    [task]="this.task"
+    [worker]="this.worker"
+  ></app-instructions>
+}
 
-<ng-container *ngIf="this.sectionService.taskInstructionsRead">
-    <!-- Chatbot -->
+@if (this.sectionService.taskInstructionsRead) {
+  <!-- Chatbot -->
+  @if (this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted) {
     <chat-widget
-			*ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted"
-			[worker]="worker"></chat-widget>
-    <!-- Task body section -->
+    [worker]="worker"></chat-widget>
+  }
+  <!-- Task body section -->
+  @if (this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted) {
     <mat-horizontal-stepper
-            *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="false"
-            labelPosition="bottom"
-            id="stepper"
-            #stepper
-    >
-        <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
-            <ng-template matStepLabel>{{this.task.getElementIndex(stepIndex)['elementLabel']}}</ng-template>
+      [linear]="false"
+      labelPosition="bottom"
+      id="stepper"
+      #stepper
+      >
+      @for (stepIndex of this.sectionService.stepIndexes(); track stepIndex) {
+        <mat-step>
+          <ng-template matStepLabel>{{this.task.getElementIndex(stepIndex)['elementLabel']}}</ng-template>
+          @if (this.task.getElementIndex(stepIndex)['elementType'] == 'Q') {
             <app-questionnaire
-                    *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
-                    [worker]="this.worker"
-                    [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                    [questionnairesForm]="this.questionnairesForm"
-                    [stepper]="this.stepper"
-                    (formEmitter)="this.storeQuestionnaireForm($event,stepIndex)"
-            >
+              [worker]="this.worker"
+              [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+              [questionnairesForm]="this.questionnairesForm"
+              [stepper]="this.stepper"
+              (formEmitter)="this.storeQuestionnaireForm($event,stepIndex)"
+              >
             </app-questionnaire>
+          }
+          @if (this.task.getElementIndex(stepIndex)['elementType'] == 'S') {
             <app-document
-                    *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
-                    [worker]="this.worker"
-                    [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                    [documentsForm]="this.documentsForm"
-                    [documentsFormsAdditional]="this.documentsFormsAdditional"
-                    [searchEngineForms]="this.searchEngineForms"
-                    [resultsRetrievedForms]="this.resultsRetrievedForms"
-                    [stepper]="this.stepper"
-                    (formEmitter)="this.storeDocumentForm($event, stepIndex)"
+              [worker]="this.worker"
+              [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+              [documentsForm]="this.documentsForm"
+              [documentsFormsAdditional]="this.documentsFormsAdditional"
+              [searchEngineForms]="this.searchEngineForms"
+              [resultsRetrievedForms]="this.resultsRetrievedForms"
+              [stepper]="this.stepper"
+              (formEmitter)="this.storeDocumentForm($event, stepIndex)"
             ></app-document>
+          }
         </mat-step>
+      }
     </mat-horizontal-stepper>
-</ng-container>
+  }
+}
 
-<app-outcome-section
-        *ngIf="this.sectionService.taskCompleted"
-        [worker]="this.worker"
-        [triesAllowed]="this.task.settings.allowed_tries"
-        [tryCurrent]="this.task.tryCurrent"
-        [messages]="this.task.settings.messages"
-        [tokenInput]="this.task.tokenInput"
-        [tokenOutput]="this.task.tokenOutput"
-        (commentEmitter)="storeComment($event)"
-        (performReset)="this.performReset()"
-></app-outcome-section>
+@if (this.sectionService.taskCompleted) {
+  <app-outcome-section
+    [worker]="this.worker"
+    [triesAllowed]="this.task.settings.allowed_tries"
+    [tryCurrent]="this.task.tryCurrent"
+    [messages]="this.task.settings.messages"
+    [tokenInput]="this.task.tokenInput"
+    [tokenOutput]="this.task.tokenOutput"
+    (commentEmitter)="storeComment($event)"
+    (performReset)="this.performReset()"
+  ></app-outcome-section>
+}
