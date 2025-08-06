@@ -4541,7 +4541,7 @@ __metadata:
     ngx-countdown: "npm:17.1.1"
     ngx-device-detector: "npm:10.0.2"
     ngx-file-helpers: "npm:14.0.1"
-    ngx-ui-loader: "npm:^13.0.0"
+    ngx-ui-loader: "npm:^19.0.0"
     rxjs: "npm:^7.8.2"
     tslib: "npm:^2.8.1"
     typescript: "npm:5.8.2"
@@ -6120,15 +6120,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-ui-loader@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "ngx-ui-loader@npm:13.0.0"
+"ngx-ui-loader@npm:^19.0.0":
+  version: 19.0.0
+  resolution: "ngx-ui-loader@npm:19.0.0"
   dependencies:
-    tslib: "npm:^2.3.0"
+    tslib: "npm:^2.6.0"
   peerDependencies:
-    "@angular/common": ">=13.0.0"
-    "@angular/core": ">=13.0.0"
-  checksum: 10/cabb418350974e867d1f8a4796910ce4b79760314112a7b69a9ce7ba414ceadfe9f998b0c5faa6aafe5703fe31a8a4e4aa4586e84367885f734bf4aaa0288bdc
+    "@angular/common": ">=19.0.0"
+    "@angular/core": ">=19.0.0"
+  checksum: 10/e7c50038672b2fd0200ae5d61e0f3003144a845f18aec26d42dcc263b83969ff586c042150c82430b38725500415a6435fb0a030c91891a12cb1995604420010
   languageName: node
   linkType: hard
 
@@ -7330,7 +7330,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+"tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.6.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
