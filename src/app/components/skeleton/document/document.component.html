@@ -61,21 +61,22 @@
 			</ng-container>
 
 			<!-- evaluation instructions -->
-			<ng-container *ngIf="task.instructionsEvaluation.element">
-				<h2>
-					{{ task.instructionsEvaluation.element.label }} -
-					{{ task.instructionsEvaluation.element.caption }}
-				</h2>
-				<div><p>{{ task.instructionsEvaluation.element.text }}</p></div>
-			</ng-container>
-
-			<div *ngIf="task.instructionsEvaluation.instructions.length > 0">
-				<div *ngFor="let instruction of task.instructionsEvaluation.instructions">
-					<h2 *ngIf="task.checkCurrentTaskType(document, instruction.task_type)">
-						{{ instruction.caption }}
+			<div class="evaluation-instructions-block" *ngIf="task.instructionsEvaluation.instructions.length > 0">
+				<ng-container *ngIf="task.instructionsEvaluation.element">
+					<h2>
+						{{ task.instructionsEvaluation.element.label }} -
+						{{ task.instructionsEvaluation.element.caption }}
 					</h2>
-					<div *ngIf="task.checkCurrentTaskType(document, instruction.task_type)">
-						<p [innerHTML]="instruction.text"></p>
+					<div><p>{{ task.instructionsEvaluation.element.text }}</p></div>
+				</ng-container>
+				<div>
+					<div *ngFor="let instruction of task.instructionsEvaluation.instructions">
+						<h2 *ngIf="task.checkCurrentTaskType(document, instruction.task_type)">
+							{{ instruction.caption }}
+						</h2>
+						<div *ngIf="task.checkCurrentTaskType(document, instruction.task_type)">
+							<p [innerHTML]="instruction.text"></p>
+						</div>
 					</div>
 				</div>
 			</div>

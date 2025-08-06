@@ -41,9 +41,22 @@ mat-card-content mat-form-field label {
 }
 
 mat-card-actions {
+	display: flex;
+	align-items: center;
+	gap: 16px;    // space between buttons (adjust if needed)
 	margin-top: 1%;
+	button {
+		text-transform: uppercase !important;
+	}
 }
 
+/* Optional: For extra mobile friendliness, allow wrap on small screens */
+@media (max-width: 600px) {
+	mat-card-actions {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+}
 .mat-mdc-card > .mat-mdc-card-actions:last-child {
 	margin-bottom: 1em !important;
 }

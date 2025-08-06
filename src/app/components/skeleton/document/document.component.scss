@@ -107,17 +107,43 @@ p {
     padding-top: 16px;
 }
 
-/* |--- INSTRUCTIONS ---| */
+/* |---  EVALUATION INSTRUCTIONS ---| */
 
-.evaluation-instructions {
-    margin-bottom: 1%;
+.evaluation-instructions-block {
+    margin: 1.5em 0;
+    padding: 1.25em 2em 1em 2em;
+    background: #f6f7fb;
+    border-radius: 12px;
+    border: 1px solid #e0e3ed;
+    box-shadow: 0 1px 3px rgba(60,70,100,0.07);
+
+    h2 {
+        margin-top: 1.1em;
+        margin-bottom: 0.4em;
+        font-size: 1.20em;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+    }
+    h2:first-child {
+        margin-top: 0;
+    }
+
+    > div, > ng-container, > section {
+        margin-bottom: 0.85em;
+    }
+
+    p {
+        margin-top: 0.15em;
+        margin-bottom: 0.65em;
+        font-size: 1.1em;
+        line-height: 1.65;
+    }
 }
 
-.document-section mat-form-field {
-    margin-bottom: 1%;
-    max-width: 70%;
+.evaluation-instructions-block > div > div {
+    margin-bottom: 0.45em; /* space between instructions */
 }
-  
 
 /* |--- task-check-fail-section ---| */
 
@@ -161,8 +187,6 @@ p {
     height: 100%;
     background-color: #ef5350;
 }
-
-
 
 .white-title {
     flex: 100;
