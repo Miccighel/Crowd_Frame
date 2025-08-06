@@ -14,18 +14,14 @@
 		{
 			"name": "title",
 			"name_pretty": "Titolo",
-			"show": [
-				"Main"
-			],
+			"show": [],
 			"required": false,
 			"annotate": false
 		},
 		{
 			"name": "subject",
 			"name_pretty": "Oggetto",
-			"show": [
-				"Main"
-			],
+			"show": [],
 			"required": false,
 			"annotate": false
 		},
@@ -130,9 +126,7 @@
 		{
 			"name": "article_number",
 			"name_pretty": "Numero Articolo",
-			"show": [
-				"Main"
-			],
+			"show": [],
 			"required": false,
 			"annotate": false
 		},

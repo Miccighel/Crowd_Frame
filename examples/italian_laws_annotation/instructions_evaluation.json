@@ -1,47 +1,32 @@
 {
 	"instructions": [
 		{
-			"text": "Evidenzia nel testo.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 1",
+			"text": "Seleziona con il mouse la porzione di testo che corrisponde a un <strong>riferimento normativo</strong> o a un'azione (sostituzione, inserimento o cancellazione) prevista dalla legge."
 		},
 		{
-			"text": "Seleziona il corretto tipo di annotazione che hai effettuato.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 2",
+			"text": "Dopo l'evidenziazione, <strong>sotto al testo</strong> apparirà un form: scegli il <strong>tipo di annotazione</strong> tra <em>Semplice</em> (riferimento ad altra legge) o <em>Con azioni</em> (modifica del testo)."
 		},
 		{
-			"text": "Nel caso tu abbia scelto \"riferimento\", aggiungi anno e numero della legge e salva.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 3",
+			"text": "Se hai selezionato <strong>Semplice</strong>, inserisci <strong>anno</strong> e <strong>numero</strong> della legge se disponibili, poi premi <strong>SALVA</strong>. Se non sono presenti nel testo, lascia i campi vuoti."
 		},
 		{
-			"text": "Nel caso tu abbia scelto un altro tipo, scegli se contiene o meno riferimenti al suo interno.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 4",
+			"text": "Se hai selezionato <strong>Con azioni</strong>, collega la modifica al relativo riferimento normativo usando il box dedicato. Se il testo contiene ulteriori riferimenti, evidenziali separatamente e aggiungi i dettagli richiesti."
 		},
 		{
-			"text": "Se si, evidenziali e aggiungi i dettagli come spiegato al passaggio C.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 5",
+			"text": "Ripeti la procedura per ogni riferimento o modifica presente nel testo. <br><em>Nota:</em> Non annotare paragrafi con <strong>PROVVEDIMENTO ABROGATO</strong>, <strong>DECADUTO</strong> o <strong>AGGIORNAMENTO</strong>."
 		},
 		{
-			"text": "Ripeti i passaggi finché necessario.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 6",
+			"text": "Se il riferimento riguarda una legge non citata nel testo, seleziona \"<strong>Non presente nel testo</strong>\". Se riguarda la stessa legge su cui stai lavorando, scegli \"<strong>Questo o un altro articolo della legge stessa</strong>\"."
 		},
 		{
-			"text": "Quando hai finito, prosegui o concludi.",
-			"task_type": [
-				"Main"
-			]
+			"caption": "Passaggio 7",
+			"text": "Per correggere errori (evidenziazione sbagliata, dettagli errati), <strong>modifica</strong> o <strong>cancella</strong> l’annotazione usando i pulsanti appositi. Quando tutte le annotazioni richieste sono complete, puoi passare al documento successivo con <strong>NEXT/FINISH</strong> o tornare indietro con <strong>BACK</strong>."
 		}
-	],
-	"element": false
+	]
 }
