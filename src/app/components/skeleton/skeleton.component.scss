@@ -39,52 +39,101 @@ mat-horizontal-stepper mat-card-actions {
     width: 96%;
 }
 
-.instructions-section div {
-    line-height: 150%;
-    font-size: 1.1em;
-
-    li {
-        line-height: 200%;
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    p {
-        line-height: 150%;
-    }
-
-}
-
 .instructions-section {
-    max-width: 80%;
-    height: 100vh;
+    max-width: 85%;                     /* Use px for predictable width */
     display: flex;
-    margin-left: auto;
-    margin-right: auto;
+    align-items: center;
+    justify-content: center;
+    margin: 1em auto;
+    background: none;
+    font-size: 1.1em;
+    .mat-mdc-card-actions {
+        margin: 0 !important;
+    }
 }
 
-.instructions-section mat-card {
-    margin: auto;
-}
-
-.instructions-section mat-card-actions {
-    align-self: center;
-}
-
-.instructions-section mat-card-actions button {
-    text-transform: uppercase;
+.instructions-section div {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #222;
+    font-family: inherit;
 }
 
 .instructions-section h1 {
     text-align: center;
-    font-weight: normal;
+    font-weight: 500;
+    font-size: 2em;
+    color: #2d3a4b;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+}
+
+.instructions-section li {
+    line-height: 1.85;
+    margin: 0.4em 0 0.4em 0.2em;
+    font-size: 1.07em;
+}
+
+.instructions-section p {
+    line-height: 1.6;
+    margin-bottom: 0.85em;
+    color: #333;
+}
+
+.instructions-section ul,
+.instructions-section ol {
+    margin-left: 2em;
+    margin-bottom: 1.2em;
+}
+
+.instructions-section mat-card {
+    margin: auto;
+    padding: 1em 1.4em 1.4em 1em;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.11);
+    font-family: inherit;
+}
+
+.instructions-section mat-card-actions {
+    align-self: center;
+    text-align: center;
+}
+
+.instructions-section mat-card-actions button {
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.6em 2em;
+    letter-spacing: 0.03em;
+    font-size: 1.07em;
+    min-width: 120px;
+    margin-top: 0.8em;
+    box-shadow: 0 2px 10px rgba(44,62,80,0.08);
 }
 
 .instructions-quote {
-    margin-top: 0;
-    margin-bottom: 0;
-    box-shadow: 0 0 0 0;
-    border-radius: 0;
-    border-left: 10px lightgray solid;
-    padding-left: 1em;
+    margin: 1.2em 0;
+    border-left: 7px #d1d5db solid;
+    background: #f6f7fa;
+    border-radius: 7px;
+    padding: 0.8em 1em;
+    color: #4a5568;
+    font-style: italic;
+    font-size: 1.07em;
+    box-shadow: none;
 }
+
+@media (max-width: 600px) {
+    .instructions-section {
+        min-height: unset;
+        padding: 0.5em;
+        max-width: 99%;
+    }
+    .instructions-section mat-card {
+        padding: 1.1em 0.4em 1.2em 0.6em;
+    }
+    .instructions-section h1 {
+        font-size: 1.15em;
+    }
+}
+

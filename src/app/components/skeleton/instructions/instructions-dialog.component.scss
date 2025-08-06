@@ -1,46 +1,67 @@
 /* |--- DIALOG STYLES  --| */
 
-.mat-mdc-dialog-container {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+.mat-mdc-dialog-container .mdc-dialog__content {
+  color: #222;
+  font-size: 1.1em;
+  padding: 2em 2em 1em 2em;
+  font-family: inherit;
 }
 
-.mat-mdc-dialog-container .mdc-dialog__content {
-    color: rgb(0, 0, 0);
+#task-instructions {
+  width: 100%;
+  font-family: inherit;
+}
+
+#task-instructions h1 {
+  margin-bottom: 0.75em;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.5em;
+  color: #2d3a4b;
+  letter-spacing: 0.02em;
+}
+
+#task-instructions span,
+#task-instructions p {
+  line-height: 1.6;
+  font-size: 1.05em;
+  text-align: justify;
+  color: #333;
+}
+
+#task-instructions ul,
+#task-instructions ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+#task-instructions li {
+  line-height: 1.9;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .close-button {
   text-align: center;
-  margin-top: 1em;
-  margin-bottom: 1.5em;
+  margin: 2em 0 1em 0;
 }
 
-button {
+.close-button button {
   text-transform: uppercase;
+  min-width: 120px;
+  padding: 0.7em 2.2em;
+  border-radius: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 10px rgba(44,62,80,0.08);
 }
 
-#task-instructions div {
-  font-size: 1.1em;
-}
-
-
-#task-instructions p {
-  line-height: 150%;
-  text-align: justify;
-}
-
-#task-instructions ul p {
-  margin-bottom: 0.5%;
-}
-
-#task-instructions li {
-  line-height: 200%;
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-#task-instructions h1 {
-  margin-bottom: 0.5em;
-  text-align: center;
-  font-weight: normal;
+@media (max-width: 600px) {
+  .mat-mdc-dialog-container .mdc-dialog__content {
+    padding: 1.2em 0.4em 1em 0.4em;
+    font-size: 1em;
+  }
+  #task-instructions h1 {
+    font-size: 1.1em;
+  }
 }
