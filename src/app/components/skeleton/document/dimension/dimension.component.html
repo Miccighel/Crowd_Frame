@@ -27,8 +27,7 @@
 							(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
 					</app-search-engine>
 
-					<ng-container *ngIf="verifyUrlSelection(position) &&
-                               checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
+					<ng-container *ngIf="verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
 
 						<!-- Optional instructions -->
 						<ng-container *ngIf="dimension.scale?.instructions as ins">
@@ -81,8 +80,7 @@
 														<mat-radio-button
 																value="{{ mapping.value }}"
 																[disabled]="categoricalDimensionDisabled(dimension)"
-																[attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                               task.settings.countdown_behavior == 'disable_forms'"
+																[attr.disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
 																(change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
 															<span class="mapping-label">{{ mapping.label }}</span>
@@ -117,11 +115,9 @@
 														<mat-divider *ngIf="mapping.separator" inset></mat-divider>
 														<mat-radio-button
 																value="{{ mapping.value }}"
-																[attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                               task.settings.countdown_behavior == 'disable_forms'"
+																[attr.disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
-																(change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
-                                        detectCategoricalDimensionOnChange($event)">
+																(change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); detectCategoricalDimensionOnChange($event)">
 															<span class="mapping-label">{{ mapping.label }}</span>
 															<span *ngIf="mapping.description">{{ ' (' + mapping.description + ')' }}</span>
 														</mat-radio-button>

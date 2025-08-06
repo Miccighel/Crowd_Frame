@@ -14,9 +14,10 @@ export class NoteLaws extends Note {
     attribute_index: number,
     range: JSON,
     data: JSON,
+    serialization: string,
     color = "#ffffff"
   ) {
-    super(document_index, attribute_index, range, data, color)
+    super(document_index, attribute_index, range, data, serialization, color)
     this.year = 0;
     this.number = 0;
     this.type = "reference";

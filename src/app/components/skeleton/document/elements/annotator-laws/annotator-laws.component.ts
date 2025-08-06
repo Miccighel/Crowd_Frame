@@ -61,7 +61,7 @@ export class AnnotatorLawsComponent {
             domElement = document.getElementById(`document-${documentIndex}-attribute-${attributeIndex}`);
         }
         if (domElement) {
-            let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
+            let first_clone = document.querySelectorAll(`.attribute-text`)[documentIndex].cloneNode(true)
             first_clone.addEventListener('mouseup', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
             first_clone.addEventListener('touchend', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
             doHighlight(domElement, false, {
@@ -81,7 +81,8 @@ export class AnnotatorLawsComponent {
                 /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
                 onAfterHighlight: (range, highlight) => {
                     if (highlight.length > 0) {
-                        if (highlight[0]["outerText"]) this.task.notes[documentIndex].push(new NoteLaws(documentIndex, attributeIndex, range, highlight))
+                        let noteLaws = new NoteLaws(documentIndex, attributeIndex, range, highlight, '', "#FFFF7B")
+                        if (highlight[0]["outerText"]) this.task.notes[documentIndex].push(noteLaws)
                         return true
                     }
                 }
@@ -120,7 +121,7 @@ export class AnnotatorLawsComponent {
                 /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
                 onAfterHighlight: (range, highlight) => {
                     if (highlight.length > 0) {
-                        if (highlight[0]["outerText"]) this.task.notes[documentIndex][noteIndex]['innerAnnotations'].push(new NoteLaws(documentIndex, attributeIndex, range, highlight))
+                        if (highlight[0]["outerText"]) this.task.notes[documentIndex][noteIndex]['innerAnnotations'].push(new NoteLaws(documentIndex, attributeIndex, range, highlight, ''))
                         return true
                     } else {
                         let element = document.getElementById(`references-${noteIndex}.${documentIndex}`)
@@ -221,6 +222,7 @@ export class AnnotatorLawsComponent {
 
     public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
         let currentNote = this.task.notes[documentIndex][noteIndex]
+        console.log(currentNote)
         if (currentNote instanceof NoteLaws) {
             if ($event.value == "null") {
                 this.resetDetails(currentNote)
@@ -420,7 +422,8 @@ export class AnnotatorLawsComponent {
                 case "reference": {
                     this.resetDetails(currentNote)
                     currentNote.type = "reference"
-                    currentNote.containsReferences = false
+                    currentNote.withoutDetails = false
+                    currentNote.containsReferences = true
                     currentNote.innerAnnotations = []
                     currentNote.color = this.colors[3]
                     this.changeSpanColor(documentIndex, noteIndex)

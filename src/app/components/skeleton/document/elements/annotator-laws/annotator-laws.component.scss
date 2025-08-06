@@ -1,94 +1,379 @@
+/* === Headings === */
 h3 {
   text-align: center;
+  margin-top: 0.3em;
+  margin-bottom: 0.8em;
+  font-size: 1.22em;
+  font-weight: 700;
+  color: #2c3c5a;
+  letter-spacing: 0.01em;
 }
 
-/* LAWS ANNOTATION STYLES */
+/* === Attribute Block (NOT a card) === */
+.document-attributes {}
 
-.statement-div {
-  max-width: 600px;
-  margin: auto;
-  font-size: 1.2em;
-  line-height: 1.5;
+.attribute {
+  /* Remove card layout: no background, box-shadow, or padding */
+  padding-left: 20px;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0 0 10px 0; /* just vertical spacing */
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.1em;
+  position: relative;
+}
+
+.attribute.standard {
+  background: transparent;
+}
+
+.attribute.annotatable {
+  border-left: 3.5px solid #2979ff;
+  background: #f8fbff;
+}
+
+.attribute-label {
+  display: block;
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.attribute-label strong {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.attribute.annotatable .attribute-label::after {
+  content: "🖉 Annotabile";
+  font-size: 0.96em;
+  color: #2979ff;
+  background: #eaf3ff;
+  border-radius: 6px;
+  padding: 0.13em 0.65em 0.13em 0.47em;
+  margin-left: 0.8em;
+  vertical-align: middle;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.attribute-text,
+.attribute-text-annotatable {
+  white-space: pre-wrap;
+  font-size: 1.1em;
+  font-weight: 400;
+  color: #334050;
+  text-align: left;
+  margin-top: 0.65em;
+  word-break: break-word;
+}
+
+/* For annotatable (highlightable) attributes */
+.attribute-text-annotatable {
+  font-family: 'Fira Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 1.15em;
+  line-height: 1.6;
+  background: #f7faff;
+  border-radius: 5px;
+  padding: 0.53em 0.85em;
+  white-space: pre-wrap;
+  cursor: text;
+  word-break: break-word;
+  transition: background 0.14s, border-color 0.18s;
+  overflow-x: auto;
+  /* Soft box shadow for focus */
+  box-shadow: 0 1px 3px rgba(80,130,240,0.04);
+}
+
+.attribute-text-annotatable:hover,
+.attribute-text-annotatable:focus {
+  background: #eaf3ff;
+  border-color: #458fff;
+  outline: none;
+}
+
+
+.attribute img {
+  display: block;
+  max-width: 95%;
+  max-height: 320px;
+  margin: 1em auto 0.7em auto;
+  border-radius: 6px;
+  box-shadow: 0 1px 8px rgba(80,100,150,0.09);
+}
+
+/* === ANNOTATION CARDS === */
+.annotation-section,
+.annotations {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  font-size: 1.1em;
+}
+.annotation-recap-block {
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid #e6e7ee;
+  box-shadow: 0 2px 12px rgba(160, 160, 160, 0.07);
+  padding: 1.35em 1.25em 1.1em 1.25em;
+  margin-bottom: 2.5em;
+  transition: box-shadow 0.18s, border-color 0.18s;
+  width: 100%;
+  max-width: unset;
+  margin-left: 0;
+  margin-right: 0;
+  position: relative;
+}
+@media (min-width: 600px) {
+  .annotation-recap-block {
+    min-width: 480px;
+  }
+}
+.annotation-recap-header {
+  margin-bottom: 0.8em;
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Banner for last annotation --- */
+.ultima-annotazione-banner {
+  display: block;
+  width: 100%;
   text-align: center;
+  margin: 1em auto 1.5em auto;
+  background: linear-gradient(90deg, #ffe1e1 0%, #f6e9e9 100%);
+  color: #c62828;
+  border: 1.5px solid #f5c6cb;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.8em 1.2em;
+  box-shadow: 0 2px 6px rgba(180, 180, 180, 0.14);
+  max-width: 400px;
+  letter-spacing: 0.5px;
+  align-self: center;
 }
 
-.annotation-recap {
-  padding-bottom: 3px;
-}
-
+/* --- Quote/Selection Row --- */
 .annotation-quote {
   display: flex;
-  height: 0;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1em;
   width: 100%;
+  margin: 0.5em 0;
 }
-
-.inner-annotation-quote {
-  display: flex;
-  height: 0;
-  align-items: center;
-  justify-content: space-evenly;
-  width: 100%;
+.selected-label,
+.annotation-quote > .selected-label {
+  min-width: 120px;
+  display: inline-block;
 }
-
 .annotation-current-text {
+  padding: 0.3em 0.75em;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+  box-sizing: border-box;
+}
+.delete-btn, .inner-annotation-delete button {
+  margin-left: auto;
+}
+.action-btn-row {
   display: flex;
-  margin-left: 5px;
-  height: 0;
   align-items: center;
+  gap: 0.8em;
+  margin-left: auto;
 }
 
-.annotation-options {
+/* --- Annotation Type Group --- */
+.annotation-type-group {
   display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content: center;
-  height: 0;
-  align-items: center;
-  text-align: right;
-  max-width: 650px;
+  flex-direction: column;
+  gap: 0.6em;
+  background: #f7f8fa;
+  border-radius: 7px;
+  padding: 0.95em 0.9em 0.7em 0.9em;
+  margin-bottom: 1.4em;
+  border: 1.5px solid #e9e9ef;
+  box-shadow: 0 1px 6px rgba(180,180,200,0.04);
+  transition: border-color 0.18s, box-shadow 0.18s;
 }
-
+.annotation-type-group:focus-within,
+.annotation-type-group:hover {
+  border-color: #c5d8f6;
+  box-shadow: 0 0 0 2px #dde8fc;
+}
+.annotation-type-label {
+  font-weight: 600;
+  margin-bottom: 0.3em;
+  letter-spacing: 0.02em;
+}
 .annotation-type {
   text-align: center;
   padding-top: 5px;
 }
 
-.inner-annotation-reference {
-  background-color: #F0F0F0;
-  padding: 5px;
+/* --- Checkbox Row --- */
+.checkbox-row {
+  display: flex;
+  gap: 1.5em;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1em;
+  flex-wrap: wrap;
 }
-
 .inner-annotation-checkbox-delete {
   text-align: center;
   padding-top: 5px;
 }
-
 .inner-annotation-delete {
   margin-left: 5px;
 }
 
-.reference-form {
-  margin-top: 5px;
-  margin-bottom: 5px;
+/* --- Reference/Inner annotation blocks --- */
+.reference-form,
+.inner-annotation-text {
+  margin-top: 8px;
+  margin-bottom: 12px;
   text-align: center;
   justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
+  border: 1.5px solid #e0e0e0;
+  background: #fafbfc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(160, 170, 180, 0.07);
+  padding: 12px 10px;
+  transition: box-shadow 0.18s, border-color 0.18s;
 }
-
+.reference-form:focus-within,
+.inner-annotation-text:focus-within {
+  box-shadow: 0 0 0 2px #d6e4fa;
+  border-color: #a4c6f6;
+}
+.reference-form > *, .inner-annotation-text > * {
+  margin-bottom: 0.6em;
+}
+.reference-form > *:last-child, .inner-annotation-text > *:last-child {
+  margin-bottom: 0;
+}
 .reference-radio-group-button {
   margin-top: 2px;
   margin-bottom: 2px;
 }
 
-.inner-annotation-text {
-  margin-top: 5px;
-  margin-bottom: 5px;
+/* --- Inner annotation quote block --- */
+.inner-annotation-quote {
+  display: flex;
+  align-items: center;
   justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
+  width: 100%;
+  padding-top: 5px;
+}
+.inner-annotation-text-title {
+  display: flex;
+  justify-content: center;
+  padding: 0.25%;
+}
+.inner-annotation-item {
+  margin-bottom: 1.2em;
+}
+
+/* --- Misc spacing between annotation blocks --- */
+.annotation-quote-row,
+.annotation-type,
+.reference-form,
+.inner-annotation-text,
+.annotation-options {
+  margin-bottom: 1.2em;
+}
+.annotations > div {
+  margin-bottom: 2em;
+}
+
+/* --- Input/grouping in annotation options --- */
+
+.annotation-options {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: auto;
   padding: 5px;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-options > div {
+  padding: 5px;
+}
+.annotation-options > .save-btn-container {
+  padding-left: 7px;
+}
+.save-btn-container {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 1em;
+}
+.law-input-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  margin-right: 1.5em;
+  min-width: 130px;
+  font-size: 1em;
+}
+
+.law-input-labels label {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.law-input-labels input[type="number"] {
+  margin-top: 0.15em;
+  border: 1.5px solid #c7d5e8;
+  border-radius: 5px;
+  background: #f8fbfd;
+  padding: 0.38em 0.7em;
+  font-size: 1.08em;
+  color: #243048;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  outline: none;
+  box-shadow: 0 1px 4px rgba(80,130,240,0.06);
+  width: 120px;
+}
+
+.law-input-labels input[type="number"]:focus {
+  border-color: #458fff;
+  background: #eef6ff;
+  box-shadow: 0 0 0 2px #bfdcff;
+}
+
+.law-input-labels input[type="number"]::placeholder {
+  color: #b2b8c5;
+  opacity: 1;
+  font-style: italic;
+  font-size: 1.1em;
+}
+
+/* --- Responsive Layout for Mobile/Tablet --- */
+@media (max-width: 700px) {
+  .annotation-quote {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3em;
+  }
+  .delete-btn, .inner-annotation-delete button {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+  .annotation-current-text {
+    min-width: 0;
+    width: 100%;
+  }
+  .law-input-labels, .save-btn-container {
+    display: block;
+    margin: 0.5em 0;
+  }
 }

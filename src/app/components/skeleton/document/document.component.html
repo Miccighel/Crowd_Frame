@@ -21,19 +21,12 @@
 	<mat-card appearance="outlined">
 		<!-- document heading -->
 		<mat-card-title>
-			<ng-container *ngIf="task.settings.element_labels &&
-                           utilsService.getValueByKeyIgnoreCase(task.settings.element_labels,
-                                                                 document.params['task_type'])">
-				{{
-                    utilsService.getValueByKeyIgnoreCase(task.settings.element_labels,
-                        document.params['task_type'])
-				}}
+			<ng-container *ngIf="task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type'])">
+				{{ utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']) }}
 				{{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
 			</ng-container>
 
-			<ng-container *ngIf="!(task.settings.element_labels &&
-                              utilsService.getValueByKeyIgnoreCase(task.settings.element_labels,
-                                                                    document.params['task_type']))">
+			<ng-container *ngIf="!(task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']))">
 				{{ document.params['task_type'] }} <span i18n>Element</span>
 				{{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
 			</ng-container>
@@ -99,12 +92,10 @@
 				</ng-container>
 
 				<ng-container *ngIf="task.settings.annotator">
-					<app-annotator-laws *ngIf="task.settings.annotator.type === 'laws'"
-										[documentIndex]="documentIndex">
+					<app-annotator-laws *ngIf="task.settings.annotator.type === 'laws'" [documentIndex]="documentIndex">
 					</app-annotator-laws>
 
-					<app-annotator-options *ngIf="task.settings.annotator.type === 'options'"
-										   [documentIndex]="documentIndex">
+					<app-annotator-options *ngIf="task.settings.annotator.type === 'options'" [documentIndex]="documentIndex">
 					</app-annotator-options>
 				</ng-container>
 			</ng-container>

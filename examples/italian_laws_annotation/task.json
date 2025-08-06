@@ -1,0 +1,261 @@
+{
+	"modality": "pointwise",
+	"allowed_tries": 10,
+	"time_assessment": 33333,
+	"time_check_amount": 2,
+	"attributes": [
+		{
+			"name": "filename",
+			"name_pretty": "Filename",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "title",
+			"name_pretty": "Titolo",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "subject",
+			"name_pretty": "Oggetto",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "type",
+			"name_pretty": "Tipo",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "number",
+			"name_pretty": "Numero",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "year",
+			"name_pretty": "Anno",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "editorial_code",
+			"name_pretty": "Codice",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gazette_reference",
+			"name_pretty": "Gazzetta",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "publication_date",
+			"name_pretty": "Data pubblicazione",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gazette_date",
+			"name_pretty": "Data gazzetta",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "valid_from",
+			"name_pretty": "Validità da",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "last_updated",
+			"name_pretty": "Ultimo aggiornamento",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "link_gazette",
+			"name_pretty": "Link Gazzetta",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "link_urn_nir",
+			"name_pretty": "Link NIR",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "link_eli_id",
+			"name_pretty": "Link ELI ID",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "link_eli_type",
+			"name_pretty": "Link ELI Tipo",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "article_id",
+			"name_pretty": "ID Articolo",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "article_number",
+			"name_pretty": "Numero Articolo",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "article_text",
+			"name_pretty": "Testo Articolo",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": true
+		},
+		{
+			"name": "gold_type",
+			"name_pretty": "Tipo Gold",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_text",
+			"name_pretty": "Testo Gold",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_references_to",
+			"name_pretty": "Gold References",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_number",
+			"name_pretty": "Gold Numero",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_year",
+			"name_pretty": "Gold Anno",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_inner_notes",
+			"name_pretty": "Gold Note Interne",
+			"show": [],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "gold_inner_texts",
+			"name_pretty": "Gold Testi Interni",
+			"show": [],
+			"required": false,
+			"annotate": false
+		}
+	],
+	"element_labels": {
+		"main": "Legge",
+		"main_short": "L"
+	},
+	"annotator": {
+		"type": "laws"
+	},
+	"countdown_time": false,
+	"countdown_behavior": false,
+	"additional_times": false,
+	"countdown_modality": false,
+	"countdown_attribute": false,
+	"countdown_attribute_values": [],
+	"countdown_position_values": [],
+	"logger": false,
+	"logger_option": {
+		"button": {
+			"general": false,
+			"click": false
+		},
+		"mouse": {
+			"general": false,
+			"mouseMovements": false,
+			"leftClicks": false,
+			"rightClicks": false
+		},
+		"keyboard": {
+			"general": false,
+			"shortcuts": false,
+			"keys": false
+		},
+		"textInput": {
+			"general": false,
+			"paste": false,
+			"delete": false
+		},
+		"clipboard": {
+			"general": false,
+			"copy": false,
+			"cut": false
+		},
+		"radio": {
+			"general": false,
+			"change": false
+		},
+		"search-engine-body": {
+			"general": false,
+			"query": false,
+			"result": false
+		},
+		"various": {
+			"general": false,
+			"selection": false,
+			"unload": false,
+			"focus&blur": false,
+			"scroll": false,
+			"resize": false
+		}
+	},
+	"server_endpoint": "",
+	"messages": [
+		"You have already started this task without finishing it"
+	]
+}

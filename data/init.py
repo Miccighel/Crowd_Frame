@@ -2308,10 +2308,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                     f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(element)} found")
                             except (TypeError, ValueError) as e:
                                 if isinstance(value, list):
-                                    if isinstance(value[0], dict):
-                                        print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
-                                    else:
+                                    if len(value) == 0:
                                         print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                                    else:
+                                        first = value[0]
+                                        if isinstance(first, dict):
+                                            print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
+                                        elif isinstance(first, str):
+                                            print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                                        elif isinstance(first, (int, float)):
+                                            print(wrapper.fill(f"{attribute}: Array<Number>;"), file=file)
+                                        elif isinstance(first, list):
+                                            # Optionally, handle nested lists here if needed
+                                            print(wrapper.fill(f"{attribute}: Array<Array<String>>;"), file=file)
+                                        else:
+                                            print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
                                 elif isinstance(value, bool):
                                     print(wrapper.fill(f"{attribute}: boolean;"), file=file)
                                 elif isinstance(value, int) or isinstance(value, float):
@@ -2357,12 +2368,30 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
                             except (TypeError, ValueError) as e:
                                 if isinstance(value, list):
-                                    if isinstance(value[0], dict):
-                                        print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
-                                    else:
+                                    if len(value) == 0:
                                         print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
+                                    else:
+                                        first = value[0]
+                                        if isinstance(first, dict):
+                                            print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
+                                            print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
+                                                  file=file)
+                                        elif isinstance(first, str):
+                                            print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                                            print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
+                                                  file=file)
+                                        elif isinstance(first, (int, float)):
+                                            print(wrapper.fill(f"this.{attribute} = new Array<Number>()"), file=file)
+                                            print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
+                                                  file=file)
+                                        elif isinstance(first, list):
+                                            print(wrapper.fill(f"this.{attribute} = new Array<Array<String>>()"), file=file)
+                                            print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
+                                                  file=file)
+                                        else:
+                                            print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                                            print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
+                                                  file=file)
                                 else:
                                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
                                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)

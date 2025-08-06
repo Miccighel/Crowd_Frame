@@ -1,0 +1,47 @@
+{
+	"instructions": [
+		{
+			"text": "Evidenzia nel testo.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Seleziona il corretto tipo di annotazione che hai effettuato.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Nel caso tu abbia scelto \"riferimento\", aggiungi anno e numero della legge e salva.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Nel caso tu abbia scelto un altro tipo, scegli se contiene o meno riferimenti al suo interno.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Se si, evidenziali e aggiungi i dettagli come spiegato al passaggio C.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Ripeti i passaggi finché necessario.",
+			"task_type": [
+				"Main"
+			]
+		},
+		{
+			"text": "Quando hai finito, prosegui o concludi.",
+			"task_type": [
+				"Main"
+			]
+		}
+	],
+	"element": false
+}
