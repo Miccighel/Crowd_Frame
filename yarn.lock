@@ -2614,19 +2614,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-bootstrap/ng-bootstrap@npm:17.0.1":
-  version: 17.0.1
-  resolution: "@ng-bootstrap/ng-bootstrap@npm:17.0.1"
+"@ng-bootstrap/ng-bootstrap@npm:19.0.1":
+  version: 19.0.1
+  resolution: "@ng-bootstrap/ng-bootstrap@npm:19.0.1"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": ^18.0.0
-    "@angular/core": ^18.0.0
-    "@angular/forms": ^18.0.0
-    "@angular/localize": ^18.0.0
+    "@angular/common": ^20.0.0
+    "@angular/core": ^20.0.0
+    "@angular/forms": ^20.0.0
+    "@angular/localize": ^20.0.0
     "@popperjs/core": ^2.11.8
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/ef0c624a47fc7fa38d738df2876198c359958cd2568c176baf19df1e7cbf6e6789d3f7dde8d6a9cbfb09d85c46b7bc7b4a7e8395448f8f57ca04d24d5be67187
+  checksum: 10/25af91d9bce9937a81ef980fbedd6e73a9407f114280972c66dae5fea31446eda8b67dde36cf677f8212d250d6f930e5cc9003303f325600c70ab9951e97f4dd
   languageName: node
   linkType: hard
 
@@ -4372,7 +4372,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:^3.832.0"
     "@funktechno/texthighlighter": "npm:^2.1.2"
     "@kolkov/angular-editor": "npm:^2.1.0"
-    "@ng-bootstrap/ng-bootstrap": "npm:17.0.1"
+    "@ng-bootstrap/ng-bootstrap": "npm:19.0.1"
     "@popperjs/core": "npm:^2.11.8"
     "@types/node": "npm:^20.11.17"
     bootstrap: "npm:^5.3.7"

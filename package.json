@@ -35,7 +35,7 @@
     "@aws-sdk/lib-storage": "^3.832.0",
     "@funktechno/texthighlighter": "^2.1.2",
     "@kolkov/angular-editor": "^2.1.0",
-    "@ng-bootstrap/ng-bootstrap": "17.0.1",
+    "@ng-bootstrap/ng-bootstrap": "19.0.1",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.7",
     "crypto-es": "^2.1.0",
