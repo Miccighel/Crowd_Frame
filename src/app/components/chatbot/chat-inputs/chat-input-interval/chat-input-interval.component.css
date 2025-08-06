@@ -29,13 +29,13 @@ button.inactive {
 
 .chat-slider {
     /* Angular Material MDC slider CSS custom properties */
-    --mdc-slider-active-track-color:        var(--light);
-    --mdc-slider-handle-color:              var(--light);
-    --mdc-slider-label-container-color:     var(--light);
-    --mdc-slider-label-label-text-color:    var(--primary);
+    --mat-slider-active-track-color:        var(--light);
+    --mat-slider-handle-color:              var(--light);
+    --mat-slider-label-container-color:     var(--light);
+    --mat-slider-label-label-text-color:    var(--primary);
 
     /* Optional (example): shape, thickness */
-    --mdc-slider-active-track-height:       6px;
+    --mat-slider-active-track-height:       6px;
     /* If you want a border or shadow tweak, see Option B below */
 }
 
