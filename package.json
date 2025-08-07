@@ -34,7 +34,7 @@
     "@aws-sdk/lib-dynamodb": "^3.862.0",
     "@aws-sdk/lib-storage": "^3.862.0",
     "@funktechno/texthighlighter": "^2.1.2",
-    "@kolkov/angular-editor": "^2.1.0",
+    "@kolkov/angular-editor": "^3.0.0-beta.2",
     "@ng-bootstrap/ng-bootstrap": "19.0.1",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.7",

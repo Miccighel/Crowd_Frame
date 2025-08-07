@@ -2419,15 +2419,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kolkov/angular-editor@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@kolkov/angular-editor@npm:2.1.0"
+"@kolkov/angular-editor@npm:^3.0.0-beta.2":
+  version: 3.0.0-beta.2
+  resolution: "@kolkov/angular-editor@npm:3.0.0-beta.2"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": ">=14"
-    "@angular/core": ">=14"
-  checksum: 10/2d2dff8c0bd10bf8a133ff6a38b504732c2ce501d7dbf0526b4e3fd9e44adb457a02b284d6a3641571c436a58ffb157d01b63ef4f13c7a9918da6f342e949b0f
+    "@angular/common": ">=13"
+    "@angular/core": ">=13"
+  checksum: 10/c8c42cfcf4d7999e67e0f27ba9571521cee8e902375a61ad8bdfaed8d3c81c2c974d3ffb2b932a2339258746d418715e110744aa1755dbd058c397632ffaf0d1
   languageName: node
   linkType: hard
 
@@ -4551,7 +4551,7 @@ __metadata:
     "@aws-sdk/lib-dynamodb": "npm:^3.862.0"
     "@aws-sdk/lib-storage": "npm:^3.862.0"
     "@funktechno/texthighlighter": "npm:^2.1.2"
-    "@kolkov/angular-editor": "npm:^2.1.0"
+    "@kolkov/angular-editor": "npm:^3.0.0-beta.2"
     "@ng-bootstrap/ng-bootstrap": "npm:19.0.1"
     "@popperjs/core": "npm:^2.11.8"
     "@types/node": "npm:^20.11.17"
