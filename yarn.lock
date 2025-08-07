@@ -4556,7 +4556,7 @@ __metadata:
     "@popperjs/core": "npm:^2.11.8"
     "@types/node": "npm:^20.11.17"
     bootstrap: "npm:^5.3.7"
-    crypto-es: "npm:^2.1.0"
+    crypto-es: "npm:^3.0.0"
     esbuild: "npm:^0.25.8"
     material-icons: "npm:^1.13.14"
     ngx-color-picker: "npm:18.0.0"
@@ -4572,10 +4572,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"crypto-es@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "crypto-es@npm:2.1.0"
-  checksum: 10/3f636dd6d40d3c88a207f4ef5a532aee1e080d7225b7cdee3c127e167ec24785d475cd55491a840eb129132276b3b51e025c4f454b4092494e2a43108332c7c9
+"crypto-es@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "crypto-es@npm:3.0.0"
+  checksum: 10/04d0e3d891509e77f13697cd4ea3974d360ab1916614b9f63a9b5b724d482f8808d6f69ab76d16e2cfcdd80bfd70e46ee66776b986d410aeb38d926ae7852e4c
   languageName: node
   linkType: hard
 
