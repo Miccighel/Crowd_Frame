@@ -4022,12 +4022,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.11.17":
-  version: 20.19.1
-  resolution: "@types/node@npm:20.19.1"
+"@types/node@npm:^24":
+  version: 24.2.0
+  resolution: "@types/node@npm:24.2.0"
   dependencies:
-    undici-types: "npm:~6.21.0"
-  checksum: 10/2369a96a832a6e8111d2b996c56fb1b78b27fad0879de3e344ae2835697464e001d6fe813a11902348fc7dc63b9510000f3d2cd4bedadf2d3fce7b7bb7903444
+    undici-types: "npm:~7.10.0"
+  checksum: 10/b81501e05f15df28102baac60afbc82d30009ee0bf4dee41b7fa326ec5789d0d83dd28c418e04dc30a9513ab6afb9813edc75042aef751336d8dcfefe099709c
   languageName: node
   linkType: hard
 
@@ -4554,7 +4554,7 @@ __metadata:
     "@kolkov/angular-editor": "npm:^3.0.0-beta.2"
     "@ng-bootstrap/ng-bootstrap": "npm:19.0.1"
     "@popperjs/core": "npm:^2.11.8"
-    "@types/node": "npm:^20.11.17"
+    "@types/node": "npm:^24"
     bootstrap: "npm:^5.3.7"
     crypto-es: "npm:^3.0.0"
     esbuild: "npm:^0.25.8"
@@ -7409,10 +7409,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.21.0":
-  version: 6.21.0
-  resolution: "undici-types@npm:6.21.0"
-  checksum: 10/ec8f41aa4359d50f9b59fa61fe3efce3477cc681908c8f84354d8567bb3701fafdddf36ef6bff307024d3feb42c837cf6f670314ba37fc8145e219560e473d14
+"undici-types@npm:~7.10.0":
+  version: 7.10.0
+  resolution: "undici-types@npm:7.10.0"
+  checksum: 10/1f3fe777937690ab8a7a7bccabc8fdf4b3171f4899b5a384fb5f3d6b56c4b5fec2a51fbf345c9dd002ff6716fd440a37fa8fdb0e13af8eca8889f25445875ba3
   languageName: node
   linkType: hard
 
