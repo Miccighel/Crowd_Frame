@@ -117,7 +117,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
     docker==7.1.0
     ipinfo==5.1.1
     lxml==5.4.0
-    Mako==1.2.3
+    mako==1.2.3
     numpy==2.0.1
     pandas==2.2.3
     pycountry==24.6.1
@@ -127,7 +127,6 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
     pytz==2024.1
     requests==2.32.3
     rich==13.9.4
-    setuptools==78.1.1
     toloka-kit==1.2.3
     tqdm==4.67.1
     xlf-merge==0.1.6
