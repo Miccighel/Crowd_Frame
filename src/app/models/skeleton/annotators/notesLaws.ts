@@ -24,6 +24,7 @@ export class NoteLaws extends Note {
     this.withoutDetails = false;
     this.containsReferences = true;
     this.innerAnnotations = [];
+    this.noteType = 'laws';
   }
 
   public override restoreData(previousData: Object) {

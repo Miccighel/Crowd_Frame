@@ -50,6 +50,10 @@ export class AnnotatorLawsComponent {
         this.task = sectionService.task
     }
 
+    get notes(): NoteLaws[] {
+        return this.task.notes[this.documentIndex] as NoteLaws[];
+    }
+
     public performHighlighting(task: Task, changeDetector, event: Object, documentIndex: number, attributeIndex: number) {
         let domElement = null
         if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
@@ -213,8 +217,8 @@ export class AnnotatorLawsComponent {
         return false
     }
 
-    public filterNotes(notes: Note[]) {
-        var result: Note[] = []
+    public filterNotes(notes: NoteLaws[]) {
+        var result: NoteLaws[] = []
         for (let note of notes) {
             if (note instanceof NoteLaws) {
                 if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
@@ -514,4 +518,5 @@ export class AnnotatorLawsComponent {
         }
     }
 
+    protected readonly NoteLaws = NoteLaws;
 }

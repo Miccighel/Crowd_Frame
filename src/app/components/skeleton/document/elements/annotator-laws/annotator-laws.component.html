@@ -1,249 +1,247 @@
 @for (attribute of this.task.settings.attributesMain; track attribute; let k = $index) {
-  @if (task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
-    <div class="document-attributes">
-      <div class="attribute" [ngClass]="attribute.annotate ? 'annotatable' : 'standard'">
-        <!-- Attribute label/title and value (inline for text, stacked for images) -->
-        <div class="attribute-label">
-          <strong>{{ attribute.name_pretty || (attribute.name.split('_').join(' ') | titlecase) }}:</strong>
-          @if (attribute.annotate) {
-            <span class="annotatable-badge"></span>
-          }
-          @if (!attribute.annotate) {
-            @if (attribute.isImage(task.documents[documentIndex][attribute.name])) {
-              <br>
-                <img [src]="task.documents[documentIndex][attribute.name]" alt="{{attribute.name}}">
-              } @else {
-                <span class="attribute-text">
-                  {{ task.documents[documentIndex][attribute.name] }}
-                </span>
-              }
-            }
-          </div>
-          <!-- Annotatable attribute (highlightable text, below label) -->
-          @if (attribute.annotate) {
-            <div class="attribute-text attribute-text-annotatable"
-              id="document-{{documentIndex}}-attribute-{{k}}"
-              (mouseup)="performHighlighting(task, changeDetector, $event, documentIndex, k)"
-              (touchend)="performHighlighting(task, changeDetector, $event, documentIndex, k)">
-              {{ checkEnabledNotes(documentIndex) }}
-              {{ (task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'hide_attributes') ? '---------- text_hidden ----------' : task.documents[documentIndex][attribute.name] }}
+    @if (task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
+        <div class="document-attributes">
+            <div class="attribute" [ngClass]="attribute.annotate ? 'annotatable' : 'standard'">
+                <!-- Attribute label/title and value (inline for text, stacked for images) -->
+                <div class="attribute-label">
+                    <strong>{{ attribute.name_pretty || (attribute.name.split('_').join(' ') | titlecase) }}:</strong>
+                    @if (attribute.annotate) {
+                        <span class="annotatable-badge"></span>
+                    }
+                    @if (!attribute.annotate) {
+                        @if (attribute.isImage(task.documents[documentIndex][attribute.name])) {
+                            <br>
+                            <img [src]="task.documents[documentIndex][attribute.name]" alt="{{attribute.name}}">
+                        } @else {
+                            <span class="attribute-text">
+                                {{ task.documents[documentIndex][attribute.name] }}
+                            </span>
+                        }
+                    }
+                </div>
+                <!-- Annotatable attribute (highlightable text, below label) -->
+                @if (attribute.annotate) {
+                    <div class="attribute-text attribute-text-annotatable"
+                         id="document-{{documentIndex}}-attribute-{{k}}"
+                         (mouseup)="performHighlighting(task, changeDetector, $event, documentIndex, k)"
+                         (touchend)="performHighlighting(task, changeDetector, $event, documentIndex, k)">
+                        {{ checkEnabledNotes(documentIndex) }}
+                        {{ (task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'hide_attributes') ? '---------- text_hidden ----------' : task.documents[documentIndex][attribute.name] }}
+                    </div>
+                }
             </div>
-          }
         </div>
-      </div>
     }
     @if (attribute.annotate) {
-      @if (checkUndeletedNotesPresenceLaws(this.task.notes[documentIndex])) {
-        <section class="annotation-section">
-          @for (note of this.task.notes[documentIndex]; track note; let noteIndex = $index) {
-            @if (!note.deleted) {
-              <div class="annotation-recap-block">
-                <!-- Banner for "last annotation" -->
-                <header class="annotation-recap-header">
-                  @if (checkIfLast(documentIndex, noteIndex)) {
-                    <span class="ultima-annotazione-banner">
-                      ULTIMA ANNOTAZIONE ESEGUITA
-                    </span>
-                  }
-                </header>
-                <!-- Selected text quote row -->
-                <div class="annotation-quote">
-                  <span class="selected-label"><b>Hai selezionato:</b></span>
-                  <span class="annotation-current-text" [style.background-color]="note.color">
-                    {{ note.current_text }}
-                  </span>
-                  <div class="action-btn-row">
-                    <button
-                      (click)="removeAnnotationLaws(documentIndex, noteIndex)"
-                      mat-stroked-button
-                      color="warn"
-                      aria-label="Cancella annotazione"
-                      >
-                      <mat-icon>delete</mat-icon>
-                      Cancella
-                    </button>
-                  </div>
-                </div>
-                <!-- Annotation type selection -->
-                <div class="annotation-type-group">
-                  <span class="annotation-type-label"><b>Tipo di annotazione</b></span>
-                  <mat-radio-group
-                    aria-label="Tipo annotazione"
-                    [name]="'radio-group-' + documentIndex + '.' + noteIndex"
-                    (change)="radioChange($event, documentIndex, noteIndex)">
-                    <mat-radio-button class="radio-group-button" value="insertion">Inserimento</mat-radio-button>
-                    <mat-radio-button class="radio-group-button" value="substitution">Sostituzione</mat-radio-button>
-                    <mat-radio-button class="radio-group-button" value="repeal">Cancellazione</mat-radio-button>
-                    <mat-radio-button class="radio-group-button" value="reference" [checked]="true">Riferimento</mat-radio-button>
-                  </mat-radio-group>
-                </div>
-                <!-- Checkboxes for extra info -->
-                <div class="checkbox-row">
-                  <mat-checkbox
-                    (change)="checkboxChange($event, documentIndex, noteIndex)"
-                    [name]="'checkbox-' + noteIndex + '.' + documentIndex"
-                    [disabled]="note.type.includes('reference')"
-                    [checked]="note.containsReferences">
-                    contiene un riferimento a una legge al suo interno
-                  </mat-checkbox>
-                  @if (note.type.includes('reference')) {
-                    <mat-checkbox
-                      (change)="detailsCheckboxChange($event, documentIndex, noteIndex)"
-                      [name]="'details-checkbox-' + noteIndex + '.' + documentIndex"
-                      [disabled]="!note.type.includes('reference')"
-                      [checked]="note.withoutDetails">
-                      non ci sono ulteriori dettagli
-                    </mat-checkbox>
-                  }
-                </div>
-                <!-- Reference linking section -->
-                @if (note.containsReferences && !note.withoutDetails) {
-                  <div class="reference-form soft-border">
-                    <strong>Si riferisce a:</strong>
-                    <mat-radio-group
-                      aria-label="Collega riferimento"
-                      [name]="'reference-radio-group-' + documentIndex + '.' + noteIndex"
-                      (change)="referenceRadioChange($event, documentIndex, noteIndex)">
-                      <div class="reference-radio-group-button">
-                        <mat-radio-button value="null">Non presente nel testo</mat-radio-button>
-                      </div>
-                      @for (referred of filterNotes(this.task.notes[documentIndex]); track referred; let referredNoteIndex = $index) {
-                        <div class="reference-radio-group-button">
-                          <mat-radio-button [value]="referred.year + '-' + referred.number">
-                            {{ referred.year }}/{{ referred.number }}
-                          </mat-radio-button>
-                        </div>
-                      }
-                    </mat-radio-group>
-                  </div>
-                }
-                <!-- Inner annotation highlight and input -->
-                @if (note.containsReferences && !note.type.includes('reference')) {
-                  <div class="inner-annotation-text soft-border">
-                    <div class="inner-annotation-text-title">
-                      <strong>Evidenzia il riferimento interno:</strong>
-                    </div>
-                    <div class="inner-annotation-reference" [id]="'note-current-' + noteIndex + '.' + documentIndex">
-                      <span
-                        (mouseup)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
-                        (touchend)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
-                        [id]="'references-' + noteIndex + '.' + documentIndex">
-                        {{ note.current_text }}
-                      </span>
-                    </div>
-                    @for (innerNotes of note.innerAnnotations; track innerNotes; let innerNoteIndex = $index) {
-                      <div
-                        class="inner-annotation-item"
-                        [class.inner-annotation-active]="!innerNotes.deleted">
-                        @if (!innerNotes.deleted) {
-                          <mat-divider [inset]="true"></mat-divider>
-                          <div class="inner-annotation-quote">
-                            <span [style.background-color]="innerNotes.color">{{ innerNotes.current_text }}</span>
-                          </div>
-                          <div class="inner-annotation-checkbox-delete">
-                            <mat-checkbox
-                              (change)="innerDetailsCheckboxChange($event, documentIndex, noteIndex, innerNoteIndex)"
-                              [name]="'details-checkbox-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                              [disabled]="!innerNotes.type.includes('reference')"
-                              [checked]="innerNotes.withoutDetails">
-                              non ci sono ulteriori dettagli
-                            </mat-checkbox>
-                          </div>
-                          @if (innerNotes.type.includes('reference') && !innerNotes.withoutDetails) {
-                            <div class="annotation-options">
-                              <div class="law-input-labels">
-                                <label>
-                                  <b>Numero legge:</b><br>
-                                  <input type="number"
-                                    min="1" max="9999"
-                                    [name]="'number-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                                    [id]="'number-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                                    placeholder="00"
-                                    (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
-                                    (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
-                                  </label>
-                                </div>
-                                <div class="law-input-labels">
-                                  <label>
-                                    <b>Anno legge:</b><br>
-                                    <input type="number"
-                                      min="1900" max="2100"
-                                      [name]="'year-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                                      [id]="'year-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                                      placeholder="0000"
-                                      (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
-                                      (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
-                                    </label>
-                                  </div>
-                                  <div class="save-btn-container">
+        @if (checkUndeletedNotesPresenceLaws(this.notes)) {
+            <section class="annotation-section">
+                @for (note of this.notes; track note; let noteIndex = $index) {
+                    @if (!note.deleted) {
+                        <!-- note is always NoteLaws, so you can access all NoteLaws fields -->
+                        <div class="annotation-recap-block">
+                            <header class="annotation-recap-header">
+                                @if (checkIfLast(documentIndex, noteIndex)) {
+                                    <span class="ultima-annotazione-banner">
+                                        ULTIMA ANNOTAZIONE ESEGUITA
+                                    </span>
+                                }
+                            </header>
+                            <div class="annotation-quote">
+                                <span class="selected-label"><b>Hai selezionato:</b></span>
+                                <span class="annotation-current-text" [style.background-color]="note.color">
+                                    {{ note.current_text }}
+                                </span>
+                                <div class="action-btn-row">
                                     <button
-                                      (click)="performInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)"
-                                      mat-stroked-button color="primary"
-                                      [id]="'save_button-' + innerNoteIndex + '-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
-                                      [disabled]="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
-                                      <mat-icon>save</mat-icon>
-                                      Salva
+                                        (click)="removeAnnotationLaws(documentIndex, noteIndex)"
+                                        mat-stroked-button
+                                        color="warn"
+                                        aria-label="Cancella annotazione"
+                                    >
+                                        <mat-icon>delete</mat-icon>
+                                        Cancella
                                     </button>
-                                  </div>
                                 </div>
-                              }
-                              <div class="inner-annotation-checkbox-delete">
-                                <button
-                                  (click)="removeInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)"
-                                  mat-stroked-button color="warn">
-                                  <mat-icon>delete</mat-icon>
-                                  Cancella riferimento
-                                </button>
-                              </div>
+                            </div>
+                            <!-- Annotation type selection -->
+                            <div class="annotation-type-group">
+                                <span class="annotation-type-label"><b>Tipo di annotazione</b></span>
+                                <mat-radio-group
+                                    aria-label="Tipo annotazione"
+                                    [name]="'radio-group-' + documentIndex + '.' + noteIndex"
+                                    (change)="radioChange($event, documentIndex, noteIndex)">
+                                    <mat-radio-button class="radio-group-button" value="insertion">Inserimento</mat-radio-button>
+                                    <mat-radio-button class="radio-group-button" value="substitution">Sostituzione</mat-radio-button>
+                                    <mat-radio-button class="radio-group-button" value="repeal">Cancellazione</mat-radio-button>
+                                    <mat-radio-button class="radio-group-button" value="reference" [checked]="true">Riferimento</mat-radio-button>
+                                </mat-radio-group>
+                            </div>
+                            <!-- Checkboxes for extra info -->
+                            <div class="checkbox-row">
+                                <mat-checkbox
+                                    (change)="checkboxChange($event, documentIndex, noteIndex)"
+                                    [name]="'checkbox-' + noteIndex + '.' + documentIndex"
+                                    [disabled]="note.type.includes('reference')"
+                                    [checked]="note.containsReferences">
+                                    contiene un riferimento a una legge al suo interno
+                                </mat-checkbox>
+                                @if (note.type.includes('reference')) {
+                                    <mat-checkbox
+                                        (change)="detailsCheckboxChange($event, documentIndex, noteIndex)"
+                                        [name]="'details-checkbox-' + noteIndex + '.' + documentIndex"
+                                        [disabled]="!note.type.includes('reference')"
+                                        [checked]="note.withoutDetails">
+                                        non ci sono ulteriori dettagli
+                                    </mat-checkbox>
+                                }
+                            </div>
+                            <!-- Reference linking section -->
+                            @if (note.containsReferences && !note.withoutDetails) {
+                                <div class="reference-form soft-border">
+                                    <strong>Si riferisce a:</strong>
+                                    <mat-radio-group
+                                        aria-label="Collega riferimento"
+                                        [name]="'reference-radio-group-' + documentIndex + '.' + noteIndex"
+                                        (change)="referenceRadioChange($event, documentIndex, noteIndex)">
+                                        <div class="reference-radio-group-button">
+                                            <mat-radio-button value="null">Non presente nel testo</mat-radio-button>
+                                        </div>
+                                        @for (referred of filterNotes(this.notes); track referred; ) {
+                                            <div class="reference-radio-group-button">
+                                                <mat-radio-button [value]="referred.year + '-' + referred.number">
+                                                    {{ referred.year }}/{{ referred.number }}
+                                                </mat-radio-button>
+                                            </div>
+                                        }
+                                    </mat-radio-group>
+                                </div>
                             }
-                          </div>
-                        }
-                      </div>
+                            <!-- Inner annotation highlight and input -->
+                            @if (note.containsReferences && !note.type.includes('reference')) {
+                                <div class="inner-annotation-text soft-border">
+                                    <div class="inner-annotation-text-title">
+                                        <strong>Evidenzia il riferimento interno:</strong>
+                                    </div>
+                                    <div class="inner-annotation-reference" [id]="'note-current-' + noteIndex + '.' + documentIndex">
+                                        <span
+                                            (mouseup)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
+                                            (touchend)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
+                                            [id]="'references-' + noteIndex + '.' + documentIndex">
+                                            {{ note.current_text }}
+                                        </span>
+                                    </div>
+                                    @for (innerNotes of note.innerAnnotations; track innerNotes; let innerNoteIndex = $index) {
+                                        <div
+                                            class="inner-annotation-item"
+                                            [class.inner-annotation-active]="!innerNotes.deleted">
+                                            @if (!innerNotes.deleted) {
+                                                <mat-divider [inset]="true"></mat-divider>
+                                                <div class="inner-annotation-quote">
+                                                    <span [style.background-color]="innerNotes.color">{{ innerNotes.current_text }}</span>
+                                                </div>
+                                                <div class="inner-annotation-checkbox-delete">
+                                                    <mat-checkbox
+                                                        (change)="innerDetailsCheckboxChange($event, documentIndex, noteIndex, innerNoteIndex)"
+                                                        [name]="'details-checkbox-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                        [disabled]="!innerNotes.type.includes('reference')"
+                                                        [checked]="innerNotes.withoutDetails">
+                                                        non ci sono ulteriori dettagli
+                                                    </mat-checkbox>
+                                                </div>
+                                                @if (innerNotes.type.includes('reference') && !innerNotes.withoutDetails) {
+                                                    <div class="annotation-options">
+                                                        <div class="law-input-labels">
+                                                            <label>
+                                                                <b>Numero legge:</b><br>
+                                                                <input type="number"
+                                                                       min="1" max="9999"
+                                                                       [name]="'number-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                                       [id]="'number-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                                       placeholder="00"
+                                                                       (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
+                                                                       (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
+                                                            </label>
+                                                        </div>
+                                                        <div class="law-input-labels">
+                                                            <label>
+                                                                <b>Anno legge:</b><br>
+                                                                <input type="number"
+                                                                       min="1900" max="2100"
+                                                                       [name]="'year-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                                       [id]="'year-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                                       placeholder="0000"
+                                                                       (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
+                                                                       (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
+                                                            </label>
+                                                        </div>
+                                                        <div class="save-btn-container">
+                                                            <button
+                                                                (click)="performInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)"
+                                                                mat-stroked-button color="primary"
+                                                                [id]="'save_button-' + innerNoteIndex + '-' + innerNoteIndex + '-' + noteIndex + '.' + documentIndex"
+                                                                [disabled]="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
+                                                                <mat-icon>save</mat-icon>
+                                                                Salva
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                <div class="inner-annotation-checkbox-delete">
+                                                    <button
+                                                        (click)="removeInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)"
+                                                        mat-stroked-button color="warn">
+                                                        <mat-icon>delete</mat-icon>
+                                                        Cancella riferimento
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            <!-- Direct reference details (law number/year) -->
+                            @if (note.type.includes('reference') && !note.withoutDetails) {
+                                <div class="annotation-options soft-border">
+                                    <div class="law-input-labels">
+                                        <label>
+                                            <b>Numero legge:</b><br>
+                                            <input type="number"
+                                                   min="1" max="9999"
+                                                   [name]="'number-' + noteIndex + '.' + documentIndex"
+                                                   [id]="'number-' + noteIndex + '.' + documentIndex"
+                                                   placeholder="00"
+                                                   (change)="checkIfSaved(documentIndex, noteIndex)"
+                                                   (keyup)="checkIfSaved(documentIndex, noteIndex)">
+                                        </label>
+                                    </div>
+                                    <div class="law-input-labels">
+                                        <label>
+                                            <b>Anno legge:</b><br>
+                                            <input type="number"
+                                                   min="1900" max="2100"
+                                                   [name]="'year-' + noteIndex + '.' + documentIndex"
+                                                   [id]="'year-' + noteIndex + '.' + documentIndex"
+                                                   placeholder="0000"
+                                                   (change)="checkIfSaved(documentIndex, noteIndex)"
+                                                   (keyup)="checkIfSaved(documentIndex, noteIndex)">
+                                        </label>
+                                    </div>
+                                    <div class="save-btn-container">
+                                        <button
+                                            (click)="performAnnotationLaws(documentIndex, noteIndex)"
+                                            mat-stroked-button color="primary"
+                                            [id]="'save_button-' + noteIndex + '.' + documentIndex"
+                                            [disabled]="checkIfSaved(documentIndex, noteIndex)">
+                                            <mat-icon>save</mat-icon>
+                                            Salva
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     }
-                    <!-- Direct reference details (law number/year) -->
-                    @if (note.type.includes('reference') && !note.withoutDetails) {
-                      <div
-                        class="annotation-options soft-border">
-                        <div class="law-input-labels">
-                          <label>
-                            <b>Numero legge:</b><br>
-                            <input type="number"
-                              min="1" max="9999"
-                              [name]="'number-' + noteIndex + '.' + documentIndex"
-                              [id]="'number-' + noteIndex + '.' + documentIndex"
-                              placeholder="00"
-                              (change)="checkIfSaved(documentIndex, noteIndex)"
-                              (keyup)="checkIfSaved(documentIndex, noteIndex)">
-                            </label>
-                          </div>
-                          <div class="law-input-labels">
-                            <label>
-                              <b>Anno legge:</b><br>
-                              <input type="number"
-                                min="1900" max="2100"
-                                [name]="'year-' + noteIndex + '.' + documentIndex"
-                                [id]="'year-' + noteIndex + '.' + documentIndex"
-                                placeholder="0000"
-                                (change)="checkIfSaved(documentIndex, noteIndex)"
-                                (keyup)="checkIfSaved(documentIndex, noteIndex)">
-                              </label>
-                            </div>
-                            <div class="save-btn-container">
-                              <button
-                                (click)="performAnnotationLaws(documentIndex, noteIndex)"
-                                mat-stroked-button color="primary"
-                                [id]="'save_button-' + noteIndex + '.' + documentIndex"
-                                [disabled]="checkIfSaved(documentIndex, noteIndex)">
-                                <mat-icon>save</mat-icon>
-                                Salva
-                              </button>
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    }
-                  }
-                </section>
-              }
-            }
-          }
+                }
+            </section>
+        }
+    }
+}

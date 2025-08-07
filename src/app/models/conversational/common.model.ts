@@ -24,7 +24,7 @@ export interface IntervalDimensionInfo {
 
 export interface DropdownSelectItem {
     label: string;
-    value?: string;
+    value: string;
 }
 
 export interface AnswerModel {

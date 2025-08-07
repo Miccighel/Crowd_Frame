@@ -1,38 +1,41 @@
 {
     "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
-	"compilerOptions": {
-		/* Paths & output */
-		"baseUrl": "./",
-		"outDir": "./dist/out-tsc",
-		/* Build-system defaults (Angular 18 + esbuild) */
-		"moduleResolution": "bundler",
-		"module": "esnext",
-		"target": "ES2022",
-		"importHelpers": true,
-		/* Interop & decorators */
-		"esModuleInterop": true,
-		"experimentalDecorators": true,
-		"useDefineForClassFields": false,
-		/* Diagnostics & safety nets (temporarily relaxed) */
-		"sourceMap": true,
-		"declaration": false,
-		"forceConsistentCasingInFileNames": true,
-		"noFallthroughCasesInSwitch": true,
+    // --- PATHS & OUTPUT ---
+    "compilerOptions": {
+        "baseUrl": "./",
+        "outDir": "./dist/out-tsc",
+        // --- MODULE & TARGET (Angular 18+ with esbuild) ---
+        "moduleResolution": "bundler",
+        "module": "esnext",
+        "target": "ES2022",
+        // --- TYPESCRIPT/ANGULAR FEATURES ---
+        "importHelpers": true,
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false,
+        // --- INTEROP ---
+        "esModuleInterop": true,
+        // --- DIAGNOSTICS & SAFETY NETS ---
+        "sourceMap": true,
+        "declaration": false,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noImplicitOverride": true,
+        "noImplicitAny": false,
         "noPropertyAccessFromIndexSignature": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-		/* JSON imports & standard libs */
-		"resolveJsonModule": true,
-		"lib": [
-			"ES2022",
-			"dom"
-		]
-	},
-	"angularCompilerOptions": {
-		"strictTemplates": false,
-		"strictInjectionParameters": false,
-		"strictInputAccessModifiers": false
-	}
+        // --- STANDARD LIBS & JSON IMPORTS ---
+        "resolveJsonModule": true,
+        "lib": [
+            "ES2022",
+            "dom"
+        ]
+    },
+    // --- ANGULAR COMPILER OPTIONS ---
+    "angularCompilerOptions": {
+        "strictTemplates": false,
+        "strictInjectionParameters": true,
+        "strictInputAccessModifiers": true
+    }
 }

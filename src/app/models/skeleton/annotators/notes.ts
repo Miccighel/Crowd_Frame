@@ -22,6 +22,8 @@ export abstract class Note {
     existing_notes: Array<String>
     serialization: string
 
+    noteType: 'laws' | 'standard';
+
     annotator: Annotator;
 
     protected constructor(
@@ -86,6 +88,7 @@ export abstract class Note {
         this.index_start = this.text_left.length
         this.index_end = this.text_left.length + this.current_text.length
         this.serialization = serialization
+        this.noteType = 'standard';
     }
 
     public restoreData(previousData: Object) {

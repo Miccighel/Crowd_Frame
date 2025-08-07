@@ -224,7 +224,7 @@
                                 </td>
                                 <td class="p-0 center">
                                   <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="dimensionMappingIndex == '0' && dimensionMapping(dimensionIndex).length == 1"
+                                    [disabled]="dimensionMappingIndex === 0 && dimensionMapping(dimensionIndex).length == 1"
                                     (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
                                     <span i18n>Remove Mapping</span>
                                   </button>

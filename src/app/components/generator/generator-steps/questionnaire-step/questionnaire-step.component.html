@@ -105,7 +105,7 @@
                             </td>
                             <td class="p-0 center">
                               <button mat-flat-button color="primary" class="mb-16px"
-                                [disabled]="questionIndex == '0' && questions(questionnaireIndex).length == 1"
+                                [disabled]="questionIndex === 0 && questions(questionnaireIndex).length == 1"
                                 (click)="removeQuestion(questionnaireIndex, questionIndex)">
                                 <span i18n>Remove Question</span>
                               </button>

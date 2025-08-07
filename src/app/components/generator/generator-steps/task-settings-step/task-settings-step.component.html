@@ -92,7 +92,7 @@
           <table class="width-100" style="border-collapse: collapse">
             @for (item of this.formStep.get('logger_option').value | keyvalue; track item) {
               <tr style="border-bottom: thin solid lightgray">
-                <th align="left">
+                <th>
                   <mat-checkbox color="primary" [checked]="this.formStep.get('logger_option').value[item.key]['general']" (change)="updateLoggerOption(item.key.toString(),'general')">
                     {{item.key.toUpperCase()}} <span i18n>events</span>
                   </mat-checkbox>
@@ -380,7 +380,7 @@
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
-                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)" [disabled]="valueIndex == '0' && annotatorOptionValues().controls.length == 1">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)" [disabled]="valueIndex === 0 && annotatorOptionValues().controls.length == 1">
                       <span i18n>Remove Option</span>
                     </button>
                   </td>

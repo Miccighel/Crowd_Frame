@@ -71,6 +71,7 @@ import { FilterPipe } from './pipes/filter.pipe';
 /* RxJS imports */
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
+import {ColorPickerDirective} from "ngx-color-picker";
 
 /* Initializer function to preload configurations */
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
@@ -143,7 +144,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         NgxFileHelpersModule,
         NgxUiLoaderModule,
         MatProgressSpinnerModule,
-        AppRoutingModule // Always keep AppRoutingModule as the last import
+        AppRoutingModule, ColorPickerDirective, // Always keep AppRoutingModule as the last import
     ], providers: [
         SectionService,
         provideAppInitializer(() => {

@@ -481,8 +481,7 @@ export class DimensionComponent implements OnInit, OnChanges {
 
     /* #################### CHECKBOX-BASED CONTROL #################### */
 
-    /* This function handles checkbox-based controls where multiple checkboxes can be selected, not natively supported by Angular Material.
-     * TODO: Improve the usage of storeDimensionValue for better clarity or handle specific scenarios. */
+    /* This function handles checkbox-based controls where multiple checkboxes can be selected, not natively supported by Angular Material. */
     public handleCheckbox(data, dimension, index) {
         let controlValid = false
         let currentAssessmentForm = this.getCurrentAssessmentForm()
