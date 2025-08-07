@@ -214,15 +214,15 @@
           }
           <!-- recursive call -->
           @if (question.questions?.length) {
-            <div class="indent">
-              @for ( of question.questions; track ) {
-                <ng-template
-                  [ngForOf]="question.questions"
-                  [ngForTemplate]="questionTemplate">
-                </ng-template>
-              }
-            </div>
-          }
+			  <div class="indent">
+				@for (q of question.questions; track q.id) {
+				  <ng-template
+					[ngTemplateOutlet]="questionTemplate"
+					[ngTemplateOutletContext]="{ $implicit: q }">
+				  </ng-template>
+				}
+			  </div>
+		  }
         </ng-template>
         <!-- STANDARD questionnaire -->
         @if (questionnaire.type === 'standard') {
