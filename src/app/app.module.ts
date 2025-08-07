@@ -10,7 +10,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {NgxUiLoaderModule} from 'ngx-ui-loader';
 import {CountdownModule} from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
-import {ColorPickerModule} from 'ngx-color-picker';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {AngularEditorModule} from '@kolkov/angular-editor';
 
@@ -142,7 +141,6 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         NgbModule,
         CountdownModule,
         NgxFileHelpersModule,
-        ColorPickerModule,
         NgxUiLoaderModule,
         MatProgressSpinnerModule,
         AppRoutingModule // Always keep AppRoutingModule as the last import
