@@ -111,10 +111,10 @@ export class WorkerChecksStepComponent implements OnInit {
         });
         this.whitelistedWorkerId = new Set();
         this.blacklistedWorkerId = new Set();
-        this.dataStored.blacklist.forEach((workerId, workerIndex) =>
+        this.dataStored.blacklist.forEach((workerId, _workerIndex) =>
             this.blacklistedWorkerId.add(workerId)
         );
-        this.dataStored.whitelist.forEach((workerId, workerIndex) =>
+        this.dataStored.whitelist.forEach((workerId, _workerIndex) =>
             this.whitelistedWorkerId.add(workerId)
         );
         for (let taskNode of this.batchesTree) {
@@ -122,7 +122,7 @@ export class WorkerChecksStepComponent implements OnInit {
                 this.addBatch(batchNode);
             }
         }
-        this.formStep.valueChanges.subscribe((form) => {
+        this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();

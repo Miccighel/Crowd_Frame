@@ -1,6 +1,6 @@
 /* Core modules */
 import {Injectable} from '@angular/core';
-import {from, mergeMap, Observable, of, toArray} from "rxjs";
+import {from, mergeMap, Observable, toArray} from "rxjs";
 /* HTTP handling modules */
 import { HttpClient } from '@angular/common/http';
 import {FakeSearchResponse} from "../../models/searchEngine/fakeSearchResponse";

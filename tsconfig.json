@@ -1,5 +1,5 @@
 {
-	"$schema": "./node_modules/@angular/compiler-cli/src/schemas/tsconfig.schema.json",
+    "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
 	"compilerOptions": {
 		/* Paths & output */
 		"baseUrl": "./",
@@ -17,10 +17,12 @@
 		"sourceMap": true,
 		"declaration": false,
 		"forceConsistentCasingInFileNames": true,
-		"noImplicitReturns": false,
 		"noFallthroughCasesInSwitch": true,
-		"noImplicitOverride": false,
-		"noPropertyAccessFromIndexSignature": false,
+        "noImplicitReturns": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
 		/* JSON imports & standard libs */
 		"resolveJsonModule": true,
 		"lib": [

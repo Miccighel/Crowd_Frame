@@ -94,7 +94,7 @@ export class DynamoDBService {
 
         /* Local sort — adjust the field name if you need another column */
         page.Items = (page.Items ?? []).sort((a, b) => {
-            const cmp = String(a.unit_id).localeCompare(String(b.unit_id));
+            const cmp = String(a["unit_id"]).localeCompare(String(b["unit_id"]));
             return ascending ? cmp : -cmp;
         });
 
@@ -135,7 +135,7 @@ export class DynamoDBService {
     async insertACLRecordUnitId(
         cfg,
         entry: Record<string, string>,
-        currentTry: number,
+        _currentTry: number,
         updateArrivalTime = false,
         updateRemovalTime = false
     ) {
@@ -143,13 +143,13 @@ export class DynamoDBService {
         const item = {...entry};
 
         if (updateArrivalTime) {
-            item.time_arrival = now;
-            const counter = parseInt(item.access_counter ?? '0', 10) + 1;
-            item.access_counter = counter.toString();
+            item['time_arrival'] = now;
+            const counter = parseInt(item['access_counter'] ?? '0', 10) + 1;
+            item['access_counter'] = counter.toString();
         }
 
         if (updateRemovalTime) {
-            item.time_removal = now;
+            item['time_removal'] = now;
         }
 
         const client = this.docClient(cfg);
@@ -178,7 +178,7 @@ export class DynamoDBService {
         const sequence = `${seqBase}-${task.sequenceNumber}`;
 
         /* flatten data.info, diverting ‘sequence’ → ‘sequence_number’ */
-        const infoItem = Object.entries(data.info ?? {}).reduce(
+        const infoItem = Object.entries(data["info"] ?? {}).reduce(
             (acc, [k, v]) => {
                 if (k === 'sequence') {
                     return {...acc, sequence_number: v.toString()};  // 👈 guard added

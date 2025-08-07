@@ -201,8 +201,8 @@ export class Worker {
     }
 
     convertToSnakeCase(property) {
-        return property.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
-            return "_" + y.toLowerCase()
+        return property.replace(/(?:^|\.?)([A-Z])/g, function (_x, _y) {
+            return "_" + _y.toLowerCase()
         }).replace(/^_/, "")
     }
 

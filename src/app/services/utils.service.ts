@@ -104,7 +104,7 @@ export class UtilsService {
                     const isValidFormat = pattern.test(value);
                     if (!isValidFormat)
                         return {numberFormat: true};
-                    
+
                     const numericValue = +String(value).replace(/,/g, ""); // Extract numeric value
 
                     return numericValue > minValue ? null : {numberGreaterThan: true}
@@ -166,7 +166,7 @@ export class UtilsService {
             if (document.querySelector(selector)) {
                 return resolve(document.querySelector(selector));
             }
-            const observer = new MutationObserver(mutations => {
+            const observer = new MutationObserver(_mutations => {
                 if (document.querySelector(selector)) {
                     observer.disconnect();
                     resolve(document.querySelector(selector));

@@ -255,7 +255,7 @@ export class SearchEngineBodyComponent implements OnInit, AfterViewInit {
                                     this.ngxService.stopBackgroundLoader('search-loader');
                                     return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                                 }),
-                                catchError((error) => {
+                                catchError((_error) => {
                                     this.searchInProgress = false;
                                     this.estimatedMatches = 0;
                                     this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches;
@@ -317,7 +317,7 @@ export class SearchEngineBodyComponent implements OnInit, AfterViewInit {
                                     this.ngxService.stopBackgroundLoader('search-loader');
                                     return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                                 }),
-                                catchError((error) => {
+                                catchError((_error) => {
                                     this.searchInProgress = false;
                                     this.estimatedMatches = 0;
                                     this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches;
@@ -378,7 +378,7 @@ export class SearchEngineBodyComponent implements OnInit, AfterViewInit {
                                     this.ngxService.stopBackgroundLoader('search-loader');
                                     return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                                 }),
-                                catchError((error) => {
+                                catchError((_error) => {
                                     this.estimatedMatches = 0;
                                     this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches;
                                     this.searchInProgress = false;
@@ -409,7 +409,7 @@ export class SearchEngineBodyComponent implements OnInit, AfterViewInit {
                 "encoded": encodeURIComponent(this.lastQueryValue)
             });
             this.searchAmount = this.preRetrievedResults.length;
-            this.dataSource = new CustomDataSource((query, resultsToSkip, querySentByUser) => {
+            this.dataSource = new CustomDataSource((_query, resultsToSkip, _querySentByUser) => {
                 this.ensureResultsRetrievedFormsReady();
                 let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize;
                 let resultSliceEnd = resultSliceStart + this.paginator.pageSize;

@@ -15,8 +15,6 @@ import {NoteLaws} from "./annotators/notesLaws";
 /* Search Engine */
 import {PreRetrievedResultsSettings, SearchEngineSettings} from "../searchEngine/searchEngineSettings";
 import {PreRetrievedResult} from "../searchEngine/preRetrievedResult";
-/* Worker */
-import {Worker} from "../worker/worker";
 
 export class Task {
 

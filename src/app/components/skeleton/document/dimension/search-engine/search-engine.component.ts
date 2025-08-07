@@ -82,7 +82,7 @@ export class SearchEngineComponent implements OnInit {
                 controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl(urlValue, [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             }
             this.searchEngineForm = this.formBuilder.group(controlsConfig)
-            this.searchEngineForm.valueChanges.subscribe(values => {
+            this.searchEngineForm.valueChanges.subscribe(_values => {
                 this.formEmitter.emit(this.searchEngineForm)
             })
         } else {

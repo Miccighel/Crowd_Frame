@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
@@ -8,7 +8,6 @@ import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
 import {BaseInstruction} from "../../../../models/skeleton/instructions/baseInstruction";
 import {EvaluationInstruction} from "../../../../models/skeleton/instructions/evaluationInstruction";
-import {SearchEngineSettings} from "../../../../models/searchEngine/searchEngineSettings";
 
 @Component({
     selector: 'app-instructions-evaluation-step',
@@ -95,7 +94,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
                 this.addInstruction(instructionIndex, instruction)
             })
         }
-        this.formStep.valueChanges.subscribe(form => {
+        this.formStep.valueChanges.subscribe(_form => {
             this.serializeConfiguration()
         })
         this.serializeConfiguration()
@@ -118,7 +117,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         return this.formStep?.get(`instructions`) as UntypedFormArray;
     }
 
-    addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {
+    addInstruction(_instructionIndex = null, instruction = null as BaseInstruction) {
         this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
             text: instruction ? instruction.text ? instruction.text : '' : '',
@@ -135,7 +134,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         let instructionsEvaluationJSON = JSON.parse(JSON.stringify(this.formStep.value));
         if (!instructionsEvaluationJSON.setElement) instructionsEvaluationJSON.element = false
         delete instructionsEvaluationJSON.setElement
-        instructionsEvaluationJSON.instructions.forEach((instruction, instructionIndex) => {
+        instructionsEvaluationJSON.instructions.forEach((instruction, _instructionIndex) => {
             if (instruction.caption == '') instruction.caption = false
         })
         if (instructionsEvaluationJSON.element.caption == '') instructionsEvaluationJSON.element.caption = false

@@ -1,5 +1,4 @@
 import { CategoricalInfo } from "src/app/models/conversational/common.model";
-import { Questionnaire } from "src/app/models/skeleton/questionnaires/questionnaire";
 
 export default class ChatHelper {
     // Controllo che un messaggio abbia valori compresi tra min e max e che sia un numero

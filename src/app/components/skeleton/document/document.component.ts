@@ -15,10 +15,7 @@ import {
     ViewChild,
     ViewChildren,
 } from '@angular/core';
-import {
-    UntypedFormBuilder,
-    UntypedFormGroup,
-} from '@angular/forms';
+import {UntypedFormGroup} from '@angular/forms';
 
 /* Angular Material */
 import {MatStepper} from '@angular/material/stepper';
@@ -114,7 +111,6 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
         private titleService: Title,
         private snackBar: MatSnackBar,
         private dialog: MatDialog,
-        private formBuilder: UntypedFormBuilder,
         private dynamoDBService: DynamoDBService,
         private configService: ConfigService,
         private elementRef: ElementRef

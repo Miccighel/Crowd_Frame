@@ -17,10 +17,12 @@ export class CustomDataSource implements DataSource<BaseResponse> {
         private fetchData: (queryValue : string, resultsToSkip: number, querySentByUser: boolean) => Observable<BaseResponse[]>
     ) {}
 
+    // @ts-ignore TS6133: part of Datasource logic
     connect(collectionViewer: CollectionViewer): Observable<BaseResponse[]> {
         return this.dataSubject.asObservable();
     }
 
+    // @ts-ignore TS6133: part of Datasource logic
     disconnect(collectionViewer: CollectionViewer): void {
         this.dataSubject.complete();
         this.loadingSubject.complete();

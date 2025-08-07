@@ -1,5 +1,4 @@
 import {Note} from "./annotators/notes";
-import {NoteStandard} from "./annotators/notesStandard";
 
 export class DataRecord {
 
@@ -84,7 +83,7 @@ export class DataRecord {
     public loadCountdownExpired() : boolean {
         return this.data['countdowns_expired'];
     }
-    
+
     public loadCountdownStarted() : boolean {
         return this.data['countdowns_started'];
     }

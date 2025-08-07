@@ -487,7 +487,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(
                     "Please type a integer number between 1 and 100"
                 );
-                return;
+                return false;
             } else {
                 this.textInputPlaceHolder = null;
                 const questionType = this.getQuestionnaireType(
@@ -603,7 +603,7 @@ export class ChatWidgetComponent implements OnInit {
             }, 1600);
         }
         this.awaitingAnswer = true;
-        return;
+        return false;
     }
 
     // Fase di istruzioni
@@ -2189,7 +2189,7 @@ export class ChatWidgetComponent implements OnInit {
         this.maxValue = dimensionInfos.max;
         this.inputComponentToShow = InputType.Slider;
     }
-    private generateTextualAnswer(dimensionIndex: number) {
+    private generateTextualAnswer(_dimensionIndex: number) {
         this.textInputPlaceHolder = null;
         this.inputComponentToShow = InputType.Text;
     }
@@ -2531,7 +2531,7 @@ export class ChatWidgetComponent implements OnInit {
         return data;
     }
 
-    private taskQualityCheck(): boolean {
+    private taskQualityCheck(): void {
         for (let goldDocument of this.task.goldDocuments) {
             let currentConfiguration = {};
             currentConfiguration["document"] = goldDocument;
@@ -2553,7 +2553,6 @@ export class ChatWidgetComponent implements OnInit {
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
         this.goldChecks = GoldChecker.performGoldCheck(this.goldConfiguration);
-        return;
     }
 
     public buildCommentPayload(comment) {

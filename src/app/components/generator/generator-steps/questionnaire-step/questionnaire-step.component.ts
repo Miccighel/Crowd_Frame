@@ -13,7 +13,6 @@ import { LocalStorageService } from "../../../../services/localStorage.service";
 /* Models */
 import { Questionnaire } from "../../../../models/skeleton/questionnaires/questionnaire";
 import { Question } from "../../../../models/skeleton/questionnaires/question";
-import { Dimension } from "../../../../models/skeleton/dimension";
 import { S3Service } from "../../../../services/aws/s3.service";
 
 /* STEP #1 - Questionnaires */
@@ -115,7 +114,7 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.addQuestionnaire(questionnaireIndex, questionnaire);
             });
         }
-        this.formStep.valueChanges.subscribe((form) => {
+        this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();

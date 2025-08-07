@@ -1,7 +1,7 @@
 /* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnInit, Renderer2} from '@angular/core';
 /* Highlighter */
-import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, TextHighlighter} from "@funktechno/texthighlighter/lib";
+import {doHighlight, TextHighlighter} from "@funktechno/texthighlighter/lib";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
 import {Note} from "../../../../../models/skeleton/annotators/notes";
@@ -54,12 +54,12 @@ export class AnnotatorOptionsComponent implements OnInit {
     }
 
     public ngOnInit() {
-        this.utilsService.waitForElementInitialization('body').then((element) => {
+        this.utilsService.waitForElementInitialization('body').then((_element) => {
             this.highlighter = new TextHighlighter(this.domElement.nativeElement.ownerDocument.body, {
                 /* This instance of the highlighter intercepts events on the whole body, but it is only needed to
                  * deserialize previous highlights, which are being parsed from the database, and serialize those that are new.
                  * Thus, this instance DOES NOT have to trigger any new highlights on the rest of the DOM. */
-                onBeforeHighlight: (range: Range) => false
+                onBeforeHighlight: (_range: Range) => false
             });
             let mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
             if (mostRecentDataRecord) {
@@ -148,6 +148,8 @@ export class AnnotatorOptionsComponent implements OnInit {
                         let noteCreated = new NoteStandard(documentIndex, attributeIndex, range, highlight, JSON.stringify(currentSerialization))
                         if (highlight[0]["outerText"]) notes[documentIndex].push(noteCreated)
                         return true
+                    } else {
+                        return false
                     }
                 }
             })

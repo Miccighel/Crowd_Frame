@@ -38,8 +38,6 @@ export class SectionService {
     private _taskAlreadyCompleted: boolean;
     private _taskOverbooking: boolean;
 
-    private _errorStatusCode: number
-
     private _checkCompleted: boolean;
     private _taskInstructionsRead: boolean;
     private _stepIndex: number;
@@ -56,8 +54,6 @@ export class SectionService {
         this._taskFailed = false
         this._taskAlreadyCompleted = false
         this._taskOverbooking = false
-
-        this._errorStatusCode = 0
 
         this._stepIndex = 0
     }
@@ -201,7 +197,7 @@ export class SectionService {
             for (let i = 0; i < currentDocument; i++)
                 if(this.task.documents[i]["params"]["task_type"].toLowerCase() != currentTaskType.toLowerCase())
                     countDifferentTaskType += 1
-            
+
             this.currentSection = currentTaskType.toLowerCase() + '-section-' + String(currentDocument-countDifferentTaskType)
         } else if (this.taskCompleted && this.taskSuccessful) {
             this.currentSection = 'success-section'

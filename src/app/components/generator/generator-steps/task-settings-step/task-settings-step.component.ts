@@ -23,11 +23,6 @@ interface ModalityType {
     viewValue: string;
 }
 
-interface BatchNode {
-    name: string;
-    batches?: BatchNode[];
-}
-
 @Component({
     selector: "app-task-settings-step",
     templateUrl: "./task-settings-step.component.html",
@@ -138,7 +133,7 @@ export class TaskSettingsStepComponent implements OnInit {
                     this.checkSolverStatus();
                 }, 5000);
             },
-            (error) => {
+            (_error) => {
                 this.solverStatus = false;
                 setTimeout(() => {
                     this.checkSolverStatus();
@@ -159,7 +154,7 @@ export class TaskSettingsStepComponent implements OnInit {
                     this.checkSolverStatus();
                 }, 5000);
             },
-            (error) => {
+            (_error) => {
                 this.solverStatus = false;
                 this.cd.detectChanges();
                 setTimeout(() => {
@@ -233,7 +228,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 if (this.dataStored.annotator.values.length > 0) {
                     this.annotatorOptionColors = [];
                     this.dataStored.annotator.values.forEach(
-                        (optionValue, optionValueIndex) => {
+                        (optionValue, _optionValueIndex) => {
                             this.annotatorOptionColors.push(
                                 optionValue["color"]
                             );
@@ -324,13 +319,13 @@ export class TaskSettingsStepComponent implements OnInit {
             this.emitModality(this.dataStored.modality);
         if (this.dataStored.messages)
             if (this.dataStored.messages.length > 0)
-                this.dataStored.messages.forEach((message, messageIndex) =>
+                this.dataStored.messages.forEach((message, _messageIndex) =>
                     this.addMessage(message)
                 );
         if (this.dataStored.annotator)
             if (this.dataStored.annotator.type == "options")
                 this.dataStored.annotator.values.forEach(
-                    (optionValue, optionValueIndex) =>
+                    (optionValue, _optionValueIndex) =>
                         this.addOptionValue(optionValue)
                 );
         if (this.dataStored.countdownTime >= 0) {
@@ -353,8 +348,8 @@ export class TaskSettingsStepComponent implements OnInit {
                 }
             }
         }
-        let hitsPromise = this.loadHits();
-        this.formStep.valueChanges.subscribe((form) => {
+        await this.loadHits();
+        this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();
@@ -781,7 +776,7 @@ export class TaskSettingsStepComponent implements OnInit {
             }
             documents_number.push(docs.length);
         });
-        return documents_number.every((el, index, arr) => el == arr[0]);
+        return documents_number.every((el, _index, arr) => el == arr[0]);
     }
 
     checkCategoriesSelection() {
@@ -804,7 +799,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (hitDimensions.length > 0) {
             // Requester has chosen at least 1 one categories from the list
             if (
-                hitDimensions.every((val, i, arr) => val == arr[0]) &&
+                hitDimensions.every((val, _i, arr) => val == arr[0]) &&
                 hitDimensions[0] > 0
             ) {
                 // All the values in the hitDimensions array are equals
@@ -898,7 +893,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 /* This function check */
                 this.checkHitStatus(url, task_id, this.docsParsed, 2000);
             },
-            (error) => {
+            (_error) => {
                 this.solutionStatus =
                     "Error on the solver. Please check if the solver is online.";
                 this.ngxService.stopBackground();

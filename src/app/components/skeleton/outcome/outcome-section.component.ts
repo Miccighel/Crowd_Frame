@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {StatusCodes} from "../../../services/section.service";
@@ -80,7 +80,6 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     public validateComment(control: UntypedFormControl) {
-        let commentText = control.value
         let words = control.value.split(' ')
         let cleanedWords = new Array<string>()
         for (let word of words) {

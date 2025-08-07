@@ -384,7 +384,7 @@ export class RadioDirective implements AfterViewInit {
     standalone: false
 })
 export class SearchEngineBodyDirective {
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
+    constructor(private actionLogger: ActionLogger) {
     }
 
     @HostListener('queryEmitter', ['$event'])

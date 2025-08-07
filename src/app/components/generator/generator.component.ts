@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, Input, ViewChild} from '@angular/core'
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms'
+import {UntypedFormControl, UntypedFormGroup} from '@angular/forms'
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper"
 /* Services */
@@ -136,8 +136,7 @@ export class GeneratorComponent {
         configService: ConfigService,
         S3Service: S3Service,
         localStorageService: LocalStorageService,
-        utilsService: UtilsService,
-        private _formBuilder: UntypedFormBuilder,
+        utilsService: UtilsService
     ) {
 
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
@@ -182,8 +181,7 @@ export class GeneratorComponent {
         }
         if (differentTask && differentBatch) this.localStorageService.clear()
 
-        let batchesPromise = this.loadBatchesTree()
-
+        this.loadBatchesTree()
     }
 
     async loadBatchesTree() {
@@ -197,8 +195,6 @@ export class GeneratorComponent {
         } else {
             let workerSettings = await this.S3Service.downloadWorkers(this.configService.environment)
             let counter = 0
-            let blackListedBatches = 0
-            let whiteListedBatches = 0
             let tasks = await this.S3Service.listFolders(this.configService.environment)
             for (let task of tasks) {
                 let taskNode = {
@@ -215,12 +211,12 @@ export class GeneratorComponent {
                     }
                     taskNode["batches"].push(batchNode)
                     counter = counter + 1
-                    workerSettings['blacklist_batches'].forEach((batchName, batchIndex) => {
+                    workerSettings['blacklist_batches'].forEach((batchName, _batchIndex) => {
                         if (batchName == batch['Prefix']) {
                             batchNode['blacklist'] = true
                         }
                     })
-                    workerSettings['whitelist_batches'].forEach((batchName, batchIndex) => {
+                    workerSettings['whitelist_batches'].forEach((batchName, _batchIndex) => {
                         if (batchName == batch['Prefix']) {
                             batchNode['whitelist'] = true
                         }

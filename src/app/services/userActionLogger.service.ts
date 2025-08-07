@@ -17,7 +17,6 @@ export class ActionLogger {
     private sectionService: SectionService;
     private loggerSection: string;
     private sequenceNumber: number;
-    private readonly initTime: number;
     private _unitId: string;
     private bucket: string;
     private workerID: string;
@@ -39,7 +38,6 @@ export class ActionLogger {
         this.sectionService = sectionService;
         this.loggerSection = this.findSection();
         this.sequenceNumber = 0;
-        this.initTime = new Date().getTime() / 1000;
         this.s3Service = s3Service;
         this.configService = configService
     }
@@ -367,13 +365,13 @@ export class ActionLogger {
         this.log('query', details)
     }
 
-    onVisited(result) {
+    onVisited(_result) {
         let details = {
             section: this.findSection()
         }
         this.log('linkVisited', details)
     }
-    
+
     onResult(results) {
         let urlArray = [];
         results['decodedResponses'].forEach((result) => {

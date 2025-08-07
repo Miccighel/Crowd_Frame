@@ -1,6 +1,5 @@
 import {
     Component,
-    ElementRef,
     EventEmitter,
     Input,
     OnInit,
@@ -33,8 +32,7 @@ export class DocumentVideoComponent implements OnInit {
     videoReady = false;                    // True when the video can play
     private emittedMetadata = false;       // Prevents multiple metadata emissions
 
-    constructor(private elRef: ElementRef) {
-    }
+    constructor() {}
 
     ngOnInit(): void {
         // No lazy loading needed with CloudFront delivery

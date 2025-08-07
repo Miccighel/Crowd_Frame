@@ -62,8 +62,8 @@ export class AnnotatorLawsComponent {
         }
         if (domElement) {
             let first_clone = document.querySelectorAll(`.attribute-text`)[documentIndex].cloneNode(true)
-            first_clone.addEventListener('mouseup', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
-            first_clone.addEventListener('touchend', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
+            first_clone.addEventListener('mouseup', (_e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
+            first_clone.addEventListener('touchend', (_e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
             doHighlight(domElement, false, {
                 /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
                 onBeforeHighlight: (range: Range) => {
@@ -85,6 +85,7 @@ export class AnnotatorLawsComponent {
                         if (highlight[0]["outerText"]) this.task.notes[documentIndex].push(noteLaws)
                         return true
                     }
+                    return false
                 }
             })
         }
@@ -102,8 +103,8 @@ export class AnnotatorLawsComponent {
         }
         if (domElement) {
             let first_clone = document.getElementById(`references-${noteIndex}.${documentIndex}`).cloneNode(true)
-            first_clone.addEventListener('mouseup', (e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, attributeIndex, noteIndex))
-            first_clone.addEventListener('touchend', (e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, attributeIndex, noteIndex))
+            first_clone.addEventListener('mouseup', (_e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, attributeIndex, noteIndex))
+            first_clone.addEventListener('touchend', (_e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, attributeIndex, noteIndex))
             doHighlight(domElement, false, {
                 /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
                 onBeforeHighlight: (range: Range) => {
@@ -127,6 +128,7 @@ export class AnnotatorLawsComponent {
                         let element = document.getElementById(`references-${noteIndex}.${documentIndex}`)
                         element.remove()
                         document.getElementById(`note-current-${noteIndex}.${documentIndex}`).appendChild(first_clone)
+                        return true
                     }
                 }
             })
@@ -144,6 +146,8 @@ export class AnnotatorLawsComponent {
             } else {
                 return false
             }
+        } else {
+            return false
         }
     }
 
@@ -187,6 +191,8 @@ export class AnnotatorLawsComponent {
             } else {
                 return false
             }
+        } else {
+            return false
         }
     }
 
@@ -506,13 +512,6 @@ export class AnnotatorLawsComponent {
                 this.checkEnabledNotes(documentIndex)
             }
         }
-    }
-
-    public auxCEN(note) {
-        return false
-    }
-
-    public referenceRadioButtonCheck(i, index) {
     }
 
 }

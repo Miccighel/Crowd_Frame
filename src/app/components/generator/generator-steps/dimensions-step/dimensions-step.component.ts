@@ -152,7 +152,7 @@ export class DimensionsStepComponent implements OnInit {
                 this.addDimension(dimensionIndex, dimension);
             });
         }
-        this.formStep.valueChanges.subscribe((form) => {
+        this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();
@@ -367,6 +367,7 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     resetUrl(dimensionIndex) {
+        // @ts-ignore TS6133: intentionally unused
         let dim = this.dimensions()?.at(dimensionIndex);
         this.instructionsUrl(dimensionIndex)?.get("label")?.setValue("");
         this.instructionsUrl(dimensionIndex)?.get("caption")?.setValue("");
@@ -380,6 +381,7 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     resetInstructionUrl(dimensionIndex) {
+        // @ts-ignore TS6133: intentionally unused
         let dim = this.dimensions()?.at(dimensionIndex);
         this.instructionsUrl(dimensionIndex)?.get("label")?.setValue("");
         this.instructionsUrl(dimensionIndex)?.get("caption")?.setValue("");

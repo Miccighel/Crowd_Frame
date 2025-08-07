@@ -1,8 +1,6 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
-/* Material Design */
-import {MatStepper} from "@angular/material/stepper";
 /* Services */
 import {SectionService} from "../../../../services/section.service";
 import {UtilsService} from "../../../../services/utils.service";
@@ -10,7 +8,6 @@ import {UtilsService} from "../../../../services/utils.service";
 import {Task} from "../../../../models/skeleton/task";
 import {Dimension, ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
 /* Components */
-import {SearchEngineComponent} from "./search-engine/search-engine.component";
 import {Worker} from "../../../../models/worker/worker";
 import {DataRecord} from "../../../../models/skeleton/dataRecord";
 
@@ -94,7 +91,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                                 if ((<ScaleCategorical>dimension.scale).multipleSelection) {
                                     let answers = {};
                                     let scale = (<ScaleCategorical>dimension.scale);
-                                    scale.mapping.forEach((value, index) => {
+                                    scale.mapping.forEach((_value, index) => {
                                         answers[index] = false;
                                     });
                                     controlsConfig[`${dimension.name}_list${controlSuffix}`] = this.formBuilder.group(answers);
@@ -224,15 +221,15 @@ export class DimensionComponent implements OnInit, OnChanges {
     /* Change detection behavior is necessary to enable the following step and initialize required form controls
        when the initial assessment or a post-assessment step is completed. */
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.followingAssessmentAllowed) {
-            let followingAssessmentAllowedChange = changes.followingAssessmentAllowed
+        if (changes['followingAssessmentAllowed']) {
+            let followingAssessmentAllowedChange = changes['followingAssessmentAllowed']
             if (followingAssessmentAllowedChange.currentValue) {
                 let controlSuffix = `_post_${this.postAssessmentIndex}`
                 let controlsConfig = this.initializeControls(controlSuffix)
                 if (this.assessmentForm) {
                     this.assessmentForm.disable()
                     let currentForm = this.getCurrentAssessmentForm()
-                    Object.entries(currentForm.controls)?.forEach(([controlName, control], index) => {
+                    Object.entries(currentForm.controls)?.forEach(([controlName, _control], _index) => {
                         if (controlName.concat(controlSuffix) in controlsConfig)
                             controlsConfig[controlName.concat(controlSuffix)]?.setValue(currentForm?.get(controlName).value);
                     });
@@ -332,6 +329,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
             return this.assessmentForm.controls[(primaryCategoricalDimension.name).concat('_value').concat('')].value !== primaryCategoricalDimension.scale.mapping[1].value
         }
+        return false
     }
 
     public categoricalDimensionDisabled(currentDimension: Dimension): boolean {
@@ -341,6 +339,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                 return this.assessmentForm.controls[(primaryCategoricalDimension.name).concat('_value').concat('')].value !== primaryCategoricalDimension.scale.mapping[1].value && currentDimension.name != primaryCategoricalDimension.name
             }
         }
+        return false
     }
 
     /* #################### POST ASSESSMENT #################### */
@@ -429,6 +428,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                 return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
             }
         }
+        return null
     }
 
     /* #################### SEARCH ENGINE INTERACTION #################### */
@@ -469,7 +469,7 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     public storeSearchEngineUrl(urlFormGroup, dimensionIndex) {
-        for (const [key, value] of Object.entries(urlFormGroup.controls)) {
+        for (const [key, _value] of Object.entries(urlFormGroup.controls)) {
             let currentAssessmentForm = this.getCurrentAssessmentForm()
             if (!currentAssessmentForm?.get(key) && this.task.dimensions[dimensionIndex].url) {
                 currentAssessmentForm?.addControl(key, urlFormGroup?.get(key))
@@ -489,7 +489,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         let formGroup = currentAssessmentForm?.get(dimension.name.concat('_list'))
         let formControl = currentAssessmentForm?.get(dimension.name.concat('_value'))
         formGroup?.get(index.toString())?.setValue(data['checked'])
-        for (const [key, value] of Object.entries(formGroup.value)) {
+        for (const [_key, value] of Object.entries(formGroup.value)) {
             if (value)
                 controlValid = true
         }

@@ -97,9 +97,9 @@ export class SearchEngineStepComponent implements OnInit {
             if (this.dataStored.domains_filter)
                 if (this.dataStored.domains_filter.length > 0)
                     this.dataStored.domains_filter.forEach(
-                        (domain, domainIndex) => this.addDomain(domain)
+                        (domain, _domainIndex) => this.addDomain(domain)
                     );
-        this.formStep.valueChanges.subscribe((form) => {
+        this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();

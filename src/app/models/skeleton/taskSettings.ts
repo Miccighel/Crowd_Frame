@@ -1,5 +1,3 @@
-import {BaseInstruction} from '../../models/skeleton/instructions/baseInstruction';
-
 /* Local titleize helper — replaces package 'titleize' */
 function titleize(str: string): string {
     return str
@@ -197,8 +195,8 @@ export class DimensionPost {
 }
 
 export class AttributePost extends Attribute {
-    index: number;
-    name: string;
+    override index: number;
+    override name: string;
     text: string | boolean;
 
     constructor(data: JSON) {

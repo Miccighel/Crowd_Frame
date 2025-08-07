@@ -59,7 +59,7 @@ export class ElementPairwiseComponent implements OnInit {
             controlsConfig[`element_0_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][0], [Validators.required]);
             controlsConfig[`element_1_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][1], [Validators.required]);
             let selectionForm = this.formBuilder.group(controlsConfig)
-            selectionForm.valueChanges.subscribe(values => {
+            selectionForm.valueChanges.subscribe(_values => {
                 this.formEmitter.emit(selectionForm)
             })
             this.selectionForms[index] = selectionForm

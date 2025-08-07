@@ -1,6 +1,6 @@
 /* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
-import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 /* Angular Material Components */
@@ -188,7 +188,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
     ngOnInit() {
-        this.baseComponent.initializationCompleted.subscribe(params => {
+        this.baseComponent.initializationCompleted.subscribe(_params => {
             this.task = this.sectionService.task;
             const paramsFetched = this.parseURLParams(new URL(window.location.href));
             this.startWorkerInitialization(paramsFetched);
@@ -201,7 +201,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             if (key.toLowerCase().includes("workerid")) {
                 paramsFetched["identifier"] = value;
             } else {
-                key = key.replace(/(?:^|\.?)([A-Z])/g, (x, y) => "_" + y.toLowerCase()).replace(/^_/, "");
+                key = key.replace(/(?:^|\.?)([A-Z])/g, (_x, y) => "_" + y.toLowerCase()).replace(/^_/, "");
                 paramsFetched[key] = value;
             }
         });

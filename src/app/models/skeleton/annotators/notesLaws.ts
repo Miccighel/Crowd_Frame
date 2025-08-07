@@ -26,7 +26,7 @@ export class NoteLaws extends Note {
     this.innerAnnotations = [];
   }
 
-  public restoreData(previousData: Object) {
+  public override restoreData(previousData: Object) {
     super.restoreData(previousData)
     this.year = parseInt(previousData['year'])
     this.number = parseInt(previousData['number'])

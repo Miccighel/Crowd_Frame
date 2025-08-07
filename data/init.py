@@ -1915,7 +1915,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                 date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
                                 console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
                                 console.print(f"Fetching remote version, date: {date_modified_remote_parsed}")
-                                # folder is created if it doesn't exist 
+                                # folder is created if it doesn't exist
                                 if not os.path.exists(folder_build_task_path):
                                     os.makedirs(folder_build_task_path)
 
@@ -2420,6 +2420,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print("export class GoldChecker {", file=file)
             print("", file=file)
             wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
             print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>, taskType = null) {'), file=file)
             print("", file=file)
             wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
@@ -2437,10 +2438,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
             print("", file=file)
             print(wrapper.fill("/* Element attributes */"), file=file)
+            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
             print(wrapper.fill('let document = goldElement["document"]'), file=file)
             print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
+            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
             print(wrapper.fill('let answers = goldElement["answers"]'), file=file)
             print(wrapper.fill("/* Worker's notes*/"), file=file)
+            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
             print(wrapper.fill('let notes = goldElement["notes"]'), file=file)
             print("", file=file)
             print(wrapper.fill("let goldCheck = true"), file=file)

@@ -30,7 +30,7 @@ export class ChatCommentModalComponent implements OnInit {
     }
 
     public addComment() {
-        this.comment = this.commentFG.controls.comment.value;
+        this.comment = this.commentFG.controls['comment'].value;
         this.activeModal.close(this.comment);
     }
 }

@@ -6,7 +6,7 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output, SimpleChanges, ViewChild
+    Output, ViewChild
 } from '@angular/core';
 
 /* Services */
@@ -14,14 +14,10 @@ import {SectionService} from '../../../../../services/section.service';
 import {UtilsService} from '../../../../../services/utils.service';
 import {DeviceDetectorService} from 'ngx-device-detector';
 
-/* Compoonents */
-import {DocumentVideoComponent} from './document-video/document-video.component';
-
 /* Models */
 import {Task} from '../../../../../models/skeleton/task';
 import {AttributeMain, AttributePost} from '../../../../../models/skeleton/taskSettings';
 import {Worker} from '../../../../../models/worker/worker';
-
 
 @Component({
     selector: 'app-element-pointwise',
@@ -94,7 +90,7 @@ export class ElementPointwiseComponent implements OnInit {
 
     }
 
-    public unlockNextRepetition(value: boolean): void {
+    public unlockNextRepetition(_value: boolean): void {
         this.followingAssessmentAllowed = true;
         this.followingAssessmentAllowedEmitter.emit({
             postAssessmentIndex: this.postAssessmentIndex - 1,

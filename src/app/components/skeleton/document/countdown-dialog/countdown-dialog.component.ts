@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 export interface DialogData {
   timeAllowed: number;
@@ -22,10 +22,10 @@ export class CountdownDialogComponent {
     formatTime(seconds: number): string {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
-      
+
       const minutePart = minutes > 0 ? `${minutes} min` : "";
       const secondPart = remainingSeconds > 0 ? `${remainingSeconds} sec` : "";
-  
+
       return [minutePart, secondPart].filter(Boolean).join(' ');
     }
 

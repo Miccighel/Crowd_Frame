@@ -36,7 +36,7 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
         });
     }
     ngOnChanges(changes: SimpleChanges) {
-        this.urlValue = changes.urlToRead.currentValue;
+        this.urlValue = changes['urlToRead'].currentValue;
         this.urlValueInput.nativeElement.disabled = this.readOnly;
     }
 

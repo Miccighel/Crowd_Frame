@@ -7,7 +7,6 @@ import {S3Service} from "../../../../services/aws/s3.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
 import {BaseInstruction} from "../../../../models/skeleton/instructions/baseInstruction";
-import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
 
 @Component({
     selector: 'app-instructions-step',
@@ -78,7 +77,7 @@ export class InstructionsGeneralStep implements OnInit {
                 this.addInstruction(instructionIndex, instruction)
             })
         }
-        this.formStep.valueChanges.subscribe(form => {
+        this.formStep.valueChanges.subscribe(_form => {
             this.serializeConfiguration()
         })
         this.serializeConfiguration()
@@ -91,7 +90,7 @@ export class InstructionsGeneralStep implements OnInit {
         return this.formStep?.get(`instructions`) as UntypedFormArray;
     }
 
-    addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {
+    addInstruction(_instructionIndex = null, instruction = null as BaseInstruction) {
         this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
             text: [instruction ? instruction.text ? instruction.text : '' : '', [Validators.required]],
