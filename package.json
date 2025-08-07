@@ -42,7 +42,7 @@
     "material-icons": "^1.13.14",
     "ngx-color-picker": "^20.1.0",
     "ngx-cookie-service": "20.1.0",
-    "ngx-countdown": "17.1.1",
+    "ngx-countdown": "20.0.0",
     "ngx-device-detector": "10.0.2",
     "ngx-file-helpers": "14.0.1",
     "ngx-ui-loader": "^19.0.0",

@@ -4561,7 +4561,7 @@ __metadata:
     material-icons: "npm:^1.13.14"
     ngx-color-picker: "npm:^20.1.0"
     ngx-cookie-service: "npm:20.1.0"
-    ngx-countdown: "npm:17.1.1"
+    ngx-countdown: "npm:20.0.0"
     ngx-device-detector: "npm:10.0.2"
     ngx-file-helpers: "npm:14.0.1"
     ngx-ui-loader: "npm:^19.0.0"
@@ -6110,12 +6110,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:17.1.1":
-  version: 17.1.1
-  resolution: "ngx-countdown@npm:17.1.1"
+"ngx-countdown@npm:20.0.0":
+  version: 20.0.0
+  resolution: "ngx-countdown@npm:20.0.0"
   dependencies:
     tslib: "npm:^2.3.0"
-  checksum: 10/7c3c7ba144999f70490307fa451c33885d4d531f81eca78dcf8b9803ccc1c94681e1b731c8fa35e65cb88195bcaa1ec996a35379f6dcf0da75b229ece8d1de77
+  checksum: 10/fd9c7728d4666610460ea84281f52d972a83ede319a51af168742834217a5a1e227b90229f2e0615828e8d277f3c0c35b5a9079f16885720123f96693b656d0e
   languageName: node
   linkType: hard
 
