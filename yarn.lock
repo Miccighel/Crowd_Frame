@@ -4559,7 +4559,7 @@ __metadata:
     crypto-es: "npm:^3.0.0"
     esbuild: "npm:^0.25.8"
     material-icons: "npm:^1.13.14"
-    ngx-color-picker: "npm:18.0.0"
+    ngx-color-picker: "npm:^20.1.0"
     ngx-cookie-service: "npm:20.1.0"
     ngx-countdown: "npm:17.1.1"
     ngx-device-detector: "npm:10.0.2"
@@ -6085,16 +6085,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:18.0.0":
-  version: 18.0.0
-  resolution: "ngx-color-picker@npm:18.0.0"
+"ngx-color-picker@npm:^20.1.0":
+  version: 20.1.0
+  resolution: "ngx-color-picker@npm:20.1.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": ">=9.0.0"
-    "@angular/core": ">=9.0.0"
-    "@angular/forms": ">=9.0.0"
-  checksum: 10/cebb77bf875ce10b9c2a0667cba251b7c508fcc81bf327336ad5400a3cb0a8ba6fc5753ed7f2fdd9f0712bf1500ec1921b0a9cbd28c8c2cecd90229b7c2b91bc
+    "@angular/common": ">=18.0.0"
+    "@angular/core": ">=18.0.0"
+    "@angular/forms": ">=18.0.0"
+  checksum: 10/ad815f870f4159591b4d765085fa89e038a87a393d5c12dcb18c1a396c7331a7b91bfae303d7bc6ac89605e892cbe1ada835f9133f545466bd8fde066e2bc7d0
   languageName: node
   linkType: hard
 

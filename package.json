@@ -40,7 +40,7 @@
     "bootstrap": "^5.3.7",
     "crypto-es": "^3.0.0",
     "material-icons": "^1.13.14",
-    "ngx-color-picker": "18.0.0",
+    "ngx-color-picker": "^20.1.0",
     "ngx-cookie-service": "20.1.0",
     "ngx-countdown": "17.1.1",
     "ngx-device-detector": "10.0.2",
