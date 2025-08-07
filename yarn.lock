@@ -291,9 +291,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:20.1.4":
-  version: 20.1.4
-  resolution: "@angular/cdk@npm:20.1.4"
+"@angular/cdk@npm:20.1.5":
+  version: 20.1.5
+  resolution: "@angular/cdk@npm:20.1.5"
   dependencies:
     parse5: "npm:^8.0.0"
     tslib: "npm:^2.3.0"
@@ -301,7 +301,7 @@ __metadata:
     "@angular/common": ^20.0.0 || ^21.0.0
     "@angular/core": ^20.0.0 || ^21.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/06eaab940a808ddd360aa996da589af395a96d6eb9c230b06bc8b1c38672eb5584f789009b03c7639ed1a91db7f83cc202428ed1f14108f43b85f04a1fe49622
+  checksum: 10/dd351407f54bd5f0581b3109692dba023a6827fba9a665a7547b11e5e4b71567ec1f4b745f642170e5e36878bb2b26916c990ee63170c961e431a51e51b2a4a0
   languageName: node
   linkType: hard
 
@@ -431,19 +431,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:20.1.4":
-  version: 20.1.4
-  resolution: "@angular/material@npm:20.1.4"
+"@angular/material@npm:20.1.5":
+  version: 20.1.5
+  resolution: "@angular/material@npm:20.1.5"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/cdk": 20.1.4
+    "@angular/cdk": 20.1.5
     "@angular/common": ^20.0.0 || ^21.0.0
     "@angular/core": ^20.0.0 || ^21.0.0
     "@angular/forms": ^20.0.0 || ^21.0.0
     "@angular/platform-browser": ^20.0.0 || ^21.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/f9b557fb27a0599544f7f304ba5e6bd099952dda5a3acd80dadc91b5b018d10f6b0b9ee154ec2105a35557e870171a5c3fea82fd8bd71648ec8ce0f3279f272d
+  checksum: 10/e486e141d057cee211c7a660764007419d624e29db7423033649d6cd0b03472cfb89c6152831ee98d086cb447189349250951d65e1523e2c0dd8b03696efbeb7
   languageName: node
   linkType: hard
 
@@ -4510,7 +4510,7 @@ __metadata:
   dependencies:
     "@angular/animations": "npm:^20.1.6"
     "@angular/build": "npm:^20.1.5"
-    "@angular/cdk": "npm:20.1.4"
+    "@angular/cdk": "npm:20.1.5"
     "@angular/cli": "npm:20.1.5"
     "@angular/common": "npm:20.1.6"
     "@angular/compiler": "npm:20.1.6"
@@ -4518,7 +4518,7 @@ __metadata:
     "@angular/core": "npm:20.1.6"
     "@angular/forms": "npm:20.1.6"
     "@angular/localize": "npm:20.1.6"
-    "@angular/material": "npm:20.1.4"
+    "@angular/material": "npm:20.1.5"
     "@angular/platform-browser": "npm:20.1.6"
     "@angular/platform-browser-dynamic": "npm:20.1.6"
     "@angular/router": "npm:20.1.6"
