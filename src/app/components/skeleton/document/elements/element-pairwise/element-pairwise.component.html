@@ -1,42 +1,43 @@
-<!-- Evaluation instructions markup -->
-@if (this.task.instructionsEvaluation.element) {
-  <ng-container class="evaluation-instructions">
-    <h2>{{this.task.instructionsEvaluation.element.label}} - {{this.task.instructionsEvaluation.element.caption}}</h2>
-    <div><p>{{this.task.instructionsEvaluation.element.text}}</p></div>
-  </ng-container>
-}
-@if (this.task.instructionsEvaluation.instructions.length>0) {
-  <div class="evaluation-instructions">
-    @for (instruction of this.task.instructionsEvaluation.instructions; track instruction) {
-      <div>
-        <h2>{{instruction.caption}}</h2>
-        <div><p [innerHTML]="instruction.text"></p></div>
-      </div>
-    }
-  </div>
-}
+<!--
+  Exclusive selection, card-only UI.
+  Accessibility: role="radiogroup"/"radio", aria-checked, keyboard Enter/Space.
+-->
+<h2 class="pairwise-title"><span i18n>Select the most appropriate element</span></h2>
 
-<h2 class="pairwise-title"><span i18n>Select an element</span></h2>
-<form [formGroup]="this.selectionForms[documentIndex]">
-  @for (element of this.task.documents[documentIndex]['pairwise']; track element; let j = $index) {
-    <div class="pairwise-cointainer">
-      <div id="element-{{documentIndex}}-{{j}}" class="element-box" (click)="selectElement(documentIndex, j);">
-        <h2 class="element-box-title"><span i18n>Element</span> {{j}}</h2>
-        <div class="element-box-values">
-          @for (attribute of this.task.settings.attributesMain; track attribute; let k = $index) {
-            @if (this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)) {
-              <span class="element-value-caption">
-                <label><strong>{{attribute.name_pretty}}</strong>:</label>
-                {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
-              </span>
-            }
-          }
-        </div>
-      </div>
-      <mat-checkbox class="element-checkbox" formControlName="element_{{j}}_selected" (change)="handleCheckbox(documentIndex, j)" disableRipple="true">
-        <span class="element-checkbox-selection-text"><span i18n>Select</span></span>
-      </mat-checkbox>
+<form [formGroup]="documentSelectionForms[documentIndex]">
+    <div class="pairwise-container" role="radiogroup" aria-label="Pairwise elements">
+
+        @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc ?? $index; let j = $index) {
+            <div
+                id="subdocument-{{documentIndex}}-{{j}}"
+                class="element-box"
+                role="radio"
+                (click)="selectElement(documentIndex, j)"
+                (keydown.enter)="selectElement(documentIndex, j)"
+                (keydown.space)="selectElement(documentIndex, j)"
+                [attr.tabindex]="0"
+                [attr.aria-checked]="documentSelectionForms[documentIndex].get('element_' + j + '_selected')?.value"
+                [class.selected]="documentSelectionForms[documentIndex].get('element_' + j + '_selected')?.value"
+                [attr.aria-label]="'Element ' + (['A','B'][j] || (j + 1))">
+
+                <!-- Simple radio-like indicator (purely visual) -->
+                <span class="radio-indicator" aria-hidden="true"></span>
+
+                <h2 class="element-box-title">
+                    <span i18n>Element {{ ['A', 'B'][j] || (j + 1) }}</span>
+                </h2>
+
+                <div class="element-box-values">
+                    @for (attribute of task.settings.attributesMain; track attribute.name; let k = $index) {
+                        @if (attribute.show) {
+                            <div class="element-value-caption">
+                                <label><strong>{{ attribute.name_pretty || attribute.name }}</strong>:</label>
+                                <span class="attr-value">{{ (subdoc[attribute.name] ?? '—') }}</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
     </div>
-  }
 </form>
-

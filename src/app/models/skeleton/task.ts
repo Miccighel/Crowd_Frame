@@ -1267,28 +1267,63 @@ export class Task {
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo;
-        /* Worker's answers for the current document */
+
+        /* Worker's answers for the current document (dimension coercions) */
         for (let [attribute, value] of Object.entries(answers)) {
             let answerDimensionName = attribute.split("_")[0];
             for (let dimension of this.dimensions) {
                 if (answerDimensionName == dimension.name) {
                     answers[attribute] = dimension.scale && dimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, "") : value;
-                    break
+                    break;
                 }
             }
         }
+
+        /* Merge additional answers */
         for (let [additionalAnswerName, value] of Object.entries(additionalAnswers)) {
-            answers[additionalAnswerName] = value
+            answers[additionalAnswerName] = value;
         }
+
+        /* ─────────────────────────────────────────────────────────────
+         * NEW: Persist pairwise selection into answers for history restore.
+         *  - Writes element_<j>_selected boolean flags
+         *  - Writes pairwise_selected_index (0-based; -1 if none)
+         *  This enables element-pairwise to hydrate from record.data.answers.
+         * ───────────────────────────────────────────────────────────── */
+        if (this.settings?.modality === 'pairwise') {
+            const docIdx = elementData['elementIndex'];
+            const selectionArr = this.documentsPairwiseSelection?.[docIdx] || [];
+            /* If selection array is empty, try subdocument count to shape defaults */
+            const subdocCount = selectionArr.length > 0
+                ? selectionArr.length
+                : (this.documents?.[docIdx]?.subdocuments?.length || 0);
+
+            if (subdocCount > 0) {
+                let selectedIndex = -1;
+                for (let j = 0; j < subdocCount; j++) {
+                    const key = `element_${j}_selected`;
+                    const isSelected = !!selectionArr[j];
+                    answers[key] = isSelected;
+                    if (isSelected && selectedIndex === -1) selectedIndex = j;
+                }
+                answers['pairwise_selected_index'] = selectedIndex;
+            }
+        }
+        /* ───────────────────────────────────────────────────────────── */
+
         data["answers"] = answers;
+
         let notes = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
         data["notes"] = notes;
+
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[elementData['elementIndex']];
         data["dimensions_selected"] = dimensionsSelectedValues;
+
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[elementData['elementIndex']];
         data["queries"] = searchEngineQueries;
+
         /* Start, end and elapsed timestamps for the current document */
         let timestampsStart = this.timestampsStart[elementData['overallIndex']];
         data["timestamps_start"] = timestampsStart;
@@ -1296,7 +1331,8 @@ export class Task {
         data["timestamps_end"] = timestampsEnd;
         let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
         data["timestamps_elapsed"] = timestampsElapsed;
-        /* Countdown time and corresponding flag */
+
+        /* Countdown data */
         let countdownTimeStart = this.settings.countdownTime >= 0 ? this.documentsStartCountdownTime[elementData['elementIndex']] : [];
         data["countdowns_times_start"] = countdownTimeStart;
         let countdownTime = this.settings.countdownTime >= 0 ? countdown : [];
@@ -1309,12 +1345,13 @@ export class Task {
         let overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
         data['countdown_expired_timestamp'] = countdown_expired_timestamp;
         data['overtime'] = overtime;
-        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+
+        /* Number of accesses to the current document */
         data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
-        /* Responses retrieved by search engine for each worker's query for the current document */
+
+        /* Search engine responses */
         let responsesRetrieved = this.searchEngineRetrievedResponses[elementData['elementIndex']];
         data["responses_retrieved"] = responsesRetrieved;
-        /* Responses by search engine ordered by worker's click for the current document */
         let responsesSelected = this.searchEngineSelectedResponses[elementData['elementIndex']];
         data["responses_selected"] = responsesSelected;
 

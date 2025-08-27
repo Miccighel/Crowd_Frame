@@ -408,6 +408,10 @@ export class TaskSettingsStepComponent implements OnInit {
         }
     }
 
+    get loggerOptionValue(): { [key: string]: { [key: string]: boolean } } {
+        return this.formStep.get('logger_option')?.value ?? {};
+    }
+
     updateServerEndpoint() {
         return this.formStep?.get("server_endpoint").value;
     }
@@ -557,7 +561,7 @@ export class TaskSettingsStepComponent implements OnInit {
             }
 
             this.documentsOptions()?.get("min_docs_repetitions")
-                            .valueChanges?.subscribe((data) => {
+                .valueChanges?.subscribe((data) => {
                 if (data != null) this.updateWorkerNumber(data);
             });
 
@@ -608,7 +612,7 @@ export class TaskSettingsStepComponent implements OnInit {
         return this.formStep?.get("attributes") as UntypedFormArray;
     }
 
-    addHitAttribute(name: string, attribute : AttributeMain = null) {
+    addHitAttribute(name: string, attribute: AttributeMain = null) {
         this.hitAttributes()?.push(
             this._formBuilder?.group({
                 name: attribute ? attribute.name : name,
@@ -955,9 +959,9 @@ export class TaskSettingsStepComponent implements OnInit {
             this.formStep?.get("countdown_behavior")?.updateValueAndValidity();
         } else {
             this.formStep?.get("countdown_time")?.setValidators([
-                    Validators.required,
-                    this.utilsService.positiveOrZeroNumber.bind(this),
-                ]);
+                Validators.required,
+                this.utilsService.positiveOrZeroNumber.bind(this),
+            ]);
             this.formStep?.get("countdown_time")?.updateValueAndValidity();
             this.formStep?.get("countdown_behavior")?.setValidators([Validators.required]);
             this.formStep?.get("countdown_behavior")?.updateValueAndValidity();

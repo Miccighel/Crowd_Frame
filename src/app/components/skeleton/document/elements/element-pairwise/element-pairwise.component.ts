@@ -1,12 +1,33 @@
-/* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
+/* #################### IMPORTS #################### */
+
+/* Angular Core */
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {
+    UntypedFormBuilder,
+    UntypedFormControl,
+    UntypedFormGroup,
+    Validators,
+    AbstractControl,
+    ValidationErrors
+} from '@angular/forms';
+
 /* Services */
-import {DeviceDetectorService} from "ngx-device-detector";
-import {SectionService} from "../../../../../services/section.service";
-import {UtilsService} from "../../../../../services/utils.service";
+import {SectionService} from '../../../../../services/section.service';
+
 /* Models */
-import {Task} from "../../../../../models/skeleton/task";
+import {Task} from '../../../../../models/skeleton/task';
+
+/* #################### TYPES #################### */
+
+/* Wrapper shape for child → parent emissions (kept stable) */
+export interface AssessmentFormEvent {
+    index: number;                        /* Document index for this form */
+    form: UntypedFormGroup;               /* Reactive form instance */
+    type: 'initial' | 'post';             /* Assessment phase */
+    postAssessmentIndex?: number;         /* Only for 'post' phase */
+}
+
+/* #################### COMPONENT #################### */
 
 @Component({
     selector: 'app-element-pairwise',
@@ -16,95 +37,226 @@ import {Task} from "../../../../../models/skeleton/task";
 })
 export class ElementPairwiseComponent implements OnInit {
 
-    /* Change detector to manually intercept changes on DOM */
-    changeDetector: ChangeDetectorRef;
-    /* Service to detect user's device */
-    deviceDetectorService: DeviceDetectorService;
-    sectionService: SectionService;
-    utilsService: UtilsService
-    /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: UntypedFormBuilder;
+    /* ------------------------------------------------------
+     * Dependencies
+     * ------------------------------------------------------ */
+    private readonly sectionService: SectionService;
+    private readonly formBuilder: UntypedFormBuilder;
 
-    selectionForms: UntypedFormGroup[]
+    /* One reactive form per document; each form has M boolean controls:
+     *   element_0_selected, element_1_selected, ..., element_{M-1}_selected
+     */
+    documentSelectionForms: UntypedFormGroup[] = [];
 
-    @Input() documentIndex: number
+    /* Index of the current document whose subdocuments are shown */
+    @Input() documentIndex!: number;
 
-    task: Task
-    documentLeftSelection: boolean
-    documentRightSelection: boolean
+    /* Assessment phase inputs */
+    @Input() assessmentType: 'initial' | 'post' = 'initial';
+    @Input() postAssessmentIndex?: number;
 
-    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
+    /* Backing task model (source of truth for persisted selections) */
+    task: Task;
+
+    /* Upstream notification with a consistent wrapper payload */
+    @Output() formEmitter: EventEmitter<AssessmentFormEvent>;
 
     constructor(
-        changeDetector: ChangeDetectorRef,
-        deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
-        utilsService: UtilsService,
         formBuilder: UntypedFormBuilder,
     ) {
-        this.changeDetector = changeDetector
-        this.deviceDetectorService = deviceDetectorService
-        this.sectionService = sectionService
-        this.utilsService = utilsService
-        this.formBuilder = formBuilder
-        this.task = this.sectionService.task
-        this.formEmitter = new EventEmitter<UntypedFormGroup>();
+        this.sectionService = sectionService;
+        this.formBuilder = formBuilder;
+        this.task = this.sectionService.task;
+        this.formEmitter = new EventEmitter<AssessmentFormEvent>();
     }
+
+    /* ------------------------------------------------------
+     * Validators
+     * ------------------------------------------------------ */
+
+    /* Require exactly one selected element in the group (radio-like). */
+    private static validateExactlyOneSelected(group: AbstractControl): ValidationErrors | null {
+        const formGroup = group as UntypedFormGroup;
+        const selectedCount = Object.keys(formGroup.controls)
+            .filter(controlName => controlName.endsWith('_selected'))
+            .reduce((sum, controlName) => sum + (formGroup.get(controlName)?.value ? 1 : 0), 0);
+        return selectedCount === 1 ? null : {exactOneRequired: true};
+    }
+
+    /* ------------------------------------------------------
+     * History → form seeding
+     * ------------------------------------------------------ */
+
+    /* ------------------------------------------------------
+ * History → form seeding (reads real payload shape)
+ *  - Prefer data.answers.pairwise_selected_index when present
+ *  - Fallback to element_<k>_selected flags
+ *  - Enforce single selection (keep first true)
+ * ------------------------------------------------------ */
+    private getRestoredSelectionFromHistory(documentIndex: number, totalSubdocuments: number): boolean[] | null {
+        /* Latest stored record for this document index */
+        const mostRecentRecord: any = (this.task as any)?.mostRecentDataRecordsForDocuments?.[documentIndex];
+        if (!mostRecentRecord) return null;
+
+        /* Likely containers where answer-like fields might live (most specific first) */
+        const possibleAnswerSources: any[] = [];
+        if (mostRecentRecord.data?.answers) possibleAnswerSources.push(mostRecentRecord.data.answers);  /* real payload */
+        if (mostRecentRecord.data?.form) possibleAnswerSources.push(mostRecentRecord.data.form);
+        if (mostRecentRecord.answers) possibleAnswerSources.push(mostRecentRecord.answers);
+        if (mostRecentRecord.form) possibleAnswerSources.push(mostRecentRecord.form);
+        if (mostRecentRecord.payload?.answers) possibleAnswerSources.push(mostRecentRecord.payload.answers);
+        if (mostRecentRecord.payload?.form) possibleAnswerSources.push(mostRecentRecord.payload.form);
+        possibleAnswerSources.push(mostRecentRecord); /* last resort scan */
+
+        console.log(mostRecentRecord);
+
+        /* Shallow merge so later sources can override earlier ones */
+        const combinedAnswerFields: Record<string, unknown> = {};
+        for (const source of possibleAnswerSources) {
+            if (source && typeof source === 'object') Object.assign(combinedAnswerFields, source);
+        }
+
+        /* Preferred compact representation: numeric selected index (0-based) */
+        const persistedSelectedIndexRaw = combinedAnswerFields['pairwise_selected_index'];
+        if (persistedSelectedIndexRaw !== undefined && persistedSelectedIndexRaw !== null) {
+            const persistedSelectedIndex = Number(persistedSelectedIndexRaw);
+            if (Number.isInteger(persistedSelectedIndex) &&
+                persistedSelectedIndex >= 0 &&
+                persistedSelectedIndex < totalSubdocuments) {
+                const selection = new Array<boolean>(totalSubdocuments).fill(false);
+                selection[persistedSelectedIndex] = true;
+                return selection;
+            }
+        }
+
+        /* Fallback: reconstruct from element_<k>_selected boolean-ish flags */
+        const reconstructedFlags = new Array<boolean>(totalSubdocuments).fill(false);
+        let anyFlagSelected = false;
+
+        for (let optionIndex = 0; optionIndex < totalSubdocuments; optionIndex++) {
+            const selectionKey = `element_${optionIndex}_selected`;
+            const rawValue = combinedAnswerFields[selectionKey];
+
+            let isSelected = false;
+            if (typeof rawValue === 'boolean') {
+                isSelected = rawValue;
+            } else if (typeof rawValue === 'number') {
+                isSelected = rawValue === 1;
+            } else if (typeof rawValue === 'string') {
+                const normalized = rawValue.trim().toLowerCase();
+                isSelected = (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'y');
+            }
+
+            reconstructedFlags[optionIndex] = isSelected;
+            anyFlagSelected = anyFlagSelected || isSelected;
+        }
+
+        if (!anyFlagSelected) return null;
+
+        /* Enforce single selection: keep the first true, clear all others */
+        const firstSelectedIndex = reconstructedFlags.findIndex(v => v);
+        return reconstructedFlags.map((_, idx) => idx === firstSelectedIndex);
+    }
+
+
+    /* ------------------------------------------------------
+     * Emission helper
+     * ------------------------------------------------------ */
+
+    private emitAssessmentEvent(documentIdx: number, selectionForm: UntypedFormGroup): void {
+        const payload: AssessmentFormEvent = {
+            index: documentIdx,
+            form: selectionForm,
+            type: this.assessmentType,
+            ...(this.assessmentType === 'post' && this.postAssessmentIndex != null
+                ? {postAssessmentIndex: this.postAssessmentIndex}
+                : {})
+        };
+        this.formEmitter.emit(payload);
+    }
+
+    /* ------------------------------------------------------
+     * Lifecycle
+     * ------------------------------------------------------ */
 
     ngOnInit(): void {
-        /* A form for each HIT's element is initialized */
-        this.selectionForms = new Array<UntypedFormGroup>(this.task.documentsAmount);
-        for (let index = 0; index < this.task.documentsAmount; index++) {
-            let controlsConfig = {};
-            controlsConfig[`element_0_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][0], [Validators.required]);
-            controlsConfig[`element_1_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][1], [Validators.required]);
-            let selectionForm = this.formBuilder.group(controlsConfig)
-            selectionForm.valueChanges.subscribe(_values => {
-                this.formEmitter.emit(selectionForm)
-            })
-            this.selectionForms[index] = selectionForm
+        /* Prepare one selection form per document in the task */
+        this.documentSelectionForms = new Array<UntypedFormGroup>(this.task.documentsAmount);
+
+        for (let documentIdx = 0; documentIdx < this.task.documentsAmount; documentIdx++) {
+            /* Number of subdocuments for this document (pairwise → typically 2) */
+            const subdocuments = this.task.documents[documentIdx]?.subdocuments ?? [];
+            const subdocumentCount = Math.max(0, subdocuments.length);
+
+            /* Ensure backing selection array exists and has the right length */
+            if (!Array.isArray(this.task.documentsPairwiseSelection[documentIdx]) ||
+                this.task.documentsPairwiseSelection[documentIdx].length !== subdocumentCount) {
+                this.task.documentsPairwiseSelection[documentIdx] =
+                    Array.from({length: subdocumentCount}, () => false);
+            }
+
+            /* Try restoring from history; fall back to existing task state */
+            const restoredSelection = this.getRestoredSelectionFromHistory(documentIdx, subdocumentCount);
+            const initialSelection = restoredSelection ?? this.task.documentsPairwiseSelection[documentIdx];
+
+            /* Sync task state to whatever we will render as initial */
+            this.task.documentsPairwiseSelection[documentIdx] = initialSelection.slice();
+
+            /* Build controls dynamically from `initialSelection` */
+            const controlsConfig: Record<string, UntypedFormControl> = {};
+            for (let optionIdx = 0; optionIdx < subdocumentCount; optionIdx++) {
+                controlsConfig[`element_${optionIdx}_selected`] = new UntypedFormControl(
+                    !!initialSelection[optionIdx],
+                    [Validators.required]  /* kept for parity; group enforces exclusivity */
+                );
+            }
+
+            /* Create form with 'exact one' validator for radio-like behavior */
+            const selectionForm = this.formBuilder.group(
+                controlsConfig,
+                {validators: ElementPairwiseComponent.validateExactlyOneSelected}
+            );
+
+            /* Keep task state in sync with form values; emit only if valid */
+            selectionForm.valueChanges.subscribe(formValue => {
+                for (let optionIdx = 0; optionIdx < subdocumentCount; optionIdx++) {
+                    this.task.documentsPairwiseSelection[documentIdx][optionIdx] =
+                        !!formValue[`element_${optionIdx}_selected`];
+                }
+                if (selectionForm.valid) {
+                    this.emitAssessmentEvent(documentIdx, selectionForm);
+                }
+            });
+
+            /* If the restored/initial state is already valid, emit once now */
+            if (selectionForm.valid) {
+                this.emitAssessmentEvent(documentIdx, selectionForm);
+            }
+
+            this.documentSelectionForms[documentIdx] = selectionForm;
         }
     }
 
-    public selectElement(documentIndex: number, elementIndex: number) {
-        let element = document.getElementById(`element-${documentIndex}-${elementIndex}`)
-        if (element.hasAttribute('style')) {
-            element.removeAttribute('style')
-            this.task.documentsPairwiseSelection[documentIndex][elementIndex] = false
-            this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`)?.setValue(false)
-        } else {
-            element.style.backgroundColor = "#B6BDE2"
-            this.task.documentsPairwiseSelection[documentIndex][elementIndex] = true
-            this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`)?.setValue(true)
-        }
-        if (!this.task.checkAtLeastOneDocumentSelected(documentIndex)) {
-            this.selectionForms[documentIndex].setErrors({'invalid': true})
-        } else {
-             this.selectionForms[documentIndex].setErrors(null)
-        }
-        this.task.documentsPairwiseSelection[documentIndex][0] = true
-        this.task.documentsPairwiseSelection[documentIndex][1] = true
-        this.formEmitter.emit(this.selectionForms[documentIndex])
-    }
+    /* ------------------------------------------------------
+     * UI actions (exclusive selection)
+     * ------------------------------------------------------ */
 
-    public handleCheckbox(documentIndex: number, elementIndex: number) {
-        let elementSelection = this.selectionForms[documentIndex]?.get(`element_${elementIndex}_selected`).value
-        let element = document.getElementById(`element-${documentIndex}-${elementIndex}`)
-        if (elementSelection) {
-            this.task.documentsPairwiseSelection[documentIndex][elementIndex] = true
-            element.style.backgroundColor = "#B6BDE2"
-        } else {
-            this.task.documentsPairwiseSelection[documentIndex][elementIndex] = false
-            element.removeAttribute('style')
-        }
-        if (!this.task.checkAtLeastOneDocumentSelected(documentIndex)) {
-            this.selectionForms[documentIndex].setErrors({'invalid': true})
-        } else {
-             this.selectionForms[documentIndex].setErrors(null)
-        }
-        this.task.documentsPairwiseSelection[documentIndex][0] = true
-        this.task.documentsPairwiseSelection[documentIndex][1] = true
-        this.formEmitter.emit(this.selectionForms[documentIndex])
-    }
+    /* Card click → select exactly this element (true) and clear others (false). */
+    public selectElement(documentIdx: number, optionIdx: number): void {
+        const selectionForm = this.documentSelectionForms[documentIdx];
+        if (!selectionForm) return;
 
+        const controlNames = Object.keys(selectionForm.controls)
+            .filter(name => name.endsWith('_selected'));
+
+        /* Build a new value map: chosen index → true, others → false */
+        const exclusiveSelectionPatch: Record<string, boolean> = {};
+        for (const controlName of controlNames) {
+            exclusiveSelectionPatch[controlName] = (controlName === `element_${optionIdx}_selected`);
+        }
+
+        /* Triggers valueChanges → updates task + validation + parent emit (when valid) */
+        selectionForm.patchValue(exclusiveSelectionPatch);
+    }
 }

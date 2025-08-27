@@ -102,6 +102,12 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
 
     countdownInterval = 0;
 
+    /* ------------------------------------------------------
+     * NEW: Cache latest pairwise selection form per document
+     * Used to gate Next/Finish only in pairwise modality.
+     * ------------------------------------------------------ */
+    private documentsPairwiseForm: (UntypedFormGroup | null)[] = [];
+
     /* #################### CONSTRUCTOR #################### */
 
     constructor(
@@ -277,10 +283,36 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /* #################### FORMS & ASSESSMENTS #################### */
 
+    /* ------------------------------------------------------
+     * Helper: detect pairwise selection form shape.
+     * Heuristic: controls named 'element_<idx>_selected'.
+     * ------------------------------------------------------ */
+    private isPairwiseForm(form: UntypedFormGroup): boolean {
+        const keys = Object.keys(form?.controls ?? {});
+        return keys.some(k => /^element_\d+_selected$/.test(k));
+    }
+
+    /* ------------------------------------------------------
+     * Step 5: Defensive guards in storeAssessmentForm (parent)
+     *  - Validates payload shape.
+     *  - Caches pairwise form to gate Next/Finish in pairwise.
+     * ------------------------------------------------------ */
     public storeAssessmentForm(data: any): void {
-        const documentIndex = data['index'] as number;
-        const form = data['form'] as UntypedFormGroup;
-        const type = data['type'];
+
+        const documentIndex = Number(data?.index);
+        const form = data?.form as UntypedFormGroup | undefined;
+        const type = data?.type as 'initial' | 'post' | undefined;
+
+        /* Guards */
+        if (!form || !Number.isFinite(documentIndex) || documentIndex < 0 || !type) {
+            console.warn('storeAssessmentForm: bad payload', data);
+            return;
+        }
+
+        /* NEW: cache pairwise form (no effect outside pairwise modality) */
+        if (this.isPairwiseForm(form)) {
+            this.documentsPairwiseForm[documentIndex] = form;
+        }
 
         if (type === 'initial') {
             if (!this.assessmentForm && this.documentIndex === documentIndex) {
@@ -288,8 +320,9 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.formEmitter.emit({form: this.assessmentForm, type});
             }
         } else {
-            const postAssessmentIndex = data['postAssessmentIndex'] as number;
+            const postAssessmentIndex = Number(data?.postAssessmentIndex);
             if (
+                Number.isFinite(postAssessmentIndex) &&
                 !this.assessmentFormsAdditional[postAssessmentIndex - 1] &&
                 this.documentIndex === documentIndex
             ) {
@@ -327,7 +360,16 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
     public checkAssessmentFormValidity(): boolean {
         if (!this.assessmentForm) return false;
         if (this.task.settings.post_assessment) return true;
-        return this.assessmentForm.valid && this.assessmentForm.status !== 'DISABLED';
+
+        const baseValid = this.assessmentForm.valid && this.assessmentForm.status !== 'DISABLED';
+
+        /* NEW: in pairwise modality, also require a valid pairwise selection form */
+        if (this.task.settings.modality === 'pairwise') {
+            const pf = this.documentsPairwiseForm[this.documentIndex];
+            return baseValid && !!pf && pf.valid;
+        }
+
+        return baseValid;
     }
 
     public checkAdditionalAssessmentFormsValidity(): boolean {

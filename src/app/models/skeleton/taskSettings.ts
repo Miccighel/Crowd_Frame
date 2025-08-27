@@ -208,10 +208,17 @@ export class AttributePost extends Attribute {
 
 export class Annotator {
     type: string;
-    values?: Array<Object>;
+    values: AnnotatorValue[] = [];
 
     constructor(data: JSON) {
         this.type = data['type'];
-        this.values = data['values'] ? data['values'] : null;
+        if (data['values'] && Array.isArray(data['values'])) {
+            this.values = data['values'] as AnnotatorValue[];
+        }
     }
+}
+
+export interface AnnotatorValue {
+    label: string;
+    color: string;
 }

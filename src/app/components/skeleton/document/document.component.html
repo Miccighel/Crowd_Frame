@@ -1,198 +1,198 @@
 <div class="container">
 
-  <!-- gold-check failure banner -->
-  @if (task.showMessageFailGoldCheck[documentIndex]) {
-    <div class="task-check-fail-section">
-      <mat-card appearance="outlined">
-        <mat-card-title class="main-title">
-          <div class="red-title"></div>
-          <div class="white-title">
-            <span i18n>{{ task.documents[documentIndex].params['task_type'] }} Task Failed:</span>
-          </div>
+    <!-- gold-check failure banner -->
+    @if (task.showMessageFailGoldCheck[documentIndex]) {
+        <div class="task-check-fail-section">
+            <mat-card appearance="outlined">
+                <mat-card-title class="main-title">
+                    <div class="red-title"></div>
+                    <div class="white-title">
+                        <span i18n>{{ task.documents[documentIndex].params['task_type'] }} Task Failed:</span>
+                    </div>
+                </mat-card-title>
+                <mat-card-content class="description">
+                    <p><span i18n>{{ task.showMessageFailGoldCheck[documentIndex] }}</span></p>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    }
+
+    <mat-card appearance="outlined">
+        <!-- document heading -->
+        <mat-card-title>
+            @if (task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type'])) {
+                {{ utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']) }}
+                {{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
+            }
+
+            @if (!(task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']))) {
+                {{ document.params['task_type'] }} <span i18n>Element</span>
+                {{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
+            }
         </mat-card-title>
-        <mat-card-content class="description">
-          <p><span i18n>{{ task.showMessageFailGoldCheck[documentIndex] }}</span></p>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  }
 
-  <mat-card appearance="outlined">
-    <!-- document heading -->
-    <mat-card-title>
-      @if (task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type'])) {
-        {{ utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']) }}
-        {{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
-      }
+        <mat-card-content class="pt-16px">
 
-      @if (!(task.settings.element_labels && utilsService.getValueByKeyIgnoreCase(task.settings.element_labels, document.params['task_type']))) {
-        {{ document.params['task_type'] }} <span i18n>Element</span>
-        {{ task.getDocumentTypeNumberAccordingToTaskType(document) }}
-      }
-    </mat-card-title>
-
-    <mat-card-content class="pt-16px">
-
-      <!---- countdown block (sticky) -->
-      @if (task.hasCountdown()) {
-        @if (task.settings.countdownTime >= 0) {
-          <mat-card #countdownCard class="sticky">
-            <mat-card-header class="centered">
-              <mat-icon class="icon-header material-icons-outlined">timer</mat-icon>
-            </mat-card-header>
-            <mat-card-content class="card-content">
-              <div class="time-left">
-                <countdown #countdownElement
-									   [config]="{ demand: true,
+            <!---- countdown block (sticky) -->
+            @if (task.hasCountdown()) {
+                @if (task.settings.countdownTime >= 0) {
+                    <mat-card #countdownCard class="sticky">
+                        <mat-card-header class="centered">
+                            <mat-icon class="icon-header material-icons-outlined">timer</mat-icon>
+                        </mat-card-header>
+                        <mat-card-content class="card-content">
+                            <div class="time-left">
+                                <countdown #countdownElement
+                                           [config]="{ demand: true,
                                      leftTime: task.documentsCountdownTime[documentIndex],
                                      format: 'mm:ss',
                                      notify: 0 }"
-                  (event)="handleCountdown($event)">
-                </countdown>
-              </div>
-              <div class="time-remaining">Time remaining</div>
-            </mat-card-content>
-            <mat-card-footer class="countdown-footer">
-              <mat-progress-bar #countdownProgressBar mode="determinate"></mat-progress-bar>
-            </mat-card-footer>
-          </mat-card>
-        }
-      }
-
-      <!-- evaluation instructions -->
-      @if (task.instructionsEvaluation.instructions.length > 0) {
-        <div class="evaluation-instructions-block">
-          @if (task.instructionsEvaluation.element) {
-            <h2>
-              {{ task.instructionsEvaluation.element.label }} -
-              {{ task.instructionsEvaluation.element.caption }}
-            </h2>
-            <div><p>{{ task.instructionsEvaluation.element.text }}</p></div>
-          }
-          <div>
-            @for (instruction of task.instructionsEvaluation.instructions; track instruction) {
-              <div>
-                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
-                  <h2>
-                    {{ instruction.caption }}
-                  </h2>
+                                           (event)="handleCountdown($event)">
+                                </countdown>
+                            </div>
+                            <div class="time-remaining">Time remaining</div>
+                        </mat-card-content>
+                        <mat-card-footer class="countdown-footer">
+                            <mat-progress-bar #countdownProgressBar mode="determinate"></mat-progress-bar>
+                        </mat-card-footer>
+                    </mat-card>
                 }
-                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
-                  <div>
-                    <p [innerHTML]="instruction.text"></p>
-                  </div>
-                }
-              </div>
             }
-          </div>
-        </div>
-      }
 
-      <!-- main annotation / dimension blocks -->
-      @if (task.settings.modality === 'pointwise') {
-        @if (!task.settings.annotator) {
-          <app-element-pointwise
-            #pointwiseComponent
-            [worker]="worker"
-            [documentIndex]="documentIndex"
-            [postAssessment]="false">
-          </app-element-pointwise>
-        }
-        @if (task.settings.annotator) {
-          @if (task.settings.annotator.type === 'laws') {
-            <app-annotator-laws [documentIndex]="documentIndex">
-            </app-annotator-laws>
-          }
-          @if (task.settings.annotator.type === 'options') {
-            <app-annotator-options [documentIndex]="documentIndex">
-            </app-annotator-options>
-          }
-        }
-      }
+            <!-- evaluation instructions -->
+            @if (task.instructionsEvaluation.instructions.length > 0) {
+                <div class="evaluation-instructions-block">
+                    @if (task.instructionsEvaluation.element) {
+                        <h2>
+                            {{ task.instructionsEvaluation.element.label }} -
+                            {{ task.instructionsEvaluation.element.caption }}
+                        </h2>
+                        <div><p>{{ task.instructionsEvaluation.element.text }}</p></div>
+                    }
+                    <div>
+                        @for (instruction of task.instructionsEvaluation.instructions; track instruction) {
+                            <div>
+                                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
+                                    <h2>
+                                        {{ instruction.caption }}
+                                    </h2>
+                                }
+                                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
+                                    <div>
+                                        <p [innerHTML]="instruction.text"></p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
 
-      @if (task.settings.modality === 'pairwise') {
-        <app-element-pairwise
-          [documentIndex]="documentIndex"
-          (formEmitter)="storeAssessmentForm($event)">
-        </app-element-pairwise>
-      }
+            <!-- main annotation / dimension blocks -->
+            @if (task.settings.modality === 'pointwise') {
+                @if (!task.settings.annotator) {
+                    <app-element-pointwise
+                        #pointwiseComponent
+                        [worker]="worker"
+                        [documentIndex]="documentIndex"
+                        [postAssessment]="false">
+                    </app-element-pointwise>
+                }
+                @if (task.settings.annotator) {
+                    @if (task.settings.annotator.type === 'laws') {
+                        <app-annotator-laws [documentIndex]="documentIndex">
+                        </app-annotator-laws>
+                    }
+                    @if (task.settings.annotator.type === 'options') {
+                        <app-annotator-options [documentIndex]="documentIndex">
+                        </app-annotator-options>
+                    }
+                }
+            }
 
-      <app-dimension
-        [worker]="worker"
-        [documentIndex]="documentIndex"
-        [documentsForm]="documentsForm"
-        [searchEngineForms]="searchEngineForms"
-        [resultsRetrievedForms]="resultsRetrievedForms"
-        (formEmitter)="storeAssessmentForm($event)"
-        [postAssessment]="false"
-        (assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)">
-      </app-dimension>
+            @if (task.settings.modality === 'pairwise') {
+                <app-element-pairwise
+                    [documentIndex]="documentIndex"
+                    (formEmitter)="storeAssessmentForm($event)">
+                </app-element-pairwise>
+            }
 
-      <!-- post-assessment repetitions -->
-      @if (task.settings.post_assessment) {
-        @for (attributePost of task.settings.attributesPost; track attributePost; let k = $index) {
-          <app-element-pointwise
-            #pointwiseComponent
-            [worker]="worker"
-            [documentIndex]="documentIndex"
-            [postAssessment]="true"
-            [postAssessmentIndex]="k + 1"
-            [initialAssessmentFormInteraction]="task.initialAssessmentFormInteraction[documentIndex][k]"
-            (followingAssessmentAllowedEmitter)="unlockNextAssessmentRepetition($event)">
-          </app-element-pointwise>
-          <app-dimension
-            [worker]="worker"
-            [documentIndex]="documentIndex"
-            [documentsForm]="documentsForm"
-            [documentsFormsAdditional]="documentsFormsAdditional"
-            [searchEngineForms]="searchEngineForms"
-            [resultsRetrievedForms]="resultsRetrievedForms"
-            (formEmitter)="storeAssessmentForm($event)"
-            [postAssessment]="true"
-            [postAssessmentIndex]="k + 1"
-            [initialAssessmentFormInteraction]="task.initialAssessmentFormInteraction[documentIndex][k]"
-            [followingAssessmentAllowed]="task.followingAssessmentAllowed[documentIndex][k]"
-            (assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)">
-          </app-dimension>
-        }
-      }
+            <app-dimension
+                [worker]="worker"
+                [documentIndex]="documentIndex"
+                [documentsForm]="documentsForm"
+                [searchEngineForms]="searchEngineForms"
+                [resultsRetrievedForms]="resultsRetrievedForms"
+                (formEmitter)="storeAssessmentForm($event)"
+                [postAssessment]="false"
+                (assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)">
+            </app-dimension>
 
-      <!-- navigation buttons -->
-      @if (assessmentForm) {
-        <mat-card-actions>
-          @if (documentIndex > 0 && document.params['allow_back'] !== false) {
-            <button mat-flat-button color="primary"
-              [disabled]="sectionService.taskCompleted"
-              (click)="handleAssessmentCompletion('Back')">
-              <span i18n>Back</span>
-            </button>
-          }
-          @if (documentIndex + 1 < task.documentsAmount ||
-            (documentIndex + 1 >= task.documentsAmount && task.questionnaireAmountEnd > 0)) {
-            <button mat-flat-button color="primary"
-						[disabled]="(!checkAssessmentFormValidity() ||
+            <!-- post-assessment repetitions -->
+            @if (task.settings.post_assessment) {
+                @for (attributePost of task.settings.attributesPost; track attributePost; let k = $index) {
+                    <app-element-pointwise
+                        #pointwiseComponent
+                        [worker]="worker"
+                        [documentIndex]="documentIndex"
+                        [postAssessment]="true"
+                        [postAssessmentIndex]="k + 1"
+                        [initialAssessmentFormInteraction]="task.initialAssessmentFormInteraction[documentIndex][k]"
+                        (followingAssessmentAllowedEmitter)="unlockNextAssessmentRepetition($event)">
+                    </app-element-pointwise>
+                    <app-dimension
+                        [worker]="worker"
+                        [documentIndex]="documentIndex"
+                        [documentsForm]="documentsForm"
+                        [documentsFormsAdditional]="documentsFormsAdditional"
+                        [searchEngineForms]="searchEngineForms"
+                        [resultsRetrievedForms]="resultsRetrievedForms"
+                        (formEmitter)="storeAssessmentForm($event)"
+                        [postAssessment]="true"
+                        [postAssessmentIndex]="k + 1"
+                        [initialAssessmentFormInteraction]="task.initialAssessmentFormInteraction[documentIndex][k]"
+                        [followingAssessmentAllowed]="task.followingAssessmentAllowed[documentIndex][k]"
+                        (assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)">
+                    </app-dimension>
+                }
+            }
+
+            <!-- navigation buttons -->
+            @if (assessmentForm) {
+                <mat-card-actions>
+                    @if (documentIndex > 0 && document.params['allow_back'] !== false) {
+                        <button mat-flat-button color="primary"
+                                [disabled]="sectionService.taskCompleted"
+                                (click)="handleAssessmentCompletion('Back')">
+                            <span i18n>Back</span>
+                        </button>
+                    }
+                    @if (documentIndex + 1 < task.documentsAmount ||
+                    (documentIndex + 1 >= task.documentsAmount && task.questionnaireAmountEnd > 0)) {
+                        <button mat-flat-button color="primary"
+                                [disabled]="(!checkAssessmentFormValidity() ||
                              !task.searchEngineRetrievedResponses[documentIndex] ||
                              sectionService.taskCompleted ||
                              !task.checkAnnotationConsistency(documentIndex)) ||
                              !checkAdditionalAssessmentFormsValidity()"
-              (click)="handleAssessmentCompletion('Next')">
-              <span i18n>Next</span>
-            </button>
-          }
-          @if (documentIndex + 1 >= task.documentsAmount && task.questionnaireAmountEnd === 0) {
-            <button mat-stroked-button color="accent"
-						[disabled]="(!checkAssessmentFormValidity() ||
+                                (click)="handleAssessmentCompletion('Next')">
+                            <span i18n>Next</span>
+                        </button>
+                    }
+                    @if (documentIndex + 1 >= task.documentsAmount && task.questionnaireAmountEnd === 0) {
+                        <button mat-stroked-button color="accent"
+                                [disabled]="(!checkAssessmentFormValidity() ||
                              !task.searchEngineRetrievedResponses[documentIndex] ||
                              sectionService.taskCompleted ||
                              !task.checkAnnotationConsistency(documentIndex)) ||
                              !checkAdditionalAssessmentFormsValidity()"
-              (click)="handleAssessmentCompletion('Finish')">
-              <span i18n>Finish</span>
-            </button>
-          }
-        </mat-card-actions>
-      }
+                                (click)="handleAssessmentCompletion('Finish')">
+                            <span i18n>Finish</span>
+                        </button>
+                    }
+                </mat-card-actions>
+            }
 
-    </mat-card-content>
-  </mat-card>
+        </mat-card-content>
+    </mat-card>
 </div>

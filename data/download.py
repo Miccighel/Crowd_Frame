@@ -613,11 +613,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             for table_name in task_data_tables:
                 paginator = dynamo_db.get_paginator('query')
                 for page in paginator.paginate(
-                        TableName=table_name,
-                        KeyConditionExpression="identifier = :worker",
-                        ExpressionAttributeValues={
-                            ":worker": {'S': worker_id}
-                        }, Select='ALL_ATTRIBUTES'
+                    TableName=table_name,
+                    KeyConditionExpression="identifier = :worker",
+                    ExpressionAttributeValues={
+                        ":worker": {'S': worker_id}
+                    }, Select='ALL_ATTRIBUTES'
                 ):
                     for item in page['Items']:
                         worker_data[table_name].append(item)
@@ -770,11 +770,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                             paginator = dynamo_db.get_paginator('query')
                             for page in paginator.paginate(
-                                    TableName=acl_data_source,
-                                    KeyConditionExpression="identifier = :identifier",
-                                    ExpressionAttributeValues={
-                                        ":identifier": {'S': worker_id}
-                                    }, Select='ALL_ATTRIBUTES'
+                                TableName=acl_data_source,
+                                KeyConditionExpression="identifier = :identifier",
+                                ExpressionAttributeValues={
+                                    ":identifier": {'S': worker_id}
+                                }, Select='ALL_ATTRIBUTES'
                             ):
 
                                 if len(page['Items']) > 0:
@@ -924,11 +924,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                         if log_data_source:
                             paginator = dynamo_db.get_paginator('query')
                             for page in paginator.paginate(
-                                    TableName=log_data_source,
-                                    KeyConditionExpression="worker = :worker",
-                                    ExpressionAttributeValues={
-                                        ":worker": {'S': worker_id}
-                                    }, Select='ALL_ATTRIBUTES'
+                                TableName=log_data_source,
+                                KeyConditionExpression="worker = :worker",
+                                ExpressionAttributeValues={
+                                    ":worker": {'S': worker_id}
+                                }, Select='ALL_ATTRIBUTES'
                             ):
                                 for item in page['Items']:
                                     data = {
@@ -986,17 +986,17 @@ def find_snapshot_for_record(acl_record, include_empty=False):
         if not include_empty:
             if int(snapshot['data_items']) > 0:
                 if snapshot['worker']['identifier'] == acl_record['worker_id'] and \
-                        snapshot['task']['task_name'] == acl_record['task_name'] and \
-                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
-                        snapshot['task']['unit_id'] == acl_record['unit_id']:
+                    snapshot['task']['task_name'] == acl_record['task_name'] and \
+                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                    snapshot['task']['unit_id'] == acl_record['unit_id']:
                     return snapshot
 
         else:
             try:
                 if snapshot['worker']['identifier'] == acl_record['worker_id'] and \
-                        snapshot['task']['task_name'] == acl_record['task_name'] and \
-                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
-                        snapshot['task']['unit_id'] == acl_record['unit_id']:
+                    snapshot['task']['task_name'] == acl_record['task_name'] and \
+                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                    snapshot['task']['unit_id'] == acl_record['unit_id']:
                     return snapshot
             except KeyError:
                 pp.pprint(worker_id)
@@ -1098,11 +1098,11 @@ if not os.path.exists(df_acl_path):
 
             paginator = dynamo_db.get_paginator('query')
             for page in paginator.paginate(
-                    TableName=table_acl,
-                    KeyConditionExpression="identifier = :worker",
-                    ExpressionAttributeValues={
-                        ":worker": {'S': worker_id},
-                    }, Select='ALL_ATTRIBUTES'
+                TableName=table_acl,
+                KeyConditionExpression="identifier = :worker",
+                ExpressionAttributeValues={
+                    ":worker": {'S': worker_id},
+                }, Select='ALL_ATTRIBUTES'
             ):
                 if len(page['Items']) > 0:
                     for item in page['Items']:
@@ -2256,7 +2256,7 @@ if not os.path.exists(df_quest_path):
                         (df_quest['unit_id'] == row['unit_id']) &
                         (df_quest['try_current'] == row['try_current']) &
                         (df_quest['questionnaire_index'] == questionnaire_data['serialization']['info']['index'])
-                    ]
+                        ]
 
                     if data.shape[0] <= 0:
 
@@ -2575,8 +2575,9 @@ if not os.path.exists(df_data_path):
                     countdowns_left = document_data['serialization']['countdowns_times_left']
                     countdowns_expired_time = document_data['serialization']['countdown_expired_timestamp']
                     countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_started =  document_data['serialization']['countdowns_started']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                    countdowns_started = document_data['serialization']['countdowns_started']
+                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
+                        countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
                     overtime = document_data['serialization']['overtime']
                     row["countdown_time_start"] = countdowns_start if countdowns_start is not None else np.nan
                     row["countdown_time_value"] = countdowns_left if countdowns_left is not None else np.nan
@@ -2609,7 +2610,7 @@ if not os.path.exists(df_data_path):
                                                                 value = value.strip()
                                                                 value = re.sub('\n', '', value)
                                                             row[f"{dimension['name']}_value"] = value
-                                                        value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index+1}"]
+                                                        value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index + 1}"]
                                                         if type(value_post) is str:
                                                             value_post = value_post.strip()
                                                             value_post = re.sub('\n', '', value_post)
@@ -2664,7 +2665,7 @@ if not os.path.exists(df_data_path):
                                                             justification = current_answers[f"{dimension['name']}_justification"].strip()
                                                             justification = re.sub('\n', '', justification)
                                                             row[f"{dimension['name']}_justification"] = justification
-                                                        justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index+1}"].strip()
+                                                        justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index + 1}"].strip()
                                                         justification_post = re.sub('\n', '', justification_post)
                                                         row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
                                     else:
@@ -2698,7 +2699,7 @@ if not os.path.exists(df_data_path):
                                                                 row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
                                                             except KeyError:
                                                                 console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                                                        row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index+1}"]
+                                                        row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index + 1}"]
                                         else:
                                             try:
                                                 row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
@@ -2725,6 +2726,57 @@ if not os.path.exists(df_data_path):
                                 row[f"document_{attribute_name}"] = int(current_attribute_value)
                             else:
                                 row[f"{attribute_name}"] = current_attribute_value
+
+                                # --- Pairwise selection columns (only for pairwise modality) ---
+                                if settings is not None and settings.get('modality') == 'pairwise':
+                                    doc_idx = document_data['serialization']['info']['index']
+                                    subdocs = documents[doc_idx].get('subdocuments', []) if isinstance(documents[doc_idx], dict) else []
+                                    subdoc_count = len(subdocs)
+
+                                    # Defaults when not determinable
+                                    row['pairwise_selected_index'] = np.nan
+                                    row['pairwise_selected_label'] = np.nan
+
+                                    # 1) Prefer compact numeric index if present & valid
+                                    raw_selected_index = current_answers.get('pairwise_selected_index', None)
+                                    selected_index: int | None = None
+                                    try:
+                                        if raw_selected_index is not None and str(raw_selected_index) != '':
+                                            candidate = int(raw_selected_index)
+                                            if candidate >= 0 and (subdoc_count == 0 or candidate < subdoc_count):
+                                                selected_index = candidate
+                                    except (TypeError, ValueError):
+                                        selected_index = None
+
+                                    # 2) Fallback: derive from element_<k>_selected flags (keep the first True)
+                                    if selected_index is None:
+                                        # Find all flags like element_0_selected, element_1_selected, ...
+                                        flags: list[tuple[int, bool]] = []
+                                        for key, val in current_answers.items():
+                                            if isinstance(key, str) and key.startswith('element_') and key.endswith('_selected'):
+                                                try:
+                                                    k = int(key[len('element_'): -len('_selected')])
+                                                except ValueError:
+                                                    continue
+                                                # Coerce truthiness in a tolerant way
+                                                is_selected = (
+                                                    (isinstance(val, bool) and val) or
+                                                    (isinstance(val, (int, float)) and int(val) == 1) or
+                                                    (isinstance(val, str) and val.strip().lower() in {'true', '1', 'yes', 'y'})
+                                                )
+                                                flags.append((k, is_selected))
+                                        flags.sort(key=lambda t: t[0])
+                                        first_true = next((k for k, is_sel in flags if is_sel), None)
+                                        if first_true is not None and (subdoc_count == 0 or first_true < subdoc_count):
+                                            selected_index = first_true
+
+                                    # 3) Write columns if we found a valid selection
+                                    if selected_index is not None:
+                                        row['pairwise_selected_index'] = selected_index
+                                        # Friendly label: A, B, C, ... (fallback to "#<n>" if beyond alphabet)
+                                        alphabet = [chr(ord('A') + i) for i in range(26)]
+                                        row['pairwise_selected_label'] = alphabet[selected_index] if selected_index < len(alphabet) else f'#{selected_index}'
+                                # --- end pairwise selection columns ---
 
                     row["accesses"] = document_data['serialization']['accesses']
 
@@ -3213,7 +3265,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                     (df["query_index"] == row["query_index"]) &
                     (df["query_timestamp"] == row["query_timestamp"]) &
                     (df["response_index"] == response_index_full)
-                ]
+                    ]
                 if len(row_check) == 0:
                     df.loc[len(df)] = row
 
@@ -3445,14 +3497,14 @@ if not os.path.exists(df_log_path):
                                 row[detail_kind_parsed] = detail_val
                             df_logs_part.loc[len(df_logs_part)] = row
                         elif data_log['type'] == 'init' or \
-                                data_log['type'] == 'window_blur' or \
-                                data_log['type'] == 'window_focus' or \
-                                data_log['type'] == 'resize' or \
-                                data_log['type'] == 'button' or \
-                                data_log['type'] == 'unload' or \
-                                data_log['type'] == 'shortcut' or \
-                                data_log['type'] == 'radioChange' or \
-                                data_log['type'] == 'scroll':
+                            data_log['type'] == 'window_blur' or \
+                            data_log['type'] == 'window_focus' or \
+                            data_log['type'] == 'resize' or \
+                            data_log['type'] == 'button' or \
+                            data_log['type'] == 'unload' or \
+                            data_log['type'] == 'shortcut' or \
+                            data_log['type'] == 'radioChange' or \
+                            data_log['type'] == 'scroll':
                             for attribute, value in log_details.items():
                                 attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
                                 if attribute_parsed not in df_logs_part.columns:

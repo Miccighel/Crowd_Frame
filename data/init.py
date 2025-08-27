@@ -17,6 +17,7 @@ import textwrap
 import boto3
 import time
 import warnings
+import requests
 import filecmp
 from mako.template import Template
 from python_on_whales import DockerClient
@@ -2559,9 +2560,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": task_title if task_title else task_name,
                 "internal_name": f"{task_name}_{batch_name}",
                 "description": "<Edit the study description here>",
-                "external_study_url": f"{link_public}?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}&sessionID={{%SESSION_ID}}&platform=prolific",
+                "external_study_url": f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}&sessionID={{%SESSION_ID}}&platform=prolific",
                 "prolific_id_option": "url_parameters",
-                "completion_code": random_string(),
                 "completion_option": "url",
                 "total_available_places": len(hits),
                 "estimated_completion_time": 30,

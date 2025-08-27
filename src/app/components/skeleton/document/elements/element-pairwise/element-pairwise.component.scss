@@ -1,44 +1,136 @@
+/* ─────────────────────────────────────────────
+   Pairwise Task: Layout, Typography, Responsive
+   ───────────────────────────────────────────── */
+
+/* 1) Title above the pairwise boxes */
 .pairwise-title {
-  font-size: 25px;
-  font-weight: bold;
-  text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
 }
 
-.pairwise-cointainer {
-  width: 50%;
-  background-color: #FCFCFC;
-  text-align: center;
-  display: inline-block;
+/* 2) Pairwise container:
+      - Two boxes side-by-side (desktop)
+      - Gap controls spacing
+      - Mobile stacks them vertically */
+.pairwise-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start; /* let gap handle spacing */
+    align-items: stretch; /* equal-height look */
+    gap: 2em;
+    margin: 2em 0;
+    flex-wrap: nowrap; /* keep row layout on desktop */
 }
 
+/* 3) Single element box (card) */
 .element-box {
-  padding-top: 1%;
-  padding-bottom: 1%;
+    flex: 0 0 calc(50% - 1em); /* half width minus half the gap */
+    max-width: calc(50% - 1em);
+    min-width: 0; /* allow shrinking properly */
+    box-sizing: border-box; /* include padding + border in width */
+
+    cursor: pointer;
+
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(60, 60, 60, 0.10);
+    border: 2px solid transparent;
+    transition: box-shadow .15s, border .15s;
+
+    padding: 2em 1.5em 1.5em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
+/* 3a) Selected (chosen) element box */
+.element-box.selected {
+    border: 2px solid #4679f6;
+    box-shadow: 0 4px 16px rgba(70, 121, 246, 0.15);
+}
+
+/* 4) Element box header/title */
 .element-box-title {
-  text-align: center
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 0.7em;
 }
 
+/* 5) Attribute list container (gray box, improved look) */
 .element-box-values {
-  width: 80%;
-  background-color: rgba(0, 0, 0, 0.1);
-  height: 30%;
-  border-radius: 10px;
-  padding: 5px;
-  margin: 0 auto 4%;
-  text-align: center;
-  justify-content: center; /* align horizontal */
-  align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 
+    background-color: rgba(0, 0, 0, 0.04); /* softer gray */
+    border-radius: 8px;
+    padding: 14px 18px; /* comfortable padding */
+    margin: 0 auto 1.2em;
+    text-align: left;
+
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06); /* subtle inner shadow */
+    display: flex;
+    flex-direction: column;
+    gap: 0.6em; /* even spacing between rows */
 }
 
+/* 6) Attribute row (label + value) */
 .element-value-caption {
-  display: block;
-  margin: 5px;
+    display: flex;
+    align-items: baseline;
+    gap: .6em;
+    min-width: 0; /* prevent overflow from children */
+    line-height: 1.4;
 }
 
+/* 6a) Attribute label (left column) */
+.element-value-caption label {
+    font-weight: 600;
+    flex: 0 0 140px; /* fixed width for alignment */
+    max-width: 40%; /* guardrail for narrow screens */
+    text-align: right;
+    margin: 0;
+    flex-shrink: 0;
+    color: #333;
+}
+
+/* 6b) Attribute value (right column) */
+.element-value-caption .attr-value,
+.element-value-caption span:not(label),
+.element-value-caption strong:not(label),
+.element-value-caption p {
+    flex: 1 1 auto;
+    min-width: 0; /* allow wrapping */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    color: #111;
+}
+
+/* 7) Checkbox label style */
 .element-checkbox-selection-text {
-  font-size: 1.1em;
-  font-weight: bold;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-left: 0.5em;
+}
+
+/* ───────────────
+   Responsive view
+   ─────────────── */
+@media (max-width: 900px) {
+    .pairwise-container {
+        flex-direction: column;
+        gap: 1.5em;
+        align-items: stretch;
+        flex-wrap: nowrap;
+    }
+    .element-box {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+    .element-value-caption label {
+        flex-basis: 120px; /* slightly smaller label column */
+    }
 }
