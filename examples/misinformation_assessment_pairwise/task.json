@@ -1,0 +1,132 @@
+{
+    "modality": "pairwise",
+    "task_name": "Pairwise-Misinformation-Assessment",
+    "batch_name": "Pilot-0",
+    "allowed_tries": 10,
+    "time_check_amount": 3333,
+    "element_labels": {
+        "main": "Statement Set",
+        "main_short": "S"
+    },
+    "attributes": [
+        {
+            "name": "id",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "statement_text",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "speaker_name",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "speaker_party",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "statement_date",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "statement_origin",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "speaker_job",
+            "show": true,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "fact_check_source",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "fact_check_ground_truth_label",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "fact_check_ground_truth_value",
+            "show": false,
+            "annotate": false,
+            "required": false
+        }
+    ],
+    "annotator": false,
+    "countdown_behavior": false,
+    "countdown_time": false,
+    "additional_times": false,
+    "countdown_modality": false,
+    "countdown_attribute": false,
+    "countdown_attribute_values": [],
+    "countdown_position_values": [],
+    "logger": false,
+    "logOption": {
+        "button": {
+            "general": "false",
+            "click": "false"
+        },
+        "mouse": {
+            "general": "false",
+            "mouseMovements": "false",
+            "leftClicks": "false",
+            "rightClicks": "false"
+        },
+        "keyboard": {
+            "general": "false",
+            "shortcuts": "false",
+            "keys": "false"
+        },
+        "textInput": {
+            "general": "false",
+            "paste": "false",
+            "delete": "false"
+        },
+        "clipboard": {
+            "general": "false",
+            "copy": "false",
+            "cut": "false"
+        },
+        "radio": {
+            "general": "false",
+            "change": "false"
+        },
+        "crowd-xplorer": {
+            "general": "false",
+            "query": "false",
+            "result": "false"
+        },
+        "various": {
+            "general": "false",
+            "selection": "false",
+            "unload": "false",
+            "focus&blur": "false",
+            "scroll": "false",
+            "resize": "false"
+        }
+    },
+    "serverEndpoint": "",
+    "blacklist_batches": [],
+    "whitelist_batches": [],
+    "messages": [
+        "You have already started this task without finishing it"
+    ]
+}

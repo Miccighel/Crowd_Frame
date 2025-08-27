@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Task Instructions",
+        "text": "<p>You will evaluate <strong>pairs of statements</strong> attributed to public figures. For each pair, you must choose the statement you judge to be <em>more truthful</em>, then answer a few questions about <strong>each</strong> statement.</p><ol><li><strong>Select exactly one statement per pair:</strong> Read statements A and B and click the card of the one you consider more truthful.</li><li><strong>Rate both statements separately:</strong><ul><li><strong>Truthfulness (1–10):</strong> 1 = definitely false; 10 = definitely true.</li><li><strong>Agreement:</strong> choose your level of agreement from the provided options.</li></ul></li></ol><p>Please base your judgments only on the content shown here (no external sources). A countdown may limit the time available for each item.</p><p>Data are collected for research purposes. No personally identifying information is stored. Participation is voluntary and you may stop at any time.</p>"
+    },
+    {
+        "caption": "Task Description",
+        "text": "<p>You will first complete a brief questionnaire to help us ensure data quality. Then you will evaluate <strong>5 pairs</strong> of statements (10 statements total), shown two at a time.</p><ul><li>Each statement is reported verbatim from its original source.</li><li>The order is not meaningful; you may encounter any mix of stronger or weaker statements.</li><li>You can revise earlier answers while navigating, until you finish.</li><li>You must complete all required fields to move to the next step.</li><li>Please avoid guessing or random clicks; quality checks may be applied.</li></ul>"
+    }
+]

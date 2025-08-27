@@ -1,0 +1,521 @@
+[
+    {
+        "unit_id": "unit_0",
+        "token_input": "ABCDEFGHILM",
+        "token_output": "MNOPQRSTUVZ",
+        "documents_number": 5,
+        "documents": [
+            {
+                "id": "identifier_1",
+                "text": "Document_1",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "7008.json",
+                        "name": "REP_MOSTLYTRUE_doc8",
+                        "statement_text": "6,400 Ohioans ... lost manufacturing jobs in the month of September.",
+                        "speaker_name": "Mitt Romney",
+                        "speaker_party": "REP",
+                        "statement_date": "2012",
+                        "statement_origin": "a news release",
+                        "speaker_job": "Former governor",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "mostly-true",
+                        "fact_check_ground_truth_value": "4"
+                    },
+                    {
+                        "id": "HIGH",
+                        "name": "HIGH",
+                        "statement_text": "Yes, We can!",
+                        "speaker_name": "Barack Obama",
+                        "speaker_party": "DEM",
+                        "statement_date": "2008",
+                        "statement_origin": "Public appearance",
+                        "speaker_job": "Former U.S. President",
+                        "fact_check_source": "gold_question",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_2",
+                "text": "Document_2",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "4759.json",
+                        "name": "REP_TRUE_doc8",
+                        "statement_text": "Ilana Shafran Mandel's stake in Forest City Enterprises constitutes significantly less than 1 percent of the company’s shares.",
+                        "speaker_name": "Josh Mandel",
+                        "speaker_party": "REP",
+                        "statement_date": "2011",
+                        "statement_origin": "a news release",
+                        "speaker_job": "Ohio treasurer",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    },
+                    {
+                        "id": "3136.json",
+                        "name": "DEM_HALFTRUE_doc8",
+                        "statement_text": "Secure Communities has a proven track record of enhancing public safety by focusing on violent offenders.",
+                        "speaker_name": "Peter Kilmartin",
+                        "speaker_party": "DEM",
+                        "statement_date": "2011",
+                        "statement_origin": "a news release",
+                        "speaker_job": "state representative",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "half-true",
+                        "fact_check_ground_truth_value": "3"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_3",
+                "text": "Document_3",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "3110.json",
+                        "name": "DEM_BARELYTRUE_doc8",
+                        "statement_text": "Republican (small business tax cut) bill spends $80 million for better Google searches, not job creation.",
+                        "speaker_name": "Cory Mason",
+                        "speaker_party": "DEM",
+                        "statement_date": "2011",
+                        "statement_origin": "a news release",
+                        "speaker_job": "State Assembly member, 62nd District",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "barely-true",
+                        "fact_check_ground_truth_value": "2"
+                    },
+                    {
+                        "id": "9701.json",
+                        "name": "DEM_FALSE_doc8",
+                        "statement_text": "Says a $12.5 million incentive deal she approved for Abbott Laboratories contained strong protections for taxpayers.",
+                        "speaker_name": "Mary Burke",
+                        "speaker_party": "DEM",
+                        "statement_date": "2014",
+                        "statement_origin": "a news release",
+                        "speaker_job": "Madison school board member",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "false",
+                        "fact_check_ground_truth_value": "1"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_4",
+                "text": "Document_4",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "LOW",
+                        "name": "LOW",
+                        "statement_text": "If I were not a Formula One pilot, I would be a football player.",
+                        "speaker_name": "Abraham Lincoln",
+                        "speaker_party": "REP",
+                        "statement_date": "2006",
+                        "statement_origin": "Public appearance",
+                        "speaker_job": "Former U.S. President",
+                        "fact_check_source": "gold_question",
+                        "fact_check_ground_truth_label": "false",
+                        "fact_check_ground_truth_value": "1"
+                    },
+                    {
+                        "id": "7077.json",
+                        "name": "REP_LIE_doc8",
+                        "statement_text": "Says I was the first governor in America to endorse Mitt Romney.",
+                        "speaker_name": "Chris Christie",
+                        "speaker_party": "REP",
+                        "statement_date": "2012",
+                        "statement_origin": "a news release",
+                        "speaker_job": "Governor of New Jersey",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "lie",
+                        "fact_check_ground_truth_value": "0"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_5",
+                "text": "Document_5",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "4842978",
+                        "name": "Labor_In_Between_doc1",
+                        "statement_text": "If you take the unaccompanied children, I am their legal guardian. I am in a situation where I have to substitute the level of responsibility by law that would otherwise equate to a parent.",
+                        "speaker_name": "Tony Burke",
+                        "speaker_party": "Labor",
+                        "statement_date": "2013",
+                        "statement_origin": "",
+                        "speaker_job": "",
+                        "fact_check_source": "ABC",
+                        "fact_check_ground_truth_label": "in-between",
+                        "fact_check_ground_truth_value": "2"
+                    },
+                    {
+                        "id": "4892178",
+                        "name": "Labor_Positive_doc3",
+                        "statement_text": "Under this government, the tax to GDP ratio has, in the period we've been in office, been an average of 22.7 per cent.",
+                        "speaker_name": "Kevin Rudd",
+                        "speaker_party": "Labor",
+                        "statement_date": "2013",
+                        "statement_origin": "",
+                        "speaker_job": "",
+                        "fact_check_source": "ABC",
+                        "fact_check_ground_truth_label": "positive",
+                        "fact_check_ground_truth_value": "4"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "unit_id": "unit_1",
+        "token_input": "ZXSUDFGHJKL",
+        "token_output": "QWERTYUIOPA",
+        "documents_number": 5,
+        "documents": [
+            {
+                "id": "identifier_6",
+                "text": "Document_6",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "1111.json",
+                        "name": "DEM_MOSTLYTRUE_doc9",
+                        "statement_text": "Renewable energy usage has doubled in the last decade.",
+                        "speaker_name": "Jane Doe",
+                        "speaker_party": "DEM",
+                        "statement_date": "2020",
+                        "statement_origin": "government report",
+                        "speaker_job": "Energy Secretary",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "mostly-true",
+                        "fact_check_ground_truth_value": "4"
+                    },
+                    {
+                        "id": "2222.json",
+                        "name": "REP_FALSE_doc9",
+                        "statement_text": "The earth is flat and supported by elephants.",
+                        "speaker_name": "John Smith",
+                        "speaker_party": "REP",
+                        "statement_date": "2019",
+                        "statement_origin": "press release",
+                        "speaker_job": "Flat Earth Society President",
+                        "fact_check_source": "gold_question",
+                        "fact_check_ground_truth_label": "false",
+                        "fact_check_ground_truth_value": "1"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_7",
+                "text": "Document_7",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "3333.json",
+                        "name": "REP_TRUE_doc10",
+                        "statement_text": "Vaccines prevent millions of deaths annually worldwide.",
+                        "speaker_name": "Alice Johnson",
+                        "speaker_party": "REP",
+                        "statement_date": "2021",
+                        "statement_origin": "medical journal",
+                        "speaker_job": "Doctor",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    },
+                    {
+                        "id": "4444.json",
+                        "name": "DEM_HALFTRUE_doc10",
+                        "statement_text": "All vaccines contain microchips for tracking.",
+                        "speaker_name": "Bob Lee",
+                        "speaker_party": "DEM",
+                        "statement_date": "2021",
+                        "statement_origin": "social media",
+                        "speaker_job": "Influencer",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "half-true",
+                        "fact_check_ground_truth_value": "3"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_8",
+                "text": "Document_8",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "5555.json",
+                        "name": "DEM_TRUE_doc11",
+                        "statement_text": "The COVID-19 vaccine is effective in preventing severe illness.",
+                        "speaker_name": "Carlos Mendez",
+                        "speaker_party": "DEM",
+                        "statement_date": "2022",
+                        "statement_origin": "CDC statement",
+                        "speaker_job": "Epidemiologist",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    },
+                    {
+                        "id": "6666.json",
+                        "name": "REP_MOSTLYFALSE_doc11",
+                        "statement_text": "Wearing a mask makes no difference in controlling virus spread.",
+                        "speaker_name": "Emily Brown",
+                        "speaker_party": "REP",
+                        "statement_date": "2022",
+                        "statement_origin": "interview",
+                        "speaker_job": "Nurse",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "mostly-false",
+                        "fact_check_ground_truth_value": "2"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_9",
+                "text": "Document_9",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "7777.json",
+                        "name": "DEM_FALSE_doc12",
+                        "statement_text": "Climate change is a hoax.",
+                        "speaker_name": "Nancy Drew",
+                        "speaker_party": "DEM",
+                        "statement_date": "2021",
+                        "statement_origin": "TV appearance",
+                        "speaker_job": "Meteorologist",
+                        "fact_check_source": "gold_question",
+                        "fact_check_ground_truth_label": "false",
+                        "fact_check_ground_truth_value": "1"
+                    },
+                    {
+                        "id": "8888.json",
+                        "name": "REP_LIE_doc12",
+                        "statement_text": "Mars is closer to Earth than the Moon.",
+                        "speaker_name": "Tom Sawyer",
+                        "speaker_party": "REP",
+                        "statement_date": "2020",
+                        "statement_origin": "conference",
+                        "speaker_job": "Astronomer",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "lie",
+                        "fact_check_ground_truth_value": "0"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_10",
+                "text": "Document_10",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "9999.json",
+                        "name": "DEM_BARELYTRUE_doc13",
+                        "statement_text": "Most scientists agree on the fundamentals of climate change.",
+                        "speaker_name": "Zara Ali",
+                        "speaker_party": "DEM",
+                        "statement_date": "2022",
+                        "statement_origin": "panel discussion",
+                        "speaker_job": "Climate Scientist",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "barely-true",
+                        "fact_check_ground_truth_value": "2"
+                    },
+                    {
+                        "id": "1010.json",
+                        "name": "REP_TRUE_doc13",
+                        "statement_text": "Electric cars are zero emission at the tailpipe.",
+                        "speaker_name": "Mike Green",
+                        "speaker_party": "REP",
+                        "statement_date": "2022",
+                        "statement_origin": "press conference",
+                        "speaker_job": "Transport Minister",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "unit_id": "unit_2",
+        "token_input": "QAZWSXEDCRF",
+        "token_output": "MLKJHGFDSAQ",
+        "documents_number": 5,
+        "documents": [
+            {
+                "id": "identifier_11",
+                "text": "Document_11",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "1212.json",
+                        "name": "DEM_LIE_doc14",
+                        "statement_text": "Vaccines cause autism.",
+                        "speaker_name": "Greg House",
+                        "speaker_party": "DEM",
+                        "statement_date": "2018",
+                        "statement_origin": "TV interview",
+                        "speaker_job": "Doctor",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "lie",
+                        "fact_check_ground_truth_value": "0"
+                    },
+                    {
+                        "id": "1313.json",
+                        "name": "REP_TRUE_doc14",
+                        "statement_text": "The flu vaccine reduces the risk of illness by about 40-60%.",
+                        "speaker_name": "Lisa Cuddy",
+                        "speaker_party": "REP",
+                        "statement_date": "2018",
+                        "statement_origin": "public statement",
+                        "speaker_job": "Hospital Director",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_12",
+                "text": "Document_12",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "1414.json",
+                        "name": "DEM_MOSTLYFALSE_doc15",
+                        "statement_text": "Earth's atmosphere is composed entirely of nitrogen.",
+                        "speaker_name": "Walter White",
+                        "speaker_party": "DEM",
+                        "statement_date": "2015",
+                        "statement_origin": "lecture",
+                        "speaker_job": "Chemistry Teacher",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "mostly-false",
+                        "fact_check_ground_truth_value": "2"
+                    },
+                    {
+                        "id": "1515.json",
+                        "name": "REP_TRUE_doc15",
+                        "statement_text": "The main gas in the atmosphere is nitrogen.",
+                        "speaker_name": "Jesse Pinkman",
+                        "speaker_party": "REP",
+                        "statement_date": "2015",
+                        "statement_origin": "science fair",
+                        "speaker_job": "Student",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_13",
+                "text": "Document_13",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "1616.json",
+                        "name": "DEM_BARELYTRUE_doc16",
+                        "statement_text": "The Amazon rainforest produces most of the world’s oxygen.",
+                        "speaker_name": "Rachel Green",
+                        "speaker_party": "DEM",
+                        "statement_date": "2016",
+                        "statement_origin": "news article",
+                        "speaker_job": "Environmentalist",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "barely-true",
+                        "fact_check_ground_truth_value": "2"
+                    },
+                    {
+                        "id": "1717.json",
+                        "name": "REP_FALSE_doc16",
+                        "statement_text": "Sharks can live up to 1000 years.",
+                        "speaker_name": "Ross Geller",
+                        "speaker_party": "REP",
+                        "statement_date": "2016",
+                        "statement_origin": "TV show",
+                        "speaker_job": "Paleontologist",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "false",
+                        "fact_check_ground_truth_value": "1"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_14",
+                "text": "Document_14",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "1818.json",
+                        "name": "DEM_TRUE_doc17",
+                        "statement_text": "Venus is the hottest planet in the solar system.",
+                        "speaker_name": "Phoebe Buffay",
+                        "speaker_party": "DEM",
+                        "statement_date": "2017",
+                        "statement_origin": "astronomy seminar",
+                        "speaker_job": "Singer/Astronomer",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    },
+                    {
+                        "id": "1919.json",
+                        "name": "REP_MOSTLYTRUE_doc17",
+                        "statement_text": "Mars has polar ice caps.",
+                        "speaker_name": "Monica Geller",
+                        "speaker_party": "REP",
+                        "statement_date": "2017",
+                        "statement_origin": "science podcast",
+                        "speaker_job": "Chef",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "mostly-true",
+                        "fact_check_ground_truth_value": "4"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_15",
+                "text": "Document_15",
+                "pairwise_split": true,
+                "subdocuments": [
+                    {
+                        "id": "2020.json",
+                        "name": "DEM_HALFTRUE_doc18",
+                        "statement_text": "Jupiter is the largest planet but has no moons.",
+                        "speaker_name": "Joey Tribbiani",
+                        "speaker_party": "DEM",
+                        "statement_date": "2017",
+                        "statement_origin": "quiz show",
+                        "speaker_job": "Actor",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "half-true",
+                        "fact_check_ground_truth_value": "3"
+                    },
+                    {
+                        "id": "2121.json",
+                        "name": "REP_TRUE_doc18",
+                        "statement_text": "Saturn is famous for its ring system.",
+                        "speaker_name": "Chandler Bing",
+                        "speaker_party": "REP",
+                        "statement_date": "2017",
+                        "statement_origin": "science class",
+                        "speaker_job": "Advertising Executive",
+                        "fact_check_source": "Politifact",
+                        "fact_check_ground_truth_label": "true",
+                        "fact_check_ground_truth_value": "5"
+                    }
+                ]
+            }
+        ]
+    }
+]

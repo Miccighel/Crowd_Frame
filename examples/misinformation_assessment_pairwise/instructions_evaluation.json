@@ -1,0 +1,9 @@
+{
+    "element": false,
+    "instructions": [
+        {
+            "caption": "How to complete this pairwise task",
+            "text": "<ol><li><b>Select one statement:</b> Read both statements (A and B) and click the card for the statement you judge to be <i>more truthful</i>. You must select exactly one before continuing.</li><li><b>Rate each statement separately:</b><ul><li><b>Truthfulness (1–10):</b> 1 = definitely false; 10 = definitely true.</li><li><b>Agreement:</b> choose your level of agreement from the provided options.</li></ul></li></ol><p><i>Tip:</i> Base your answers only on the content provided in this task.</p>"
+        }
+    ]
+}
