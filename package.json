@@ -18,7 +18,7 @@
   "dependencies": {
     "@angular/animations": "^20.2.1",
     "@angular/cdk": "20.1.5",
-    "@angular/cli": "20.1.5",
+    "@angular/cli": "20.2.0",
     "@angular/common": "20.2.1",
     "@angular/compiler": "20.2.1",
     "@angular/core": "20.2.1",
@@ -51,7 +51,7 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^20.1.5",
+    "@angular/build": "^20.2.0",
     "@angular/compiler-cli": "20.2.1",
     "@types/node": "^24.2.0",
     "esbuild": "^0.25.8",
