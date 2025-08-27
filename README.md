@@ -1,7 +1,28 @@
 # Crowd_Frame
 
-![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) ![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue) [![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/) [![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/) [![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)[![GitHub
-issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed) [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+<!-- Language/Framework badges -->
+![Angular](https://badges.aleen42.com/src/angular.svg)
+![Python](https://badges.aleen42.com/src/python.svg)
+
+<!-- Project status badges -->
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue)
+[![License](https://img.shields.io/github/license/Miccighel/Crowd_Frame)](LICENSE)
+
+<!-- CI / Release -->
+[![CI](https://github.com/Miccighel/Crowd_Frame/actions/workflows/ci.yml/badge.svg)](https://github.com/Miccighel/Crowd_Frame/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/releases)
+[![Downloads](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/)
+
+<!-- GitHub stats -->
+[![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/)
+[![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)
+[![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/)
+[![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/)
+[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
 
@@ -16,22 +37,23 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
-     <li><a href="#environment-variables">Environment Variables</a></li>
+    <li><a href="#environment-variables">Environment Variables</a></li>
     <li><a href="#task-configuration">Task Configuration</a></li>
     <li><a href="#hits-allocation">HITs Allocation</a></li>
     <li><a href="#quality-checks">Quality Checks</a></li>
-<li><a href="#local-development">Local Development</a></li>
+    <li><a href="#local-development">Local Development</a></li>
     <li><a href="#task-performing">Task Performing</a></li>
-     <li><a href="#task-results">Task Results</a></li>
+    <li><a href="#task-results">Task Results</a></li>
     <li><a href="#troubleshooting">Troubleshooting</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#original-article">Original Article</a></li>
 </ul>
 
 ## Prerequisites
 
 - [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 - [Node.js](https://nodejs.org/it/download/)
-- [Python 3](https://www.python.org/downloads/https://nodejs.org/it/download/)
+- [Python 3](https://www.python.org/downloads/)
 - [Docker](https://docs.docker.com/get-docker/) (Optional)
 
 ## Getting Started
@@ -61,78 +83,60 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 
    ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path: `C:\Users\your_os_user\.aws\credentials`
 
-     ````
-     [your_iam_user]
-     aws_access_key_id=your_key
-     aws_secret_access_key=your_secret
-     ````
+   ```ini
+   [your_iam_user]
+   aws_access_key_id=your_key
+   aws_secret_access_key=your_secret
+   ```
 
 6. Clone the repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
 7. Enable the Yarn global binary
 
-   ````
+   ```bash
    corepack enable
-   ````
+   ```
 
 8. Move to repo folder:
 
-   ````
+   ```bash
    cd ~/path/to/project
-   ````
+   ```
 
-9. Move to data folder:
+9. Install JavaScript/Angular dependencies with Yarn:
 
-    ```
+   ```bash
+   yarn install --immutable
+   ```
+
+10. Move to data folder:
+
+    ```bash
     cd data
     ```
 
-10. Create environment file `.env`:
+11. Create environment file `.env`:
 
     Path: `your_repo_folder/data/.env`
 
-11. Provide the mandatory subset of environment variables:
+12. Provide the mandatory subset of environment variables:
 
-     ````
-     mail_contact=your_email_address
-     budget_limit=your_usd_budget_limit
-     task_name=your_task_name
-     batch_name=your_batch_name
-     admin_user=your_admin_username
-     admin_password=your_admin_password
-     server_config=none
-     aws_region=your_aws_region
-     aws_private_bucket=your_private_bucket_name
-     aws_deploy_bucket=your_deploy_bucket_name
-     ````
+    ```ini
+    mail_contact=your_email_address
+    budget_limit=your_usd_budget_limit
+    task_name=your_task_name
+    batch_name=your_batch_name
+    admin_user=your_admin_username
+    admin_password=your_admin_password
+    server_config=none
+    aws_region=your_aws_region
+    aws_private_bucket=your_private_bucket_name
+    aws_deploy_bucket=your_deploy_bucket_name
+    ```
 
-12. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
+13. Install Python packages with `pip install -r your_repo_folder/requirements.txt`
 
-     ````
-    aiohttp==3.11.10
-    boto3==1.37.10
-    botocore==1.37.10
-    chardet==4.0.0
-    datefinder==0.7.3
-    docker==7.1.0
-    ipinfo==5.1.1
-    lxml==5.4.0
-    mako==1.2.3
-    numpy==2.0.1
-    pandas==2.2.3
-    pycountry==24.6.1
-    python-dateutil==2.9.0.post0
-    python-dotenv==1.1.0
-    python-on-whales==0.76.1
-    pytz==2024.1
-    requests==2.32.3
-    rich==13.9.4
-    toloka-kit==1.2.3
-    tqdm==4.67.1
-    xlf-merge==0.1.6
-    ````
-
-13. Run python script `init.py`
+14. Run python script `init.py`
 
     Path: `your_repo_folder/data/init.py`
 
@@ -142,7 +146,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
     * generate an empty task configuration;
     * deploy the task on the public bucket.
 
-14. Open your task:
+15. Open your task:
 
     `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
 
