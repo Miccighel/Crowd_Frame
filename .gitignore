@@ -13,6 +13,7 @@
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
+yarn-debug.log*
 testem.log
 
 # --- Angular / Sass / Cache ---
@@ -20,9 +21,9 @@ testem.log
 /.sass-cache/
 /.connect.lock
 .cache/
+yarn/.cache/
 
 # --- Python bytecode ---
-__pycache__/
 /**/__pycache__/
 *.pyc
 
