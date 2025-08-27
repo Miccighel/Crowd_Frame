@@ -109,8 +109,6 @@ export class ElementPairwiseComponent implements OnInit {
         if (mostRecentRecord.payload?.form) possibleAnswerSources.push(mostRecentRecord.payload.form);
         possibleAnswerSources.push(mostRecentRecord); /* last resort scan */
 
-        console.log(mostRecentRecord);
-
         /* Shallow merge so later sources can override earlier ones */
         const combinedAnswerFields: Record<string, unknown> = {};
         for (const source of possibleAnswerSources) {

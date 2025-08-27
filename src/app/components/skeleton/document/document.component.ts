@@ -240,22 +240,28 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    private async sendCountdownPayload(timeLeft: number): Promise<void> {
-        const current = this.task.getElementIndex(this.worker.getPositionCurrent());
-        const addAnswers: Record<string, any> = {};
-        for (const frm of this.documentsFormsAdditional[current.elementIndex] || []) {
+    private async sendCountdownPayload(timeLeftMs: number): Promise<void> {
+        const currentEl = this.task.getElementIndex(this.worker.getPositionCurrent());
+
+        /* Collect additional answers (keep as-is, just flatten to POJO) */
+        const additionalAnswers: Record<string, any> = {};
+        for (const frm of this.documentsFormsAdditional[currentEl.elementIndex] || []) {
             Object.keys(frm.controls).forEach(ctrl => {
-                addAnswers[ctrl] = frm.get(ctrl)?.value;
+                additionalAnswers[ctrl] = frm.get(ctrl)?.value;
             });
         }
-        const payload = this.task.buildTaskDocumentPayload(
-            current,
-            this.documentsForm[current.elementIndex].value,
-            addAnswers,
-            Math.round(timeLeft / 1000),
-            'Update'
+
+        /* Base answers for the current document */
+        const baseAnswers = this.documentsForm[currentEl.elementIndex].value;
+
+        /* Build countdown payload via Task (single source of truth) */
+        const payload = this.task.buildCountdownUpdatePayload(
+            currentEl,
+            baseAnswers,
+            additionalAnswers,
+            Math.round(timeLeftMs / 1000)
         );
-        payload['update_type'] = 'countdown_update';
+
         await this.dynamoDBService.insertDataRecord(
             this.configService.environment,
             this.worker,

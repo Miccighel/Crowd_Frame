@@ -458,7 +458,6 @@ export class Task {
         }
 
         /* @Cristian Abbondo: Defines a three-dimensional array for element selection.
-         * TODO: Initialize from past payloads for dimensionsPairwiseSelection as well. */
         for (let i = 0; i < this.documentsAmount; i++) {
             this.dimensionsPairwiseSelection[i] = [];
             for (let j = 0; j < this.dimensionsAmount; j++) {
@@ -1385,6 +1384,31 @@ export class Task {
     public hasCountdown() {
         return this.settings.countdownTime >= 0;
     }
+
+    /* ------------------------------------------------------
+     * Countdown payload builder (thin wrapper)
+     * Centralizes the “countdown_update” payload shape.
+     * Keep Task free of Angular types: pass plain objects.
+     * ------------------------------------------------------ */
+    public buildCountdownUpdatePayload(
+        elementData: any,
+        baseAnswers: Record<string, any>,
+        additionalAnswers: Record<string, any> = {},
+        timeLeftSeconds: number
+    ): any {
+        /* Delegate to the canonical builder (already sets countdown fields) */
+        const payload = this.buildTaskDocumentPayload(
+            elementData,
+            baseAnswers,
+            additionalAnswers,
+            timeLeftSeconds,              /* already seconds */
+            'Update'
+        );
+        /* Tag this as a countdown update for downstream parsers */
+        payload['update_type'] = 'countdown_update';
+        return payload;
+    }
+
 
     /** ------------------------------------------------------------------
      *  Return the effective countdown seconds for the given document.
