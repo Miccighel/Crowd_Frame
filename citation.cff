@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software in your research, please cite both the software
+  and the original article listed below.
+title: Crowd_Frame
+type: software
+authors:
+  - family-names: Soprano
+    given-names: Michael
+    orcid: https://orcid.org/0000-0002-7337-7592
+  - family-names: Roitero
+    given-names: Kevin
+    orcid: https://orcid.org/0000-0002-9191-3280
+  - family-names: Bombassei De Bona
+    given-names: Francesco
+  - family-names: Mizzaro
+    given-names: Stefano
+    orcid: https://orcid.org/0000-0002-2852-168X
+repository-code: https://github.com/Miccighel/Crowd_Frame
+url: https://doi.org/10.1145/3488560.3502182
+abstract: >-
+  Crowd_Frame is a framework that enables the development and deployment of
+  complex crowdsourcing tasks in a simple and customizable way, making it
+  easier for researchers and practitioners to collect high-quality human
+  annotations across multiple platforms.
+version: 0.0.0  # update with your release tag (e.g., 1.2.3)
+date-released: 2025-08-27  # update on each release (YYYY-MM-DD)
+
+preferred-citation:
+  type: inproceedings
+  authors:
+    - family-names: Soprano
+      given-names: Michael
+      orcid: https://orcid.org/0000-0002-7337-7592
+    - family-names: Roitero
+      given-names: Kevin
+      orcid: https://orcid.org/0000-0002-9191-3280
+    - family-names: Bombassei De Bona
+      given-names: Francesco
+    - family-names: Mizzaro
+      given-names: Stefano
+      orcid: https://orcid.org/0000-0002-2852-168X
+  title: "Crowd_Frame: A Simple and Complete Framework to Deploy Complex Crowdsourcing Tasks Off-the-Shelf"
+  year: 2022
+  booktitle: "Proceedings of the Fifteenth ACM International Conference on Web Search and Data Mining"
+  publisher:
+    name: Association for Computing Machinery
+    address: New York, NY, USA
+  pages: 1605-1608
+  doi: 10.1145/3488560.3502182
+  url: https://doi.org/10.1145/3488560.3502182
+  isbn: 9781450391320
+  series: WSDM '22
+  location: Virtual Event, AZ, USA
