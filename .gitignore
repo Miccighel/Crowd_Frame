@@ -21,7 +21,7 @@ testem.log
 /.sass-cache/
 /.connect.lock
 .cache/
-yarn/.cache/
+.yarn/cache/
 
 # --- Python bytecode ---
 /**/__pycache__/
