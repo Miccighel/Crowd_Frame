@@ -54,12 +54,11 @@ export class S3Service {
             params: {
                 Bucket: cfg.bucket,
                 Key: key,
-                Body: typeof payload === 'string' ? payload
-                    : JSON.stringify(payload),
+                Body: typeof payload === 'string' ? payload : JSON.stringify(payload),
                 ContentType: 'application/json'
             }
         });
-        return uploader.done();               // resolves when the upload finishes
+        return uploader.done();
     }
 
     /** List “folders” (CommonPrefixes) under a given prefix */
@@ -98,50 +97,43 @@ export class S3Service {
 
     downloadAdministrators(cfg) {
         const file = `${this.getFolder(cfg)}Generator/admin.json`;
-        return cfg.configuration_local ? localRawAdmin
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawAdmin : this.download(cfg, file);
     }
 
     downloadTaskSettings(cfg) {
         const file = `${this.getFolder(cfg)}Task/task.json`;
-        return cfg.configuration_local ? localRawTaskSettings
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawTaskSettings : this.download(cfg, file);
     }
 
     downloadSearchEngineSettings(cfg) {
         const file = `${this.getFolder(cfg)}Task/search_engine.json`;
-        return cfg.configuration_local ? localRawSearchEngineSettings
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawSearchEngineSettings : this.download(cfg, file);
     }
 
     downloadHits(cfg) {
         const file = `${this.getFolder(cfg)}Task/hits.json`;
-        return cfg.configuration_local ? localRawHits
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawHits : this.download(cfg, file);
     }
 
     downloadGeneralInstructions(cfg) {
         const file = `${this.getFolder(cfg)}Task/instructions_general.json`;
-        return cfg.configuration_local ? localRawInstructionsMain
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawInstructionsMain : this.download(cfg, file);
     }
 
+    /* Keep the original strict method (throws on 404 when not local) */
     downloadEvaluationInstructions(cfg) {
         const file = `${this.getFolder(cfg)}Task/instructions_evaluation.json`;
-        return cfg.configuration_local ? localRawInstructionsDimensions
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawInstructionsDimensions : this.download(cfg, file);
     }
 
     downloadDimensions(cfg) {
         const file = `${this.getFolder(cfg)}Task/dimensions.json`;
-        return cfg.configuration_local ? localRawDimensions
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawDimensions : this.download(cfg, file);
     }
 
     downloadQuestionnaires(cfg) {
         const file = `${this.getFolder(cfg)}Task/questionnaires.json`;
-        return cfg.configuration_local ? localRawQuestionnaires
-            : this.download(cfg, file);
+        return cfg.configuration_local ? localRawQuestionnaires : this.download(cfg, file);
     }
 
     downloadWorkers(cfg, batch = null): Promise<any> {
@@ -149,10 +141,9 @@ export class S3Service {
             ? `${batch}Task/workers.json`
             : `${this.getFolder(cfg)}Task/workers.json`;
 
-        // Always return a Promise so the API is uniform
         return batch || !cfg.configuration_local
-            ? this.download(cfg, file)          // already returns a Promise
-            : Promise.resolve(localRawWorkers); // wrap static JSON in a resolved Promise
+            ? this.download(cfg, file)
+            : Promise.resolve(localRawWorkers);
     }
 
     /* ---------- STATIC PATH HELPERS ---------- */
