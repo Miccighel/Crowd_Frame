@@ -30,7 +30,7 @@
 
 ### A software system that allows to easily design and deploy diverse types of crowdsourcing tasks.
 
-[![ForTheBadge built-with-science](http://ForTheBadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Miccighel/Crowd_Frame)
+[![ForTheBadge built-with-science](http://ForTheBadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Miccighel/Crowd_Frame
 
 ## Table of Contents
 
@@ -44,7 +44,7 @@
     <li><a href="#local-development">Local Development</a></li>
     <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#task-results">Task Results</a></li>
-    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#faq--troubleshooting">FAQ & Troubleshooting</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#original-article">Original Article</a></li>
 </ul>
@@ -115,7 +115,7 @@
     cd data
     ```
 
-11. Create environment file `.env`:
+11. Create environment file `.env` (assicurati che il nome sia esattamente `.env`, senza estensioni nascoste):
 
     Path: `your_repo_folder/data/.env`
 
@@ -150,7 +150,7 @@
 
     `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
 
-Crowd_Frame interacts with diverse Amazon Web Services to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the AWS Free Tier program. 
+Crowd_Frame interacts with diverse Amazon Web Services to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the AWS Free Tier program.
 The task requester can set the budget limit using the `budget_limit` environment variable. Thus, the usage of the services will be blocked if/when such a limit is surpassed.
 
 ## Environment Variables
@@ -158,37 +158,37 @@ The task requester can set the budget limit using the `budget_limit` environment
 The following table describes each environment variable that can be set in the environment file to customize the behavior.  
 **Path**: `your_repo_folder/data/.env`
 
-| Variable | Description | Mandatory | Value |
-|:--------:|:------------|:---------:|:------|
-| `profile_name` | Name of the IAM profile created during Step #2. If unspecified, the default value is `default`. | ❌ | `your_iam_user` |
-| `mail_contact` | Contact email address to receive AWS budgeting-related communications. | ✅ | Valid email address |
-| `platform` | Platform on which the crowdsourcing task is deployed. Set to `none` if you recruit workers manually. | ✅ | `none`, `mturk`, `prolific`, or `toloka` |
-| `budget_limit` | Maximum monthly budget allowed, in USD (e.g., `5.0`). | ✅ | Positive float |
-| `task_name` | Identifier of the crowdsourcing task. | ✅ | Any string |
-| `batch_name` | Identifier of a single task batch. | ✅ | Any string |
-| `task_title` | Custom title for the crowdsourcing task. | ❌ | Any string |
-| `batch_prefix` | Prefix for the identifiers of one or more task batches. Use this to filter the final result set. | ❌ | Any string |
-| `admin_user` | Username of the admin user. | ✅ | Any string |
-| `admin_password` | Password of the admin user. | ✅ | Any string |
-| `aws_region` | Region of your AWS account (e.g., `us-east-1`). | ✅ | Valid AWS region identifier |
-| `aws_private_bucket` | Name of the private S3 bucket used to store task configuration and data. | ✅ | Unique string across AWS |
-| `aws_deploy_bucket` | Name of the public S3 bucket used to deploy the task source code. | ✅ | Unique string across AWS |
-| `aws_dataset_bucket` | Name of the optional S3 bucket used to store additional data for tasks. | ❌ | Unique string across AWS |
-| `server_config` | Specifies the worker behavior logging interface. Use `aws` for AWS-based logging, `custom` to provide your own endpoint, or `none` to disable logging. | ✅ | `aws`, `custom`, or `none` |
-| `enable_solver` | Enables deployment of the HITs solver locally. Allows automatic document allocation into HITs. Requires Docker. | ❌ | `true` or `false` |
-| `enable_crawling` | Enables crawling of results retrieved by the search engine. | ❌ | `true` or `false` |
-| `prolific_completion_code` | Prolific study completion code. Required if `prolific` is selected as the platform. | ❌ | Valid Prolific completion code |
-| `toloka_oauth_token` | Token to access the Toloka API. Required if `toloka` is selected as the platform. | ❌ | Valid Toloka OAuth token |
-| `ip_info_token` | API key for `ipinfo.com` tracking functionalities. | ❌ | Valid IPInfo API key |
-| `ip_geolocation_api_key` | API key for `ipgeolocation.io` tracking functionalities. | ❌ | Valid IPGeolocation API key |
-| `ipapi_api_key` | API key for `ipapi.com` tracking functionalities. | ❌ | Valid IPAPI API key |
-| `user_stack_token` | API key for `userstack.com` user-agent detection functionalities. | ❌ | Valid Userstack API key |
-| `bing_api_key` | API key for the `BingWebSearch` search provider. | ❌ | Valid Bing Web Search API key |
-
+|          Variable          | Description                                                                                                                                            | Mandatory | Value                                    |
+|:--------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------|:---------:|:-----------------------------------------|
+|       `profile_name`       | Name of the IAM profile created during Step #2. If unspecified, the default value is `default`.                                                        |     ❌     | `your_iam_user`                          |
+|       `mail_contact`       | Contact email address to receive AWS budgeting-related communications.                                                                                 |     ✅     | Valid email address                      |
+|         `platform`         | Platform on which the crowdsourcing task is deployed. Set to `none` if you recruit workers manually.                                                   |     ✅     | `none`, `mturk`, `prolific`, or `toloka` |
+|       `budget_limit`       | Maximum monthly budget allowed, in USD (e.g., `5.0`).                                                                                                  |     ✅     | Positive float                           |
+|        `task_name`         | Identifier of the crowdsourcing task.                                                                                                                  |     ✅     | Any string                               |
+|        `batch_name`        | Identifier of a single task batch.                                                                                                                     |     ✅     | Any string                               |
+|        `task_title`        | Custom title for the crowdsourcing task.                                                                                                               |     ❌     | Any string                               |
+|       `batch_prefix`       | Prefix for the identifiers of one or more task batches. Use this to filter the final result set.                                                       |     ❌     | Any string                               |
+|        `admin_user`        | Username of the admin user.                                                                                                                            |     ✅     | Any string                               |
+|      `admin_password`      | Password of the admin user.                                                                                                                            |     ✅     | Any string                               |
+|        `aws_region`        | Region of your AWS account (e.g., `us-east-1`).                                                                                                        |     ✅     | Valid AWS region identifier              |
+|    `aws_private_bucket`    | Name of the private S3 bucket used to store task configuration and data.                                                                               |     ✅     | Unique string across AWS                 |
+|    `aws_deploy_bucket`     | Name of the public S3 bucket used to deploy the task source code.                                                                                      |     ✅     | Unique string across AWS                 |
+|    `aws_dataset_bucket`    | Name of the optional S3 bucket used to store additional data for tasks.                                                                                |     ❌     | Unique string across AWS                 |
+|      `server_config`       | Specifies the worker behavior logging interface. Use `aws` for AWS-based logging, `custom` to provide your own endpoint, or `none` to disable logging. |     ✅     | `aws`, `custom`, or `none`               |
+|      `enable_solver`       | Enables deployment of the HITs solver locally. Allows automatic document allocation into HITs. Requires Docker.                                        |     ❌     | `true` or `false`                        |
+|     `enable_crawling`      | Enables crawling of results retrieved by the search engine.                                                                                            |     ❌     | `true` or `false`                        |
+| `prolific_completion_code` | Prolific study completion code. Required if `prolific` is selected as the platform.                                                                    |     ❌     | Valid Prolific completion code           |
+|    `toloka_oauth_token`    | Token to access the Toloka API. Required if `toloka` is selected as the platform.                                                                      |     ❌     | Valid Toloka OAuth token                 |
+|      `ip_info_token`       | API key for `ipinfo.com` tracking functionalities.                                                                                                     |     ❌     | Valid IPInfo API key                     |
+|  `ip_geolocation_api_key`  | API key for `ipgeolocation.io` tracking functionalities.                                                                                               |     ❌     | Valid IPGeolocation API key              |
+|      `ipapi_api_key`       | API key for `ipapi.com` tracking functionalities.                                                                                                      |     ❌     | Valid IPAPI API key                      |
+|     `user_stack_token`     | API key for `userstack.com` user-agent detection functionalities.                                                                                      |     ❌     | Valid Userstack API key                  |
+|       `bing_api_key`       | API key for the `BingWebSearch` search provider.                                                                                                       |     ❌     | Valid Bing Web Search API key            |
 
 ## Task Configuration
 
 The generator must be accessed to configure the crowdsourcing task deployed. This involves 4 steps:
+
 - open the administrator panel by appending the suffix `?admin=true` to the task's URL;
 - Click the **Generate** button to open the login form;
 - Input the admin credentials set in the corresponding environment variables (`admin_user` and `admin_password`);
@@ -235,14 +235,14 @@ The following table details the content of each configuration file.
 |       `dimensions.json`        | Contains the definitions of each evaluation dimension of the task. |
 |  `instructions_general.json`   |           Contains the general instructions of the task.           |
 | `instructions_evaluation.json` |         Contains the evaluation instructions of the task.          |
-|      `search_engine.json`      | Contains the configuration of the custom search engine. |
-|         `task.json`         | Contains several general settings of the task. |
-|       `workers.json`        | Contains settings concerning worker access to the task. |
+|      `search_engine.json`      |      Contains the configuration of the custom search engine.       |
+|          `task.json`           |           Contains several general settings of the task.           |
+|         `workers.json`         |      Contains settings concerning worker access to the task.       |
 
-## HITs Allocatiom
+## HITs Allocation
 
-The HITs for a crowdsourcing task designed and deployed using Crowd_Frame must be stored in a special JSON file. 
-Such a file can be manually uploaded when configuring the crowdsourcing task itself. 
+The HITs for a crowdsourcing task designed and deployed using Crowd_Frame must be stored in a special JSON file.
+Such a file can be manually uploaded when configuring the crowdsourcing task itself.
 The file must comply to a special format that satisfies 5 requirements:
 
 1. There must be an array of HITs (also called _units_);
@@ -278,9 +278,18 @@ Note that:
 
 ### Manual Allocation
 
-The requester can build manually the set of HITs compliant with the format required by the system. Initially, the requester chooses an attribute whose values split the dataset into different classes. The core idea is to build pools of elements to allocate, one for each class. Four parameters are thus established. These parameters are the total number of elements to allocate in the whole set of HITs, the number of elements that each HIT must contain, the number of elements to allocate for each class, and the number of repetitions for each element. The pools of elements must thus be updated to include all the repetitions required. Each HIT is then built using a loop. It is useful to define a support function. The core idea is to sample the required number of elements for each class until a sample without duplicates is obtained. The elements are then removed from the pool of those still available if the condition is satisfied. The total number of HITs required depends on the parameters previously established. The lists of elements allocated in HITs can be serialized for later reference. Using such an allocation matrix, the requester can finally build the set of HITs in the format required. 
+The requester can build manually the set of HITs compliant with the format required by the system. Initially, the requester chooses an attribute whose values split the dataset into different classes.
+The core idea is to build pools of elements to allocate, one for each class. Four parameters are thus established. These parameters are the total number of elements to allocate in the whole set of
+HITs, the number of elements that each HIT must contain, the number of elements to allocate for each class, and the number of repetitions for each element. The pools of elements must thus be updated
+to include all the repetitions required. Each HIT is then built using a loop. It is useful to define a support function. The core idea is to sample the required number of elements for each class until
+a sample without duplicates is obtained. The elements are then removed from the pool of those still available if the condition is satisfied. The total number of HITs required depends on the parameters
+previously established. The lists of elements allocated in HITs can be serialized for later reference. Using such an allocation matrix, the requester can finally build the set of HITs in the format
+required.
 
-The first algorithm shown below provides a pseudocode that further details the allocation procedure. Let us hypothesize a requester that wants to determine the number $m$ of HITs that they will publish on the crowdsourcing platform. The second algorithm shown below details the `singleHIT(...)` sub-procedure used by the main algorithm to sample a set of elements without duplicates. The sample obtained is used to build a single HIT of the whole set. Let us hypothesize a requester that wants to allocate $n$ elements in HITs made of $k$ positions. Each element is repeated in $p$ different HITs. The final number of HITs required is $m=(n*p)/k$.
+The first algorithm shown below provides a pseudocode that further details the allocation procedure. Let us hypothesize a requester that wants to determine the number $m$ of HITs that they will
+publish on the crowdsourcing platform. The second algorithm shown below details the `singleHIT(...)` sub-procedure used by the main algorithm to sample a set of elements without duplicates. The sample
+obtained is used to build a single HIT of the whole set. Let us hypothesize a requester that wants to allocate $n$ elements in HITs made of $k$ positions. Each element is repeated in $p$ different
+HITs. The final number of HITs required is $m=(n*p)/k$.
 
 <img src="images/hits-allocation-algorithm-1.png" alt="HITs Allocation Algorithm - Main" width="700"/>
 
@@ -288,33 +297,34 @@ The first algorithm shown below provides a pseudocode that further details the a
 
 ### Automatic HITs creation
 
-The system provides a solution to allocate automatically the elements to evaluate in a set of HITs. It is experimental and works only when using 
-Crowd_Frame within the local filesystem. Future versions of the software will consolidate and generalize such a feature. Crowd_Frame allws deploying 
-the implementation of a solver and provides a way to communicate with it. Docker needs to be installed in the local system, since the usage of a 
-container is require to allow software and solver communicating. The container contains deployed using Docker contains two services. 
-One of these services provides the implementation of the solver itself, while the other provides a reverse proxy based on the `Nginx` web server. 
+The system provides a solution to allocate automatically the elements to evaluate in a set of HITs. It is experimental and works only when using
+Crowd_Frame within the local filesystem. Future versions of the software will consolidate and generalize such a feature. Crowd_Frame allws deploying
+the implementation of a solver and provides a way to communicate with it. Docker needs to be installed in the local system, since the usage of a
+container is require to allow software and solver communicating. The container contains deployed using Docker contains two services.
+One of these services provides the implementation of the solver itself, while the other provides a reverse proxy based on the `Nginx` web server.
 The reverse proxy forwards HTTP messages to the solver. The solver processes the messages and responds.
 
-The requester can enable the feature using the `enable_solver` environment variable. S/he can take advantage of the solver while configuring the task using the 
-Generator, during the sixth step of the configuration. The first step required to create the input data required by the solver involves uploading the elements 
-to be allocated into a set of HITs. Each element must share the same set of attributes and the overall set must be provided in the form of a JSON array. 
-In other words, the requester can upload the value of the `documents` object of the fragment shown above, without writing any token or `unit_id`. Then, the requester can 
-configure three parameters concerning the allocation. S/he thus configures the number of workers that evaluate each element and the overall number of workers among which the elements must be allocated. 
-Lastly, the requester chooses the subset of attributes used to categorize the elements across different HITs. The requester must also indicate how many 
-elements must be assigned to each worker for every possible value of the category chosen. For each category/element number pair the system verifies whether 
-the two values are compatible. The minimum number of workers needed to evaluate the whole set of HITs is thus computed if the verification is successful. 
+The requester can enable the feature using the `enable_solver` environment variable. S/he can take advantage of the solver while configuring the task using the
+Generator, during the sixth step of the configuration. The first step required to create the input data required by the solver involves uploading the elements
+to be allocated into a set of HITs. Each element must share the same set of attributes and the overall set must be provided in the form of a JSON array.
+In other words, the requester can upload the value of the `documents` object of the fragment shown above, without writing any token or `unit_id`. Then, the requester can
+configure three parameters concerning the allocation. S/he thus configures the number of workers that evaluate each element and the overall number of workers among which the elements must be
+allocated.
+Lastly, the requester chooses the subset of attributes used to categorize the elements across different HITs. The requester must also indicate how many
+elements must be assigned to each worker for every possible value of the category chosen. For each category/element number pair the system verifies whether
+the two values are compatible. The minimum number of workers needed to evaluate the whole set of HITs is thus computed if the verification is successful.
 The requester can increase such a number as s/he prefers.
 
-To provide an example of when such a verification can fail, let us hypothesize a requester who chooses as category an attribute named `A1` which has 2 different values 
-among the elements to be evaluated. The requester requires that each worker evaluates 2 elements for each attribute's value. Then, a second attribute named `A2` 
-is also chosen, which has 3 different values. The requester requires that each worker evaluates 1 element for each attribute's value. This means that according to the attribute `A1` 
+To provide an example of when such a verification can fail, let us hypothesize a requester who chooses as category an attribute named `A1` which has 2 different values
+among the elements to be evaluated. The requester requires that each worker evaluates 2 elements for each attribute's value. Then, a second attribute named `A2`
+is also chosen, which has 3 different values. The requester requires that each worker evaluates 1 element for each attribute's value. This means that according to the attribute `A1`
 each worker evaluates 4 elements, while according to `A2` each worker evaluates 3 elements. Such a selection of values is not allowed.
 
-The figure shown below reports a sample configuration for a set of 120 statements available on [Politifact](https://www.politifact.com/>). The JSON below shows a sample of such elements. 
-The requester, hence, uploads a JSON file containing 120 elements to allocate. S/he chooses that each element must be assigned to 10 different workers. 
-The attribute `party` is selected as category. Each worker must evaluate 6 elements for each of the 2 values of the category. In other words, each workers must evaluate 12 different elements. 
-The verification steps thus enforces a minimum number of 100 workers to recruit. The Generator allows selecting as categories only the attributes which are balanced with respect to 
-the number of documents. In other words, those attributes repeated across the same number of elements. Such a design choice is needed to provide input data to the solver 
+The figure shown below reports a sample configuration for a set of 120 statements available on [Politifact](https://www.politifact.com/>). The JSON below shows a sample of such elements.
+The requester, hence, uploads a JSON file containing 120 elements to allocate. S/he chooses that each element must be assigned to 10 different workers.
+The attribute `party` is selected as category. Each worker must evaluate 6 elements for each of the 2 values of the category. In other words, each workers must evaluate 12 different elements.
+The verification steps thus enforces a minimum number of 100 workers to recruit. The Generator allows selecting as categories only the attributes which are balanced with respect to
+the number of documents. In other words, those attributes repeated across the same number of elements. Such a design choice is needed to provide input data to the solver
 compliant with the formalization implemented. The request is now ready to send the request to the solver, which computes the allocation and returns a solution.
 
 <img src="images/generator-solver.png" alt="Generator Solver" width="700"/>
@@ -335,17 +345,18 @@ compliant with the formalization implemented. The request is now ready to send t
     ...
 ]
 ````
+
 ## Quality Checks
 
-Crowd_Frame provides a way to manually define custom quality checks triggered for each evaluation dimension when the corresponding setting is enabled in the configuration. 
+Crowd_Frame provides a way to manually define custom quality checks triggered for each evaluation dimension when the corresponding setting is enabled in the configuration.
 A custom quality is obtained by providing an implementation for the static method `performGoldCheck` available in `data/build/skeleton/goldChecker.ts`.
 
-A custom quality check is triggered only for certain elements of HIT, with respect to a subset of the evaluation dimensions. 
-An element can be marked for the quality check by prepending the string `GOLD` to its `id` attribute. 
+A custom quality check is triggered only for certain elements of HIT, with respect to a subset of the evaluation dimensions.
+An element can be marked for the quality check by prepending the string `GOLD` to its `id` attribute.
 The fragment shown below reports a single HIT where its second element is marked for the quality check.
 
-The second fragment shows the default implementation of the method generated by the initialization script. The `document` array provides the set 
-of elements marked for the quality check. The `answers` array contains the answers provided by the worker for the evaluation dimensions 
+The second fragment shows the default implementation of the method generated by the initialization script. The `document` array provides the set
+of elements marked for the quality check. The `answers` array contains the answers provided by the worker for the evaluation dimensions
 that require the quality check. The check must be implemented among the two comments shown.
 
 ````json
@@ -356,8 +367,14 @@ that require the quality check. The check must be implemented among the two comm
         "token_output": "MNOPQRSTUVZ",
         "documents_number": 1,
         "documents": [
-            { "id": "identifier_1", "text": "Lorem ipsum dolor sit amet" },
-            { "id": "GOLD-identifier", "text": "Lorem ipsum dolor sit amet" }
+            {
+                "id": "identifier_1",
+                "text": "Lorem ipsum dolor sit amet"
+            },
+            {
+                "id": "GOLD-identifier",
+                "text": "Lorem ipsum dolor sit amet"
+            }
         ]
     }
 ]
@@ -453,7 +470,7 @@ Now you can manually edit the configuration and test everything locally.
 
 ## Task Performing
 
-Publishing a crowdsourcing task configured using Crowd_Frame involves choosing the platform to recruit the human workforce, even though the requester can also manually recruit each worker needed. 
+Publishing a crowdsourcing task configured using Crowd_Frame involves choosing the platform to recruit the human workforce, even though the requester can also manually recruit each worker needed.
 The process to publish and start the task deployed is slightly different depending on such a choice.
 
 ### Manual Recruitment
@@ -473,6 +490,7 @@ The steps #2 and #3 can be skipped because the task URL can be provided to a wor
 ### Amazon Mechanical Turk
 
 A task requester that aims to recruit each worker using Amazon Mechanical Turk must:
+
 1. Set the environment variable `platform` using the value `mturk`
 2. Create the task and set its general parameters and criterion
 3. Move to the build output folder for the platform:
@@ -488,6 +506,7 @@ A task requester that aims to recruit each worker using Amazon Mechanical Turk m
 ### Prolific
 
 A task requester that aims to recruit each worker using Prolific must:
+
 1. Set the environment variable `platform` using the value `prolific`
 2. Create the study and set its general parameters
 3. Set the data collection modality required
@@ -497,7 +516,7 @@ A task requester that aims to recruit each worker using Prolific must:
    d. Rename the `PROLIFIC_PID` parameter to `workerId`.
 4. Choose to redirect the participants to confirm completion using a URL.
    a. Copy the completion code from the URL shown (i.e., the `cc` parameter).
-   b. Set the `prolific_completion_code` environment variable using the completion code found as value.
+   b. Set the environment variable `prolific_completion_code` to the completion code found, so that submissions can be properly validated.
 5. Configure the parameters and criterion of the audience of workers to recruit.
 6. Set the overall study cost.
 7. Review the status of each submission by using the study's page.
@@ -505,6 +524,7 @@ A task requester that aims to recruit each worker using Prolific must:
 ### Toloka
 
 A task requester that aims to recruit each worker using Toloka must:
+
 1. Set the environment variable `platform` using the value `toloka`
 2. Create the project and set its general parameters.
 3. Move to the build output folder for the platform:
@@ -533,36 +553,36 @@ The requester can download the final results of a crowdsourcing task deployed us
 1. Access the main folder: `cd ~/path/to/project/`.
 2. Access the data folder: `cd data`.
 3. Run the `download.py` script. The script will:
-   4. Download and store snapshots of the raw data produced by each worker.
-   5. Refine the raw data using a tabular format.
-   6. Download and store the configuration of the task deployed.
-   7. Build and store support files containing worker and user agent attributes.
+    4. Download and store snapshots of the raw data produced by each worker.
+    5. Refine the raw data using a tabular format.
+    6. Download and store the configuration of the task deployed.
+    7. Build and store support files containing worker and user agent attributes.
 
-The whole set of output data is stored in the results folder: `data/result/task_name`, 
-where \verb|task_name| is the value of the corresponding environment variable. The folder is 
-created by the download script if it does not exists. It contains 5 sub folders, one for each 
+The whole set of output data is stored in the results folder: `data/result/task_name`,
+where \verb|task_name| is the value of the corresponding environment variable. The folder is
+created by the download script if it does not exists. It contains 5 sub folders, one for each
 type of output data. The following table describes each of these sub folders.
 
-|        Folder        |                            Description                             |
-|:--------------------:|:------------------------------------------------------------------:|
-|        `Data`        |            Contains snapshots of the raw data produced by each worker.             |
-|     `Dataframe`      |      Contains tabular based refined versions of the raw data.      |
-|     `Resources`      | Contains two support files for each worker with attribute about him/herself and his/her user agent. |
-|        `Task`        |           Contains a backup of the task's configuration.           |
-|      `Crawling`      |          Contains a crawl of the pages retrieved while using the search engine.          |
+|   Folder    |                                             Description                                             |
+|:-----------:|:---------------------------------------------------------------------------------------------------:|
+|   `Data`    |                     Contains snapshots of the raw data produced by each worker.                     |
+| `Dataframe` |                      Contains tabular based refined versions of the raw data.                       |
+| `Resources` | Contains two support files for each worker with attribute about him/herself and his/her user agent. |
+|   `Task`    |                           Contains a backup of the task's configuration.                            |
+| `Crawling`  |               Contains a crawl of the pages retrieved while using the search engine.                |
 
 ### `result/Task`
 
-The \verb|Task| folder contains the backup of the task configuration. 
+The \verb|Task| folder contains the backup of the task configuration.
 
 ### `result/Data`
 
-The \verb|Data| folder contains a snapshot of the data produced by each worker. 
-A snapshot is a JSON dictionary. The top level object is an array. The download 
-script creates an object for each batch of workers recruited within a crowdsourcing task. 
-The following fragment shows the snapshot for a worker with identifier `ABEFLAGYVQ7IN4` who 
-participates in the batch `Your_Batch` of the task `Your_Task`. This means that his/her 
-snapshot contains an array with a single object. The `source_*` attributes represent 
+The \verb|Data| folder contains a snapshot of the data produced by each worker.
+A snapshot is a JSON dictionary. The top level object is an array. The download
+script creates an object for each batch of workers recruited within a crowdsourcing task.
+The following fragment shows the snapshot for a worker with identifier `ABEFLAGYVQ7IN4` who
+participates in the batch `Your_Batch` of the task `Your_Task`. This means that his/her
+snapshot contains an array with a single object. The `source_*` attributes represent
 the DynamoDB tables and the path on the local filesystem.
 
 ````json
@@ -590,11 +610,11 @@ the DynamoDB tables and the path on the local filesystem.
 
 ### `result/Resources`
 
-The `Resources` folder contains two JSON files for each worker. Let us hypothesize a 
-worker recruited using the identifier `ABEFLAGYVQ7IN4`. The two support files are named 
-`ABEFLAGYVQ7IN4_ip.json` and `ABEFLAGYVQ7IN4_uag.json`. 
-The former contains attributes obtained by performing the reverse lookup of his/her IP addresses. 
-The latter contains attributes obtained by analyzing his/her user agent strings. 
+The `Resources` folder contains two JSON files for each worker. Let us hypothesize a
+worker recruited using the identifier `ABEFLAGYVQ7IN4`. The two support files are named
+`ABEFLAGYVQ7IN4_ip.json` and `ABEFLAGYVQ7IN4_uag.json`.
+The former contains attributes obtained by performing the reverse lookup of his/her IP addresses.
+The latter contains attributes obtained by analyzing his/her user agent strings.
 The following fragments show a subset of the information provided by the two support files.
 
 ````json
@@ -719,23 +739,23 @@ The following fragments show a subset of the information provided by the two sup
 
 ### `result/Crawling`
 
-The `Crawling` folder contains a crawl of the web pages retrieved by the search engine 
-when queried by a worker. A task requester who deploys a crowdsourcing task which 
-uses the search engine within one or more evaluation dimensions can choose to 
-enable the crawling by using the `enable_crawling` environment variable. The 
-download script thus tries to crawl each web page if the variable is enabled. 
+The `Crawling` folder contains a crawl of the web pages retrieved by the search engine
+when queried by a worker. A task requester who deploys a crowdsourcing task which
+uses the search engine within one or more evaluation dimensions can choose to
+enable the crawling by using the `enable_crawling` environment variable. The
+download script thus tries to crawl each web page if the variable is enabled.
 
-Initially, the download script creates two sub folders, `Metadata/` 
-and `Source/`. Each web page is then assigned with an UUID (Universally Unique IDentifier). 
-Let us hypothesize a page assigned with the UUID `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7`, 
-The script tries to download its source code. It is stored in the `Source` folder 
-if the operation succeeds, in a file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_source`. 
-The extension depends on the page's source code. 
+Initially, the download script creates two sub folders, `Metadata/`
+and `Source/`. Each web page is then assigned with an UUID (Universally Unique IDentifier).
+Let us hypothesize a page assigned with the UUID `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7`,
+The script tries to download its source code. It is stored in the `Source` folder
+if the operation succeeds, in a file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_source`.
+The extension depends on the page's source code.
 
-Then, the script stores some metadata about the crawling operation of the page in 
-the `Metadata` folder, in a JSON file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_metadata.json`. 
-It is possible to understand whether the operation succeeded or not and why (i.e., by acknowledging 
-the HTTP response code) and to read the value of each HTTP header. The following fragment show an 
+Then, the script stores some metadata about the crawling operation of the page in
+the `Metadata` folder, in a JSON file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_metadata.json`.
+It is possible to understand whether the operation succeeded or not and why (i.e., by acknowledging
+the HTTP response code) and to read the value of each HTTP header. The following fragment show an
 example of metadata produced by the download script while trying to crawl one of the pages retrieved.
 
 ````json
@@ -763,25 +783,25 @@ example of metadata produced by the download script while trying to crawl one of
 
 ### `result/Dataframe`
 
-The `Dataframe` folder contains a refined version of the data stored within each worker snapshot. 
+The `Dataframe` folder contains a refined version of the data stored within each worker snapshot.
 The download script inserts the raw data into structures called "DataFrame". A DataFrame
-is a two dimensional data structure with labeled axes that contains  heterogeneous data. 
-Such structures may thus be implemented as two dimensional arrays or tables with rows and columns. 
+is a two dimensional data structure with labeled axes that contains heterogeneous data.
+Such structures may thus be implemented as two dimensional arrays or tables with rows and columns.
 
-The download script refines the raw data into up to 10 tabular dataframe serialized 
-into CSV files. The final amount of dataframes serialized in the `Dataframe` folder depends 
-on the environment variables configured by the task requester.    
+The download script refines the raw data into up to 10 tabular dataframe serialized
+into CSV files. The final amount of dataframes serialized in the `Dataframe` folder depends
+on the environment variables configured by the task requester.
 
-Each `DataFrame` has a variable number of rows and columns. Their granularity 
-depend on the type of data reported. 
-For instance, a row of the `workers_url` dataframe contains a row for each result 
-retrieved for each query submitted to the search engine while analyzing a single 
-HIT's element during a given try by a single worker. A row of the `workers_answers` 
-dataframe contains the answers for the evaluation dimensions provided for a single HIT's 
-element during a given try by a single worker, and so on. The requester must thus be careful 
-while exploring each DataFrame and properly understand what kind of data s/he is 
-exploring and analyzing. The following fragments provide an example of the access 
-control list for a task with a single worker recruited and an example composed of the 
+Each `DataFrame` has a variable number of rows and columns. Their granularity
+depend on the type of data reported.
+For instance, a row of the `workers_url` dataframe contains a row for each result
+retrieved for each query submitted to the search engine while analyzing a single
+HIT's element during a given try by a single worker. A row of the `workers_answers`
+dataframe contains the answers for the evaluation dimensions provided for a single HIT's
+element during a given try by a single worker, and so on. The requester must thus be careful
+while exploring each DataFrame and properly understand what kind of data s/he is
+exploring and analyzing. The following fragments provide an example of the access
+control list for a task with a single worker recruited and an example composed of the
 answers provided by a single worker for two elements of the HIT assigned.
 
 ````csv
@@ -797,16 +817,28 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 
 Each dataframe has its own characteristics and peculiarities. However, there are several rules of thumb that a requester should remember and eventually consider while s/he performs his/her analysis:
 
-1. The attribute `paid` is present in the whole set of dataframe. It can be used to split the data among the workers who completed or not the task. The requester may want to explore the data of who failed the task.
-2. The attribute `batch_name` is present in a subset of dataframe. It can be used to split the data among the different batches of workers recruited. The requester may want to analyze separately each subset of data.
-3. The attributes `try_current` and `try_last` are present in a subset of dataframe. They can be used to split the data among each try performed by each worker. The latter attribute indicates the most recent try. The requester should not forget the possible presence of multiple tries for each worker while analyzing the data. 
-4. The attribute `action` is present in a subset of dataframe. It can be used to understand whether the worker proceeded to the previous/following HIT's element. The possible values are `Back`, `Next` and `Finish`. The `Finish` value indicates the last element evaluated before completing a given try. The requester should remember that only the rows with the latter two values describe the most recent answers for each element.
-5. The attribute `index_selected` is present in the `workers_urls` dataframe. It can be used to filter the results retrieved by the search engine. The results with a value different from `-1` for the attribute have been selected by the worker on the user interface. If its value is equal to `4`, three other results have been previously selected. If its value is equal to `7` six other results have been previously selected, and so on. The requester may want to simply analyze the results with whom the worker interacted.
-6. The attribute `type` is present in the `workers_logs` dataframe. It specifies the type of log record described by each row. The log records are generally sorted using the global timestamps. The requester can use the attribute to split the whole set of log records into subsets of the same type.
-7. The dataframe `workers_acl` contains several useful information about each worker. The requester may want to merge it with the rows of the other dataframe using the `worker_id` attribute as key.  
-8. The dataframe `workers_urls` contains the whole set of results retrieved by the search engine. The dataframe \verb|workers_crawling| contains information about the crawling of each result. The requester may want to merge the rows of the two dataframe `response_uuid` attribute as key.  
-9. The dataframe `workers_dimensions_selection` shows the temporal ordering along with the workers chose answers for the evaluation dimensions. It is ordered using the global timestamp along with each worker made a choice. This means that the rows belonging to a worker may occur in different positions of the dataframe. This may happen if multiple workers perform the task at the same time. The requester should consider this aspect while exploring the dataframe.
-10. The dataframe `worker_comments` provides the final comments of the worker. The requester should remember that providing a final comment is not mandatory for the worker, thus the dataframe may be empty.
+1. The attribute `paid` is present in the whole set of dataframe. It can be used to split the data among the workers who completed or not the task. The requester may want to explore the data of who
+   failed the task.
+2. The attribute `batch_name` is present in a subset of dataframe. It can be used to split the data among the different batches of workers recruited. The requester may want to analyze separately each
+   subset of data.
+3. The attributes `try_current` and `try_last` are present in a subset of dataframe. They can be used to split the data among each try performed by each worker. The latter attribute indicates the most
+   recent try. The requester should not forget the possible presence of multiple tries for each worker while analyzing the data.
+4. The attribute `action` is present in a subset of dataframe. It can be used to understand whether the worker proceeded to the previous/following HIT's element. The possible values are `Back`, `Next`
+   and `Finish`. The `Finish` value indicates the last element evaluated before completing a given try. The requester should remember that only the rows with the latter two values describe the most
+   recent answers for each element.
+5. The attribute `index_selected` is present in the `workers_urls` dataframe. It can be used to filter the results retrieved by the search engine. The results with a value different from `-1` for the
+   attribute have been selected by the worker on the user interface. If its value is equal to `4`, three other results have been previously selected. If its value is equal to `7` six other results
+   have been previously selected, and so on. The requester may want to simply analyze the results with whom the worker interacted.
+6. The attribute `type` is present in the `workers_logs` dataframe. It specifies the type of log record described by each row. The log records are generally sorted using the global timestamps. The
+   requester can use the attribute to split the whole set of log records into subsets of the same type.
+7. The dataframe `workers_acl` contains several useful information about each worker. The requester may want to merge it with the rows of the other dataframe using the `worker_id` attribute as key.
+8. The dataframe `workers_urls` contains the whole set of results retrieved by the search engine. The dataframe \verb|workers_crawling| contains information about the crawling of each result. The
+   requester may want to merge the rows of the two dataframe `response_uuid` attribute as key.
+9. The dataframe `workers_dimensions_selection` shows the temporal ordering along with the workers chose answers for the evaluation dimensions. It is ordered using the global timestamp along with each
+   worker made a choice. This means that the rows belonging to a worker may occur in different positions of the dataframe. This may happen if multiple workers perform the task at the same time. The
+   requester should consider this aspect while exploring the dataframe.
+10. The dataframe `worker_comments` provides the final comments of the worker. The requester should remember that providing a final comment is not mandatory for the worker, thus the dataframe may be
+    empty.
 
 The following table provides and overview of the whole set of dataframe produced.
 
@@ -816,7 +848,7 @@ The following table provides and overview of the whole set of dataframe produced
 |       `workers_ip_addresses.csv`        |                         Data concerning the IP addresses of the workers.                          |
 |        `workers_user_agents.csv`        |                      Data concerning the User Agent strings of the workers.                       |
 |          `workers_answers.csv`          |                    Answers provided for each evaluation dimension by workers.                     |
-|          `workers_documents.csv`          |                    Elements evaluated by workers during the crowdsourcing task.                 |
+|         `workers_documents.csv`         |                   Elements evaluated by workers during the crowdsourcing task.                    |
 |       `workers_questionnaire.csv`       |                        Answers provided for each questionnaire by workers                         |
 |   `workers_dimensions_selection.csv`    |       Temporal order along with each worker chooses a value for each evaluation dimension.        |
 |           `workers_notes.csv`           |                             Textual annotations provided by workers.                              |
@@ -829,13 +861,25 @@ The following table provides and overview of the whole set of dataframe produced
 | `workers_prolific_demographic_data.csv` | Data concerning the demographics of the workers who participate in a study published on Prolific. |
 |        `workers_toloka_data.csv`        |                Data concerning the project deployed on Toloka and its submissions.                |
 
+## FAQ & Troubleshooting
 
+### FAQ
 
-## Troubleshooting
+- **Paths with special characters**: avoid using special characters in project paths (e.g., `º`). Some tools (CLI, Docker, Python scripts) may fail to resolve such paths correctly.
+- **VS Code and the working directory**: VS Code terminals or tasks can run with the wrong *working directory*. Prefer running scripts from an external shell (Terminal, PowerShell, or cmd) from the
+  repository root (or the expected subfolder), or explicitly set `terminal.integrated.cwd` in VS Code settings.
+- **`.env` filename**: make sure the file is named exactly `.env` with no extra extensions (not `.env.txt`). On Windows, enable “File name extensions”; on macOS, use “Get Info” to verify the exact
+  name.
+
+### Known issues
+
+### Known issues
 
 Fixes for well-known errors:
+
 - The `docker` package, as of today, triggers the exception shown below on certain Windows-based python distributions because the `pypiwin32` dependency fails to run its post-install script.
-`NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support` . To solve it run the following command from an elevated command prompt: `python your_python_folder/Scripts/pywin32_postinstall.py -install`.
+  `NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support` . To solve it run the following command from an elevated command prompt:
+  `python your_python_folder/Scripts/pywin32_postinstall.py -install`.
 
 ## Contributing
 
