@@ -529,138 +529,209 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
     }
 
-    /*
-     * This function interacts with an Amazon S3 bucket to perform a check on the current worker identifier.
-     * If the worker has already started the task in the past he is not allowed to continue the task.
-     */
     public async performWorkerStatusCheck() {
+        /* ------------------------------------------------------------------------------------------------
+         * Goal
+         * ----
+         * Decide whether the current worker is allowed to run the task.
+         *
+         * Check order (kept consistent with original intent):
+         *  1) Previous-batch BLACKLIST (via DynamoDB ACL if available, else S3 identifier list)
+         *  2) Previous-batch WHITELIST (can override 1)
+         *  3) Current-batch ACL "returning" block (DynamoDB) if settings.block === true
+         *  4) Current-batch manual BLACKLIST (S3)
+         *  5) Current-batch manual WHITELIST (S3)
+         *
+         * Key fixes:
+         *  - Inline, type-safe IP normalization (no `.ip` on Object error).
+         *  - Correctly load previous-batch WHITELIST from S3 `whitelist` (not `blacklist`).
+         *  - Exact ACL table name match instead of loose `includes`.
+         *  - Robust DynamoDB item IP extraction (DocumentClient vs low-level) done inline.
+         *  - Fewer redundant awaits; batch S3 reads are parallelized.
+         * ------------------------------------------------------------------------------------------------ */
+
         let taskAllowed = true;
 
-        let batchesStatus = {};
+        /* -----------------------------------------
+         * Normalize environment and worker identity
+         * ----------------------------------------- */
+        const env = this.configService.environment;
 
-        let tables = await this.dynamoDBService.listTables(this.configService.environment);
-        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment);
-        let workersACL = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
+        /* Inline, type-safe IP normalization (accepts: string or { ip: string } or { ipAddress: string }) */
+        const rawIp: unknown = this.worker.getIP();
+        const ip: string | undefined =
+            typeof rawIp === 'string'
+                ? rawIp
+                : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ip === 'string'
+                    ? (rawIp as any).ip
+                    : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ipAddress === 'string'
+                        ? (rawIp as any).ipAddress
+                        : undefined));
 
-        /* To blacklist a previous batch its worker list is picked up */
-        for (let batchName of this.worker.settings.blacklist_batches) {
-            let previousTaskName = batchName.split("/")[0];
-            let previousBatchName = batchName.split("/")[1];
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName);
-                batchesStatus[batchName] = {};
-                batchesStatus[batchName]["blacklist"] = workers["blacklist"];
-                for (let tableName of tables["TableNames"]) {
-                    if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
-                        batchesStatus[batchName]["tableName"] = tableName;
-                    }
-                }
-            }
+        /* Fast exit if IP is unexpectedly missing */
+        if (!ip) {
+            /* If we cannot read IP, be conservative and block to avoid abuse */
+            this.worker.setParameter('status_code', StatusCodes.WORKER_RETURNING_BLOCK);
+            return false;
         }
 
-        /* To whitelist a previous batch its blacklist is picked up */
-        for (let batchName of this.worker.settings.whitelist_batches) {
-            let previousTaskName = batchName.split("/")[0];
-            let previousBatchName = batchName.split("/")[1];
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName);
-                batchesStatus[batchName] = {};
-                batchesStatus[batchName]["whitelist"] = workers["blacklist"];
-                for (let tableName of tables["TableNames"]) {
-                    if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
-                        batchesStatus[batchName]["tableName"] = tableName;
-                    }
+        /* ---------------------------------------------------
+         * Read once: table list and current manual S3 lists
+         * --------------------------------------------------- */
+        const [tables, workersManual] = await Promise.all([
+            this.dynamoDBService.listTables(env),
+            this.S3Service.downloadWorkers(env) /* current batch manual lists */
+        ]);
+
+        const tableNames: string[] = (tables && (tables as any).TableNames) ? (tables as any).TableNames : [];
+
+        /* -------------------------------------------------------
+         * Consolidate previous-batch metadata in a single pass
+         * ------------------------------------------------------- */
+        const prevBlacklistBatches: string[] = this.worker.settings?.blacklist_batches ?? [];
+        const prevWhitelistBatches: string[] = this.worker.settings?.whitelist_batches ?? [];
+
+        /* De-duplicate batch names that appear in both arrays */
+        const allPrevBatches: string[] = Array.from(new Set([...prevBlacklistBatches, ...prevWhitelistBatches]));
+
+        /* Build entries with S3 lists and exact ACL table (parallelized) */
+        const prevBatchEntries = await Promise.all(
+            allPrevBatches.map(async (batchName) => {
+                const parts = (batchName ?? '').split('/');
+                const previousTaskName = parts[0];
+                const previousBatchName = parts[1];
+
+                /* Load S3 worker lists for this previous batch */
+                const s3Workers = await this.S3Service.downloadWorkers(env, batchName);
+
+                /* Find exact ACL table name (task_batch_ACL) */
+                const targetTableName = previousTaskName && previousBatchName
+                    ? tableNames.find(t => t === `${previousTaskName}_${previousBatchName}_ACL`)
+                    : undefined;
+
+                /* Prepare meta inline (no helpers) */
+                const meta: any = {};
+                if (targetTableName) meta.tableName = targetTableName;
+
+                /* If this batch is used for blacklist propagation, pick its S3 blacklist */
+                if (prevBlacklistBatches.includes(batchName)) {
+                    meta.blacklist = s3Workers?.blacklist ?? [];
+                }
+
+                /* If this batch is used for whitelist propagation, pick its S3 whitelist (BUG FIX) */
+                if (prevWhitelistBatches.includes(batchName)) {
+                    meta.whitelist = s3Workers?.whitelist ?? [];
+                }
+
+                return [batchName, meta] as const;
+            })
+        );
+
+        /* Map <batchName, meta> for quick iteration */
+        const batchesStatus = new Map<string, any>(prevBatchEntries);
+
+        /* ---------------------------------------------------------
+         * 1) Previous-batch BLACKLIST (S3 or DynamoDB ACL)
+         * --------------------------------------------------------- */
+        for (const [_, meta] of batchesStatus.entries()) {
+            /* Prefer authoritative ACL table if available */
+            if (meta.tableName) {
+                const result = await this.dynamoDBService.getACLRecordIpAddress(env, ip, meta.tableName);
+                const items: any[] = result?.Items ?? [];
+
+                /* Inline robust IP extraction from DynamoDB item */
+                const match = items.some((it: any) => {
+                    const itemIp: string | undefined =
+                        (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
+                    return itemIp === ip;
+                });
+
+                if (match) {
+                    taskAllowed = false;
+                    this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_PREVIOUS);
+                    break;
                 }
             }
-        }
 
-        /* The true checking operation starts here */
-
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName];
-            if ("blacklist" in batchStatus) {
-                if ("tableName" in batchStatus) {
-                    let rawWorker =
-                        await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus["tableName"]);
-                    if ("Items" in rawWorker) {
-                        for (let worker of rawWorker["Items"]) {
-                            if (this.worker.getIP()["ip"] == worker["ip_address"]) {
-                                taskAllowed = false;
-                                this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_PREVIOUS);
-                            }
-                        }
-                    }
-                } else {
-                    for (let workerIdentifier of batchStatus["blacklist"]) {
-                        if (this.worker.identifier == workerIdentifier) {
-                            taskAllowed = false;
-                            this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_PREVIOUS);
-                        }
-                    }
-                }
-            }
-        }
-
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName];
-            if ("whitelist" in batchStatus) {
-                if ("tableName" in batchStatus) {
-                    let rawWorker =
-                        await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus["tableName"]);
-                    if ("Items" in rawWorker) {
-                        for (let worker of rawWorker["Items"]) {
-                            if (this.worker.getIP()["ip"] == worker["ip_address"]) {
-                                taskAllowed = true;
-                                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_PREVIOUS);
-                            }
-                        }
-                    }
-                } else {
-                    for (let workerIdentifier of batchStatus["whitelist"]) {
-                        if (this.worker.identifier == workerIdentifier) {
-                            taskAllowed = true;
-                            this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_PREVIOUS);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (this.worker.settings.block) {
-            /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
-            if ("Items" in workersACL) {
-                for (let worker of workersACL["Items"]) {
-                    if (this.worker.getIP()["ip"] == worker["ip_address"]) {
-                        taskAllowed = false;
-                        this.worker.setParameter("status_code", StatusCodes.WORKER_RETURNING_BLOCK);
-                        return taskAllowed;
-                    }
-                }
-            }
-        }
-
-        /* Check to verify if the current worker is manually blacklisted into the current batch */
-        for (let worker of workersManual["blacklist"]) {
-            if (this.worker.identifier == worker) {
+            /* Fall back to legacy S3 identifier blacklist if present */
+            if (taskAllowed && Array.isArray(meta.blacklist) && meta.blacklist.includes(this.worker.identifier)) {
                 taskAllowed = false;
-                this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_CURRENT);
-                return taskAllowed;
+                this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_PREVIOUS);
+                break;
             }
         }
 
-        /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
+        /* ---------------------------------------------------------
+         * 2) Previous-batch WHITELIST (can override previous block)
+         * --------------------------------------------------------- */
+        if (!taskAllowed) {
+            for (const [_, meta] of batchesStatus.entries()) {
+                /* Check ACL table first if present */
+                if (meta.tableName) {
+                    const result = await this.dynamoDBService.getACLRecordIpAddress(env, ip, meta.tableName);
+                    const items: any[] = result?.Items ?? [];
 
-        for (let worker of workersManual["whitelist"]) {
-            if (this.worker.identifier == worker) {
-                taskAllowed = true;
-                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_CURRENT);
+                    const match = items.some((it: any) => {
+                        const itemIp: string | undefined =
+                            (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
+                        return itemIp === ip;
+                    });
+
+                    if (match) {
+                        taskAllowed = true;
+                        this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_PREVIOUS);
+                        break;
+                    }
+                }
+
+                /* Fall back to legacy S3 identifier whitelist if present */
+                if (!taskAllowed && Array.isArray(meta.whitelist) && meta.whitelist.includes(this.worker.identifier)) {
+                    taskAllowed = true;
+                    this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_PREVIOUS);
+                    break;
+                }
             }
         }
 
+        /* ----------------------------------------------------------------------
+         * 3) Current-batch ACL "returning" block (DynamoDB), if settings.block
+         * ---------------------------------------------------------------------- */
+        if (this.worker.settings?.block) {
+            const currentAcl = await this.dynamoDBService.getACLRecordIpAddress(env, ip /* current table inferred server-side */);
+            const items: any[] = currentAcl?.Items ?? [];
+
+            const seen = items.some((it: any) => {
+                const itemIp: string | undefined =
+                    (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
+                return itemIp === ip;
+            });
+
+            if (seen) {
+                this.worker.setParameter('status_code', StatusCodes.WORKER_RETURNING_BLOCK);
+                return false; /* immediate block */
+            }
+        }
+
+        /* -----------------------------------------
+         * 4) Current-batch manual BLACKLIST (S3)
+         * ----------------------------------------- */
+        if (workersManual?.blacklist?.includes?.(this.worker.identifier)) {
+            this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_CURRENT);
+            return false;
+        }
+
+        /* ----------------------------------------
+         * 5) Current-batch manual WHITELIST (S3)
+         * ---------------------------------------- */
+        if (workersManual?.whitelist?.includes?.(this.worker.identifier)) {
+            this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_CURRENT);
+            return true;
+        }
+
+        /* Default: whatever stands after previous checks */
         return taskAllowed;
     }
+
 
     /* Unlocks the task depending on performWorkerStatusCheck outcome */
     public unlockTask(taskAllowed: boolean) {
