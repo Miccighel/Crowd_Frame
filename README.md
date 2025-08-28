@@ -222,6 +222,17 @@ Allows to configures several task settings, such as the maximum amount of tries 
 
 It also _allows to provide the file containing the set of HITs for the task deployed_.
 
+##### Blocking and Reset Mechanisms
+
+Crowd_Frame relies on an **Access Control List (ACL)** stored in DynamoDB to regulate worker progress.  
+If a worker exceeds the maximum number of allowed tries or the time limit (`time_assessment`), the task is automatically blocked for that worker to enforce the configured rules.
+
+For testing and development purposes, it is recommended to set a **high value for `time_assessment`**, to avoid workers being blocked too quickly during experimentation.  
+
+If a task needs to be “unlocked” or reset, it is possible to clear the records stored in the ACL table.  
+⚠️ Important: clearing the ACL table will remove all access history for the task and should only be done when you need to restart from a clean state.
+
+
 #### Step 7 - Worker Checks
 
 Allows to configure additional checks on workers.
