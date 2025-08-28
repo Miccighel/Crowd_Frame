@@ -870,16 +870,22 @@ The following table provides and overview of the whole set of dataframe produced
   repository root (or the expected subfolder), or explicitly set `terminal.integrated.cwd` in VS Code settings.
 - **`.env` filename**: make sure the file is named exactly `.env` with no extra extensions (not `.env.txt`). On Windows, enable “File name extensions”; on macOS, use “Get Info” to verify the exact
   name.
+- **How can I reset a task that is blocked or unresponsive?**  
+  In rare cases, a task may remain in a blocked state (e.g., workers cannot continue or the admin interface does not allow changes).  
+  You can restore a clean state by manually deleting the corresponding records in the DynamoDB tables created for that task (`*_ACL`, `*_Data`, `*_Logger`).  
+  This will unlock the task and allow you to reconfigure or redeploy it.  
+  ⚠️ Important: removing these records is irreversible and permanently erases the associated progress and submissions. Only perform this step if you are certain you need to restart from scratch.
 
-### Known issues
+### Known Issues
 
-### Known issues
-
-Fixes for well-known errors:
-
-- The `docker` package, as of today, triggers the exception shown below on certain Windows-based python distributions because the `pypiwin32` dependency fails to run its post-install script.
-  `NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support` . To solve it run the following command from an elevated command prompt:
-  `python your_python_folder/Scripts/pywin32_postinstall.py -install`.
+- **Docker on Windows (`pypiwin32` error)**: on certain Windows-based Python distributions, the `docker` package triggers the following exception because the `pypiwin32` dependency fails to run its post-install script:  
+  ```
+  NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support
+  ```  
+  To fix this, run the following command from an elevated command prompt:  
+  ```bash
+  python your_python_folder/Scripts/pywin32_postinstall.py -install
+  ```
 
 ## Contributing
 
