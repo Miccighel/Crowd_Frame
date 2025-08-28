@@ -289,73 +289,104 @@ Note that:
 
 ### Manual Allocation
 
-The requester can build manually the set of HITs compliant with the format required by the system. Initially, the requester chooses an attribute whose values split the dataset into different classes.
-The core idea is to build pools of elements to allocate, one for each class. Four parameters are thus established. These parameters are the total number of elements to allocate in the whole set of
-HITs, the number of elements that each HIT must contain, the number of elements to allocate for each class, and the number of repetitions for each element. The pools of elements must thus be updated
-to include all the repetitions required. Each HIT is then built using a loop. It is useful to define a support function. The core idea is to sample the required number of elements for each class until
-a sample without duplicates is obtained. The elements are then removed from the pool of those still available if the condition is satisfied. The total number of HITs required depends on the parameters
-previously established. The lists of elements allocated in HITs can be serialized for later reference. Using such an allocation matrix, the requester can finally build the set of HITs in the format
-required.
+HITs can also be built manually.  
+The process starts by choosing an attribute whose values divide the dataset into classes.  
+Pools of elements are then created, one per class, and four parameters are defined:
 
-The first algorithm shown below provides a pseudocode that further details the allocation procedure. Let us hypothesize a requester that wants to determine the number $m$ of HITs that they will
-publish on the crowdsourcing platform. The second algorithm shown below details the `singleHIT(...)` sub-procedure used by the main algorithm to sample a set of elements without duplicates. The sample
-obtained is used to build a single HIT of the whole set. Let us hypothesize a requester that wants to allocate $n$ elements in HITs made of $k$ positions. Each element is repeated in $p$ different
-HITs. The final number of HITs required is $m=(n*p)/k$.
+1. total number of elements to allocate,  
+2. number of elements per HIT,  
+3. number of elements per class,  
+4. number of repetitions per element.  
 
-<img src="images/hits-allocation-algorithm-1.png" alt="HITs Allocation Algorithm - Main" width="700"/>
+Each pool is updated to include the required repetitions. HITs are then built iteratively by sampling elements from each class until a duplicate-free sample is obtained. Selected elements are removed from the pool once used. The total number of HITs is determined by these parameters.  
+The allocation matrix can be serialized for later reference, and the final HITs exported in the required format.
 
-<img src="images/hits-allocation-algorithm-2.png" alt="HITs Allocation Algorithm - singleHIT procedure" width="700"/>
+The first algorithm below shows the main allocation procedure, while the second details the `singleHIT(...)` sub-procedure used to sample a set of unique elements.  
+If $n$ elements must be allocated into HITs of $k$ positions, each repeated $p$ times, the total number of HITs is:
 
-### Automatic HITs creation
+$m = \frac{n \cdot p}{k}$
 
-The system provides a solution to allocate automatically the elements to evaluate in a set of HITs. It is experimental and works only when using
-Crowd_Frame within the local filesystem. Future versions of the software will consolidate and generalize such a feature. Crowd_Frame allws deploying
-the implementation of a solver and provides a way to communicate with it. Docker needs to be installed in the local system, since the usage of a
-container is require to allow software and solver communicating. The container contains deployed using Docker contains two services.
-One of these services provides the implementation of the solver itself, while the other provides a reverse proxy based on the `Nginx` web server.
-The reverse proxy forwards HTTP messages to the solver. The solver processes the messages and responds.
+```pseudo
+Algorithm: Allocate dataset into HITs
 
-The requester can enable the feature using the `enable_solver` environment variable. S/he can take advantage of the solver while configuring the task using the
-Generator, during the sixth step of the configuration. The first step required to create the input data required by the solver involves uploading the elements
-to be allocated into a set of HITs. Each element must share the same set of attributes and the overall set must be provided in the form of a JSON array.
-In other words, the requester can upload the value of the `documents` object of the fragment shown above, without writing any token or `unit_id`. Then, the requester can
-configure three parameters concerning the allocation. S/he thus configures the number of workers that evaluate each element and the overall number of workers among which the elements must be
-allocated.
-Lastly, the requester chooses the subset of attributes used to categorize the elements across different HITs. The requester must also indicate how many
-elements must be assigned to each worker for every possible value of the category chosen. For each category/element number pair the system verifies whether
-the two values are compatible. The minimum number of workers needed to evaluate the whole set of HITs is thus computed if the verification is successful.
-The requester can increase such a number as s/he prefers.
+elementsFiltered ← filterElements(attribute, valuesChosen)
+classes ← valuesChosen
+pools ← List()
 
-To provide an example of when such a verification can fail, let us hypothesize a requester who chooses as category an attribute named `A1` which has 2 different values
-among the elements to be evaluated. The requester requires that each worker evaluates 2 elements for each attribute's value. Then, a second attribute named `A2`
-is also chosen, which has 3 different values. The requester requires that each worker evaluates 1 element for each attribute's value. This means that according to the attribute `A1`
-each worker evaluates 4 elements, while according to `A2` each worker evaluates 3 elements. Such a selection of values is not allowed.
+for class in classes do
+    elementsClass ← findElements(elementsFiltered, class)
+    pool ← unique(elementsClass)
+    pools.append(pool)
+end for
 
-The figure shown below reports a sample configuration for a set of 120 statements available on [Politifact](https://www.politifact.com/>). The JSON below shows a sample of such elements.
-The requester, hence, uploads a JSON file containing 120 elements to allocate. S/he chooses that each element must be assigned to 10 different workers.
-The attribute `party` is selected as category. Each worker must evaluate 6 elements for each of the 2 values of the category. In other words, each workers must evaluate 12 different elements.
-The verification steps thus enforces a minimum number of 100 workers to recruit. The Generator allows selecting as categories only the attributes which are balanced with respect to
-the number of documents. In other words, those attributes repeated across the same number of elements. Such a design choice is needed to provide input data to the solver
-compliant with the formalization implemented. The request is now ready to send the request to the solver, which computes the allocation and returns a solution.
+totalElements ← len(elementsFiltered)
+classElementsNumber ← len(classes)
+hitElementsNumber ← k
+repetitionsElement ← p
 
-<img src="images/generator-solver.png" alt="Generator Solver" width="700"/>
+for pool in pools do
+    pool ← extendPool(repetitionsElement)
+end for
 
-````json
-[
-    {
-        "name": "REP_HALFTRUE_doc5",
-        "statement": "The city of Houston now has more debt per capita than California.",
-        "claimant": "Rick Perry",
-        "date": "2010",
-        "originated_from": "ad",
-        "id_par": "1796.json",
-        "job": "Governor",
-        "party": "REP",
-        "source": "Politifact"
-    }
-    ...
-]
-````
+poolsDict ← mergePools(pools, classes)
+hits ← List()
+
+for index in range((totalElements * repetitionsElement) / hitElementsNumber) do
+    hitSample ← singleHit(poolsMerged)
+    hitSample ← shuffle(hitSample)
+    hits.append(hitSample)
+end for
+
+hits.serialize(pathAssignments)
+hitsFinal ← List()
+
+for hit in hits do
+    index ← index(hit)
+    unitId ← concat("unit_", index)
+    tokenInput ← randomString(11)
+    tokenOutput ← randomString(11)
+    hitObject ← BuildJSON(unitId, tokenInput, tokenOutput, hitElementsNumber)
+
+    for indexElem in range(hitElementsNumber) do
+        hitObject["documents"] ← hits[indexElem]
+    end for
+
+    hitsFinal.append(hitObject)
+end for
+
+hitsFinal.serialize(pathHits)
+```
+
+```pseudo
+Algorithm: singleHIT (sample without duplicates)
+
+containsDuplicates ← True
+while containsDuplicates do
+    sample ← List()
+
+    for class in classes do
+        for indexClass in range(classElementsNumber) do
+            element ← random(poolsDict[class])
+            sample.append(element)
+        end for
+    end for
+
+    if checkDuplicates(sample) == False then
+        containsDuplicates ← False
+    end if
+end while
+
+for s in sample do
+    for c in classes do
+        if s ∈ pool[c] then
+            pool[c].remove(s)
+        end if
+    end for
+end for
+
+return sample
+```
+
 
 ## Quality Checks
 
