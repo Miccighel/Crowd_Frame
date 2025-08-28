@@ -514,6 +514,29 @@ A task requester that aims to recruit each worker using Amazon Mechanical Turk m
    `data/build/mturk/tokens.csv`
 8. Review the status of each submission by using the `Manage` tab.
 
+#### Understanding the MTurk Wrapper and `tokens.csv`
+
+**File structure**  
+The `tokens.csv` file is **not** a mapping of input–output pairs. Instead, it contains **one row per HIT**, and each row repeats the complete set of output tokens (semicolon-separated) for the batch.
+
+**Reason for repetition**  
+If a batch includes 15 HITs, the file will have 15 rows, and **each row** will contain the same semicolon-separated list of the 15 output tokens. This is intentional and matches the generation logic used by the MTurk integration.
+
+**Validation process**  
+On the MTurk task page, workers:  
+- open the linked task page with their assigned `workerId`  
+- copy the output token shown at the end of the task  
+- paste it into the wrapper form  
+
+The page then checks whether the submitted token is in the list provided by `tokens.csv`. Only valid tokens enable the **Submit** button.
+
+**Best practices**  
+- Ensure the semicolon-separated list includes all `token_output` values from `hits.json`  
+- The number of rows in `tokens.csv` must equal the total number of HITs in the batch  
+- Do not manually edit the file; regenerate it if you change your HITs or tokens
+
+> **Note:** Older documentation referred to “pairs” of input/output tokens. For MTurk, only the set of output tokens is required in the CSV, repeated per row, since validation is handled by the wrapper.
+
 ### Prolific
 
 A task requester that aims to recruit each worker using Prolific must:
