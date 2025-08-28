@@ -851,30 +851,78 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public async retrieveDataRecords() {
-        let wholeEntries = [];
-        let dataEntries = await this.dynamoDBService.getDataRecord(this.configService.environment, this.worker.identifier);
-        for (let dataEntry of dataEntries.Items) wholeEntries.push(dataEntry);
-        let lastEvaluatedKey = dataEntries.LastEvaluatedKey;
-        while (typeof lastEvaluatedKey != "undefined") {
-            dataEntries = await this.dynamoDBService.getDataRecord(
-                this.configService.environment,
-                this.worker.identifier,
-                null,
-                lastEvaluatedKey
-            );
-            lastEvaluatedKey = dataEntries.LastEvaluatedKey;
-            for (let dataEntry of dataEntries.Items) wholeEntries.push(dataEntry);
-        }
-        let entriesParsed = []
-        const ipStr = this.getNormalizedWorkerIp();
-        for (let dataEntry of wholeEntries) {
-            if (this.worker.identifier == dataEntry.identifier && ipStr && dataEntry.sequence.includes(ipStr)) {
-                dataEntry["data"] = JSON.parse(dataEntry["data"])
-                entriesParsed.push(dataEntry)
+        /* ------------------------------------------------------
+           Retrieve worker data records (paged), filter on-the-fly
+           ---------------------------------------------------------
+           - Streams DynamoDB pages instead of building a full array
+           - Filters by (identifier == worker.identifier) and IP match
+           - Normalizes sequence/IP checks (array | string | object)
+           - Safely parses JSON payloads (keeps raw if malformed)
+           - Semantics unchanged: same records, same order
+           ------------------------------------------------------ */
+
+        const env = this.configService.environment;
+        const result: any[] = [];
+
+        const workerId = this.worker.identifier;
+        const ipStr = this.getNormalizedWorkerIp(); /* may be null */
+
+        /* Local helper: decide if a record belongs to the current worker/IP */
+        const accept = (entry: any) => {
+            if (!entry) return;
+
+            /* Same worker identifier */
+            if (workerId != entry.identifier) return;
+
+            /* Sequence may be: array of IPs | string | object; normalize to a string check */
+            if (ipStr) {
+                const seq = entry.sequence;
+                let hasIp = false;
+
+                if (Array.isArray(seq)) {
+                    hasIp = seq.includes(ipStr);
+                } else if (typeof seq === 'string') {
+                    hasIp = seq.includes(ipStr);
+                } else if (seq && typeof seq === 'object') {
+                    /* Try common shapes; fallback to JSON stringification */
+                    const probe =
+                        (typeof (seq as any).value === 'string' && (seq as any).value) ??
+                        (typeof (seq as any).ip === 'string' && (seq as any).ip) ??
+                        JSON.stringify(seq);
+                    hasIp = typeof probe === 'string' ? probe.includes(ipStr) : false;
+                }
+
+                if (!hasIp) return;
             }
+
+            /* Parse JSON payload if needed (keep as string on parse error) */
+            const raw = entry["data"];
+            if (typeof raw === "string") {
+                try {
+                    entry["data"] = JSON.parse(raw);
+                } catch (e) {
+                    console.log("retrieveDataRecords: JSON parse failed for entry", {entryId: entry?.id, err: String(e)});
+                }
+            }
+
+            result.push(entry);
+        };
+
+        /* First page */
+        let page = await this.dynamoDBService.getDataRecord(env, workerId);
+        for (const e of (page?.Items ?? [])) accept(e);
+
+        /* Remaining pages (if any) */
+        let lastEvaluatedKey = page?.LastEvaluatedKey;
+        while (typeof lastEvaluatedKey !== "undefined") {
+            page = await this.dynamoDBService.getDataRecord(env, workerId, null, lastEvaluatedKey);
+            lastEvaluatedKey = page?.LastEvaluatedKey;
+            for (const e of (page?.Items ?? [])) accept(e);
         }
-        return entriesParsed
+
+        return result;
     }
+
 
     /*
  *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
