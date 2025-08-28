@@ -1,7 +1,17 @@
 /* Angular Core Modules */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    OnInit,
+    QueryList,
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
+} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 
 /* Angular Material Components */
 import {MatFormField} from "@angular/material/form-field";
@@ -10,7 +20,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 /* RxJS Modules */
 import {of, Subject} from "rxjs";
-import {catchError, tap} from "rxjs/operators";
+import {catchError, tap, takeUntil} from "rxjs/operators";
 
 /* Services */
 import {NgxUiLoaderService} from "ngx-ui-loader";
@@ -24,7 +34,6 @@ import {DynamoDBService} from "../../services/aws/dynamoDB.service";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {LocalStorageService} from "../../services/localStorage.service";
-
 
 /* Models */
 import {Task} from "../../models/skeleton/task";
@@ -43,7 +52,6 @@ import {BaseComponent} from "../base/base.component";
 /* Animations */
 import {fadeIn} from "../chatbot/animations";
 import {Title} from "@angular/platform-browser";
-
 
 /* Component HTML Tag definition */
 @Component({
@@ -84,9 +92,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     localStorageService: LocalStorageService;
     debugService: DebugService;
 
-    /* HTTP client and headers */
+    /* HTTP client */
     client: HttpClient;
-    headers: HttpHeaders;
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
@@ -104,7 +111,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     task: Task;
     /* Object to encapsulate all worker-related information */
     worker: Worker;
-    platform: string;
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
 
@@ -188,11 +194,13 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
     ngOnInit() {
-        this.baseComponent.initializationCompleted.subscribe(_params => {
-            this.task = this.sectionService.task;
-            const paramsFetched = this.parseURLParams(new URL(window.location.href));
-            this.startWorkerInitialization(paramsFetched);
-        });
+        this.baseComponent.initializationCompleted
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(_params => {
+                this.task = this.sectionService.task;
+                const paramsFetched = this.parseURLParams(new URL(window.location.href));
+                this.startWorkerInitialization(paramsFetched);
+            });
     }
 
     private parseURLParams(url: URL): Record<string, string> {
@@ -228,10 +236,23 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.updateProperties("ipify", ipifyData);
                 } else {
                     this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
-                    this.unlockTask(false);
+                    /* Do not unlock here; allow the normal init flow to decide. */
                 }
             })
         );
+    }
+
+    /* ------------------------------------------------------
+       Helper: normalize IP from worker (string | {ip}|{ipAddress}|null)
+       ------------------------------------------------------ */
+    private getNormalizedWorkerIp(): string | null {
+        const raw = this.worker?.getIP?.();
+        if (typeof raw === 'string') return raw;
+        if (raw && typeof raw === 'object') {
+            const anyRaw: any = raw;
+            return anyRaw.ip ?? anyRaw.ipAddress ?? null;
+        }
+        return null;
     }
 
     public async finalizeWorkerInitialization() {
@@ -251,7 +272,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.worker.setParameter("task_name", this.configService.environment.taskName);
             this.worker.setParameter("batch_name", this.configService.environment.batchName);
             if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");
-            this.worker.setParameter("batch_name", this.configService.environment.batchName);
             this.worker.setParameter("folder", this.S3Service.getWorkerFolder(this.configService.environment, this.worker));
             this.worker.setParameter("access_counter", String(1));
             this.worker.setParameter("paid", String(false));
@@ -271,8 +291,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             else
                 this.worker.setParameter("time_expiration_nearest", timeExpiration.toUTCString());
             this.worker.setParameter("time_expired", String(false));
-            this.worker.setParameter("ip_address", this.worker.getIP()["ip"]);
-            this.worker.setParameter("ip_source", this.worker.getIP()["source"]);
+
+            /* ------------------------ IP fields via normalized helper ------------------------ */
+            const ipStr = this.getNormalizedWorkerIp();
+            this.worker.setParameter("ip_address", ipStr ?? String(false));
+            const rawIp = this.worker?.getIP?.();
+            let ipSource = null;
+            if (rawIp && typeof rawIp === 'object') ipSource = (rawIp as any).source ?? null;
+            if (ipSource != null) this.worker.setParameter("ip_source", ipSource);
+            /* ------------------------------------------------------------------------------- */
+
             this.worker.setParameter("user_agent", this.worker.getUAG()["uag"]);
             this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
         } else {
@@ -490,7 +518,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         } else {
             this.unlockTask(false);
         }
-        this.changeDetector.detectChanges();
+        this.changeDetector.markForCheck();
     }
 
     ngOnDestroy() {
@@ -499,35 +527,94 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public async retrieveAllACLEntries() {
-        /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
-        let wholeEntries = [];
-        let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment);
-        for (let aclEntry of aclEntries.Items) wholeEntries.push(aclEntry);
-        let lastEvaluatedKey = aclEntries.LastEvaluatedKey;
-        while (typeof lastEvaluatedKey != "undefined") {
-            aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment, null, lastEvaluatedKey);
-            lastEvaluatedKey = aclEntries.LastEvaluatedKey;
-            for (let aclEntry of aclEntries.Items) wholeEntries.push(aclEntry);
+        /* ------------------------------------------------------
+           Retrieve the whole ACL table (paged) and sort ascending
+           by arrival time.
+           ---------------------------------------------------------
+           - Same behavior as before (full list + ascending order)
+           - Uses numeric time parsing (robust vs. lexicographic)
+           - Callers relying on ordering keep the same semantics
+           ------------------------------------------------------ */
+
+        const env = this.configService.environment;
+
+        const wholeEntries: any[] = [];
+
+        /* First page */
+        let page = await this.dynamoDBService.scanACLRecordUnitId(env);
+        for (const e of (page?.Items ?? [])) wholeEntries.push(e);
+
+        /* Remaining pages (if any) */
+        let lastEvaluatedKey = page?.LastEvaluatedKey;
+        while (typeof lastEvaluatedKey !== "undefined") {
+            page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lastEvaluatedKey);
+            lastEvaluatedKey = page?.LastEvaluatedKey;
+            for (const e of (page?.Items ?? [])) wholeEntries.push(e);
         }
+
         /* Each ACL record is sorted considering the timestamp, in ascending order */
-        wholeEntries.sort((a, b) => (a.time_arrival > b.time_arrival ? 1 : -1));
+        wholeEntries.sort((a, b) => {
+            /* Parse to numbers to avoid subtle string-order issues */
+            const ta = Date.parse(a?.time_arrival ?? "") || 0;
+            const tb = Date.parse(b?.time_arrival ?? "") || 0;
+            return ta - tb;
+        });
+
         return wholeEntries;
     }
 
+
     public async retrieveMostRecentExpirationDate() {
-        let wholeEntries = await this.retrieveAllACLEntries();
-        wholeEntries.sort((a, b) => a.time_expiration > b.time_expiration ? 1 : -1);
-        let entriesActive = [];
-        for (let entryActive of wholeEntries) {
-            if (entryActive.in_progress && entryActive.paid == false)
-                entriesActive.push(entryActive);
+        /* ------------------------------------------------------
+           Find the most recent expiration among active, unpaid workers
+           ---------------------------------------------------------
+           - Streams the table page-by-page (no full in-memory array)
+           - Keeps only the latest time_expiration seen so far
+           - Returns the ISO string (as stored) or null if not found
+           - Semantics unchanged: we still pick the "nearest" future
+             expiration among { in_progress == true && paid == false }
+           ------------------------------------------------------ */
+
+        const env = this.configService.environment;
+
+        let mostRecentExpirationEpoch: number | null = null;   /* Numeric timestamp used for max() comparisons */
+        let mostRecentExpirationISO: string | null = null;     /* Original ISO string returned to callers */
+
+        /* First page */
+        let page = await this.dynamoDBService.scanACLRecordUnitId(env);
+        let lastEvaluatedKey = page?.LastEvaluatedKey;
+
+        /* Local helper: consider a single entry */
+        const consider = (entry: any) => {
+            /* Only active (in_progress) and unpaid entries are relevant */
+            if (!(entry && entry.in_progress && entry.paid == false)) return;
+
+            const iso = entry.time_expiration as string | undefined;
+            if (!iso) return;
+
+            /* We parse once to a number for consistent comparisons */
+            const t = Date.parse(iso);
+            if (!Number.isFinite(t)) return;
+
+            if (mostRecentExpirationEpoch === null || t > mostRecentExpirationEpoch) {
+                mostRecentExpirationEpoch = t;
+                mostRecentExpirationISO = iso;   /* Keep the original string for the return value */
+            }
+        };
+
+        /* Current page items */
+        for (const e of (page?.Items ?? [])) consider(e);
+
+        /* Remaining pages (if any) */
+        while (typeof lastEvaluatedKey !== "undefined") {
+            page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lastEvaluatedKey);
+            lastEvaluatedKey = page?.LastEvaluatedKey;
+            for (const e of (page?.Items ?? [])) consider(e);
         }
-        if (entriesActive.length > 0) {
-            return entriesActive.pop()["time_expiration"];
-        } else {
-            return null;
-        }
+
+        return mostRecentExpirationISO;
     }
+
 
     public async performWorkerStatusCheck() {
         /* ------------------------------------------------------------------------------------------------
@@ -557,16 +644,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
          * ----------------------------------------- */
         const env = this.configService.environment;
 
-        /* Inline, type-safe IP normalization (accepts: string or { ip: string } or { ipAddress: string }) */
-        const rawIp: unknown = this.worker.getIP();
-        const ip: string | undefined =
-            typeof rawIp === 'string'
-                ? rawIp
-                : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ip === 'string'
-                    ? (rawIp as any).ip
-                    : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ipAddress === 'string'
-                        ? (rawIp as any).ipAddress
-                        : undefined));
+        /* Use normalized IP helper (accepts: string or { ip } or { ipAddress }) */
+        const ip = this.getNormalizedWorkerIp() ?? undefined;
 
         /* Fast exit if IP is unexpectedly missing */
         if (!ip) {
@@ -737,7 +816,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
         this.sectionService.checkCompleted = true;
-        this.changeDetector.detectChanges();
+        this.changeDetector.markForCheck();
         /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");
     }
@@ -787,8 +866,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             for (let dataEntry of dataEntries.Items) wholeEntries.push(dataEntry);
         }
         let entriesParsed = []
+        const ipStr = this.getNormalizedWorkerIp();
         for (let dataEntry of wholeEntries) {
-            if (this.worker.identifier == dataEntry.identifier && dataEntry.sequence.includes(this.worker.getIP()['ip'])) {
+            if (this.worker.identifier == dataEntry.identifier && ipStr && dataEntry.sequence.includes(ipStr)) {
                 dataEntry["data"] = JSON.parse(dataEntry["data"])
                 entriesParsed.push(dataEntry)
             }
@@ -797,81 +877,96 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /*
-     *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
-     *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
-     *  Therefore, to use a customized the task the Document interface must be adapted to correctly parse each document's field.
-     *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
-     */
+ *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
+ *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
+ *  Therefore, to use a customized the task the Document interface must be adapted to correctly parse each document's field.
+ *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
+ */
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
 
         this.sectionService.taskStarted = true;
 
-        /* The hits stored on Amazon S3 are retrieved */
-        let hits = await this.S3Service.downloadHits(
-            this.configService.environment
-        );
+        /* Cache environment locally to avoid repeated property lookups */
+        const env = this.configService.environment;
 
-        /* Scan each entry for the token input */
-        for (let currentHit of hits) {
-            /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-            if (this.worker.getParameter('unit_id') === currentHit.unit_id) {
-                currentHit = currentHit as Hit;
-                this.task.tokenInput = currentHit.token_input;
-                this.task.tokenOutput = currentHit.token_output;
-                this.task.unitId = currentHit.unit_id;
-                this.task.documentsAmount = currentHit.documents.length;
-                this.task.hit = currentHit;
-                /* The array of documents is initialized */
-                this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
-            }
+        /* The hits stored on Amazon S3 are retrieved */
+        const hits: Hit[] = await this.S3Service.downloadHits(env);
+
+        /* Scan for the hit matching the current worker's assigned unit_id (fast exit if found) */
+        const unitId = this.worker.getParameter('unit_id');
+        const currentHit = hits.find(h => h.unit_id === unitId);
+
+        if (!currentHit) {
+            /* Defensive guard: if the assigned unit is not found (e.g., stale assignment), stop setup gracefully */
+            this.sectionService.taskFailed = true;
+            this.sectionService.taskCompleted = false;
+            this.showSnackbar("The assigned unit is no longer available. Please reload the task.", "Dismiss", 8000);
+            return;
         }
 
+        /* The matching hit is found: initialize Task core fields */
+        this.task.tokenInput = currentHit.token_input;
+        this.task.tokenOutput = currentHit.token_output;
+        this.task.unitId = currentHit.unit_id;
+        this.task.documentsAmount = currentHit.documents.length;
+        this.task.hit = currentHit;
+
+        /* The array of documents is initialized */
+        this.task.initializeDocuments(currentHit.documents, (currentHit as any)["documents_params"]);
+
+        /* The logging service receives the current unit id if it is enabled */
         if (this.task.settings.logger_enable)
             this.actionLogger.unitId = this.task.unitId;
 
-        /* A form for each document is initialized */
-        this.documentsForm = new Array<UntypedFormGroup>();
-        this.documentsFormsAdditional = new Array<Array<UntypedFormGroup>>();
-        /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
-        if (this.task.settings.post_assessment) {
-            for (let index = 0; index < this.task.documents.length; index++)
-                this.documentsFormsAdditional[index] = Array(0);
-        }
+        /* A form for each document is initialized (pre-sized for performance/readability) */
+        this.documentsForm = new Array<UntypedFormGroup>(this.task.documentsAmount);
+        this.documentsFormsAdditional = Array.from({length: this.task.documentsAmount}, () => []);
 
-        this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
-        this.resultsRetrievedForms = new Array<Array<Object>>();
+        /* Arrays for the search engine forms and results are initialized (pre-sized) */
+        this.searchEngineForms = new Array<Array<UntypedFormGroup>>(this.task.documentsAmount);
+        this.resultsRetrievedForms = new Array<Array<Object>>(this.task.documentsAmount);
 
-        let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment);
+        /* The questionnaires, evaluation instructions, and dimensions are retrieved in parallel from Amazon S3 */
+        const [questionnaires, instructionsEvaluation, dimensions] = await Promise.all([
+            this.S3Service.downloadQuestionnaires(env),
+            this.S3Service.downloadEvaluationInstructions(env),
+            this.S3Service.downloadDimensions(env)
+        ]);
+
+        /* The questionnaires are initialized */
         this.task.initializeQuestionnaires(questionnaires);
 
-        /* A form for each questionnaire is initialized */
-        this.questionnairesForm = new Array<UntypedFormGroup>();
+        /* A form for each questionnaire is initialized (pre-sized) */
+        this.questionnairesForm = new Array<UntypedFormGroup>(this.task.questionnaireAmount);
 
-        /* The evaluation instructions stored on Amazon S3 are retrieved */
-        this.task.initializeInstructionsEvaluation(
-            await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-        );
+        /* The evaluation instructions stored on Amazon S3 are retrieved and initialized */
+        this.task.initializeInstructionsEvaluation(instructionsEvaluation);
 
-        this.task.initializeDimensions(
-            await this.S3Service.downloadDimensions(this.configService.environment)
-        );
+        /* The dimensions are retrieved and initialized */
+        this.task.initializeDimensions(dimensions);
 
+        /* The access counter is initialized */
         this.task.initializeAccessCounter();
 
+        /* The timestamps are initialized */
         this.task.initializeTimestamps();
 
-        this.task.initializePostAssessment()
+        /* The post-assessment arrays are initialized if needed */
+        this.task.initializePostAssessment();
 
-        if (!(this.worker.identifier == null)) {
+        /* The initial task payload is uploaded the first time the worker starts the task */
+        if (this.worker.identifier != null) {
             if (this.task.dataRecords.length <= 0) {
-                let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload);
+                const taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
+                await this.dynamoDBService.insertDataRecord(env, this.worker, this.task, taskInitialPayload);
             }
         }
 
+        /* Change detection is triggered to update the UI */
         this.changeDetector.detectChanges();
     }
+
 
     public storePositionCurrent(data) {
         this.worker.setParameter("position_current", String(data))
@@ -1265,7 +1360,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (action == "Finish") {
             this.sectionService.taskCompleted = true;
             this.ngxService.stopLoader("skeleton-inner");
-            this.changeDetector.detectChanges();
+            this.changeDetector.markForCheck();
         }
     }
 
@@ -1333,7 +1428,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
         if (currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]) {
             const currentCountdown = getCountdown(currentDocumentData.elementIndex);
-            if (currentCountdown.i.value / 1000 === this.task.documentsCountdownTime[currentDocumentData.elementIndex])
+            const initial = this.task.documentsCountdownTime[currentDocumentData.elementIndex];
+            const secsLeft = currentCountdown.i.value / 1000;
+            if (Math.abs(secsLeft - initial) < 0.5)
                 currentCountdown.begin();
             else
                 currentCountdown.resume();
