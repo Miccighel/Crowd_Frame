@@ -1,228 +1,257 @@
 <div class="outcome-section">
 
-  <mat-card appearance="outlined">
-    @if (this.worker.getParameter('status_code') === this.statusCodes.IP_INFORMATION_MISSING) {
-      <mat-card-title class="red-title main-title"><span i18n>Connection Issues</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_SUCCESSFUL) {
-      <mat-card-title class="green-title main-title"><span i18n>Submission Successful</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_ALREADY_COMPLETED) {
-      <mat-card-title class="green-title main-title"><span i18n>Submission Already Completed</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_FAILED_WITH_TRIES || this.worker.getParameter('status_code') === this.statusCodes.TASK_FAILED_NO_TRIES) {
-      <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_OVERBOOKING) {
-      <mat-card-title class="yellow-title main-title"><span i18n>Task Overbooking</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_TIME_EXPIRED) {
-      <mat-card-title class="red-title main-title"><span i18n>Time Expired</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.TASK_COMPLETED_BY_OTHERS) {
-      <mat-card-title class="yellow-title main-title"><span i18n>Task Completed</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.CODE_UNKNOWN) {
-      <mat-card-title class="red-title main-title"><span i18n>Unknown Issue</span></mat-card-title>
-    }
-
-    @if (this.worker.getParameter('status_code') === this.statusCodes.WORKER_RETURNING_BLOCK || this.worker.getParameter('status_code') === this.statusCodes.WORKER_BLACKLIST_CURRENT || this.worker.getParameter('status_code') === this.statusCodes.WORKER_BLACKLIST_PREVIOUS) {
-      <mat-card-title class="red-title main-title"><span i18n>Block</span></mat-card-title>
-    }
-
-  </mat-card>
-
-  <mat-card appearance="outlined">
-    <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
-    <mat-divider [inset]="true"></mat-divider>
-    <mat-card-content class="description">
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.IP_INFORMATION_MISSING) {
-        <p>
-          <span i18n>It seems there are some connection issues between the server and your device. Could you please report this by attaching the status code shown below and wait for an answer?</span>
-        </p>
-      }
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_SUCCESSFUL) {
-        <p>
-          <span i18n>Congratulations! You have successfully completed the assigned task.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED) {
-        <p>
-          <span i18n>The task, which commenced on </span>
-          <strong>{{this.worker.prettyTimeArrival()}}</strong>,
-          <span i18n>has been successfully completed by you on </span>
-          <strong>{{this.worker.prettyTimeCompletion()}}</strong>.
-          <span i18n>We only allow one submission per worker. Thank you for your effort. Your payment will be processed soon. If you haven't already, you can still complete your submission.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_WITH_TRIES) {
-        <p>
-          <span i18n>Your work did not meet one or more quality checks, but you still have </span>
-          <strong>{{this.worker.getParameter('try_left')}}</strong>
-          <span i18n> tries remaining. We encourage you to reset the task and make a new attempt.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_NO_TRIES) {
-        <p>
-          <span i18n>The task has been assigned to you, but unfortunately, the quality of your work did not meet our expectations. We kindly request you to return this assignment. We apologize for any inconvenience caused and encourage you to participate in our future tasks.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_OVERBOOKING) {
-        <p>
-          <span i18n>The entire set of available tasks has been assigned to other workers. However, someone did not finish their task but still has some time left. Please try to return after the nearest expiration date</span>:
-          {{this.worker.getParameter('time_expiration_nearest')}}.
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_TIME_EXPIRED) {
-        <p>
-          <span i18n>The task assigned to you has been reassigned to another worker because the allotted time for completion has expired on </span>
-          <strong>{{this.worker.prettyTimeExpiration()}}</strong>.
-          <span i18n>We kindly request you to return the assignment on the original platform.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_COMPLETED_BY_OTHERS) {
-        <p>
-          <span i18n>All available tasks have been completed by other workers, and the crowdsourcing platform inadvertently over-recruited you. We apologize for the inconvenience and kindly ask you to return the task to the platform of origin.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.CODE_UNKNOWN) {
-        <p>
-          <span i18n>An unknown issue occurred within the current task. Please report this by attaching the status code shown below and wait for a response. We appreciate your cooperation.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.WORKER_RETURNING_BLOCK) {
-        <p>
-          <span i18n>This task can only be executed once. It is not possible to reopen it, even if you accidentally close your browser tab. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.WORKER_BLACKLIST_CURRENT) {
-        <p>
-          <span i18n>You are prevented from participating again in the current task for various reasons. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</span>
-        </p>
-      }
-
-      @if (this.worker.getParameter('status_code')==this.statusCodes.WORKER_WHITELIST_PREVIOUS) {
-        <p>
-          <span i18n>You are prevented from participating again in the current task as you have already participated in the past. We are currently recruiting only novice workers. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</span>
-        </p>
-      }
-
-    </mat-card-content>
-  </mat-card>
-
-  @if (this.worker.getParameter('status_code')==this.statusCodes.TASK_SUCCESSFUL || this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED ) {
-    <mat-card appearance="outlined"
-      >
-      <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
-      <mat-divider [inset]="true"></mat-divider>
-      <mat-card-content class="description">
-        <p><span i18n>Feel free to leave any comment to help us improve our task. You are allowed to send a single comment.</span></p>
-      </mat-card-content>
-      <div class="comment-box">
-        <form [formGroup]="commentForm" class="comment-form">
-          <mat-form-field appearance="fill">
-            <textarea matInput [attr.disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
-            @if (this.utilsService.hasError(commentForm,'comment', 'required')) {
-              <mat-error>
-                <span i18n>Please, write at least {{this.wordsRequired}} words to send your comment.</span>
-              </mat-error>
+    <!-- TITLE -->
+    <mat-card appearance="outlined">
+        @switch (statusKey) {
+            @case ('IP_INFORMATION_MISSING') {
+                <mat-card-title class="red-title main-title"><span i18n>Connection Issue</span></mat-card-title>
             }
-          </mat-form-field>
-        </form>
-        @if (commentForm.get('comment')) {
-          <button class="comment-button" mat-flat-button color="primary" [attr.disabled]="commentSent" (click)="performCommentSaving()"><span i18n>Send</span>
-        </button>
-        @if (commentSent) {
-          <span class="comment-sent-label"><span i18n>Thank you!</span></span>
+            @case ('TASK_SUCCESSFUL') {
+                <mat-card-title class="green-title main-title"><span i18n>Submission Successful</span></mat-card-title>
+            }
+            @case ('TASK_ALREADY_COMPLETED') {
+                <mat-card-title class="green-title main-title"><span i18n>Submission Already Completed</span></mat-card-title>
+            }
+            @case ('TASK_FAILED_WITH_TRIES') {
+                <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
+            }
+            @case ('TASK_FAILED_NO_TRIES') {
+                <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
+            }
+            @case ('TASK_OVERBOOKING') {
+                <mat-card-title class="yellow-title main-title"><span i18n>Task Overbooked</span></mat-card-title>
+            }
+            @case ('TASK_TIME_EXPIRED') {
+                <mat-card-title class="red-title main-title"><span i18n>Time Expired</span></mat-card-title>
+            }
+            @case ('TASK_COMPLETED_BY_OTHERS') {
+                <mat-card-title class="yellow-title main-title"><span i18n>Task Completed</span></mat-card-title>
+            }
+            @case ('WORKER_RETURNING_BLOCK') {
+                <mat-card-title class="red-title main-title"><span i18n>Blocked</span></mat-card-title>
+            }
+            @case ('WORKER_BLACKLIST_CURRENT') {
+                <mat-card-title class="red-title main-title"><span i18n>Blocked</span></mat-card-title>
+            }
+            @case ('WORKER_BLACKLIST_PREVIOUS') {
+                <mat-card-title class="red-title main-title"><span i18n>Blocked</span></mat-card-title>
+            }
+            @default {
+                <mat-card-title class="red-title main-title"><span i18n>Unknown Issue</span></mat-card-title>
+            }
         }
-      }
-    </div>
-  </mat-card>
-}
+    </mat-card>
 
-@if (this.worker.getParameter('status_code')==this.statusCodes.TASK_SUCCESSFUL) {
-  <mat-card appearance="outlined">
-    <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
-    <mat-divider [inset]="true"></mat-divider>
-    @if (this.worker.getParameter('platform')=='mturk') {
-      <mat-card-content class="description">
-        <p><span i18n>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</span></p>
-        <h1>{{this.worker.getParameter('token_output')}}</h1>
-      </mat-card-content>
-    }
-    @if (this.worker.getParameter('platform')=='toloka') {
-      <mat-card-content class="description">
-        <p><span i18n>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</span></p>
-        <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
-        <h1><span i18n>Token Output: </span>{{this.worker.getParameter('token_output')}}</h1>
-      </mat-card-content>
-    }
-    @if (this.worker.getParameter('platform')=='prolific') {
-      <mat-card-content class="description">
-        <p><span i18n>Click the completion button below to be redirected to the platform and finish your work.</span></p>
-      </mat-card-content>
-      <div class="completion-div">
-        <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()"><span i18n>Complete</span></button>
-      </div>
-    }
-    @if (this.worker.getParameter('platform')=='custom') {
-      <mat-card-content class="description">
-        <p><span i18n>This task was not published on a crowdsourcing platform. We kindly suggest that you copy and store your tokens (shown below).</span></p>
-        <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
-        <h1><span i18n>Token Output: </span>{{this.worker.getParameter('token_output')}}</h1>
-      </mat-card-content>
-    }
-  </mat-card>
-}
+    <!-- DESCRIPTION -->
+    <mat-card appearance="outlined">
+        <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
+        <mat-divider [inset]="true"></mat-divider>
+        <mat-card-content class="description">
 
-@if (this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_WITH_TRIES) {
-  <mat-card appearance="outlined">
-    <mat-card-title class="sub-title"><span i18n>Task Reset</span></mat-card-title>
-    <mat-divider [inset]="true"></mat-divider>
-    <mat-card-content class="description">
-      <p><span i18n>Click the button to reset your current submission. You won't lose any input from the failed attempt.</span></p>
-    </mat-card-content>
-    <div>
-      <button mat-flat-button color="primary" (click)="this.performReset.emit(true)">Reset</button>
-    </div>
-  </mat-card>
-}
+            @switch (statusKey) {
 
-@if (this.messages.length>0) {
-  <mat-card appearance="outlined">
-    <mat-card-title class="sub-title"><span i18n>Additional Messages</span></mat-card-title>
-    <mat-divider [inset]="true"></mat-divider>
-    <mat-card-content class="description">
-      @for (message of this.messages; track message) {
-        <p>{{message}}</p>
-      }
-    </mat-card-content>
-  </mat-card>
-}
+                @case ('IP_INFORMATION_MISSING') {
+                    <p>
+                        <span i18n>There appears to be a connectivity error between your device and our server. Please report the issue including the status code below and wait for further instructions.</span>
+                    </p>
+                }
+                @case ('TASK_SUCCESSFUL') {
+                    <p>
+                        <span i18n>Your submission was received successfully.</span>
+                    </p>
+                }
+                @case ('TASK_ALREADY_COMPLETED') {
+                    <p>
+                        <span i18n>The task started on </span>
+                        <strong>{{ worker.prettyTimeArrival() }}</strong>
+                        <span i18n> and was completed on </span>
+                        <strong>{{ worker.prettyTimeCompletion() }}</strong>.
+                        <span i18n>Only one submission per worker is allowed. Payment will be processed shortly. If not already, you can still finalize your submission on the platform.</span>
+                    </p>
+                }
+                @case ('TASK_FAILED_WITH_TRIES') {
+                    <p>
+                        <span i18n>Your responses did not pass one or more quality checks. You still have </span>
+                        <strong>{{ triesLeft }}</strong>
+                        <span i18n> attempt(s) available. Reset the task to try again.</span>
+                    </p>
+                }
+                @case ('TASK_FAILED_NO_TRIES') {
+                    <p>
+                        <span i18n>Your responses did not meet the required quality. Please return this assignment. Thank you for your time, and feel free to join future tasks.</span>
+                    </p>
+                }
+                @case ('TASK_OVERBOOKING') {
+                    <p>
+                        <span i18n>All tasks are currently assigned. A worker still has time to finish. Please check back after the nearest expiry:</span>
+                        {{ worker.getParameter('time_expiration_nearest') }}.
+                    </p>
+                }
+                @case ('TASK_TIME_EXPIRED') {
+                    <p>
+                        <span i18n>The allotted time expired on </span>
+                        <strong>{{ worker.prettyTimeExpiration() }}</strong>.
+                        <span i18n>The assignment has been reassigned. Please return the assignment on the original platform.</span>
+                    </p>
+                }
+                @case ('TASK_COMPLETED_BY_OTHERS') {
+                    <p>
+                        <span
+                            i18n>All tasks were completed by other workers and the platform over-recruited. Please return the task to the original platform. We apologize for the inconvenience.</span>
+                    </p>
+                }
+                @case ('WORKER_RETURNING_BLOCK') {
+                    <p>
+                        <span i18n>This task can be completed only once and cannot be reopened if the browser tab is closed. Please return the assignment on the original platform.</span>
+                    </p>
+                }
+                @case ('WORKER_BLACKLIST_CURRENT') {
+                    <p>
+                        <span i18n>You cannot participate again in this task. Please return the assignment on the original platform.</span>
+                    </p>
+                }
 
-<mat-card appearance="outlined">
-  <mat-card-title class="sub-title"><span i18n>Status Code</span></mat-card-title>
-  <mat-divider [inset]="true"></mat-divider>
-  <mat-card-content class="description">
-    <p><span i18n>Please attach your status code if you have any further questions:</span><strong> {{this.worker.getParameter('status_code')}}</strong></p>
-  </mat-card-content>
-</mat-card>
+                <!-- Kept from original: prior participation prevents current enrollment -->
+                @case ('WORKER_WHITELIST_PREVIOUS') {
+                    <p>
+                        <span i18n>You have participated previously and we are recruiting only new workers. Please return the assignment on the original platform.</span>
+                    </p>
+                }
+                @default {
+                    <p>
+                        <span i18n>An unexpected issue occurred. Please report it and include the status code below.</span>
+                    </p>
+                }
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <!-- COMMENT (shown on success or already completed) -->
+    @if (statusKey == 'TASK_SUCCESSFUL' || statusKey == 'TASK_ALREADY_COMPLETED') {
+        <mat-card appearance="outlined">
+            <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
+            <mat-card-content class="description">
+                <p><span i18n>You may leave a single comment to help us improve the task.</span></p>
+            </mat-card-content>
+
+            <div class="comment-box">
+                <form [formGroup]="commentForm" class="comment-form">
+                    <mat-form-field appearance="fill">
+            <textarea
+                matInput
+                [attr.disabled]="commentSent"
+                placeholder="Your comment here"
+                formControlName="comment"
+                rows="5"
+            ></textarea>
+
+                        @if (utilsService.hasError(commentForm, 'comment', 'required')) {
+                            <mat-error>
+                                <span i18n>Please write at least {{ wordsRequired }} words.</span>
+                            </mat-error>
+                        }
+                    </mat-form-field>
+                </form>
+
+                @if (commentForm.get('comment')) {
+                    <button
+                        class="comment-button"
+                        mat-flat-button
+                        color="primary"
+                        [attr.disabled]="commentSent"
+                        (click)="performCommentSaving()"
+                    >
+                        <span i18n>Send</span>
+                    </button>
+
+                    @if (commentSent) {
+                        <span class="comment-sent-label"><span i18n>Thank you.</span></span>
+                    }
+                }
+            </div>
+        </mat-card>
+    }
+
+    <!-- SUBMISSION INSTRUCTIONS (platform = environment) -->
+    @if (statusKey == 'TASK_SUCCESSFUL') {
+        <mat-card appearance="outlined">
+            <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
+
+            @switch (platform) {
+
+                @case ('mturk') {
+                    <mat-card-content class="description">
+                        <p><span i18n>Copy the output token below and paste it on the platform to complete your work.</span></p>
+                        <h1>{{ tokenOutput }}</h1>
+                    </mat-card-content>
+                }
+                @case ('toloka') {
+                    <mat-card-content class="description">
+                        <p><span i18n>Copy the tokens below and paste them on the platform to complete your work.</span></p>
+                        <h1><span i18n>Token Input:</span> {{ tokenInput }}</h1>
+                        <h1><span i18n>Token Output:</span> {{ tokenOutput }}</h1>
+                    </mat-card-content>
+                }
+                @case ('prolific') {
+                    <mat-card-content class="description">
+                        <p><span i18n>Use the button below to be redirected to Prolific and complete your submission.</span></p>
+                    </mat-card-content>
+                    <div class="completion-div">
+                        <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">
+                            <span i18n>Complete</span>
+                        </button>
+                    </div>
+                }
+                @default {
+                    <mat-card-content class="description">
+                        <p><span i18n>This task was not published on a platform. Please copy and keep your tokens.</span></p>
+                        <h1><span i18n>Token Input:</span> {{ tokenInput }}</h1>
+                        <h1><span i18n>Token Output:</span> {{ tokenOutput }}</h1>
+                    </mat-card-content>
+                }
+            }
+        </mat-card>
+    }
+
+    <!-- TASK RESET -->
+    @if (statusKey == 'TASK_FAILED_WITH_TRIES') {
+        <mat-card appearance="outlined">
+            <mat-card-title class="sub-title"><span i18n>Task Reset</span></mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
+            <mat-card-content class="description">
+                <p><span i18n>Click the button to reset your current submission. Your previous inputs will be preserved.</span></p>
+            </mat-card-content>
+            <div>
+                <button mat-flat-button color="primary" (click)="performReset.emit(true)"><span i18n>Reset</span></button>
+            </div>
+        </mat-card>
+    }
+
+    <!-- ADDITIONAL MESSAGES -->
+    @if (messages.length > 0) {
+        <mat-card appearance="outlined">
+            <mat-card-title class="sub-title"><span i18n>Additional Messages</span></mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
+            <mat-card-content class="description">
+                @for (message of messages; track message) {
+                    <p>{{ message }}</p>
+                }
+            </mat-card-content>
+        </mat-card>
+    }
+
+    <!-- STATUS CODE -->
+    <mat-card appearance="outlined">
+        <mat-card-title class="sub-title"><span i18n>Status Code</span></mat-card-title>
+        <mat-divider [inset]="true"></mat-divider>
+        <mat-card-content class="description">
+            <p>
+                <span i18n>If you contact support, include this status code:</span>
+                <strong> {{ statusCodeDisplay }} </strong>
+            </p>
+        </mat-card-content>
+    </mat-card>
 
 </div>

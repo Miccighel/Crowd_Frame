@@ -9,6 +9,7 @@
 .outcome-section mat-card {
   margin: 1% auto;
   padding: 16px;
+  max-width: 900px; /* nicer reading width on desktop */
 }
 
 .outcome-section mat-card-title {
@@ -19,12 +20,16 @@
   text-align: center;
   text-transform: uppercase;
   margin: 0 auto 0;
+  letter-spacing: 0.04em;  /* subtle readability boost */
+  padding-block: 6px;      /* give the colored pill some breathing room */
+  border-radius: 6px;
 }
 
 .outcome-section .sub-title {
   padding-top: 0 !important;
   text-transform: uppercase;
   font-size: 1.1em;
+  letter-spacing: 0.03em;
 }
 
 .outcome-section .description {
@@ -32,11 +37,26 @@
   margin-bottom: 10px !important;
   font-size: 1.1em;
 
+  /* |--- Token display (avoid overflow, easy copy) ---| */
   h1 {
     text-align: center;
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-weight: 600;
+    font-size: clamp(1rem, 3vw, 1.75rem);
+    letter-spacing: 0.02em;
+    word-break: break-all;   /* long tokens won’t blow the layout */
+    overflow-wrap: anywhere;
+    user-select: all;        /* click-drag to copy easily */
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 6px 0;
   }
 }
 
+/* |--- Targeted alignment (remove broad div centering) ---| */
+/* Removed:
 .outcome-section div {
   text-align: center;
   button {
@@ -44,9 +64,23 @@
     padding: 10px 30px;
   }
 }
+*/
+
+.outcome-section .completion-div,
+.outcome-section .comment-box {
+  text-align: center;
+}
+
+.outcome-section .completion-div .button-completion,
+.outcome-section .comment-box .comment-button {
+  font-size: 1.1em;
+  padding: 10px 30px;
+}
+
+/* |--- Comment area ---| */
 
 .outcome-section .comment-form {
-  margin-top: 1.5%;
+  margin-top: 16px;
 
   mat-form-field {
     width: 100%;
@@ -60,10 +94,18 @@
 .outcome-section .comment-sent-label {
   text-transform: uppercase;
   padding: 0.5%;
-  margin-left: 1%;
+  margin-left: 8px;      /* consistent with button padding above */
   font-weight: bold;
   color: #66bb6a;
+  vertical-align: middle;
 }
+
+.outcome-section mat-error {
+  display: block;
+  text-align: left;      /* errors are easier to scan left-aligned */
+}
+
+/* |--- Title color pills (original colors retained) ---| */
 
 .yellow-title {
   background-color: #ff8c00;

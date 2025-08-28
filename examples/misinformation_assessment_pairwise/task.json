@@ -3,7 +3,8 @@
     "task_name": "Pairwise-Misinformation-Assessment",
     "batch_name": "Pilot-0",
     "allowed_tries": 10,
-    "time_check_amount": 3333,
+    "time_assessment": 3,
+    "time_check_amount": 3,
     "element_labels": {
         "main": "Statement Set",
         "main_short": "S"
@@ -17,37 +18,40 @@
         },
         {
             "name": "statement_text",
+            "name_pretty": "Statement",
             "show": true,
             "annotate": false,
             "required": false
         },
         {
             "name": "speaker_name",
+            "name_pretty": "Speaker",
             "show": true,
             "annotate": false,
             "required": false
         },
         {
             "name": "speaker_party",
-            "show": true,
+            "show": false,
             "annotate": false,
             "required": false
         },
         {
             "name": "statement_date",
+            "name_pretty": "Date",
             "show": true,
             "annotate": false,
             "required": false
         },
         {
             "name": "statement_origin",
-            "show": true,
+            "show": false,
             "annotate": false,
             "required": false
         },
         {
             "name": "speaker_job",
-            "show": true,
+            "show": false,
             "annotate": false,
             "required": false
         },
