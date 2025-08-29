@@ -1,384 +1,394 @@
 <form [formGroup]="formStep">
 
-  <!-- Header -->
-  <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-    <mat-card-header>
-      <mat-card-title><span i18n>Step #2: Dimensions</span></mat-card-title>
-      <mat-card-subtitle><span i18n>Second, define all Dimensions here</span></mat-card-subtitle>
-    </mat-card-header>
-    <mat-divider></mat-divider>
-    <mat-card-content>
+    <!-- Header -->
+    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title><span i18n>Step #2: Dimensions</span></mat-card-title>
+            <mat-card-subtitle><span i18n>Second, define all Dimensions here</span></mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
 
-      <div formArrayName="dimensions">
+            <div formArrayName="dimensions">
 
-        @for (dimension of dimensions().controls; track dimension; let dimensionIndex = $index) {
-          <div [formGroupName]="dimensionIndex">
-            <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-              <mat-card-header>
-                <mat-card-title class="lighter"><span i18n>Dimension</span>{{dimensionIndex + 1}}</mat-card-title>
-              </mat-card-header>
-              <mat-divider></mat-divider>
-              <mat-card-content>
-                <!-- Name, Description -->
-                <table class="width-100 mt-8px">
-                  <tr>
-                    <td class="p-0 pr-16px">
-                      <mat-form-field matLine class="width-100" appearance="fill">
-                        <mat-label><span i18n>Name</span></mat-label>
-                        <input matInput type="text" formControlName="name">
-                        <app-error-message [formField]="dimension.get('name')"></app-error-message>
-                      </mat-form-field>
-                    </td>
-                    <td class="p-0">
-                      <mat-form-field matLine class="width-100" appearance="fill">
-                        <mat-label><span i18n>Name Pretty</span></mat-label>
-                        <input matInput type="text" formControlName="name_pretty">
-                        <app-error-message [formField]="dimension.get('name_pretty')"></app-error-message>
-                      </mat-form-field>
-                    </td>
-                  </tr>
-                </table>
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label><span i18n>Description</span></mat-label>
-                  <textarea matInput formControlName="description"></textarea>
-                </mat-form-field>
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label><span i18n>Example</span></mat-label>
-                  <textarea matInput formControlName="example"></textarea>
-                </mat-form-field>
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Gold -->
-                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
-                  <span i18n>Gold Dimension</span>
-                </mat-slide-toggle>
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Pairwise -->
-                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="pairwise" [disabled]="this.taskModality != 'pairwise'">
-                  <span i18n>Pairwise</span>
-                </mat-slide-toggle>
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Justification: Text, Min_Words -->
-                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
-                  <span i18n>Justification</span>
-                </mat-slide-toggle>
-                @if (dimension.get('setJustification').value) {
-                  <div formGroupName="justification">
-                    <table class="width-100">
-                      <tr>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Text</span></mat-label>
-                            <input matInput type="text" formControlName="text">
-                            <app-error-message [formField]="dimension.get('justification').get('text')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                        <td class="p-0">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Minimum Words</span></mat-label>
-                            <input matInput type="number" min="0" formControlName="min_words">
-                            <app-error-message [formField]="dimension.get('justification').get('min_words')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                      </tr>
-                    </table>
-                  </div>
-                }
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Url -->
-                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setUrl" (change)="resetUrl(dimensionIndex)">
-                  <span i18n>Url</span>
-                </mat-slide-toggle>
-                @if (dimension.get('setUrl').value) {
-                  <div formGroupName="url">
-                    <h2 class="initial"><span i18n>Enabled</span></h2>
-                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionUrl(dimensionIndex)">
-                      <h3 class="initial"><span i18n>Add Instruction</span></h3>
-                    </mat-slide-toggle>
-                    @if (dimension.get('url').get('setInstructions').value) {
-                      <div formGroupName="instructions">
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Label</span></mat-label>
-                                <input matInput type="text" formControlName="label">
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label i18n>Caption</mat-label>
-                                <input matInput type="text" formControlName="caption">
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Text</span></mat-label>
-                                <input matInput type="text" formControlName="text">
-                                <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                    }
-                  </div>
-                }
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
-                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
-                  <span i18n>Scale</span>
-                </mat-slide-toggle>
-                @if (dimension.get('setScale').value) {
-                  <div formGroupName="scale">
-                    <table class="width-100">
-                      <tr>
-                        <td class="p-0">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Type</span></mat-label>
-                            <mat-select matInput formControlName="type" (selectionChange)="updateScale(dimensionIndex)">
-                              @for (scaleType of scaleTypes; track scaleType) {
-                                <mat-option [value]="scaleType.value">
-                                  {{scaleType.viewValue}}
-                                </mat-option>
-                              }
-                            </mat-select>
-                            <app-error-message [formField]="dimension.get('scale').get('type')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                      </tr>
-                      @if (dimension.get('scale').get('type').value=='categorical') {
-                        <tr>
-                          <td class="p-0">
-                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setMultipleSelection" (change)="resetMultipleSelection(dimensionIndex)">
-                              <span i18n>Multiple Selection</span>
-                            </mat-slide-toggle>
-                          </td>
-                        </tr>
-                      }
-                    </table>
-                    @if (dimension.get('scale').get('type').value == 'interval') {
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                              <mat-label><span i18n>Minimum</span></mat-label>
-                              <input matInput type="number" formControlName="min">
-                              <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                              <mat-label><span i18n>Maximum</span></mat-label>
-                              <input matInput type="number" formControlName="max">
-                              <app-error-message [formField]="dimension.get('scale').get('max')"></app-error-message>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                              <mat-label><span i18n>Step</span></mat-label>
-                              <input matInput type="number" formControlName="step">
-                              <app-error-message [formField]="dimension.get('scale').get('step')"></app-error-message>
-                            </mat-form-field>
-                          </td>
-                        </tr>
-                      </table>
-                    }
-                    @if (dimension.get('scale').get('type').value == 'categorical') {
-                      <div formArrayName="mapping">
-                        <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
-                          <span i18n>Add Mapping</span>
-                        </button>
-                        @for (dimensionMap of dimensionMapping(dimensionIndex).controls; track dimensionMap; let dimensionMappingIndex = $index) {
-                          <div
-                            [formGroupName]="dimensionMappingIndex">
-                            <table class="width-100">
-                              <tr>
-                                <td class="p-0 pr-16px">
-                                  <mat-form-field matLine class="width-100" appearance="fill">
-                                    <mat-label><span i18n>Label</span></mat-label>
-                                    <input matInput type="text" formControlName="label">
-                                    <app-error-message [formField]="dimensionMap.get('label')"></app-error-message>
-                                  </mat-form-field>
-                                </td>
-                                <td class="p-0 pr-16px">
-                                  <mat-form-field matLine class="width-100" appearance="fill">
+                @for (dimension of dimensions().controls; track dimension; let dimensionIndex = $index) {
+                    <div [formGroupName]="dimensionIndex">
+                        <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+                            <mat-card-header>
+                                <mat-card-title class="lighter"><span i18n>Dimension</span>{{ dimensionIndex + 1 }}</mat-card-title>
+                            </mat-card-header>
+                            <mat-divider></mat-divider>
+                            <mat-card-content>
+                                <!-- Name, Description -->
+                                <table class="width-100 mt-8px">
+                                    <tr>
+                                        <td class="p-0 pr-16px">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                <mat-label><span i18n>Name</span></mat-label>
+                                                <input matInput type="text" formControlName="name">
+                                                <app-error-message [formField]="dimension.get('name')"></app-error-message>
+                                            </mat-form-field>
+                                        </td>
+                                        <td class="p-0">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                <mat-label><span i18n>Name Pretty</span></mat-label>
+                                                <input matInput type="text" formControlName="name_pretty">
+                                                <app-error-message [formField]="dimension.get('name_pretty')"></app-error-message>
+                                            </mat-form-field>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <mat-form-field class="width-100" appearance="fill">
                                     <mat-label><span i18n>Description</span></mat-label>
-                                    <input matInput type="text" formControlName="description">
-                                    <app-error-message [formField]="dimensionMap.get('description')"></app-error-message>
-                                  </mat-form-field>
-                                </td>
-                                <td class="p-0 pr-16px">
-                                  <mat-form-field matLine class="width-100" appearance="fill">
-                                    <mat-label><span i18n>Value</span></mat-label>
-                                    <input matInput type="text" formControlName="value">
-                                    <app-error-message [formField]="dimensionMap.get('value')"></app-error-message>
-                                  </mat-form-field>
-                                </td>
-                                <td class="p-0 center">
-                                  <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="dimensionMappingIndex === 0 && dimensionMapping(dimensionIndex).length == 1"
-                                    (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
-                                    <span i18n>Remove Mapping</span>
-                                  </button>
-                                </td>
-                              </tr>
-                            </table>
-                          </div>
-                        }
-                      </div>
-                    }
-                    @if (dimension.get('scale').get('type').value == 'magnitude_estimation') {
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" appearance="fill">
-                              <mat-label><span i18n>Minimum</span></mat-label>
-                              <input matInput type="number" formControlName="min">
-                              <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
-                            </mat-form-field>
-                          </td>
-                        </tr>
-                      </table>
-                    }
-                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionScale(dimensionIndex)">
-                      <h3 class="initial"><span i18n>Add Instruction</span></h3>
-                    </mat-slide-toggle>
-                    @if (dimension.get('scale').get('setInstructions').value) {
-                      <div formGroupName="instructions">
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Label</span></mat-label>
-                                <input matInput type="text" formControlName="label">
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Caption</span></mat-label>
-                                <input matInput type="text" formControlName="caption">
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                        <table class="width-100 mt-8px">
-                          <tr>
-                            <td class="p-0">
-                              <mat-form-field matLine class="width-100" appearance="fill">
-                                <mat-label><span i18n>Text</span></mat-label>
-                                <input matInput type="text" formControlName="text">
-                                <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
-                              </mat-form-field>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                    }
-                  </div>
+                                    <textarea matInput formControlName="description"></textarea>
+                                </mat-form-field>
+                                <mat-form-field class="width-100" appearance="fill">
+                                    <mat-label><span i18n>Example</span></mat-label>
+                                    <textarea matInput formControlName="example"></textarea>
+                                </mat-form-field>
+                                <mat-divider [inset]="true"></mat-divider>
+
+                                <!-- Gold -->
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
+                                    <span i18n>Gold Dimension</span>
+                                </mat-slide-toggle>
+
+                                <mat-divider [inset]="true"></mat-divider>
+
+                                <!-- Justification: Text, Min_Words -->
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
+                                    <span i18n>Justification</span>
+                                </mat-slide-toggle>
+                                @if (dimension.get('setJustification').value) {
+                                    <div formGroupName="justification">
+                                        <table class="width-100">
+                                            <tr>
+                                                <td class="p-0 pr-16px">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Text</span></mat-label>
+                                                        <input matInput type="text" formControlName="text">
+                                                        <app-error-message [formField]="dimension.get('justification').get('text')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                                <td class="p-0">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Minimum Words</span></mat-label>
+                                                        <input matInput type="number" min="0" formControlName="min_words">
+                                                        <app-error-message [formField]="dimension.get('justification').get('min_words')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                }
+
+                                <mat-divider [inset]="true"></mat-divider>
+
+                                <!-- Url -->
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setUrl" (change)="resetUrl(dimensionIndex)">
+                                    <span i18n>Url</span>
+                                </mat-slide-toggle>
+                                @if (dimension.get('setUrl').value) {
+                                    <div formGroupName="url">
+                                        <h2 class="initial"><span i18n>Enabled</span></h2>
+                                        <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionUrl(dimensionIndex)">
+                                            <h3 class="initial"><span i18n>Add Instruction</span></h3>
+                                        </mat-slide-toggle>
+                                        @if (dimension.get('url').get('setInstructions').value) {
+                                            <div formGroupName="instructions">
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label><span i18n>Label</span></mat-label>
+                                                                <input matInput type="text" formControlName="label">
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label i18n>Caption</mat-label>
+                                                                <input matInput type="text" formControlName="caption">
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label><span i18n>Text</span></mat-label>
+                                                                <input matInput type="text" formControlName="text">
+                                                                <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                <mat-divider [inset]="true"></mat-divider>
+
+                                <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
+                                    <span i18n>Scale</span>
+                                </mat-slide-toggle>
+
+                                @if (dimension.get('setScale').value) {
+                                    <div formGroupName="scale">
+                                        <table class="width-100">
+                                            <tr>
+                                                <td class="p-0">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Type</span></mat-label>
+                                                        <mat-select matInput formControlName="type" (selectionChange)="updateScale(dimensionIndex)">
+                                                            @for (scaleType of scaleTypes; track scaleType) {
+                                                                <mat-option [value]="scaleType.value">
+                                                                    {{ scaleType.viewValue }}
+                                                                </mat-option>
+                                                            }
+                                                        </mat-select>
+                                                        <app-error-message [formField]="dimension.get('scale').get('type')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                            </tr>
+                                            @if (dimension.get('scale').get('type').value == 'categorical') {
+                                                <tr>
+                                                    <td class="p-0">
+                                                        <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setMultipleSelection"
+                                                                          (change)="resetMultipleSelection(dimensionIndex)">
+                                                            <span i18n>Multiple Selection</span>
+                                                        </mat-slide-toggle>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </table>
+
+                                        @if (dimension.get('scale').get('type').value == 'interval') {
+                                            <table class="width-100">
+                                                <tr>
+                                                    <td class="p-0 pr-16px">
+                                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-label><span i18n>Minimum</span></mat-label>
+                                                            <input matInput type="number" formControlName="min">
+                                                            <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
+                                                        </mat-form-field>
+                                                    </td>
+                                                    <td class="p-0 pr-16px">
+                                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-label><span i18n>Maximum</span></mat-label>
+                                                            <input matInput type="number" formControlName="max">
+                                                            <app-error-message [formField]="dimension.get('scale').get('max')"></app-error-message>
+                                                        </mat-form-field>
+                                                    </td>
+                                                    <td class="p-0">
+                                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-label><span i18n>Step</span></mat-label>
+                                                            <input matInput type="number" formControlName="step">
+                                                            <app-error-message [formField]="dimension.get('scale').get('step')"></app-error-message>
+                                                        </mat-form-field>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        }
+
+                                        @if (dimension.get('scale').get('type').value == 'categorical') {
+                                            <div formArrayName="mapping">
+                                                <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
+                                                    <span i18n>Add Mapping</span>
+                                                </button>
+                                                @for (dimensionMap of dimensionMapping(dimensionIndex).controls; track dimensionMap; let dimensionMappingIndex = $index) {
+                                                    <div [formGroupName]="dimensionMappingIndex">
+                                                        <table class="width-100">
+                                                            <tr>
+                                                                <td class="p-0 pr-16px">
+                                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                                        <mat-label><span i18n>Label</span></mat-label>
+                                                                        <input matInput type="text" formControlName="label">
+                                                                        <app-error-message [formField]="dimensionMap.get('label')"></app-error-message>
+                                                                    </mat-form-field>
+                                                                </td>
+                                                                <td class="p-0 pr-16px">
+                                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                                        <mat-label><span i18n>Description</span></mat-label>
+                                                                        <input matInput type="text" formControlName="description">
+                                                                        <app-error-message [formField]="dimensionMap.get('description')"></app-error-message>
+                                                                    </mat-form-field>
+                                                                </td>
+                                                                <td class="p-0 pr-16px">
+                                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                                        <mat-label><span i18n>Value</span></mat-label>
+                                                                        <input matInput type="text" formControlName="value">
+                                                                        <app-error-message [formField]="dimensionMap.get('value')"></app-error-message>
+                                                                    </mat-form-field>
+                                                                </td>
+                                                                <td class="p-0 center">
+                                                                    <button mat-flat-button color="primary" class="mb-16px"
+                                                                            [disabled]="dimensionMappingIndex === 0 && dimensionMapping(dimensionIndex).length == 1"
+                                                                            (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
+                                                                        <span i18n>Remove Mapping</span>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+
+                                        @if (dimension.get('scale').get('type').value == 'magnitude_estimation') {
+                                            <table class="width-100">
+                                                <tr>
+                                                    <td class="p-0 pr-16px">
+                                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-label><span i18n>Minimum</span></mat-label>
+                                                            <input matInput type="number" formControlName="min">
+                                                            <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
+                                                        </mat-form-field>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        }
+
+                                        <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionScale(dimensionIndex)">
+                                            <h3 class="initial"><span i18n>Add Instruction</span></h3>
+                                        </mat-slide-toggle>
+                                        @if (dimension.get('scale').get('setInstructions').value) {
+                                            <div formGroupName="instructions">
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label><span i18n>Label</span></mat-label>
+                                                                <input matInput type="text" formControlName="label">
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label><span i18n>Caption</span></mat-label>
+                                                                <input matInput type="text" formControlName="caption">
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <table class="width-100 mt-8px">
+                                                    <tr>
+                                                        <td class="p-0">
+                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                                <mat-label><span i18n>Text</span></mat-label>
+                                                                <input matInput type="text" formControlName="text">
+                                                                <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
+                                                            </mat-form-field>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                <mat-divider [inset]="true"></mat-divider>
+
+                                <!-- Style: Type, Position, Orientation, Separator -->
+                                @if (dimension.get('setScale').value) {
+                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setStyle" (change)="resetStyle(dimensionIndex)">
+                                        <span i18n>Style</span>
+                                    </mat-slide-toggle>
+                                }
+                                @if (dimension.get('setStyle').value && dimension.get('setScale').value) {
+                                    <div formGroupName="style">
+                                        <table class="width-100">
+                                            <tr>
+                                                <td class="p-0 pr-16px">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Type</span></mat-label>
+                                                        <mat-select matInput formControlName="styleType" (selectionChange)="updateStyleType(dimensionIndex)">
+                                                            @for (styleType of styleTypes; track styleType) {
+                                                                <mat-option [value]="styleType.value">
+                                                                    {{ styleType.viewValue }}
+                                                                </mat-option>
+                                                            }
+                                                        </mat-select>
+                                                        <app-error-message [formField]="dimension.get('style').get('styleType')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                                <td class="p-0 pr-16px">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Position</span></mat-label>
+                                                        <mat-select matInput formControlName="position">
+                                                            @for (positionType of positionTypes; track positionType) {
+                                                                <mat-option [value]="positionType.value">
+                                                                    {{ positionType.viewValue }}
+                                                                </mat-option>
+                                                            }
+                                                        </mat-select>
+                                                        <app-error-message [formField]="dimension.get('style').get('position')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                                <td class="p-0 pr-16px">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Orientation</span></mat-label>
+                                                        <mat-select matInput formControlName="orientation" required>
+                                                            @for (orientationType of orientationTypes; track orientationType) {
+                                                                <mat-option [value]="orientationType.value">
+                                                                    {{ orientationType.viewValue }}
+                                                                </mat-option>
+                                                            }
+                                                        </mat-select>
+                                                        <app-error-message [formField]="dimension.get('style').get('orientation')"></app-error-message>
+                                                    </mat-form-field>
+                                                </td>
+                                                <td class="p-0">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
+                                                        <mat-label><span i18n>Separator</span></mat-label>
+                                                        <mat-select matInput formControlName="separator">
+                                                            <mat-option value="true">
+                                                                <span i18n>True</span>
+                                                            </mat-option>
+                                                            <mat-option value="false">
+                                                                <span i18n>False</span>
+                                                            </mat-option>
+                                                        </mat-select>
+                                                    </mat-form-field>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                }
+                            </mat-card-content>
+                            <mat-divider></mat-divider>
+                            <mat-card-actions class="right">
+                                <button mat-flat-button color="primary" (click)="removeDimension(dimensionIndex)">
+                                    <span i18n>Remove Dimension</span>
+                                </button>
+                            </mat-card-actions>
+                        </mat-card>
+                    </div>
                 }
-                <mat-divider [inset]="true"></mat-divider>
-                <!-- Style: Type, Position, Orientation, Separator -->
-                @if (dimension.get('setScale').value) {
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setStyle" (change)="resetStyle(dimensionIndex)">
-                    <span i18n>Style</span>
-                  </mat-slide-toggle>
-                }
-                @if (dimension.get('setStyle').value && dimension.get('setScale').value) {
-                  <div formGroupName="style">
-                    <table class="width-100">
-                      <tr>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill" required>
-                            <mat-label><span i18n>Type</span></mat-label>
-                            <mat-select matInput formControlName="styleType" (selectionChange)="updateStyleType(dimensionIndex)">
-                              @for (styleType of styleTypes; track styleType) {
-                                <mat-option [value]="styleType.value">
-                                  {{styleType.viewValue}}
-                                </mat-option>
-                              }
-                            </mat-select>
-                            <app-error-message [formField]="dimension.get('style').get('styleType')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill" required>
-                            <mat-label><span i18n>Position</span></mat-label>
-                            <mat-select matInput formControlName="position">
-                              @for (positionType of positionTypes; track positionType) {
-                                <mat-option [value]="positionType.value">
-                                  {{positionType.viewValue}}
-                                </mat-option>
-                              }
-                            </mat-select>
-                            <app-error-message [formField]="dimension.get('style').get('position')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Orientation</span></mat-label>
-                            <mat-select matInput formControlName="orientation" required>
-                              @for (orientationType of orientationTypes; track orientationType) {
-                                <mat-option [value]="orientationType.value">
-                                  {{orientationType.viewValue}}
-                                </mat-option>
-                              }
-                            </mat-select>
-                            <app-error-message [formField]="dimension.get('style').get('orientation')"></app-error-message>
-                          </mat-form-field>
-                        </td>
-                        <td class="p-0">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Separator</span></mat-label>
-                            <mat-select matInput formControlName="separator">
-                              <mat-option value="true">
-                                <span i18n>True</span>
-                              </mat-option>
-                              <mat-option value="false">
-                                <span i18n>False</span>
-                              </mat-option>
-                            </mat-select>
-                          </mat-form-field>
-                        </td>
-                      </tr>
-                    </table>
-                  </div>
-                }
-              </mat-card-content>
-              <mat-divider></mat-divider>
-              <mat-card-actions class="right">
-                <button mat-flat-button color="primary" (click)="removeDimension(dimensionIndex)">Remove Dimension
-                </button>
-              </mat-card-actions>
-            </mat-card>
-          </div>
-        }
 
-      </div>
+            </div>
 
-      <button mat-flat-button color="primary" (click)="addDimension()">
-        <span i18n>Add Dimension</span>
-      </button>
+            <button mat-flat-button color="primary" (click)="addDimension()">
+                <span i18n>Add Dimension</span>
+            </button>
 
-    </mat-card-content>
+        </mat-card-content>
 
-    <mat-divider></mat-divider>
+        <mat-divider></mat-divider>
 
-    <mat-card-actions>
-      <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-      <button mat-flat-button color="primary" matStepperNext>Next</button>
-    </mat-card-actions>
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
+        </mat-card-actions>
 
-  </mat-card>
+    </mat-card>
 </form>

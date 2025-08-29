@@ -76,17 +76,18 @@
 
     <!-- Answers (mcq/list only) -->
     @if (questionType() === 'mcq' || questionType() === 'list') {
+        @let aa = answersArray();
         <div class="qi-answers" formArrayName="answers">
             <button mat-flat-button color="primary" class="indent" (click)="addAnswerRow()">
                 <span i18n>Add Answer</span>
             </button>
 
-            @for (answerGroup of answersArray().controls; track answerGroup; let answerIndex = $index) {
+            @for (answerGroup of aa.controls; track trackCtrl($index, answerGroup); let answerIndex = $index) {
                 <div [formGroupName]="answerIndex" class="qi-answers__row indent">
                     <mat-form-field appearance="fill" class="qi-answers__field">
                         <mat-label><span i18n>Answer</span></mat-label>
                         <input matInput type="text" formControlName="answer"/>
-                        @let ansCtrl = answersArray().at(answerIndex).get('answer');
+                        @let ansCtrl = aa.at(answerIndex).get('answer');
                         <mat-error>
                             @if (ansCtrl?.errors?.['required'] && ansCtrl?.touched) {
                                 <span i18n>Answer text is required.</span>
@@ -98,7 +99,7 @@
                         <button
                             mat-flat-button
                             color="primary"
-                            [disabled]="answerIndex === 0 && answersArray().length === 1"
+                            [disabled]="answerIndex === 0 && aa.length === 1"
                             (click)="removeAnswerRow(answerIndex)">
                             <span i18n>Remove Answer</span>
                         </button>
@@ -135,7 +136,7 @@
         <mat-form-field appearance="fill" class="qi-field--target">
             <mat-label><span i18n>Target (upstream question)</span></mat-label>
             <mat-select formControlName="target">
-                @for (opt of targetOptions; track opt) {
+                @for (opt of targetOptions; track trackTarget($index, opt)) {
                     <mat-option [value]="opt.name">
                         {{ opt.label }}
                     </mat-option>
@@ -169,6 +170,7 @@
 
     <!-- Children (section only) -->
     @if (questionType() === 'section') {
+        @let kids = childQuestionsArray();
         <div class="qi-children" formArrayName="questions">
             <mat-divider [inset]="true"></mat-divider>
 
@@ -176,10 +178,10 @@
                 <span i18n>Add Sub-Question</span>
             </button>
 
-            @for (childGroup of childQuestionsArray().controls; track childGroup; let childIndex = $index) {
+            @for (childGroup of kids.controls; track trackCtrl($index, childGroup); let childIndex = $index) {
                 <app-question-item
                     [questionGroup]="$any(childGroup)"
-                    [parentQuestionsArray]="childQuestionsArray()"
+                    [parentQuestionsArray]="kids"
                     [parentIndex]="childIndex"
                     [rootQuestionsArray]="rootQuestionsArray"
                     [indentLevel]="indentLevel + 1"

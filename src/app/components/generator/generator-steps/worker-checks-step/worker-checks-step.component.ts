@@ -29,28 +29,23 @@ type BatchMode = "none" | "blacklist" | "whitelist";
     selector: "app-worker-checks",
     templateUrl: "./worker-checks-step.component.html",
     styleUrls: ["../../generator.component.scss"],
-    standalone: false
+    standalone: false,
 })
 export class WorkerChecksStepComponent implements OnInit {
-
     /* ---------------- Inputs / Outputs ---------------- */
-
     @Input() batchesTree: Array<any> = [];
     @Input() batchesTreeInitialized: boolean;
-
     @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     /* ---------------- State ---------------- */
-
-    formStep: UntypedFormGroup;                /* Reactive form root */
-    dataStored = new WorkerSettings();         /* Last stored config (LS/S3) */
-    blacklistedWorkerId: Set<string>;          /* Chip set: blacklist */
-    whitelistedWorkerId: Set<string>;          /* Chip set: whitelist */
-    readonly separatorKeysCodes = [ENTER, COMMA, SPACE] as const;  /* Token separators */
-    configurationSerialized: string;           /* Compact JSON preview */
+    formStep: UntypedFormGroup; /* Reactive form root */
+    dataStored = new WorkerSettings(); /* Last stored config (LS/S3) */
+    blacklistedWorkerId: Set<string>; /* Chip set: blacklist */
+    whitelistedWorkerId: Set<string>; /* Chip set: whitelist */
+    readonly separatorKeysCodes = [ENTER, COMMA, SPACE] as const; /* Token separators */
+    configurationSerialized: string; /* Compact JSON preview */
 
     /* ---------------- DI ---------------- */
-
     constructor(
         private localStorageService: LocalStorageService,
         private configService: ConfigService,
@@ -78,15 +73,21 @@ export class WorkerChecksStepComponent implements OnInit {
 
     /* On component init, restore settings from LS (fallback S3) and build form */
     async ngOnInit() {
-        const serializedWorkerChecks = this.localStorageService.getItem("worker-settings");
+        const serializedWorkerChecks =
+            this.localStorageService.getItem("worker-settings");
 
         if (serializedWorkerChecks) {
             this.dataStored = new WorkerSettings(JSON.parse(serializedWorkerChecks));
         } else {
             this.initializeControls();
-            const rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment);
+            const rawWorkerChecks = await this.S3Service.downloadWorkers(
+                this.configService.environment
+            );
             this.dataStored = new WorkerSettings(rawWorkerChecks);
-            this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks));
+            this.localStorageService.setItem(
+                `worker-settings`,
+                JSON.stringify(rawWorkerChecks)
+            );
         }
 
         /* Build form from stored data */
@@ -100,13 +101,20 @@ export class WorkerChecksStepComponent implements OnInit {
         /* Initialize chip sets from stored lists */
         this.whitelistedWorkerId = new Set();
         this.blacklistedWorkerId = new Set();
-        this.dataStored.blacklist?.forEach((id: string) => this.blacklistedWorkerId.add(id));
-        this.dataStored.whitelist?.forEach((id: string) => this.whitelistedWorkerId.add(id));
+        this.dataStored.blacklist?.forEach((id: string) =>
+            this.blacklistedWorkerId.add(id)
+        );
+        this.dataStored.whitelist?.forEach((id: string) =>
+            this.whitelistedWorkerId.add(id)
+        );
 
-        /* Create batch controls from input tree */
+        /* ---- FIX: assign a stable index ('counter') matching the FormArray position ---- */
+        let idx = 0;
         for (const taskNode of this.batchesTree ?? []) {
             for (const batchNode of taskNode["batches"] ?? []) {
-                this.addBatch(batchNode);
+                batchNode["counter"] = idx; // critical: used by [formGroupName]
+                this.addBatch(batchNode);   // pushes the control in the same order
+                idx++;
             }
         }
 
@@ -133,9 +141,15 @@ export class WorkerChecksStepComponent implements OnInit {
     }
 
     /* Ingest possibly multiple IDs from a raw string (paste/blur/typed) */
-    private ingestIdsFromString(raw: string, target: "blacklist" | "whitelist"): number {
+    private ingestIdsFromString(
+        raw: string,
+        target: "blacklist" | "whitelist"
+    ): number {
         if (!raw) return 0;
-        const parts = raw.split(/[,\s;]+/).map((x) => this.normalizeId(x)).filter(Boolean);
+        const parts = raw
+            .split(/[,\s;]+/)
+            .map((x) => this.normalizeId(x))
+            .filter(Boolean);
         let added = 0;
         for (const id of parts) {
             if (!this.isValidId(id)) continue; /* skip invalids */
@@ -198,15 +212,21 @@ export class WorkerChecksStepComponent implements OnInit {
     addBatch(batchNode: any) {
         const initialBlacklist = !!batchNode?.["blacklist"];
         const initialWhitelist = !!batchNode?.["whitelist"];
-        const initialMode: BatchMode =
-            initialBlacklist ? "blacklist" : initialWhitelist ? "whitelist" : "none";
+        const initialMode: BatchMode = initialBlacklist
+            ? "blacklist"
+            : initialWhitelist
+                ? "whitelist"
+                : "none";
 
         const control = this._formBuilder.group({
             name: batchNode?.["batch"] ?? "",
-            counter: batchNode?.["counter"] ?? "",
-            blacklist: initialBlacklist,  /* legacy boolean */
-            whitelist: initialWhitelist,  /* legacy boolean */
-            mode: initialMode,            /* single-select source of truth */
+            counter:
+                typeof batchNode?.["counter"] === "number"
+                    ? batchNode["counter"]
+                    : this.batches().length, // fallback: current length
+            blacklist: initialBlacklist, /* legacy boolean */
+            whitelist: initialWhitelist, /* legacy boolean */
+            mode: initialMode, /* single-select source of truth */
         });
 
         this.batches().push(control, {emitEvent: false});
@@ -241,23 +261,27 @@ export class WorkerChecksStepComponent implements OnInit {
             });
         });
 
-        this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree));
+        this.localStorageService.setItem(
+            "batches-tree",
+            JSON.stringify(this.batchesTree)
+        );
         this.serializeConfiguration();
     }
 
     /* ----------------------------------------------------
      * JSON output serialization (with validation)
      * ---------------------------------------------------- */
-
     private serializeConfiguration() {
         /* Start from raw form value to include batch structure */
         const configurationRaw = JSON.parse(JSON.stringify(this.formStep.value));
 
         /* Sanitize chip sets: keep only valid IDs and sort for determinism */
-        const blacklistClean = Array.from(this.blacklistedWorkerId.values())
-            .filter((id) => this.isValidId(id));
-        const whitelistClean = Array.from(this.whitelistedWorkerId.values())
-            .filter((id) => this.isValidId(id));
+        const blacklistClean = Array.from(this.blacklistedWorkerId.values()).filter(
+            (id) => this.isValidId(id)
+        );
+        const whitelistClean = Array.from(this.whitelistedWorkerId.values()).filter(
+            (id) => this.isValidId(id)
+        );
         blacklistClean.sort();
         whitelistClean.sort();
 
@@ -270,8 +294,10 @@ export class WorkerChecksStepComponent implements OnInit {
 
         for (const batch of configurationRaw.batches ?? []) {
             const mode: BatchMode = (batch.mode as BatchMode) ?? "none";
-            const isBlacklist = mode === "blacklist" || (!!batch.blacklist && !batch.whitelist);
-            const isWhitelist = mode === "whitelist" || (!!batch.whitelist && !batch.blacklist);
+            const isBlacklist =
+                mode === "blacklist" || (!!batch.blacklist && !batch.whitelist);
+            const isWhitelist =
+                mode === "whitelist" || (!!batch.whitelist && !batch.blacklist);
             if (isBlacklist) blacklist_batches.push(batch.name);
             if (isWhitelist) whitelist_batches.push(batch.name);
         }
@@ -284,7 +310,10 @@ export class WorkerChecksStepComponent implements OnInit {
         configurationRaw["whitelist_batches"] = whitelist_batches;
 
         /* Persist full config (with batches) to local storage */
-        this.localStorageService.setItem(`worker-settings`, JSON.stringify(configurationRaw));
+        this.localStorageService.setItem(
+            `worker-settings`,
+            JSON.stringify(configurationRaw)
+        );
 
         /* Expose compact JSON (without batches) for preview or upstream use */
         delete configurationRaw["batches"];

@@ -1,212 +1,212 @@
 {
-	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-	"version": 1,
-	"cli": {
-		"analytics": "cd7f909b-9efe-4371-bb20-b49ab5fe8710",
-		"cache": {
-			"enabled": true,
-			"path": ".cache",
-			"environment": "all"
-		},
-		"packageManager": "yarn"
-	},
-	"newProjectRoot": "projects",
-	"projects": {
-		"Crowd_Frame": {
-			"projectType": "application",
-			"schematics": {
-				"@schematics/angular:application": {
-					"strict": true
-				},
-				"@schematics/angular:component": {
-					"style": "scss",
-					"skipTests": true
-				},
-				"@schematics/angular:class": {
-					"skipTests": true
-				},
-				"@schematics/angular:directive": {
-					"skipTests": true
-				},
-				"@schematics/angular:guard": {
-					"skipTests": true
-				},
-				"@schematics/angular:module": {
-					"skipTests": true
-				},
-				"@schematics/angular:pipe": {
-					"skipTests": true
-				},
-				"@schematics/angular:service": {
-					"skipTests": true
-				}
-			},
-			"root": "",
-			"sourceRoot": "src",
-			"prefix": "app",
-			"i18n": {
-				"sourceLocale": "en-US",
-				"locales": {
-					"it": {
-						"translation": "src/locale/messages.it.xlf"
-					}
-				}
-			},
-			"architect": {
-				"build": {
-					"builder": "@angular/build:application",
-					"options": {
-						"aot": true,
-						"allowedCommonJsDependencies": [
-							"@aws-sdk/lib-storage",
-							"@aws-sdk/util-user-agent-browser",
-							"@aws-sdk/core",
-							"@aws-sdk/endpoint-cache",
-							"@funktechno/texthighlighter/lib",
-							"bowser",
-							"fast-xml-parser",
-							"mnemonist/lru-cache"
-						],
-						"outputPath": {
-							"base": "dist/Crowd_Frame",
-							"browser": ""
-						},
-						"index": "src/index.html",
-						"polyfills": [
-							"zone.js",
-							"@angular/localize/init"
-						],
-						"tsConfig": "tsconfig.app.json",
-						"styles": [
-							"src/styles.scss"
-						],
-						"scripts": [],
-						"assets": [
-							"src/assets"
-						],
-						"extractLicenses": false,
-						"sourceMap": true,
-						"optimization": false,
-						"namedChunks": true,
-						"browser": "src/main.ts"
-					},
-					"configurations": {
-						"development": {},
-						"production": {
-							"fileReplacements": [
-								{
-									"replace": "data/build/environments/environment.ts",
-									"with": "data/build/environments/environment.prod.ts"
-								}
-							],
-							"optimization": {
-								"scripts": true,
-								"styles": {
-									"minify": true,
-									"inlineCritical": true
-								},
-								"fonts": {
-									"inline": true
-								}
-							},
-							"outputHashing": "all",
-							"sourceMap": false,
-							"namedChunks": false,
-							"extractLicenses": true,
-							"localize": [
-								"en-US"
-							],
-							"i18nMissingTranslation": "error"
-						},
-						"production-it": {
-							"fileReplacements": [
-								{
-									"replace": "data/build/environments/environment.ts",
-									"with": "data/build/environments/environment.prod.ts"
-								}
-							],
-							"optimization": {
-								"scripts": true,
-								"styles": {
-									"minify": true,
-									"inlineCritical": true
-								},
-								"fonts": {
-									"inline": true
-								}
-							},
-							"outputHashing": "all",
-							"sourceMap": false,
-							"namedChunks": false,
-							"extractLicenses": true,
-							"localize": [
-								"it"
-							],
-							"i18nMissingTranslation": "error"
-						},
-						"development-it": {
-							"localize": [
-								"it"
-							],
-							"i18nMissingTranslation": "error"
-						}
-					}
-				},
-				"serve": {
-					"builder": "@angular/build:dev-server",
-					"defaultConfiguration": "development",
-					"options": {
-						"proxyConfig": "src/proxy.conf.mjs",
-						"buildTarget": "Crowd_Frame:build"
-					},
-					"configurations": {
-						"production": {
-							"buildTarget": "Crowd_Frame:build:production"
-						},
-						"production-it": {
-							"buildTarget": "Crowd_Frame:build:production-it"
-						},
-						"development": {
-							"buildTarget": "Crowd_Frame:build:development"
-						},
-						"development-it": {
-							"buildTarget": "Crowd_Frame:build:development-it"
-						}
-					}
-				},
-				"extract-i18n": {
-					"builder": "@angular/build:extract-i18n",
-					"options": {
-						"buildTarget": "Crowd_Frame:build"
-					}
-				}
-			}
-		}
-  },
-  "schematics": {
-    "@schematics/angular:component": {
-      "type": "component"
+    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+    "version": 1,
+    "cli": {
+        "analytics": "cd7f909b-9efe-4371-bb20-b49ab5fe8710",
+        "cache": {
+            "enabled": true,
+            "path": ".cache",
+            "environment": "all"
+        },
+        "packageManager": "yarn"
     },
-    "@schematics/angular:directive": {
-      "type": "directive"
+    "newProjectRoot": "projects",
+    "projects": {
+        "Crowd_Frame": {
+            "projectType": "application",
+            "schematics": {
+                "@schematics/angular:application": {
+                    "strict": true
+                },
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "skipTests": true
+                },
+                "@schematics/angular:class": {
+                    "skipTests": true
+                },
+                "@schematics/angular:directive": {
+                    "skipTests": true
+                },
+                "@schematics/angular:guard": {
+                    "skipTests": true
+                },
+                "@schematics/angular:module": {
+                    "skipTests": true
+                },
+                "@schematics/angular:pipe": {
+                    "skipTests": true
+                },
+                "@schematics/angular:service": {
+                    "skipTests": true
+                }
+            },
+            "root": "",
+            "sourceRoot": "src",
+            "prefix": "app",
+            "i18n": {
+                "sourceLocale": "en-US",
+                "locales": {
+                    "it": {
+                        "translation": "src/locale/messages.it.xlf"
+                    }
+                }
+            },
+            "architect": {
+                "build": {
+                    "builder": "@angular/build:application",
+                    "options": {
+                        "aot": true,
+                        "allowedCommonJsDependencies": [
+                            "@aws-sdk/lib-storage",
+                            "@aws-sdk/util-user-agent-browser",
+                            "@aws-sdk/core",
+                            "@aws-sdk/endpoint-cache",
+                            "@funktechno/texthighlighter/lib",
+                            "bowser",
+                            "fast-xml-parser",
+                            "mnemonist/lru-cache"
+                        ],
+                        "outputPath": {
+                            "base": "dist/Crowd_Frame",
+                            "browser": ""
+                        },
+                        "index": "src/index.html",
+                        "polyfills": [
+                            "zone.js",
+                            "@angular/localize/init"
+                        ],
+                        "tsConfig": "tsconfig.app.json",
+                        "styles": [
+                            "src/styles.scss"
+                        ],
+                        "scripts": [],
+                        "assets": [
+                            "src/assets"
+                        ],
+                        "extractLicenses": false,
+                        "sourceMap": true,
+                        "optimization": false,
+                        "namedChunks": true,
+                        "browser": "src/main.ts"
+                    },
+                    "configurations": {
+                        "development": {},
+                        "production": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "data/build/environments/environment.ts",
+                                    "with": "data/build/environments/environment.prod.ts"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": {
+                                    "inline": true
+                                }
+                            },
+                            "outputHashing": "all",
+                            "sourceMap": false,
+                            "namedChunks": false,
+                            "extractLicenses": true,
+                            "localize": [
+                                "en-US"
+                            ],
+                            "i18nMissingTranslation": "error"
+                        },
+                        "production-it": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "data/build/environments/environment.ts",
+                                    "with": "data/build/environments/environment.prod.ts"
+                                }
+                            ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": true
+                                },
+                                "fonts": {
+                                    "inline": true
+                                }
+                            },
+                            "outputHashing": "all",
+                            "sourceMap": false,
+                            "namedChunks": false,
+                            "extractLicenses": true,
+                            "localize": [
+                                "it"
+                            ],
+                            "i18nMissingTranslation": "error"
+                        },
+                        "development-it": {
+                            "localize": [
+                                "it"
+                            ],
+                            "i18nMissingTranslation": "error"
+                        }
+                    }
+                },
+                "serve": {
+                    "builder": "@angular/build:dev-server",
+                    "defaultConfiguration": "development",
+                    "options": {
+                        "proxyConfig": "src/proxy.conf.mjs",
+                        "buildTarget": "Crowd_Frame:build"
+                    },
+                    "configurations": {
+                        "production": {
+                            "buildTarget": "Crowd_Frame:build:production"
+                        },
+                        "production-it": {
+                            "buildTarget": "Crowd_Frame:build:production-it"
+                        },
+                        "development": {
+                            "buildTarget": "Crowd_Frame:build:development"
+                        },
+                        "development-it": {
+                            "buildTarget": "Crowd_Frame:build:development-it"
+                        }
+                    }
+                },
+                "extract-i18n": {
+                    "builder": "@angular/build:extract-i18n",
+                    "options": {
+                        "buildTarget": "Crowd_Frame:build"
+                    }
+                }
+            }
+        }
     },
-    "@schematics/angular:service": {
-      "type": "service"
-    },
-    "@schematics/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:module": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:resolver": {
-      "typeSeparator": "."
+    "schematics": {
+        "@schematics/angular:component": {
+            "type": "component"
+        },
+        "@schematics/angular:directive": {
+            "type": "directive"
+        },
+        "@schematics/angular:service": {
+            "type": "service"
+        },
+        "@schematics/angular:guard": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+            "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+            "typeSeparator": "."
+        }
     }
-  }
 }

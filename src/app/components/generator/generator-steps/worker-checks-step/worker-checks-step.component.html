@@ -8,7 +8,6 @@
         <mat-divider></mat-divider>
 
         <mat-card-content>
-
             <!-- Global enable/disable -->
             <mat-slide-toggle color="primary" class="mb-16px" formControlName="block">
                 <span i18n>Enable Worker Blacklist</span>
@@ -35,7 +34,9 @@
                         [matChipInputAddOnBlur]="true"
                         (matChipInputTokenEnd)="addBlacklistedId($event)">
                 </mat-chip-grid>
-                <mat-hint align="start"><span i18n>Use SPACE, comma, or Enter. Allowed: letters, numbers, “-”, “_”.</span></mat-hint>
+                <mat-hint align="start">
+                    <span i18n>Use SPACE, comma, or Enter. Allowed: letters, numbers, “-”, “_”.</span>
+                </mat-hint>
             </mat-form-field>
 
             <mat-divider [inset]="true"></mat-divider>
@@ -57,7 +58,9 @@
                         [matChipInputAddOnBlur]="true"
                         (matChipInputTokenEnd)="addWhitelistedId($event)">
                 </mat-chip-grid>
-                <mat-hint align="start"><span i18n>Use SPACE, comma, or Enter. Allowed: letters, numbers, “-”, “_”.</span></mat-hint>
+                <mat-hint align="start">
+                    <span i18n>Use SPACE, comma, or Enter. Allowed: letters, numbers, “-”, “_”.</span>
+                </mat-hint>
             </mat-form-field>
 
             <mat-divider [inset]="true"></mat-divider>
@@ -81,7 +84,8 @@
                                         <mat-panel-description></mat-panel-description>
                                     </mat-expansion-panel-header>
 
-                                    @for (batch of taskNode['batches']; track batch; let batchIndex = $index) {
+                                    @for (batch of taskNode['batches']; track batch) {
+                                        <!-- 'counter' is a valid index set in TS -->
                                         <div [formGroupName]="batch['counter']" class="mb-16px">
                                             <mat-label class="block mb-8px">{{ batch['batch'] }}</mat-label>
 
@@ -96,14 +100,12 @@
                                             </mat-chip-listbox>
                                         </div>
                                     }
-
                                 </mat-expansion-panel>
                             </mat-accordion>
                         </div>
                     }
                 }
             </div>
-
         </mat-card-content>
 
         <mat-divider></mat-divider>
@@ -112,6 +114,5 @@
             <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
             <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
         </mat-card-actions>
-
     </mat-card>
 </form>

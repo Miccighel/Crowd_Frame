@@ -66,7 +66,6 @@ export class TaskSettingsStepComponent implements OnInit {
 
     batchesTree: Array<JSON>;
     batchesTreeInitialization: boolean;
-    batchesTreeSerialized: Array<JSON>;
     annotatorOptionColors: Array<string>;
     /* Variables to handle hits file upload */
     hitsFile: ReadFile;

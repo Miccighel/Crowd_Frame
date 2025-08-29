@@ -1,160 +1,247 @@
 <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-  <mat-card-header>
-    <mat-card-title><span i18n>Step #8: Summary</span></mat-card-title>
-    <mat-card-subtitle><span i18n>Finally, check your results here</span></mat-card-subtitle>
-  </mat-card-header>
-  <mat-divider></mat-divider>
-  <mat-card-content>
+    <mat-card-header>
+        <mat-card-title><span i18n>Step #8: Summary</span></mat-card-title>
+        <mat-card-subtitle><span i18n>Finally, check your results here</span></mat-card-subtitle>
+    </mat-card-header>
 
-    <h4 class="mb-0"><span i18n>Step #1 - Questionnaires</span>:</h4>
-    <p><code>{{ this.questionnaireStep.configurationSerialized }}</code></p>
+    <mat-divider></mat-divider>
 
-    <mat-divider [inset]="true"></mat-divider>
+    <mat-card-content>
 
-    <h4 class="mb-0"><span i18n>Step #2 - Dimensions</span>:</h4>
-    <p><code>{{ this.dimensionsStep.configurationSerialized }}</code></p>
+        <!-- Toggle short JSON previews -->
+        <div class="mb-8">
+            <mat-slide-toggle
+                color="primary"
+                [checked]="showRawPreviews"
+                (change)="togglePreviews($event.checked)">
+                <span i18n>Show JSON previews</span>
+            </mat-slide-toggle>
+        </div>
 
-    <mat-divider [inset]="true"></mat-divider>
+        <!-- Helper for one preview block -->
+        @if (showRawPreviews) {
+            <ng-container>
 
-    <h4 class="mb-0"><span i18n>Step #3 - General Instructions</span>:</h4>
-    <p><code>{{ this.generalInstructionsStep.configurationSerialized }}</code></p>
+                <h4 class="mb-0"><span i18n>Step #1 - Questionnaires</span>:</h4>
+                <pre><code>{{ previews.questionnaires.expanded ? previews.questionnaires.full : previews.questionnaires.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('questionnaires')">
+                        <span i18n>{{ previews.questionnaires.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.questionnaires.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-divider [inset]="true"></mat-divider>
+                <mat-divider [inset]="true"></mat-divider>
 
-    <h4 class="mb-0"><span i18n>Step #4 - Evaluation Instructions</span>:</h4>
-    <p><code>{{ this.evaluationInstructionsStep.configurationSerialized }}</code></p>
+                <h4 class="mb-0"><span i18n>Step #2 - Dimensions</span>:</h4>
+                <pre><code>{{ previews.dimensions.expanded ? previews.dimensions.full : previews.dimensions.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('dimensions')">
+                        <span i18n>{{ previews.dimensions.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.dimensions.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-divider [inset]="true"></mat-divider>
+                <mat-divider [inset]="true"></mat-divider>
 
-    <h4 class="mb-0"><span i18n>Step #5 - Search Engine</span>:</h4>
-    <p><code>{{ this.searchEngineStep.configurationSerialized }}</code></p>
+                <h4 class="mb-0"><span i18n>Step #3 - General Instructions</span>:</h4>
+                <pre><code>{{ previews.general.expanded ? previews.general.full : previews.general.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('general')">
+                        <span i18n>{{ previews.general.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.general.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-divider [inset]="true"></mat-divider>
+                <mat-divider [inset]="true"></mat-divider>
 
-    <h4 class="mb-0"><span i18n>Step #6 - Task Settings</span>:</h4>
-    <p><code>{{ this.taskSettingsStep.configurationSerialized }}</code></p>
+                <h4 class="mb-0"><span i18n>Step #4 - Evaluation Instructions</span>:</h4>
+                <pre><code>{{ previews.evaluation.expanded ? previews.evaluation.full : previews.evaluation.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('evaluation')">
+                        <span i18n>{{ previews.evaluation.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.evaluation.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-divider [inset]="true"></mat-divider>
+                <mat-divider [inset]="true"></mat-divider>
 
-    <h4 class="mb-0"><span i18n>Step #7 - Worker Checks</span>:</h4>
-    <p><code>{{ this.workerChecksStep.configurationSerialized }}</code></p>
+                <h4 class="mb-0"><span i18n>Step #5 - Search Engine</span>:</h4>
+                <pre><code>{{ previews.search.expanded ? previews.search.full : previews.search.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('search')">
+                        <span i18n>{{ previews.search.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.search.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-divider [inset]="true"></mat-divider>
-    <h4 class="mb-0"><span i18n>Hits Overview</span>:</h4>
-    <p><code>{{ this.taskSettingsStep.hitsParsedString }}</code></p>
+                <mat-divider [inset]="true"></mat-divider>
 
-    <mat-divider [inset]="true"></mat-divider>
-    <h4 class="mb-0"><span i18n>Validity Check</span>:</h4>
+                <h4 class="mb-0"><span i18n>Step #6 - Task Settings</span>:</h4>
+                <pre><code>{{ previews.task.expanded ? previews.task.full : previews.task.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('task')">
+                        <span i18n>{{ previews.task.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.task.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-    <mat-list>
-      @if (this.questionnaireStep.formStep.valid) {
-        <mat-list-item class="step-valid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      }
-      @if (!this.questionnaireStep.formStep.valid) {
-        <mat-list-item class="step-invalid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-      }
-      @if (this.dimensionsStep.formStep.valid) {
-        <mat-list-item class="step-valid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      }
-      @if (!this.dimensionsStep.formStep.valid) {
-        <mat-list-item class="step-invalid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-      }
-      @if (this.generalInstructionsStep.formStep.valid) {
-        <mat-list-item class="step-valid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      }
-      @if (!this.generalInstructionsStep.formStep.valid) {
-        <mat-list-item class="step-invalid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-      }
-      @if (this.evaluationInstructionsStep.formStep.valid) {
-        <mat-list-item class="step-valid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      }
-      @if (!this.evaluationInstructionsStep.formStep.valid) {
-        <mat-list-item class="step-invalid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-      }
-      @if (this.searchEngineStep.formStep.valid) {
-        <mat-list-item class="step-valid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      }
-      @if (!this.searchEngineStep.formStep.valid) {
-        <mat-list-item class="step-invalid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span>
-      </mat-list-item>
-    }
-    @if (this.taskSettingsStep.formStep.valid && this.taskSettingsStep.hitsDetected>0) {
-      <div>
-        <mat-list-item class="step-valid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-      </div>
-    } @else {
-      <mat-list-item class="step-invalid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-    }
-    @if (this.workerChecksStep.formStep.valid) {
-      <mat-list-item class="step-valid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-    }
-    @if (!this.workerChecksStep.formStep.valid) {
-      <mat-list-item class="step-invalid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span>
-    </mat-list-item>
-  }
-</mat-list>
+                <mat-divider [inset]="true"></mat-divider>
 
-<h4 class="mb-0"><span i18n>Upload Path</span>:</h4>
-<p><code [innerHTML]="fullS3Path"></code></p>
+                <h4 class="mb-0"><span i18n>Step #7 - Worker Checks</span>:</h4>
+                <pre><code>{{ previews.workers.expanded ? previews.workers.full : previews.workers.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('workers')">
+                        <span i18n>{{ previews.workers.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.workers.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
 
-@if (this.uploadStarted && !this.uploadCompleted) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-}
+                <mat-divider [inset]="true"></mat-divider>
 
-@if (this.uploadCompleted) {
-  <mat-divider [inset]="true"></mat-divider>
-  <h4 class="mb-0"><span i18n>Upload Result</span>:</h4>
-  <mat-list>
-    @if (this.questionnairesPath) {
-      <mat-list-item class="step-valid">
-        <span><span i18n>Step #1 - Questionnaires</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.questionnairesPath}}</code></span></mat-list-item>
-      }
-      @if (this.dimensionsPath) {
-        <mat-list-item class="step-valid">
-          <span><span i18n>Step #2 - Dimensions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.dimensionsPath}}</code></span></mat-list-item>
+                <h4 class="mb-0"><span i18n>Hits Overview</span>:</h4>
+                <pre><code>{{ previews.hits.expanded ? previews.hits.full : previews.hits.short }}</code></pre>
+                <div class="mb-12">
+                    <button mat-button (click)="toggleExpand('hits')">
+                        <span i18n>{{ previews.hits.expanded ? 'Show less' : 'Show more' }}</span>
+                    </button>
+                    <button mat-button (click)="copyFull(previews.hits.full)">
+                        <span i18n>Copy full</span>
+                    </button>
+                </div>
+
+                <mat-divider [inset]="true"></mat-divider>
+            </ng-container>
         }
-        @if (this.taskInstructionsPath) {
-          <mat-list-item class="step-valid">
-            <span><span i18n>Step #3 - General Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-          }
-          @if (this.dimensionsInstructionsPath) {
-            <mat-list-item class="step-valid">
-              <span><span i18n>Step #4 - Evaluation Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.dimensionsInstructionsPath}}</code></span>
-            </mat-list-item>
-          }
-          @if (this.searchEngineSettingsPath) {
-            <mat-list-item class="step-valid">
-              <span><span i18n>Step #5 - Search Engine</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
+
+        <h4 class="mb-0"><span i18n>Validity Check</span>:</h4>
+        <mat-list>
+            @if (questionnairesValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
             }
-            @if (this.taskSettingsPath) {
-              <mat-list-item class="step-valid">
-                <span><span i18n>Step #6 - Task Settings</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
-              }
-              @if (this.workerChecksPath) {
-                <mat-list-item class="step-valid">
-                  <span><span i18n>Step #7 - Worker Checks</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.workerChecksPath}}</code></span></mat-list-item>
+
+            @if (dimensionsValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+
+            @if (generalInstrValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+
+            @if (evalInstrValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+
+            @if (searchValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+
+            @if (taskSettingsValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+
+            @if (workerChecksValid) {
+                <mat-list-item class="step-valid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+            } @else {
+                <mat-list-item class="step-invalid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+            }
+        </mat-list>
+
+        <h4 class="mb-0"><span i18n>Upload Path</span>:</h4>
+        <p><code [innerHTML]="fullS3Path"></code></p>
+
+        @if (uploadStarted && !uploadCompleted) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        @if (uploadCompleted) {
+            <mat-divider [inset]="true"></mat-divider>
+            <h4 class="mb-0"><span i18n>Upload Result</span>:</h4>
+            <mat-list>
+                @if (questionnairesPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #1 - Questionnaires</span>: <span i18n>configuration uploaded at path:</span> <code>{{ questionnairesPath }}</code></span>
+                    </mat-list-item>
                 }
-              </mat-list>
-            }
+                @if (dimensionsPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #2 - Dimensions</span>: <span i18n>configuration uploaded at path:</span> <code>{{ dimensionsPath }}</code></span>
+                    </mat-list-item>
+                }
+                @if (taskInstructionsPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #3 - General Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{ taskInstructionsPath }}</code></span>
+                    </mat-list-item>
+                }
+                @if (dimensionsInstructionsPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #4 - Evaluation Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{ dimensionsInstructionsPath }}</code></span>
+                    </mat-list-item>
+                }
+                @if (searchEngineSettingsPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #5 - Search Engine</span>: <span i18n>configuration uploaded at path:</span> <code>{{ searchEngineSettingsPath }}</code></span>
+                    </mat-list-item>
+                }
+                @if (taskSettingsPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #6 - Task Settings</span>: <span i18n>configuration uploaded at path:</span> <code>{{ taskSettingsPath }}</code></span>
+                    </mat-list-item>
+                }
+                @if (workerChecksPath) {
+                    <mat-list-item class="step-valid">
+                        <span><span i18n>Step #7 - Worker Checks</span>: <span i18n>configuration uploaded at path:</span> <code>{{ workerChecksPath }}</code></span>
+                    </mat-list-item>
+                }
+            </mat-list>
+        }
+    </mat-card-content>
 
-          </mat-card-content>
+    <mat-divider></mat-divider>
 
-          <mat-divider></mat-divider>
+    <mat-card-actions>
+        <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
 
-          <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
-            @if (!this.uploadCompleted) {
-<button mat-flat-button color="accent" [disabled]="
-                !(this.questionnaireStep.formStep.valid && this.dimensionsStep.formStep.valid && this.generalInstructionsStep.formStep.valid && this.evaluationInstructionsStep.formStep.valid &&
-                this.searchEngineStep.formStep.valid && (this.taskSettingsStep.formStep.valid && this.taskSettingsStep.hitsDetected>0) && this.workerChecksStep.formStep.valid)" (click)="uploadConfiguration()">
+        @if (!uploadCompleted) {
+            <button
+                mat-flat-button
+                color="accent"
+                [disabled]="!(questionnairesValid && dimensionsValid && generalInstrValid && evalInstrValid && searchValid && taskSettingsValid && workerChecksValid)"
+                (click)="uploadConfiguration()">
                 <span i18n>Upload</span>
-        </button>
-}
-        @if (this.uploadCompleted) {
-<button mat-flat-button color="warn" (click)="resetConfiguration()">
-            <span i18n>Start Over</span>
-        </button>
-}
-    </mat-card-actions>
+            </button>
+        }
 
+        @if (uploadCompleted) {
+            <button mat-flat-button color="warn" (click)="resetConfiguration()">
+                <span i18n>Start Over</span>
+            </button>
+        }
+    </mat-card-actions>
 </mat-card>
