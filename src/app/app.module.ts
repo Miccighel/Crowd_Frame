@@ -73,6 +73,7 @@ import {FilterPipe} from './pipes/filter.pipe';
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 import {ColorPickerDirective} from "ngx-color-picker";
+import {QuestionItemComponent} from "./components/generator/generator-steps/questionnaire-step/question-item.component";
 
 /* Initializer function to preload configurations */
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
@@ -104,6 +105,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         QuestionnaireComponent,
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,
+        QuestionItemComponent,
         InstructionsGeneralStep,
         InstructionListComponent,
         SearchEngineStepComponent,

@@ -1,0 +1,191 @@
+<!-- Recursive Question Editor with inline mat-error messages -->
+
+<div class="width-100"
+     [style.marginLeft.px]="indentLevel * 16"
+     [formGroup]="questionGroup">
+
+    <!-- Row 1: Name | Type | Remove -->
+    <div class="qi-row">
+        <mat-form-field appearance="fill" class="qi-field--name">
+            <mat-label><span i18n>Name</span></mat-label>
+            <input matInput type="text" formControlName="name"/>
+            <mat-error>
+                @if (questionGroup.get('name')?.errors?.['required'] && questionGroup.get('name')?.touched) {
+                    <span i18n>Name is required.</span>
+                }
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="qi-field--type">
+            <mat-label><span i18n>Type</span></mat-label>
+            <mat-select formControlName="type" (selectionChange)="onQuestionTypeChange()">
+                <mat-option value="text">Text</mat-option>
+                <mat-option value="number">Number</mat-option>
+                <mat-option value="email">Email</mat-option>
+                <mat-option value="mcq">MCQ (single)</mat-option>
+                <mat-option value="list">List (multi)</mat-option>
+                <mat-option value="section">Section</mat-option>
+            </mat-select>
+            <mat-error>
+                @if (questionGroup.get('type')?.errors?.['required'] && questionGroup.get('type')?.touched) {
+                    <span i18n>Type is required.</span>
+                }
+            </mat-error>
+        </mat-form-field>
+
+        <div class="qi-actions">
+            <button mat-flat-button color="primary" (click)="removeThisQuestion()">
+                <span i18n>Remove Question</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Row 2: Text | Required -->
+    <div class="qi-row">
+        <mat-form-field appearance="fill" class="qi-field--text">
+            <mat-label><span i18n>Text</span></mat-label>
+            <input matInput type="text" formControlName="text"/>
+            <mat-error>
+                @if (questionGroup.get('text')?.errors?.['required'] && questionGroup.get('text')?.touched) {
+                    <span i18n>Text is required.</span>
+                }
+            </mat-error>
+        </mat-form-field>
+
+        <div class="qi-toggle">
+            <mat-slide-toggle color="primary" formControlName="required">
+                <span i18n>Required</span>
+            </mat-slide-toggle>
+        </div>
+    </div>
+
+    <!-- Row 3: Optional flags -->
+    <div class="qi-row qi-row--center indent">
+        <div class="qi-toggle">
+            <mat-slide-toggle color="primary" formControlName="show_detail">
+                <span i18n>Show Detail</span>
+            </mat-slide-toggle>
+        </div>
+
+        <div class="qi-toggle">
+            <mat-slide-toggle color="primary" formControlName="free_text">
+                <span i18n>Allow Free Text</span>
+            </mat-slide-toggle>
+        </div>
+    </div>
+
+    <!-- Answers (mcq/list only) -->
+    @if (questionType() === 'mcq' || questionType() === 'list') {
+        <div class="qi-answers" formArrayName="answers">
+            <button mat-flat-button color="primary" class="indent" (click)="addAnswerRow()">
+                <span i18n>Add Answer</span>
+            </button>
+
+            @for (answerGroup of answersArray().controls; track answerGroup; let answerIndex = $index) {
+                <div [formGroupName]="answerIndex" class="qi-answers__row indent">
+                    <mat-form-field appearance="fill" class="qi-answers__field">
+                        <mat-label><span i18n>Answer</span></mat-label>
+                        <input matInput type="text" formControlName="answer"/>
+                        @let ansCtrl = answersArray().at(answerIndex).get('answer');
+                        <mat-error>
+                            @if (ansCtrl?.errors?.['required'] && ansCtrl?.touched) {
+                                <span i18n>Answer text is required.</span>
+                            }
+                        </mat-error>
+                    </mat-form-field>
+
+                    <div class="qi-actions">
+                        <button
+                            mat-flat-button
+                            color="primary"
+                            [disabled]="answerIndex === 0 && answersArray().length === 1"
+                            (click)="removeAnswerRow(answerIndex)">
+                            <span i18n>Remove Answer</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Branching / Repeat -->
+    <div class="qi-row indent">
+        <div class="qi-toggle">
+            <mat-slide-toggle color="primary" formControlName="repeat">
+                <span i18n>Repeat this question</span>
+            </mat-slide-toggle>
+        </div>
+
+        @if (questionGroup.get('repeat')?.value) {
+            <mat-form-field appearance="fill" class="qi-field--times">
+                <mat-label><span i18n>Times</span></mat-label>
+                <input matInput type="number" formControlName="times"/>
+                <mat-error>
+                    @if (questionGroup.get('times')?.errors?.['required'] && questionGroup.get('times')?.touched) {
+                        <span i18n>Times is required when repeat is enabled.</span>
+                    }
+                    @if (questionGroup.get('times')?.errors?.['min'] && questionGroup.get('times')?.touched) {
+                        <span i18n>Times must be at least 1.</span>
+                    }
+                </mat-error>
+            </mat-form-field>
+        }
+
+        <!-- Target pick-list (upstream questions only) -->
+        <mat-form-field appearance="fill" class="qi-field--target">
+            <mat-label><span i18n>Target (upstream question)</span></mat-label>
+            <mat-select formControlName="target">
+                @for (opt of targetOptions; track opt) {
+                    <mat-option [value]="opt.name">
+                        {{ opt.label }}
+                    </mat-option>
+                }
+            </mat-select>
+            <mat-error>
+                @if (questionGroup.get('target')?.errors?.['required'] && questionGroup.get('target')?.touched) {
+                    <span i18n>Target is required when dependency is enabled.</span>
+                }
+            </mat-error>
+        </mat-form-field>
+
+        <div class="qi-toggle">
+            <mat-slide-toggle color="primary" formControlName="dependant">
+                <span i18n>Dependant on Target's Value</span>
+            </mat-slide-toggle>
+        </div>
+
+        @if (questionGroup.get('dependant')?.value) {
+            <mat-form-field appearance="fill" class="qi-field--needed">
+                <mat-label><span i18n>Needed Value</span></mat-label>
+                <input matInput type="text" formControlName="needed"/>
+                <mat-error>
+                    @if (questionGroup.get('needed')?.errors?.['required'] && questionGroup.get('needed')?.touched) {
+                        <span i18n>Needed value is required when dependency is enabled.</span>
+                    }
+                </mat-error>
+            </mat-form-field>
+        }
+    </div>
+
+    <!-- Children (section only) -->
+    @if (questionType() === 'section') {
+        <div class="qi-children" formArrayName="questions">
+            <mat-divider [inset]="true"></mat-divider>
+
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addChildQuestion()">
+                <span i18n>Add Sub-Question</span>
+            </button>
+
+            @for (childGroup of childQuestionsArray().controls; track childGroup; let childIndex = $index) {
+                <app-question-item
+                    [questionGroup]="$any(childGroup)"
+                    [parentQuestionsArray]="childQuestionsArray()"
+                    [parentIndex]="childIndex"
+                    [rootQuestionsArray]="rootQuestionsArray"
+                    [indentLevel]="indentLevel + 1"
+                    [path]="path ? path.concat([childIndex]) : [childIndex]">
+                </app-question-item>
+            }
+        </div>
+    }
+</div>

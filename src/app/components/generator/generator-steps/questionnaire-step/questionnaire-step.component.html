@@ -1,6 +1,6 @@
-<form [formGroup]="formStep">
+<!-- Questionnaire Step – meta field errors + validation summary + target wiring -->
 
-    <!-- Header -->
+<form [formGroup]="formStep">
     <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
         <mat-card-header>
             <mat-card-title><span i18n>Step #1: Questionnaires</span></mat-card-title>
@@ -10,171 +10,175 @@
         <mat-divider></mat-divider>
 
         <mat-card-content>
-
             <div formArrayName="questionnaires">
-
-                @for (questionnaire of questionnaires().controls; track questionnaire; let questionnaireIndex = $index) {
+                @for (questionnaireGroup of questionnairesArray().controls; track questionnaireGroup; let questionnaireIndex = $index) {
                     <div [formGroupName]="questionnaireIndex">
                         <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
                             <mat-card-header>
-                                <mat-card-title class="lighter"><span i18n>Questionnaire</span> {{ questionnaireIndex + 1 }}</mat-card-title>
+                                <mat-card-title class="lighter">
+                                    <span i18n>Questionnaire</span> {{ questionnaireIndex + 1 }}
+                                </mat-card-title>
                             </mat-card-header>
+
                             <mat-divider></mat-divider>
+
                             <mat-card-content>
-                                <!-- Type -->
-                                <table class="width-100 mt-8px">
-                                    <tr>
-                                        <td class="p-0">
-                                            <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label><span i18n>Type</span></mat-label>
-                                                <mat-select matInput formControlName="type" (selectionChange)="updateQuestionnaire(questionnaireIndex)">
-                                                    @for (questionnaireType of questionnaireTypes; track questionnaireType) {
-                                                        <mat-option [value]="questionnaireType.value">
-                                                            {{ questionnaireType.viewValue }}
-                                                        </mat-option>
-                                                    }
-                                                </mat-select>
-                                                <app-error-message [formField]="questionnaire.get('type')"></app-error-message>
-                                            </mat-form-field>
-                                        </td>
-                                    </tr>
-                                </table>
-                                <!-- Description -->
-                                <div>
-                                    <mat-divider [inset]="true"></mat-divider>
-                                    <table class="width-100 mt-16px">
-                                        <tr>
-                                            <td class="p-0">
-                                                <mat-form-field class="width-100" appearance="fill">
-                                                    <mat-label><span i18n>Description</span></mat-label>
-                                                    <textarea matInput formControlName="description"></textarea>
-                                                </mat-form-field>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                <!-- Position -->
-                                <mat-divider [inset]="true"></mat-divider>
-                                <table class="width-100 mt-16px">
-                                    <tr>
-                                        <td class="p-0">
-                                            <mat-form-field class="width-100" appearance="fill">
-                                                <mat-label><span i18n>Position</span></mat-label>
-                                                <mat-select matInput formControlName="position">
-                                                    @for (questionnairePosition of questionnairePosition; track questionnairePosition) {
-                                                        <mat-option [value]="questionnairePosition.value">
-                                                            {{ questionnairePosition.viewValue }}
-                                                        </mat-option>
-                                                    }
-                                                </mat-select>
-                                                <app-error-message [formField]="questionnaire.get('position')"></app-error-message>
-                                            </mat-form-field>
-                                        </td>
-                                    </tr>
-                                </table>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <!-- Allow Back -->
-                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="allow_back">
-                                    <span i18n>Allow Back</span>
-                                </mat-slide-toggle>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <!-- Questions -->
-                                @if (questionnaire.get('type').value != '') {
-                                    <div formArrayName="questions">
-                                        <mat-divider [inset]="true"></mat-divider>
-                                        <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addQuestion(questionnaireIndex)">
-                                            <span i18n>Add Question</span>
-                                        </button>
-                                        @for (question of questions(questionnaireIndex).controls; track question; let questionIndex = $index) {
-                                            <div [formGroupName]="questionIndex">
-                                                <table class="width-100">
-                                                    <tr>
-                                                        <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" appearance="fill">
-                                                                <mat-label><span i18n>Name</span></mat-label>
-                                                                <input matInput type="text" formControlName="name">
-                                                                <app-error-message [formField]="question.get('name')"></app-error-message>
-                                                            </mat-form-field>
-                                                        </td>
-                                                        <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" appearance="fill">
-                                                                <mat-label><span i18n>Text</span></mat-label>
-                                                                <input matInput type="text" formControlName="text">
-                                                                <app-error-message [formField]="question.get('text')"></app-error-message>
-                                                            </mat-form-field>
-                                                        </td>
-                                                        <td class="p-0 center">
-                                                            <button mat-flat-button color="primary" class="mb-16px"
-                                                                    [disabled]="questionIndex === 0 && questions(questionnaireIndex).length == 1"
-                                                                    (click)="removeQuestion(questionnaireIndex, questionIndex)">
-                                                                <span i18n>Remove Question</span>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                                @if (questionnaire.get('type').value == 'standard') {
-                                                    <div class="mb-16px" formArrayName="answers">
-                                                        <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
-                                                            <span i18n>Add Answer</span>
-                                                        </button>
-                                                        @for (answer of answers(questionnaireIndex, questionIndex).controls; track answer; let answerIndex = $index) {
-                                                            <div
-                                                                [formGroupName]="answerIndex">
-                                                                <table class="width-100 indent">
-                                                                    <tr>
-                                                                        <td class="p-0 pr-16px">
-                                                                            <mat-form-field matLine class="width-100" appearance="fill">
-                                                                                <mat-label><span i18n>Answer</span></mat-label>
-                                                                                <input matInput type="text" formControlName="answer">
-                                                                                <app-error-message [formField]="answer.get('answer')"></app-error-message>
-                                                                            </mat-form-field>
-                                                                        </td>
-                                                                        <td class="p-0 center">
-                                                                            <button mat-flat-button color="primary" class="mb-16px"
-                                                                                    [disabled]="answerIndex === 0 && answers(questionnaireIndex, questionIndex).length == 1"
-                                                                                    (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
-                                                                                <span i18n>Remove Answer</span>
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                </table>
-                                                            </div>
-                                                        }
-                                                    </div>
-                                                }
-                                            </div>
+                                @let e = getQuestionnaireErrors(questionnaireIndex);
+                                @if (hasQuestionnaireErrors(questionnaireIndex)) {
+                                    <div class="qs-validation">
+                                        <mat-icon aria-hidden="true">error_outline</mat-icon>
+
+                                        @if (e['duplicateNames']) {
+                                            <span>Duplicate names: {{ e['duplicateNames'].join(', ') }}</span>
+                                        }
+                                        @if (e['insufficientAnswers']) {
+                                            <span>MCQ/List need ≥2 answers: {{ e['insufficientAnswers'].join(', ') }}</span>
+                                        }
+                                        @if (e['emptySections']) {
+                                            <span>Empty sections: {{ e['emptySections'].join(', ') }}</span>
+                                        }
+                                        @if (e['invalidRepeaters']) {
+                                            <span>Repeaters need times ≥1: {{ e['invalidRepeaters'].join(', ') }}</span>
+                                        }
+                                        @if (e['invalidDependencies']) {
+                                            <span>Dependencies: {{ e['invalidDependencies'].length }} issue(s)</span>
+                                        }
+                                        @if (e['likertMapping'] || e['likertMappingUnique']) {
+                                            <span>Likert mapping needs unique labels/values (≥2)</span>
                                         }
                                     </div>
                                 }
-                                <!-- Mapping -->
-                                @if (questionnaire.get('type').value == 'likert') {
-                                    <div formArrayName="mapping">
-                                        <mat-divider [inset]="true"></mat-divider>
-                                        <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMapping(questionnaireIndex)">
+
+                                <!-- Meta fields arranged by CSS Grid -->
+                                <div class="qs-meta-grid">
+                                    <!-- Type -->
+                                    <div>
+                                        <mat-form-field appearance="fill">
+                                            <mat-label><span i18n>Type</span></mat-label>
+                                            <mat-select formControlName="type" (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                                                @for (typeOption of questionnaireTypes; track typeOption) {
+                                                    <mat-option [value]="typeOption.value">
+                                                        {{ typeOption.viewValue }}
+                                                    </mat-option>
+                                                }
+                                            </mat-select>
+
+                                            <mat-error>
+                                                @if (questionnairesArray().at(questionnaireIndex).get('type')?.errors?.['required']
+                                                && questionnairesArray().at(questionnaireIndex).get('type')?.touched) {
+                                                    <span i18n>Type is required.</span>
+                                                }
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <!-- Position -->
+                                    <div>
+                                        <mat-form-field appearance="fill">
+                                            <mat-label><span i18n>Position</span></mat-label>
+                                            <mat-select formControlName="position">
+                                                @for (positionOption of questionnairePosition; track positionOption) {
+                                                    <mat-option [value]="positionOption.value">
+                                                        {{ positionOption.viewValue }}
+                                                    </mat-option>
+                                                }
+                                            </mat-select>
+
+                                            <mat-error>
+                                                @if (questionnairesArray().at(questionnaireIndex).get('position')?.errors?.['required']
+                                                && questionnairesArray().at(questionnaireIndex).get('position')?.touched) {
+                                                    <span i18n>Position is required.</span>
+                                                }
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <!-- Description (full width, optional) -->
+                                    <div class="full-span">
+                                        <mat-form-field appearance="fill">
+                                            <mat-label><span i18n>Description</span></mat-label>
+                                            <textarea matInput formControlName="description"></textarea>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <!-- Allow Back -->
+                                    <div>
+                                        <mat-slide-toggle color="primary" formControlName="allow_back">
+                                            <span i18n>Allow Back</span>
+                                        </mat-slide-toggle>
+                                    </div>
+                                </div>
+
+                                <!-- Questions (recursive editor) -->
+                                @if (questionnairesArray().at(questionnaireIndex).get('type')?.value !== '') {
+                                    <div class="qs-section" formArrayName="questions">
+                                        <button
+                                            mat-flat-button
+                                            color="primary"
+                                            class="indent"
+                                            (click)="addQuestion(questionnaireIndex)">
+                                            <span i18n>Add Question</span>
+                                        </button>
+
+                                        @for (questionGroup of questionArrayAt(questionnaireIndex).controls; track questionGroup; let questionIndex = $index) {
+                                            <app-question-item
+                                                [questionGroup]="$any(questionGroup)"
+                                                [parentQuestionsArray]="questionArrayAt(questionnaireIndex)"
+                                                [parentIndex]="questionIndex"
+                                                [rootQuestionsArray]="questionArrayAt(questionnaireIndex)"
+                                                [indentLevel]="0"
+                                                [path]="[questionIndex]">
+                                            </app-question-item>
+                                        }
+                                    </div>
+                                }
+
+                                <!-- Mapping (Likert only) -->
+                                @if (questionnairesArray().at(questionnaireIndex).get('type')?.value === 'likert') {
+                                    <div class="qs-section" formArrayName="mapping">
+                                        <button
+                                            mat-flat-button
+                                            color="primary"
+                                            class="indent"
+                                            (click)="addMapping(questionnaireIndex)">
                                             <span i18n>Add Mapping</span>
                                         </button>
-                                        @for (map of mapping(questionnaireIndex).controls; track map; let mappingIndex = $index) {
+
+                                        @for (mappingGroup of mappingArrayAt(questionnaireIndex).controls; track mappingGroup; let mappingIndex = $index) {
                                             <div [formGroupName]="mappingIndex">
                                                 <table class="width-100">
                                                     <tr>
                                                         <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-form-field appearance="fill" class="width-100">
                                                                 <mat-label><span i18n>Label</span></mat-label>
-                                                                <input matInput type="text" formControlName="label">
-                                                                <app-error-message [formField]="map.get('label')"></app-error-message>
+                                                                <input matInput type="text" formControlName="label"/>
+                                                                <mat-error>
+                                                                    @if (mappingArrayAt(questionnaireIndex).at(mappingIndex).get('label')?.errors?.['required']
+                                                                    && mappingArrayAt(questionnaireIndex).at(mappingIndex).get('label')?.touched) {
+                                                                        <span i18n>Label is required.</span>
+                                                                    }
+                                                                </mat-error>
                                                             </mat-form-field>
                                                         </td>
                                                         <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                            <mat-form-field appearance="fill" class="width-100">
                                                                 <mat-label><span i18n>Value</span></mat-label>
-                                                                <input matInput type="text" formControlName="value">
-                                                                <app-error-message [formField]="map.get('value')"></app-error-message>
+                                                                <input matInput type="text" formControlName="value"/>
+                                                                <mat-error>
+                                                                    @if (mappingArrayAt(questionnaireIndex).at(mappingIndex).get('value')?.errors?.['required']
+                                                                    && mappingArrayAt(questionnaireIndex).at(mappingIndex).get('value')?.touched) {
+                                                                        <span i18n>Value is required.</span>
+                                                                    }
+                                                                </mat-error>
                                                             </mat-form-field>
                                                         </td>
                                                         <td class="p-0 center">
-                                                            <button mat-flat-button color="primary" class="mb-16px"
-                                                                    [disabled]="mappingIndex === 0 && mapping(questionnaireIndex).length == 1"
-                                                                    (click)="removeMapping(questionnaireIndex, mappingIndex)">
+                                                            <button
+                                                                mat-flat-button
+                                                                color="primary"
+                                                                class="mb-16px"
+                                                                [disabled]="mappingIndex === 0 && mappingArrayAt(questionnaireIndex).length == 1"
+                                                                (click)="removeMapping(questionnaireIndex, mappingIndex)">
                                                                 <span i18n>Remove Mapping</span>
                                                             </button>
                                                         </td>
@@ -185,7 +189,9 @@
                                     </div>
                                 }
                             </mat-card-content>
+
                             <mat-divider></mat-divider>
+
                             <mat-card-actions class="right">
                                 <button mat-flat-button color="primary" (click)="removeQuestionnaire(questionnaireIndex)">
                                     <span i18n>Remove Questionnaire</span>
@@ -194,18 +200,21 @@
                         </mat-card>
                     </div>
                 }
-
             </div>
 
-            <button mat-flat-button color="primary" (click)="addQuestionnaire()"><span i18n>Add Questionnaire</span></button>
-
+            <button mat-flat-button color="primary" (click)="addQuestionnaire()">
+                <span i18n>Add Questionnaire</span>
+            </button>
         </mat-card-content>
 
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperNext (click)="serializeConfiguration()"><span i18n>Next</span></button>
+            <button mat-flat-button color="primary" matStepperNext
+                    [disabled]="formStep.invalid"
+                    (click)="markAllAsTouched(); serializeConfiguration()">
+                <span i18n>Next</span>
+            </button>
         </mat-card-actions>
-
     </mat-card>
 </form>

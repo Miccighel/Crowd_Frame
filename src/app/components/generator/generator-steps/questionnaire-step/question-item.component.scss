@@ -1,0 +1,158 @@
+/* ----------------------------------------------------------------------------
+ * Question Item – Recursive Node Styling (no background changes)
+ *   • Clear spacing with consistent gaps and paddings
+ *   • Flex-based rows to prevent overlap and allow wrapping
+ *   • Subtle structure for answers and sub-questions
+ *   • Keeps parent theme colors; no background fills are introduced here
+ * ------------------------------------------------------------------------- */
+
+:host {
+    --qi-gap: var(--gap-3, 16px);
+    --qi-gap-s: var(--gap-2, 10px);
+
+    --qi-min-name: 240px;
+    --qi-min-type: 200px;
+    --qi-min-text: 260px;
+    --qi-min-answer: 240px;
+    --qi-min-target: 220px;
+    --qi-min-needed: 200px;
+    --qi-min-times: 140px;
+}
+
+/* Node container (accent spine & border, no background fill) */
+:host > .width-100 {
+    border: 1px solid var(--divider);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: calc(var(--qi-gap) + 2px) var(--qi-gap) var(--qi-gap) calc(var(--qi-gap) + 8px);
+    margin-bottom: var(--qi-gap);
+    box-shadow: var(--shadow-1);
+    transition: box-shadow 160ms ease, border-color 180ms ease;
+    animation: qi-fade-in 160ms ease-out;
+}
+
+:host > .width-100:hover {
+    box-shadow: var(--shadow-2);
+    border-color: rgba(63, 81, 181, 0.35);
+}
+
+/* Generic flex row */
+.qi-row {
+    display: flex;
+    gap: var(--qi-gap);
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.qi-row--center {
+    align-items: center;
+}
+
+.qi-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.qi-toggle {
+    flex: 0 0 auto;
+    padding-bottom: calc(var(--qi-gap-s) * 0.6);
+}
+
+/* Field sizing helpers */
+.qi-field--name {
+    flex: 2 1 280px;
+    min-width: var(--qi-min-name);
+}
+
+.qi-field--type {
+    flex: 1 1 220px;
+    min-width: var(--qi-min-type);
+}
+
+.qi-field--text {
+    flex: 2 1 480px;
+    min-width: var(--qi-min-text);
+}
+
+.qi-field--times {
+    flex: 0 0 160px;
+    min-width: var(--qi-min-times);
+}
+
+.qi-field--target {
+    flex: 1 1 280px;
+    min-width: var(--qi-min-target);
+}
+
+.qi-field--needed {
+    flex: 0 1 240px;
+    min-width: var(--qi-min-needed);
+}
+
+:host mat-form-field {
+    width: 100%;
+    margin: 0 0 var(--qi-gap-s) 0;
+}
+
+.qi-answers {
+    margin-top: var(--qi-gap-s);
+}
+
+.qi-answers__row {
+    display: flex;
+    gap: var(--qi-gap);
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: var(--qi-gap-s);
+}
+
+.qi-answers__field {
+    flex: 1 1 360px;
+    min-width: var(--qi-min-answer);
+}
+
+.qi-children {
+    margin-top: var(--qi-gap-s);
+}
+
+:host button.mat-flat-button {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+:host mat-divider[inset="true"] {
+    margin: var(--qi-gap-s) 0;
+    opacity: 0.6;
+}
+
+:host .indent,
+:host .double-indent {
+    margin-top: var(--qi-gap-s);
+    margin-bottom: var(--qi-gap-s);
+}
+
+:host td.center button,
+.qi-actions > button {
+    min-width: 160px;
+}
+
+@keyframes qi-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    :host > .width-100 {
+        padding: var(--qi-gap-s) var(--qi-gap-s);
+        border-left-width: 3px;
+    }
+    .qi-actions > button {
+        width: 100%;
+    }
+}

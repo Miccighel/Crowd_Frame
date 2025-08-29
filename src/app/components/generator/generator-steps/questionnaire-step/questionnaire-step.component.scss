@@ -1,0 +1,78 @@
+/* ============================================================================
+ * questionnaire-step.component.scss
+ * Optimized layout for the questionnaire step without changing backgrounds.
+ * ========================================================================== */
+
+:host {
+    --gap-1: var(--gap-1, 6px);
+    --gap-2: var(--gap-2, 10px);
+    --gap-3: var(--gap-3, 16px);
+    --gap-4: var(--gap-4, 24px);
+    --divider: var(--divider, rgba(0, 0, 0, 0.12));
+}
+
+/* Meta grid for Type / Position / Description / Allow Back */
+.qs-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-3);
+    align-items: start;
+    margin-top: var(--gap-3);
+    margin-bottom: var(--gap-3);
+}
+
+.qs-meta-grid .full-span {
+    grid-column: 1 / -1;
+}
+
+.qs-meta-grid mat-form-field {
+    width: 100%;
+    margin: 0;
+}
+
+.qs-meta-grid mat-slide-toggle {
+    margin-top: calc(var(--gap-1) + 2px);
+}
+
+/* Sections for questions/mapping – spacing only (no fill) */
+.qs-section {
+    padding-top: var(--gap-2);
+    margin-top: var(--gap-2);
+    border-top: 1px solid var(--divider);
+}
+
+.qs-section > button.mat-flat-button {
+    margin-top: var(--gap-2);
+}
+
+.qs-section mat-divider[inset="true"] {
+    margin: var(--gap-2) 0;
+}
+
+/* Validation summary */
+.qs-validation {
+    display: flex;
+    gap: var(--gap-2);
+    align-items: center;
+    margin: var(--gap-2) 0 var(--gap-3);
+    font-size: 13px;
+}
+
+.qs-validation mat-icon {
+    opacity: 0.7;
+    font-size: 20px;
+}
+
+/* Add subtle separators between multiple messages on one line */
+.qs-validation span + span::before {
+    content: "• ";
+    margin: 0 6px;
+    opacity: 0.6;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .qs-meta-grid {
+        grid-template-columns: 1fr;
+    }
+}
