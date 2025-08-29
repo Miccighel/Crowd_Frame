@@ -1,67 +1,67 @@
-/* |--- DIALOG STYLES  --| */
+/* |--- INSTRUCTIONS TOOLBAR & DIALOG (scoped) --| */
 
-.mat-mdc-dialog-container .mdc-dialog__content {
-  color: #222;
-  font-size: 1.1em;
-  padding: 2em 2em 1em 2em;
-  font-family: inherit;
+:host {
+    display: block;
 }
 
-#task-instructions {
-  width: 100%;
-  font-family: inherit;
+/* Toolbar */
+mat-toolbar {
+    width: 100%;
+    margin: 0 auto;
+    background-color: transparent;
+    padding-inline: 1%;
+    justify-content: space-between;
+
+    button {
+        text-transform: uppercase;
+    }
+
+    h4 {
+        background-color: #ffeb3b;
+        padding-inline: 0.5rem;
+        margin: 0;
+    }
 }
 
-#task-instructions h1 {
-  margin-bottom: 0.75em;
-  text-align: center;
-  font-weight: 500;
-  font-size: 1.5em;
-  color: #2d3a4b;
-  letter-spacing: 0.02em;
+/* Optional spacer utility */
+.example-spacer {
+    flex: 1 1 auto;
 }
 
-#task-instructions span,
-#task-instructions p {
-  line-height: 1.6;
-  font-size: 1.05em;
-  text-align: justify;
-  color: #333;
+/* Dialog content */
+[mat-dialog-content] {
+    width: 100%;
+    padding: 2rem 2rem 1rem;
+    color: #222;
+    font-family: inherit;
+    font-size: 1.0625rem; /* ~17px */
 }
 
-#task-instructions ul,
-#task-instructions ol {
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+/* Dialog actions (centered, no outer spacing) */
+[mat-dialog-actions].close-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    /* remove any default spacing */
+    padding: 0; /* remove any default spacing */
+    margin: 0 0 2em;
+
+    button {
+        margin: 0; /* no outer margin */
+        text-transform: uppercase;
+        min-width: 7.5rem; /* 120px */
+        padding: 0.7rem 2.2rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        box-shadow: 0 2px 10px rgba(44, 62, 80, 0.08);
+    }
 }
 
-#task-instructions li {
-  line-height: 1.9;
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
-.close-button {
-  text-align: center;
-  margin: 2em 0 1em 0;
-}
-
-.close-button button {
-  text-transform: uppercase;
-  min-width: 120px;
-  padding: 0.7em 2.2em;
-  border-radius: 18px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  box-shadow: 0 2px 10px rgba(44,62,80,0.08);
-}
-
+/* Responsive */
 @media (max-width: 600px) {
-  .mat-mdc-dialog-container .mdc-dialog__content {
-    padding: 1.2em 0.4em 1em 0.4em;
-    font-size: 1em;
-  }
-  #task-instructions h1 {
-    font-size: 1.1em;
-  }
+    [mat-dialog-content] {
+        padding: 1.2rem 0.4rem 1rem;
+        font-size: 1rem;
+    }
 }

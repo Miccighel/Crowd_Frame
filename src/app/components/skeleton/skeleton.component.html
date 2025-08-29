@@ -1,131 +1,176 @@
-<ng-container *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'skeleton-inner', bgsPosition: 'bottom-right' }"></ng-container>
-<ng-container *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'search-loader', bgsPosition: 'bottom-center' }"></ng-container>
+<!-- ======================= LOADERS ======================= -->
+
+<ng-container
+    *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'skeleton-inner', bgsPosition: 'bottom-right' }">
+</ng-container>
+<ng-container
+    *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'search-loader', bgsPosition: 'bottom-center' }">
+</ng-container>
 
 <ng-template #loaderTemplate let-loaderId="loaderId" let-bgsPosition="bgsPosition">
-  <ngx-ui-loader
-    [loaderId]="loaderId"
-    [bgsColor]="'#3f51b5'"
-    [fgsColor]="'#3f51b5'"
-    [pbColor]="'#3f51b5'"
-    [fgsSize]="150"
-    [bgsSize]="150"
-    [bgsType]="'ball-spin-clockwise'"
-    [text]="'Loading task...'"
-    [textColor]="'#FFFFFF'"
-    [textPosition]="'bottom-center'"
-    [bgsPosition]="bgsPosition"
-  ></ngx-ui-loader>
+    <ngx-ui-loader
+        [attr.aria-live]="'polite'"
+        [loaderId]="loaderId"
+        [bgsColor]="'#3f51b5'"
+        [fgsColor]="'#3f51b5'"
+        [pbColor]="'#3f51b5'"
+        [fgsSize]="150"
+        [bgsSize]="150"
+        [bgsType]="'ball-spin-clockwise'"
+        [text]="loaderId === 'search-loader' ? 'Searching…' : 'Loading task...'"
+        [textColor]="'#FFFFFF'"
+        [textPosition]="'bottom-center'"
+        [bgsPosition]="bgsPosition">
+    </ngx-ui-loader>
 </ng-template>
 
+<!-- ============== OUTCOME: TASK NOT ALLOWED ============== -->
 
 @if (!this.sectionService.taskAllowed) {
-  <app-outcome-section
-    [worker]="this.worker"
-    [triesAllowed]="this.task.settings.allowed_tries"
-    [tryCurrent]="this.task.tryCurrent"
-    [messages]="this.task.settings.messages"
-    [tokenInput]="this.task.tokenInput"
-    [tokenOutput]="this.task.tokenOutput"
-    (commentEmitter)="storeComment($event)"
-    (performReset)="this.performReset()"
-  ></app-outcome-section>
+    <app-outcome-section
+        [worker]="this.worker"
+        [triesAllowed]="this.task.settings.allowed_tries"
+        [tryCurrent]="this.task.tryCurrent"
+        [messages]="this.task.settings.messages"
+        [tokenInput]="this.task.tokenInput"
+        [tokenOutput]="this.task.tokenOutput"
+        (commentEmitter)="storeComment($event)"
+        (performReset)="this.performReset()">
+    </app-outcome-section>
 }
 
-<!-- First instruction page shown when the worker starts the skeleton -->
-@if (this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted) {
-  <div class="instructions-section">
-    <mat-card appearance="outlined">
-      @if (!this.sectionService.checkCompleted || !this.task.instructionsGeneral) {
-        <mat-card-content>
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </mat-card-content>
-      }
-      @if (this.sectionService.checkCompleted && this.task.instructionsGeneral) {
-        <mat-card-content
-          >
-          @for (instruction of this.task.instructionsGeneral; track instruction; let i = $index) {
-            <div>
-              @if (instruction['caption']) {
-                <h1>
-                  {{ instruction["caption"] }}
-                </h1>
-              }
-              <p [innerHTML]="instruction.text"></p>
-            </div>
-          }
-        </mat-card-content>
-      }
-      <mat-card-actions>
-        <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-          <span i18n>Start</span>
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </div>
+<!-- ================= INITIAL INSTRUCTIONS ================= -->
+
+@if (this.sectionService.currentSection === 'instructions-section'
+&& this.sectionService.checkCompleted
+&& !this.sectionService.taskCompleted) {
+
+    <div class="instructions-section">
+        <mat-card appearance="outlined">
+
+            @if (!this.sectionService.checkCompleted || !this.task.instructionsGeneral) {
+                <mat-card-content>
+                    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                </mat-card-content>
+            }
+
+            @if (this.sectionService.checkCompleted && this.task.instructionsGeneral) {
+                <mat-card-content>
+                    <app-instruction-list [instructions]="this.task.instructionsGeneral"></app-instruction-list>
+                </mat-card-content>
+            }
+
+            <mat-card-actions>
+                <button
+                    mat-flat-button
+                    color="primary"
+                    (click)="enableTask()"
+                    [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
+                    <span i18n>Start</span>
+                </button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
 }
 
-<!-- Instructions modal shown on the top  -->
-@if (this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational') {
-  <app-instructions
-    [task]="this.task"
-    [worker]="this.worker"
-  ></app-instructions>
+<!-- =================== INSTRUCTIONS MODAL ================== -->
+
+@if (this.sectionService.instructionsAllowed
+&& !this.sectionService.taskCompleted
+&& this.task.settings.modality !== 'conversational') {
+    <app-instructions
+        [task]="this.task"
+        [worker]="this.worker">
+    </app-instructions>
 }
+
+<!-- ================ MAIN TASK CONTAINER =================== -->
 
 @if (this.sectionService.taskInstructionsRead) {
-  <!-- Chatbot -->
-  @if (this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted) {
-    <chat-widget
-    [worker]="worker"></chat-widget>
-  }
-  <!-- Task body section -->
-  @if (this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted) {
-    <mat-horizontal-stepper
-      [linear]="false"
-      labelPosition="bottom"
-      id="stepper"
-      #stepper
-      >
-      @for (stepIndex of this.sectionService.stepIndexes(); track stepIndex) {
-        <mat-step>
-          <ng-template matStepLabel>{{this.task.getElementIndex(stepIndex)['elementLabel']}}</ng-template>
-          @if (this.task.getElementIndex(stepIndex)['elementType'] == 'Q') {
-            <app-questionnaire
-              [worker]="this.worker"
-              [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-              [questionnairesForm]="this.questionnairesForm"
-              [stepper]="this.stepper"
-              (formEmitter)="this.storeQuestionnaireForm($event,stepIndex)"
-              >
-            </app-questionnaire>
-          }
-          @if (this.task.getElementIndex(stepIndex)['elementType'] == 'S') {
-            <app-document
-              [worker]="this.worker"
-              [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-              [documentsForm]="this.documentsForm"
-              [documentsFormsAdditional]="this.documentsFormsAdditional"
-              [searchEngineForms]="this.searchEngineForms"
-              [resultsRetrievedForms]="this.resultsRetrievedForms"
-              [stepper]="this.stepper"
-              (formEmitter)="this.storeDocumentForm($event, stepIndex)"
-            ></app-document>
-          }
-        </mat-step>
-      }
-    </mat-horizontal-stepper>
-  }
+
+    <!-- Conversational modality: chatbot widget -->
+    @if (this.task.settings.modality === 'conversational'
+    && this.task.dimensions
+    && !this.sectionService.taskCompleted) {
+        <chat-widget [worker]="worker"></chat-widget>
+    }
+
+    <!-- Non-conversational modality: stepper workflow (deferred) -->
+    @defer (when this.task.settings.modality !== 'conversational'
+    && this.sectionService.taskInstructionsRead
+    && !this.sectionService.taskCompleted; prefetch on viewport) {
+
+        <mat-horizontal-stepper
+            [linear]="false"
+            labelPosition="bottom"
+            id="stepper"
+            #stepper
+            aria-label="Task steps">
+
+            @let steps = this.sectionService.stepIndexes();
+
+            @for (stepIndex of steps; track stepIndex) {
+                @let el = this.task.getElementIndex(stepIndex);
+
+                <mat-step>
+                    <ng-template matStepLabel>{{ el['elementLabel'] }}</ng-template>
+
+                    @switch (el['elementType']) {
+
+                        @case ('Q') {
+                            <app-questionnaire
+                                [worker]="this.worker"
+                                [questionnaireIndex]="el['elementIndex']"
+                                [questionnairesForm]="this.questionnairesForm"
+                                [stepper]="this.stepper"
+                                (formEmitter)="this.storeQuestionnaireForm($event, stepIndex)">
+                            </app-questionnaire>
+                        }
+                        @case ('S') {
+                            <app-document
+                                [worker]="this.worker"
+                                [documentIndex]="el['elementIndex']"
+                                [documentsForm]="this.documentsForm"
+                                [documentsFormsAdditional]="this.documentsFormsAdditional"
+                                [searchEngineForms]="this.searchEngineForms"
+                                [resultsRetrievedForms]="this.resultsRetrievedForms"
+                                [stepper]="this.stepper"
+                                (formEmitter)="this.storeDocumentForm($event, stepIndex)">
+                            </app-document>
+                        }
+
+                    }
+                </mat-step>
+            }
+        </mat-horizontal-stepper>
+
+    } @placeholder {
+        <!-- keeps layout stable while the stepper chunk is not yet needed -->
+        <div style="min-height:40vh">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+    } @loading {
+        <!-- shown while the deferred chunk is being fetched -->
+        <div style="min-height:40vh">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+    } @error {
+        <!-- robust fallback if loading fails -->
+        <div class="text-warn">Failed to load stepper. Please retry.</div>
+    }
 }
 
+<!-- ================ OUTCOME: TASK COMPLETED ================ -->
+
 @if (this.sectionService.taskCompleted) {
-  <app-outcome-section
-    [worker]="this.worker"
-    [triesAllowed]="this.task.settings.allowed_tries"
-    [tryCurrent]="this.task.tryCurrent"
-    [messages]="this.task.settings.messages"
-    [tokenInput]="this.task.tokenInput"
-    [tokenOutput]="this.task.tokenOutput"
-    (commentEmitter)="storeComment($event)"
-    (performReset)="this.performReset()"
-  ></app-outcome-section>
+    <app-outcome-section
+        [worker]="this.worker"
+        [triesAllowed]="this.task.settings.allowed_tries"
+        [tryCurrent]="this.task.tryCurrent"
+        [messages]="this.task.settings.messages"
+        [tokenInput]="this.task.tokenInput"
+        [tokenOutput]="this.task.tokenOutput"
+        (commentEmitter)="storeComment($event)"
+        (performReset)="this.performReset()">
+    </app-outcome-section>
 }

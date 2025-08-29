@@ -1,10 +1,10 @@
 /* Core Angular imports */
-import { NgModule, inject, provideAppInitializer } from '@angular/core';
+import {NgModule, inject, provideAppInitializer} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {ReactiveFormsModule, FormsModule} from '@angular/forms';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 /* Third-party module imports */
 import {NgxUiLoaderModule} from 'ngx-ui-loader';
@@ -22,7 +22,7 @@ import {BaseComponent} from "./components/base/base.component";
 import {SkeletonComponent} from "./components/skeleton/skeleton.component";
 import {SearchEngineBodyComponent} from "./components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component";
 import {PreRetrievedResultSummaryComponent} from './components/skeleton/document/dimension/search-engine/pre-retrieved-result-summary/pre-retrieved-result-summary.component';
-import {InstructionsComponent, InstructionsDialog} from "./components/skeleton/instructions/instructions.component";
+import {InstructionsDialogComponent} from "./components/skeleton/instructions/instructions-dialog.component";
 import {GeneratorComponent} from "./components/generator/generator.component";
 import {LoaderComponent} from "./components/loader/loader.component";
 import {QuestionnaireComponent} from "./components/skeleton/questionnaire/questionnaire.component";
@@ -30,6 +30,7 @@ import {WorkerChecksStepComponent} from "./components/generator/generator-steps/
 import {QuestionnaireStepComponent} from "./components/generator/generator-steps/questionnaire-step/questionnaire-step.component";
 import {InstructionsGeneralStep} from "./components/generator/generator-steps/instructions-general-step/instructions-general-step.component";
 import {InstructionsEvaluationStepComponent} from "./components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component";
+import {InstructionListComponent} from './components/skeleton/instructions/instruction-list.component';
 import {SearchEngineStepComponent} from "./components/generator/generator-steps/search-engine-step/search-engine-step.component";
 import {DimensionsStepComponent} from "./components/generator/generator-steps/dimensions-step/dimensions-step.component";
 import {TaskSettingsStepComponent} from "./components/generator/generator-steps/task-settings-step/task-settings-step.component";
@@ -53,20 +54,20 @@ import {ChatInputIntervalComponent} from "./components/chatbot/chat-inputs/chat-
 import {ChatInputSelectComponent} from "./components/chatbot/chat-inputs/chat-input-select/chat-input-select.component";
 import {ChatInputButtonComponent} from "./components/chatbot/chat-inputs/chat-input-button/chat-input-button.component";
 import {ChatUrlInputComponent} from "./components/chatbot/chat-inputs/chat-input-url/chat-input-url.component";
-import { CountdownDialogComponent } from './components/skeleton/document/countdown-dialog/countdown-dialog.component';
+import {CountdownDialogComponent} from './components/skeleton/document/countdown-dialog/countdown-dialog.component';
 /* Services imports */
 import {SectionService} from "./services/section.service";
 import {ActionLogger} from "./services/userActionLogger.service";
 
-import { DocumentVideoComponent } from './components/skeleton/document/elements/element-pointwise/document-video/document-video.component';
+import {DocumentVideoComponent} from './components/skeleton/document/elements/element-pointwise/document-video/document-video.component';
 
 /* Directives imports */
 import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
 
 /* Pipes imports */
 import {TruncatePipe} from "./pipes/truncatePipe";
-import { SafePipe } from './pipes/safe.pipe';
-import { FilterPipe } from './pipes/filter.pipe';
+import {SafePipe} from './pipes/safe.pipe';
+import {FilterPipe} from './pipes/filter.pipe';
 
 /* RxJS imports */
 import {from, Observable} from "rxjs";
@@ -85,14 +86,14 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         );
 }
 
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         BaseComponent,
         SkeletonComponent,
         SearchEngineBodyComponent,
         PreRetrievedResultSummaryComponent,
         TruncatePipe,
-        InstructionsComponent,
-        InstructionsDialog,
+        InstructionsDialogComponent,
         GeneratorComponent,
         LoaderComponent,
         ButtonDirective,
@@ -104,6 +105,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,
         InstructionsGeneralStep,
+        InstructionListComponent,
         SearchEngineStepComponent,
         DimensionsStepComponent,
         TaskSettingsStepComponent,
@@ -148,10 +150,12 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     ], providers: [
         SectionService,
         provideAppInitializer(() => {
-        const initializerFn = (initActionLogger)(inject(ActionLogger));
-        return initializerFn();
-      }),
+            const initializerFn = (initActionLogger)(inject(ActionLogger));
+            return initializerFn();
+        }),
         provideHttpClient(withInterceptorsFromDi()),
-    ] })
+    ]
+})
 
-export class AppModule {}
+export class AppModule {
+}

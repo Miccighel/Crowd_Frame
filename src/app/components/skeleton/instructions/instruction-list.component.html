@@ -1,0 +1,15 @@
+<div class="instruction-list">
+    @if (!instructions || instructions.length === 0) {
+        <p i18n>No instructions available.</p>
+    } @else {
+        @for (instruction of instructions; let i = $index; track instruction.id ?? i) {
+            <div class="instruction">
+                @if (instruction['caption']) {
+                    <h1>{{ instruction['caption'] }}</h1>
+                }
+                <!-- Angular sanitizes [innerHTML] -->
+                <p [innerHTML]="instruction['text']"></p>
+            </div>
+        }
+    }
+</div>

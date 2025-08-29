@@ -19,9 +19,12 @@ import {Task} from '../../models/skeleton/task';
 @Injectable({providedIn: 'root'})
 export class DynamoDBService {
 
-    /* ------------------ CLIENT BUILDERS ------------------ */
+    /* ================== CLIENT BUILDERS ================== */
 
-    /** Low-level DynamoDBClient (rarely needed directly) */
+    /**
+     * Builds a low-level DynamoDBClient.
+     * Note: rarely used directly; the DocumentClient is preferred.
+     */
     private baseClient(cfg) {
         return new DynamoDBClient({
             region: cfg.region,
@@ -32,20 +35,29 @@ export class DynamoDBService {
         });
     }
 
-    /** DocumentClient with automatic marshalling ↔︎ plain JS */
+    /**
+     * Builds a DynamoDBDocumentClient with transparent marshalling.
+     */
     private docClient(cfg) {
         return DynamoDBDocumentClient.from(this.baseClient(cfg));
     }
 
-    /* --------------------- LIST -------------------------- */
+    /* ======================== LIST ======================= */
 
+    /**
+     * Lists DynamoDB tables for the configured account/region.
+     * Used to locate previous-batch ACL tables precisely.
+     */
     async listTables(cfg) {
         const client = this.baseClient(cfg);
         return client.send(new ListTablesCommand({}));
     }
 
-    /* --------------------- QUERY ------------------------- */
+    /* ======================== QUERY ====================== */
 
+    /**
+     * Queries the ACL table by worker identifier (GSI: identifier-index).
+     */
     async getACLRecordWorkerId(cfg, workerId, table: string = null) {
         const client = this.docClient(cfg);
         return client.send(new QueryCommand({
@@ -57,6 +69,9 @@ export class DynamoDBService {
         }));
     }
 
+    /**
+     * Queries the ACL table by unit id (GSI: unit_id-index).
+     */
     async getACLRecordUnitId(cfg, unitId, table: string = null) {
         const client = this.docClient(cfg);
         return client.send(new QueryCommand({
@@ -68,17 +83,30 @@ export class DynamoDBService {
         }));
     }
 
+    /**
+     * Queries the ACL table by IP address (GSI: ip_address-index).
+     * Accepts a string IP or an object with an `ip` field to avoid shape issues.
+     */
     async getACLRecordIpAddress(cfg, ipAddress, table: string = null) {
         const client = this.docClient(cfg);
+        const ip =
+            typeof ipAddress === 'string'
+                ? ipAddress
+                : (ipAddress && typeof ipAddress === 'object' && ipAddress.ip) || undefined;
+
         return client.send(new QueryCommand({
             TableName: table ?? cfg.table_acl_name,
             IndexName: 'ip_address-index',
             KeyConditionExpression: 'ip_address = :ip',
-            ExpressionAttributeValues: {':ip': ipAddress.ip},
+            ExpressionAttributeValues: {':ip': ip},
             ScanIndexForward: true
         }));
     }
 
+    /**
+     * Scans the ACL table via the unit_id index.
+     * Results are locally sorted for deterministic processing.
+     */
     async scanACLRecordUnitId(
         cfg,
         table: string = null,
@@ -92,15 +120,20 @@ export class DynamoDBService {
             ExclusiveStartKey: lastEvaluatedKey ?? undefined
         }));
 
-        /* Local sort — adjust the field name if you need another column */
+        // Local sort by unit_id; callers may re-sort by time fields as needed.
         page.Items = (page.Items ?? []).sort((a, b) => {
-            const cmp = String(a["unit_id"]).localeCompare(String(b["unit_id"]));
+            const ua = String(a?.['unit_id'] ?? '');
+            const ub = String(b?.['unit_id'] ?? '');
+            const cmp = ua.localeCompare(ub);
             return ascending ? cmp : -cmp;
         });
 
         return page;
     }
 
+    /**
+     * Queries the data table partition for a worker (paged).
+     */
     async getDataRecord(
         cfg,
         identifier,
@@ -117,9 +150,11 @@ export class DynamoDBService {
         }));
     }
 
-    /* --------------------- INSERT / PUT ------------------ */
+    /* =================== INSERT / PUT ==================== */
 
-    /** Insert a full ACL record from `worker.paramsFetched` */
+    /**
+     * Inserts an ACL row for the worker using Worker.paramsFetched.
+     */
     async insertACLRecordWorkerID(cfg, worker: Worker) {
         const client = this.docClient(cfg);
         return client.send(new PutCommand({
@@ -129,8 +164,11 @@ export class DynamoDBService {
     }
 
     /**
-     * Insert or update an ACL record keyed on `unit_id`.
-     * Flags let you bump arrival/removal timestamps and access counter.
+     * Inserts or updates an ACL row keyed by `unit_id`.
+     * Optional flags:
+     *  - updateArrivalTime: bumps `time_arrival` and increments `access_counter`.
+     *  - updateRemovalTime: bumps `time_removal`.
+     * Semantics are preserved.
      */
     async insertACLRecordUnitId(
         cfg,
@@ -160,7 +198,8 @@ export class DynamoDBService {
     }
 
     /**
-     * Write task data for a worker.
+     * Writes a task data record for a worker.
+     * Builds a composite sequence key `identifier-ip-unit-try-seqNumber`.
      * Increments `task.sequenceNumber` unless `sameSeq` is true.
      */
     async insertDataRecord(
@@ -170,45 +209,75 @@ export class DynamoDBService {
         data: Record<string, any>,
         sameSeq = false
     ) {
-        /*  safely grab the IP */
         const ip = (worker.getIP() as { ip: string | null }).ip ?? 'unknown';
-
-        /* build the composite sort-key */
         const seqBase = `${worker.identifier}-${ip}-${task.unitId}-${task.tryCurrent}`;
         const sequence = `${seqBase}-${task.sequenceNumber}`;
 
-        /* flatten data.info, diverting ‘sequence’ → ‘sequence_number’ */
-        const infoItem = Object.entries(data["info"] ?? {}).reduce(
+        // Flatten info fields; protect against 'sequence' key collision.
+        const infoItem = Object.entries(data['info'] ?? {}).reduce(
             (acc, [k, v]) => {
                 if (k === 'sequence') {
-                    return {...acc, sequence_number: v.toString()};  // 👈 guard added
+                    return {...acc, sequence_number: String(v)};
                 }
-                return {...acc, [k]: v.toString()};
+                return {...acc, [k]: String(v)};
             },
             {}
         );
 
-        /* assemble the final item */
         const item: Record<string, any> = {
             identifier: worker.identifier,
-            sequence,                         // composite string is safe
+            sequence,
             time: new Date().toUTCString(),
             data: JSON.stringify(data),
             ...infoItem
         };
 
-        /* write it */
         const result = await this.docClient(cfg).send(new PutCommand({
             TableName: cfg.table_data_name,
             Item: item
         }));
 
-        /* 6️⃣  bump the running seq number unless caller overrides */
         if (!sameSeq) {
             task.sequenceNumber += 1;
         }
 
         return result;
+    }
+
+    /* =================== UTILS / CLAIM =================== */
+
+    /**
+     * Detects ConditionalCheckFailed errors (SDK v3) in a tolerant way.
+     */
+    isConditionalCheckFailed(err: any): boolean {
+        return (
+            err?.name === 'ConditionalCheckFailedException' ||
+            err?.code === 'ConditionalCheckFailedException' ||
+            /ConditionalCheckFailed/i.test(err?.message ?? '')
+        );
+    }
+
+    /**
+     * Attempts to claim a unit if no active unpaid holder exists.
+     * Best-effort approach without schema changes:
+     *  - Queries by `unit_id` (GSI).
+     *  - If no active holder is found, writes a row for the caller.
+     *  - A concurrent winner may still occur between query and put.
+     */
+    async claimUnitIfUnassigned(cfg, unitEntry: Record<string, any>): Promise<{ claimed: boolean }> {
+        const page = await this.getACLRecordUnitId(cfg, unitEntry['unit_id']);
+        const items = page?.Items ?? [];
+
+        const taken = items.some(it => {
+            const inProg = String(it?.['in_progress'] ?? '').toLowerCase() === 'true';
+            const paid = String(it?.['paid'] ?? '').toLowerCase() === 'true';
+            return inProg && !paid;
+        });
+
+        if (taken) return {claimed: false};
+
+        await this.insertACLRecordUnitId(cfg, unitEntry, /* _currentTry */ 0, /* updateArrival */ true, /* updateRemoval */ false);
+        return {claimed: true};
     }
 
 }

@@ -1,11 +1,20 @@
-<div id="task-instructions" mat-dialog-content>
-  @for (instruction of this.instructions; track instruction; let i = $index) {
-    @if (instruction['caption']) {
-      <h1>{{instruction["caption"]}}</h1>
-    }
-    <span [innerHTML]="instruction['text']"></span>
+<mat-toolbar>
+  <button mat-flat-button color="primary" (click)="openDialog(this.task.instructionsGeneral)">
+    <span i18n>Show Instructions</span>
+  </button>
+  @if (this.worker?.settings?.block) {
+    <h4><span i18n>NO RETAKES</span></h4>
   }
-</div>
-<div class="close-button">
-  <button mat-flat-button color="primary" (click)="closeInstructions()"><span i18n>Close</span></button>
-</div>
+</mat-toolbar>
+
+<!-- Template used as dialog content (opened via MatDialog) -->
+<ng-template #instructionsDialogTpl>
+  <div id="task-instructions" mat-dialog-content>
+    <app-instruction-list [instructions]="instructionsForDialog"></app-instruction-list>
+  </div>
+  <div class="close-button" mat-dialog-actions>
+    <button mat-flat-button color="primary" mat-dialog-close>
+      <span i18n>Close</span>
+    </button>
+  </div>
+</ng-template>

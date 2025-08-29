@@ -53,6 +53,7 @@ import {BaseComponent} from "../base/base.component";
 import {fadeIn} from "../chatbot/animations";
 import {Title} from "@angular/platform-browser";
 
+
 /* Component HTML Tag definition */
 @Component({
     selector: "app-skeleton",
@@ -66,6 +67,7 @@ import {Title} from "@angular/platform-browser";
 
 /*
  * This class implements the skeleton for Crowdsourcing tasks.
+ * To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom).
  */
 export class SkeletonComponent implements OnInit, OnDestroy {
 
@@ -92,7 +94,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     localStorageService: LocalStorageService;
     debugService: DebugService;
 
-    /* HTTP client */
+    /* HTTP client and headers */
     client: HttpClient;
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
@@ -118,17 +120,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     @ViewChild('stepper', {static: false})
     set stepperSetter(stepper: MatStepper | undefined) {
-        if (!stepper) {
-            return;
-        }                    // view not ready yet
-        this._stepper = stepper;                     // keep a reference
+        if (!stepper) return;                         // view not ready yet
+        this._stepper = stepper;                      // keep a reference
 
         /* ----  RESTORE LAST POSITION  -------------------------------- */
         const last = this.worker?.getPositionCurrent() ?? 0;
         this._stepper.selectedIndex = last;
         this.sectionService.stepIndex = last;
 
-        /* Force CD so that bindings inside the newly-selected step update */
+        /* Force CD so that bindings inside the newly-selected step update
+           (kept with detectChanges here to sync immediately after view init) */
         this.changeDetector.detectChanges();
     }
 
@@ -187,6 +188,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.client = client;
         this.formBuilder = formBuilder;
         this.snackBar = snackBar;
+
+        /* Start the main spinner early. */
         this.ngxService.startLoader("skeleton-inner");
 
         this.generator = false;
@@ -194,6 +197,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
     ngOnInit() {
+        /* Subscription is tied to component lifetime to avoid leaks. */
         this.baseComponent.initializationCompleted
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(_params => {
@@ -203,6 +207,15 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             });
     }
 
+    ngOnDestroy() {
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
+    }
+
+    /* ------------------------------------------------------
+       Parse URL params and normalize keys.
+       Preserves original behavior (identifier autodetection).
+       ------------------------------------------------------ */
     private parseURLParams(url: URL): Record<string, string> {
         const paramsFetched: Record<string, string> = {};
         url.searchParams.forEach((value, key) => {
@@ -216,16 +229,29 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return paramsFetched;
     }
 
+    /* ------------------------------------------------------
+       Begin worker initialization.
+       - Enrich Worker with device/navigator info.
+       - Fetch external IP hints (best-effort).
+       - UI unlock is deferred to finalization to prevent flicker.
+       ------------------------------------------------------ */
     private startWorkerInitialization(params: Record<string, string>) {
         this.worker = new Worker(params);
         this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo());
         this.worker.updateProperties('navigator', window.navigator);
 
-        this.fetchExternalData().subscribe({
-            complete: () => this.finalizeWorkerInitialization()
-        });
+        this.fetchExternalData()
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe({complete: () => this.finalizeWorkerInitialization()});
     }
 
+    /* ------------------------------------------------------
+       Fetch external IP-related info.
+       - Cloudflare trace attempted first (text).
+       - ipify used as fallback (JSON).
+       - On total failure, a status is set but UI is not unlocked here.
+       - Prevents premature UI flip during transient network issues.
+       ------------------------------------------------------ */
     private fetchExternalData() {
         return this.client?.get("https://1.0.0.1/cdn-cgi/trace", {responseType: "text"})?.pipe(
             tap(cloudflareData => this.worker.updateProperties("cloudflare", cloudflareData)),
@@ -243,7 +269,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /* ------------------------------------------------------
-       Helper: normalize IP from worker (string | {ip}|{ipAddress}|null)
+       Normalize Worker IP.
+       Accepts string or object with ip/ipAddress fields.
+       Centralizes IP handling to avoid shape errors.
        ------------------------------------------------------ */
     private getNormalizedWorkerIp(): string | null {
         const raw = this.worker?.getIP?.();
@@ -255,24 +283,66 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return null;
     }
 
+    /* ------------------------------------------------------
+       Centralized ACL writes.
+       Reduces duplication and missed-field risk; semantics unchanged.
+       ------------------------------------------------------ */
+
+    /* Persist current worker ACL row. Optional status/extra fields are stamped before write. */
+    private async writeWorkerAcl(statusCode?: StatusCodes, extra?: Record<string, any>) {
+        if (statusCode !== undefined && statusCode !== null) {
+            this.worker.setParameter("status_code", statusCode);
+        }
+        if (extra) {
+            Object.entries(extra).forEach(([k, v]) => this.worker.setParameter(k, String(v)));
+        }
+        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+    }
+
+    /* Persist a unit-level ACL row (HIT slot). Optional status and timestamp flags. */
+    private async writeUnitAcl(entry: any, opts?: { statusCode?: StatusCodes, updateArrivalTime?: boolean, updateRemovalTime?: boolean }) {
+        if (opts?.statusCode !== undefined && opts?.statusCode !== null) {
+            entry["status_code"] = opts.statusCode;
+        }
+        await this.dynamoDBService.insertACLRecordUnitId(
+            this.configService.environment,
+            entry,
+            this.task?.tryCurrent ?? 0,
+            opts?.updateArrivalTime ?? false,
+            opts?.updateRemovalTime ?? false
+        );
+    }
+
+    /*
+     * Finalize worker initialization.
+     * - Rehydrates or creates the worker ACL entry.
+     * - Optionally assigns a HIT (unassigned → recovery from abandonment → inconsistency sweep).
+     * - Writes TASK_OVERBOOKING / TASK_COMPLETED_BY_OTHERS outcomes back to ACL for auditability.
+     * - Uses best-effort unit claim helper; behavior is preserved, data consistency is improved.
+     */
     public async finalizeWorkerInitialization() {
         /* Flag to indicate if a HIT is assigned to the current worker. */
         let hitAssigned = false;
+        const env = this.configService.environment;
 
-        let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
+        const aclByIp = await this.dynamoDBService.getACLRecordIpAddress(env, this.worker.getIP());
+        const aclItems: any[] = aclByIp?.Items ?? [];
+
         let workerIdGenerated = String(false);
-        let workerIdentifierProvided = this.worker.identifier
-        if (workerACLRecord["Items"].length <= 0) {
+        const workerIdentifierProvided = this.worker.identifier;
+
+        if (aclItems.length <= 0) {
+            /* New worker path (fields preserved). */
             if (this.worker.identifier == null) {
-                let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase();
-                this.worker.setParameter("identifier", identifierGenerated);
-                this.worker.identifier = identifierGenerated;
+                const generatedId = this.utilsService.randomIdentifier(14).toUpperCase();
+                this.worker.setParameter("identifier", generatedId);
+                this.worker.identifier = generatedId;
                 workerIdGenerated = String(true);
             }
-            this.worker.setParameter("task_name", this.configService.environment.taskName);
-            this.worker.setParameter("batch_name", this.configService.environment.batchName);
+            this.worker.setParameter("task_name", env.taskName);
+            this.worker.setParameter("batch_name", env.batchName);
             if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");
-            this.worker.setParameter("folder", this.S3Service.getWorkerFolder(this.configService.environment, this.worker));
+            this.worker.setParameter("folder", this.S3Service.getWorkerFolder(env, this.worker));
             this.worker.setParameter("access_counter", String(1));
             this.worker.setParameter("paid", String(false));
             this.worker.setParameter("generated", workerIdGenerated);
@@ -280,80 +350,71 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.worker.setParameter("position_current", String(0));
             this.worker.setParameter("try_current", String(this.task.tryCurrent));
             this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
-            let timeArrival = new Date();
-            let timeExpiration = new Date(timeArrival.getTime());
-            timeExpiration.setTime(timeExpiration.getTime() + this.task.settings.time_assessment * 60 * 60 * 1000);
+
+            const timeArrival = new Date();
+            const timeExpiration = new Date(timeArrival.getTime() + this.task.settings.time_assessment * 60 * 60 * 1000);
             this.worker.setParameter("time_arrival", timeArrival.toUTCString());
             this.worker.setParameter("time_expiration", timeExpiration.toUTCString());
-            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
-            if (timeExpirationNearest)
-                this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
-            else
-                this.worker.setParameter("time_expiration_nearest", timeExpiration.toUTCString());
+
+            const nearestExpiration = await this.retrieveMostRecentExpirationDate();
+            this.worker.setParameter("time_expiration_nearest", nearestExpiration ?? timeExpiration.toUTCString());
             this.worker.setParameter("time_expired", String(false));
 
-            /* ------------------------ IP fields via normalized helper ------------------------ */
+            /* IP / UA (normalized IP to prevent shape errors). */
             const ipStr = this.getNormalizedWorkerIp();
             this.worker.setParameter("ip_address", ipStr ?? String(false));
             const rawIp = this.worker?.getIP?.();
-            let ipSource = null;
-            if (rawIp && typeof rawIp === 'object') ipSource = (rawIp as any).source ?? null;
+            const ipSource = (rawIp && typeof rawIp === 'object') ? (rawIp as any).source ?? null : null;
             if (ipSource != null) this.worker.setParameter("ip_source", ipSource);
-            /* ------------------------------------------------------------------------------- */
-
             this.worker.setParameter("user_agent", this.worker.getUAG()["uag"]);
             this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
+
         } else {
-            let aclEntry = workerACLRecord["Items"][0];
+            /* Returning worker path (checks preserved). */
+            const aclEntry = aclItems[0];
 
-            this.task.settings.allowed_tries = aclEntry["try_left"]
-            this.task.tryCurrent = aclEntry["try_current"]
+            this.task.settings.allowed_tries = aclEntry["try_left"];
+            this.task.tryCurrent = aclEntry["try_current"];
 
-            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
-            if (timeExpirationNearest)
-                this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
-            else
-                this.worker.setParameter("time_expiration_nearest", String(false));
+            const nearestExpiration = await this.retrieveMostRecentExpirationDate();
+            this.worker.setParameter("time_expiration_nearest", nearestExpiration ?? String(false));
+
             if (/true/i.test(aclEntry["paid"]) == true) {
                 this.sectionService.taskAlreadyCompleted = true;
-                Object.entries(aclEntry).forEach(([key, value]) =>
-                    this.worker.setParameter(key, value)
-                );
-                this.worker.setParameter("status_code", StatusCodes.TASK_ALREADY_COMPLETED);
-                this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
-                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
+                this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
+                await this.writeWorkerAcl(StatusCodes.TASK_ALREADY_COMPLETED);
             } else {
-                Object.entries(aclEntry).forEach(([key, value]) =>
-                    this.worker.setParameter(key, value)
-                );
-                /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
-                   furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
-                let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
-                let timeActual = new Date().getTime();
-                let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
-                if (
-                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment) ||
-                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) < 1) ||
-                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false)
-                ) {
+                Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
+
+                const timeArrivalMs = Date.parse(aclEntry["time_arrival"] ?? "");
+                const nowMs = Date.now();
+                const hoursElapsed = Math.abs(nowMs - (Number.isFinite(timeArrivalMs) ? timeArrivalMs : nowMs)) / 36e5;
+
+                const expiredTime =
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment);
+                const exhaustedTries =
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) < 1);
+                const notInProgress =
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false);
+
+                if (expiredTime || exhaustedTries || notInProgress) {
                     // TODO: Implementare controlli per gli status codes nel caso di task overbooking
                     /* As of today, such a worker is not allowed to perform the task */
-                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment)
-                        this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
-                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) < 1)
-                        this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
+                    if (expiredTime) this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
+                    if (notInProgress && parseInt(aclEntry["try_left"]) < 1) this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("time_removal", new Date().toUTCString());
                     this.sectionService.taskFailed = true;
-                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
-                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
+                    await this.dynamoDBService.insertACLRecordWorkerID(env, this.worker);
                 } else {
-                    Object.entries(aclEntry).forEach(([key, value]) => this.worker.setParameter(key, value));
+                    Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
                     this.worker.identifier = this.worker.getParameter("identifier");
                     this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
                     this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
-                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']))
-                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                    this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
+                    await this.dynamoDBService.insertACLRecordWorkerID(env, this.worker);
                     hitAssigned = true;
                 }
             }
@@ -361,116 +422,114 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
 
-            this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(
-                this.configService.environment
-            ));
+            /* Worker settings are loaded once. */
+            this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(env));
 
-            /* The logging service is enabled if it is needed */
+            /* Logging service is initialized only if enabled. */
             if (this.task.settings.logger_enable)
                 this.initializeLogger(
                     this.worker.identifier,
-                    this.configService.environment.taskName,
-                    this.configService.environment.batchName,
-                    this.configService.environment.region,
+                    env.taskName,
+                    env.batchName,
+                    env.region,
                     this.client,
-                    this.configService.environment.log_on_console
+                    env.log_on_console
                 );
-            else this.actionLogger = null;
+            else
+                this.actionLogger = null;
 
             this.performWorkerStatusCheck().then(async (taskAllowed) => {
                 this.sectionService.taskAllowed = taskAllowed;
 
-                let hitCompletedOrInProgress = {};
+                const hitCompletedOrInProgress: Record<string, boolean> = {};
 
                 if (taskAllowed) {
                     if (!hitAssigned) {
-                        /* We fetch the task's HITs */
-                        let hits = await this.S3Service.downloadHits(this.configService.environment);
+                        /* Task HITs are fetched from S3. */
+                        const hits = await this.S3Service.downloadHits(env);
 
-                        /* It there is not any record, an available HIT can be assigned to him */
-                        if (workerACLRecord["Items"].length <= 0) {
-                            for (let hit of hits) {
-                                hitCompletedOrInProgress[hit['unit_id']] = false
-                                /* The status of each HIT is checked */
-                                let unitACLRecord = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit["unit_id"]);
-                                /* If it has not been assigned, the current worker can receive it */
-                                if (unitACLRecord["Items"].length <= 0) {
+                        /* If there is no record linked to the worker, an available HIT can be assigned. */
+                        if ((aclItems?.length ?? 0) <= 0) {
+                            for (const hit of hits) {
+                                hitCompletedOrInProgress[hit['unit_id']] = false;
+
+                                /* Best-effort claim without changing table keys. */
+                                const ipStr = this.getNormalizedWorkerIp();
+                                const unitEntry: any = {
+                                    unit_id: hit.unit_id,
+                                    token_input: hit.token_input,
+                                    token_output: hit.token_output,
+                                    identifier: this.worker.identifier,
+                                    ip_address: ipStr ?? String(false),
+                                    in_progress: String(true),
+                                    paid: String(false),
+                                    time_arrival: new Date().toUTCString()
+                                };
+
+                                const {claimed} = await this.dynamoDBService.claimUnitIfUnassigned(env, unitEntry);
+                                if (claimed) {
                                     this.worker.setParameter("unit_id", hit["unit_id"]);
                                     this.worker.setParameter("token_input", hit["token_input"]);
                                     this.worker.setParameter("token_output", hit["token_output"]);
-                                    this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
-                                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
-                                    /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                    await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED);
                                     hitAssigned = true;
                                     break;
                                 }
                             }
 
-                            /* If the flag is still false, it means that all the available HITs have been assigned once...
-                                ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
-
+                            /* If still unassigned, recovery is attempted:
+                               - Free slots created by expired/abandoned entries are reused. */
                             if (!hitAssigned) {
                                 let wholeEntries = await this.retrieveAllACLEntries();
 
-                                for (let aclEntry of wholeEntries) {
+                                for (const aclEntry of wholeEntries) {
                                     if (aclEntry["ip_address"] != this.worker.getIP()) {
-                                        if (/true/i.test(aclEntry["paid"]) == true || ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true)))
-
+                                        if (/true/i.test(aclEntry["paid"]) == true ||
+                                            ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true))) {
                                             hitCompletedOrInProgress[aclEntry["unit_id"]] = true;
+                                        }
 
-                                        /*
-                                           If the worker who received the current unit did not complete it, they either abandoned or returned the task.
-                                           In either case, we free up the slot and assign the HIT found to the current worker.
-                                           This also occurs when the worker has no tries left; in this case, the entry has a completion time, but the two flags are set to false.
-                                        */
-
-                                        let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
-                                        let timeActual = new Date().getTime();
-                                        let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
+                                        /* Free a slot if time elapsed or tries nearly exhausted. */
+                                        const timeArrival = Date.parse(aclEntry["time_arrival"] ?? "");
+                                        const hoursElapsed = Math.abs(Date.now() - (Number.isFinite(timeArrival) ? timeArrival : Date.now())) / 36e5;
 
                                         if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed >= this.task.settings.time_assessment) ||
                                             (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1)) {
                                             hitAssigned = true;
-                                            /* The record for the worker that abandoned/returned the task is updated */
+
+                                            /* Abandoned/returned worker entry is updated. */
                                             aclEntry["time_expired"] = String(true);
                                             aclEntry["in_progress"] = String(false);
-                                            aclEntry["time_removal"] = new Date().toUTCString();
-                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true);
-                                            /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
+                                            await this.writeUnitAcl(aclEntry, {updateRemovalTime: true});
+
+                                            /* Slot is assigned to current worker. */
                                             this.worker.setParameter("token_input", aclEntry["token_input"]);
                                             this.worker.setParameter("token_output", aclEntry["token_output"]);
                                             this.worker.setParameter("unit_id", aclEntry["unit_id"]);
                                             this.worker.setParameter("time_arrival", new Date().toUTCString());
-                                            this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
-                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                                            await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED);
                                         }
                                     }
 
-                                    /* As soon as a HIT is assigned to the current worker the search can be stopped */
-                                    if (hitAssigned)
-                                        break;
+                                    if (hitAssigned) break;
                                 }
 
-
+                                /* Inconsistency sweep: recent released units with no active holder. */
                                 if (!hitAssigned) {
-                                    let inconsistentUnits = []
+                                    const inconsistentUnits: string[] = [];
                                     for (const [unitId, status] of Object.entries(hitCompletedOrInProgress)) {
-                                        if (status == false)
-                                            if (!inconsistentUnits.includes(unitId))
-                                                inconsistentUnits.push(unitId)
+                                        if (status === false && !inconsistentUnits.includes(unitId)) inconsistentUnits.push(unitId);
                                     }
 
                                     if (inconsistentUnits.length > 0) {
                                         wholeEntries = await this.retrieveAllACLEntries();
                                         for (const inconsistentUnit of inconsistentUnits) {
-                                            let mostRecentAclEntry = null
-                                            for (let aclEntry of wholeEntries) {
+                                            let mostRecentAclEntry: any = null;
+                                            for (const aclEntry of wholeEntries) {
                                                 if (aclEntry["ip_address"] != this.worker.getIP()) {
-                                                    if (
-                                                        (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false) &&
-                                                        inconsistentUnit == aclEntry['unit_id']
-                                                    ) {
-                                                        mostRecentAclEntry = aclEntry
+                                                    if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false) &&
+                                                        inconsistentUnit == aclEntry['unit_id']) {
+                                                        mostRecentAclEntry = aclEntry;
                                                     }
                                                 }
                                             }
@@ -480,38 +539,35 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                                 this.worker.setParameter("token_output", mostRecentAclEntry["token_output"]);
                                                 this.worker.setParameter("unit_id", mostRecentAclEntry["unit_id"]);
                                                 this.worker.setParameter("time_arrival", new Date().toUTCString());
-                                                this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
-                                                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                                                await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
                                             }
-                                            /* The search can be stopped as soon as a HIT is assigned to the current worker. */
-                                            if (hitAssigned)
-                                                break;
+                                            if (hitAssigned) break;
                                         }
-
                                     }
                                 }
-
                             }
-
                         }
+
+                        /* If assignment still failed, the global status is persisted to ACL. */
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
-                            for (let hit of hits) {
+                            for (const hit of hits) {
                                 if (hitCompletedOrInProgress[hit["unit_id"]] == false)
                                     hitsStillToComplete = true;
                             }
                             if (hitsStillToComplete)
-                                this.worker.setParameter("status_code", StatusCodes.TASK_OVERBOOKING);
+                                await this.writeWorkerAcl(StatusCodes.TASK_OVERBOOKING);
                             else
-                                this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
+                                await this.writeWorkerAcl(StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
-
                     }
-                    this.task.storeDataRecords(await this.retrieveDataRecords())
+
+                    /* Persist previously collected worker data and set up the task. */
+                    this.task.storeDataRecords(await this.retrieveDataRecords());
                     await this.performTaskSetup();
                     this.unlockTask(hitAssigned);
                 } else {
-                    /* If a condition in the execution of performWorkerStatusCheck is not satisfied */
+                    /* A status check failed; task is kept locked. */
                     this.unlockTask(false);
                 }
             });
@@ -521,218 +577,160 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.changeDetector.markForCheck();
     }
 
-    ngOnDestroy() {
-        this.unsubscribe$.next();
-        this.unsubscribe$.complete();
-    }
-
+    /* ------------------------------------------------------
+       Scan all ACL entries (paged) and return them ordered
+       by time_arrival ascending. Original semantics preserved.
+       ------------------------------------------------------ */
     public async retrieveAllACLEntries() {
-        /* ------------------------------------------------------
-           Retrieve the whole ACL table (paged) and sort ascending
-           by arrival time.
-           ---------------------------------------------------------
-           - Same behavior as before (full list + ascending order)
-           - Uses numeric time parsing (robust vs. lexicographic)
-           - Callers relying on ordering keep the same semantics
-           ------------------------------------------------------ */
-
+        /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
         const env = this.configService.environment;
-
         const wholeEntries: any[] = [];
 
-        /* First page */
         let page = await this.dynamoDBService.scanACLRecordUnitId(env);
-        for (const e of (page?.Items ?? [])) wholeEntries.push(e);
+        (page.Items ?? []).forEach(e => wholeEntries.push(e));
+        let lastEvaluatedKey = page.LastEvaluatedKey;
 
-        /* Remaining pages (if any) */
-        let lastEvaluatedKey = page?.LastEvaluatedKey;
-        while (typeof lastEvaluatedKey !== "undefined") {
+        while (typeof lastEvaluatedKey != "undefined") {
             page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lastEvaluatedKey);
-            lastEvaluatedKey = page?.LastEvaluatedKey;
-            for (const e of (page?.Items ?? [])) wholeEntries.push(e);
+            lastEvaluatedKey = page.LastEvaluatedKey;
+            (page.Items ?? []).forEach(e => wholeEntries.push(e));
         }
 
         /* Each ACL record is sorted considering the timestamp, in ascending order */
         wholeEntries.sort((a, b) => {
-            /* Parse to numbers to avoid subtle string-order issues */
-            const ta = Date.parse(a?.time_arrival ?? "") || 0;
-            const tb = Date.parse(b?.time_arrival ?? "") || 0;
-            return ta - tb;
+            const ta = Date.parse(a?.time_arrival ?? "");
+            const tb = Date.parse(b?.time_arrival ?? "");
+            const na = Number.isFinite(ta) ? ta : 0;
+            const nb = Number.isFinite(tb) ? tb : 0;
+            return na - nb;
         });
 
         return wholeEntries;
     }
 
-
+    /* ------------------------------------------------------
+       Return the most recent expiration date among active,
+       unpaid entries. Paged scan is used; memory usage is bounded.
+       ------------------------------------------------------ */
     public async retrieveMostRecentExpirationDate() {
-        /* ------------------------------------------------------
-           Find the most recent expiration among active, unpaid workers
-           ---------------------------------------------------------
-           - Streams the table page-by-page (no full in-memory array)
-           - Keeps only the latest time_expiration seen so far
-           - Returns the ISO string (as stored) or null if not found
-           - Semantics unchanged: we still pick the "nearest" future
-             expiration among { in_progress == true && paid == false }
-           ------------------------------------------------------ */
-
+        let mostRecentExpirationEpoch: number | null = null;
+        let mostRecentExpirationISO: string | null = null;
         const env = this.configService.environment;
 
-        let mostRecentExpirationEpoch: number | null = null;   /* Numeric timestamp used for max() comparisons */
-        let mostRecentExpirationISO: string | null = null;     /* Original ISO string returned to callers */
-
-        /* First page */
-        let page = await this.dynamoDBService.scanACLRecordUnitId(env);
-        let lastEvaluatedKey = page?.LastEvaluatedKey;
-
-        /* Local helper: consider a single entry */
         const consider = (entry: any) => {
-            /* Only active (in_progress) and unpaid entries are relevant */
             if (!(entry && entry.in_progress && entry.paid == false)) return;
-
             const iso = entry.time_expiration as string | undefined;
             if (!iso) return;
-
-            /* We parse once to a number for consistent comparisons */
             const t = Date.parse(iso);
             if (!Number.isFinite(t)) return;
-
             if (mostRecentExpirationEpoch === null || t > mostRecentExpirationEpoch) {
                 mostRecentExpirationEpoch = t;
-                mostRecentExpirationISO = iso;   /* Keep the original string for the return value */
+                mostRecentExpirationISO = iso;
             }
         };
 
-        /* Current page items */
-        for (const e of (page?.Items ?? [])) consider(e);
+        let page = await this.dynamoDBService.scanACLRecordUnitId(env);
+        (page.Items ?? []).forEach(consider);
+        let lastEvaluatedKey = page.LastEvaluatedKey;
 
-        /* Remaining pages (if any) */
         while (typeof lastEvaluatedKey !== "undefined") {
             page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lastEvaluatedKey);
-            lastEvaluatedKey = page?.LastEvaluatedKey;
-            for (const e of (page?.Items ?? [])) consider(e);
+            lastEvaluatedKey = page.LastEvaluatedKey;
+            (page.Items ?? []).forEach(consider);
         }
 
         return mostRecentExpirationISO;
     }
 
-
+    /*
+     * Goal
+     * ----
+     * Decide whether the current worker is allowed to run the task.
+     *
+     * Check order (kept consistent with original intent):
+     *  1) Previous-batch BLACKLIST (via DynamoDB ACL if available, else S3 identifier list)
+     *  2) Previous-batch WHITELIST (can override 1)
+     *  3) Current-batch ACL "returning" block (DynamoDB) if settings.block === true
+     *  4) Current-batch manual BLACKLIST (S3)
+     *  5) Current-batch manual WHITELIST (S3)
+     *
+     * Key fixes:
+     *  - Inline, type-safe IP normalization (no `.ip` on Object error).
+     *  - Correctly load previous-batch WHITELIST from S3 `whitelist` (not `blacklist`).
+     *  - Exact ACL table name match instead of loose `includes`.
+     *  - Robust DynamoDB item IP extraction (DocumentClient vs low-level).
+     *  - Parallel S3 reads where independent.
+     */
     public async performWorkerStatusCheck() {
-        /* ------------------------------------------------------------------------------------------------
-         * Goal
-         * ----
-         * Decide whether the current worker is allowed to run the task.
-         *
-         * Check order (kept consistent with original intent):
-         *  1) Previous-batch BLACKLIST (via DynamoDB ACL if available, else S3 identifier list)
-         *  2) Previous-batch WHITELIST (can override 1)
-         *  3) Current-batch ACL "returning" block (DynamoDB) if settings.block === true
-         *  4) Current-batch manual BLACKLIST (S3)
-         *  5) Current-batch manual WHITELIST (S3)
-         *
-         * Key fixes:
-         *  - Inline, type-safe IP normalization (no `.ip` on Object error).
-         *  - Correctly load previous-batch WHITELIST from S3 `whitelist` (not `blacklist`).
-         *  - Exact ACL table name match instead of loose `includes`.
-         *  - Robust DynamoDB item IP extraction (DocumentClient vs low-level) done inline.
-         *  - Fewer redundant awaits; batch S3 reads are parallelized.
-         * ------------------------------------------------------------------------------------------------ */
-
         let taskAllowed = true;
 
-        /* -----------------------------------------
-         * Normalize environment and worker identity
-         * ----------------------------------------- */
+        /* Normalize environment and worker IP. */
         const env = this.configService.environment;
+        const rawIp: unknown = this.worker.getIP();
+        const ip: string | undefined =
+            typeof rawIp === 'string'
+                ? rawIp
+                : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ip === 'string'
+                    ? (rawIp as any).ip
+                    : (rawIp && typeof rawIp === 'object' && typeof (rawIp as any).ipAddress === 'string'
+                        ? (rawIp as any).ipAddress
+                        : undefined));
 
-        /* Use normalized IP helper (accepts: string or { ip } or { ipAddress }) */
-        const ip = this.getNormalizedWorkerIp() ?? undefined;
-
-        /* Fast exit if IP is unexpectedly missing */
+        /* Conservative block if IP cannot be determined. */
         if (!ip) {
-            /* If we cannot read IP, be conservative and block to avoid abuse */
             this.worker.setParameter('status_code', StatusCodes.WORKER_RETURNING_BLOCK);
             return false;
         }
 
-        /* ---------------------------------------------------
-         * Read once: table list and current manual S3 lists
-         * --------------------------------------------------- */
+        /* Read table list and current manual lists in parallel. */
         const [tables, workersManual] = await Promise.all([
             this.dynamoDBService.listTables(env),
-            this.S3Service.downloadWorkers(env) /* current batch manual lists */
+            this.S3Service.downloadWorkers(env)
         ]);
 
         const tableNames: string[] = (tables && (tables as any).TableNames) ? (tables as any).TableNames : [];
 
-        /* -------------------------------------------------------
-         * Consolidate previous-batch metadata in a single pass
-         * ------------------------------------------------------- */
+        /* Consolidate previous-batch metadata once. */
         const prevBlacklistBatches: string[] = this.worker.settings?.blacklist_batches ?? [];
         const prevWhitelistBatches: string[] = this.worker.settings?.whitelist_batches ?? [];
-
-        /* De-duplicate batch names that appear in both arrays */
         const allPrevBatches: string[] = Array.from(new Set([...prevBlacklistBatches, ...prevWhitelistBatches]));
 
-        /* Build entries with S3 lists and exact ACL table (parallelized) */
         const prevBatchEntries = await Promise.all(
             allPrevBatches.map(async (batchName) => {
                 const parts = (batchName ?? '').split('/');
                 const previousTaskName = parts[0];
                 const previousBatchName = parts[1];
 
-                /* Load S3 worker lists for this previous batch */
                 const s3Workers = await this.S3Service.downloadWorkers(env, batchName);
-
-                /* Find exact ACL table name (task_batch_ACL) */
-                const targetTableName = previousTaskName && previousBatchName
+                const tableName = previousTaskName && previousBatchName
                     ? tableNames.find(t => t === `${previousTaskName}_${previousBatchName}_ACL`)
                     : undefined;
 
-                /* Prepare meta inline (no helpers) */
                 const meta: any = {};
-                if (targetTableName) meta.tableName = targetTableName;
-
-                /* If this batch is used for blacklist propagation, pick its S3 blacklist */
-                if (prevBlacklistBatches.includes(batchName)) {
-                    meta.blacklist = s3Workers?.blacklist ?? [];
-                }
-
-                /* If this batch is used for whitelist propagation, pick its S3 whitelist (BUG FIX) */
-                if (prevWhitelistBatches.includes(batchName)) {
-                    meta.whitelist = s3Workers?.whitelist ?? [];
-                }
-
+                if (tableName) meta.tableName = tableName;
+                if (prevBlacklistBatches.includes(batchName)) meta.blacklist = s3Workers?.blacklist ?? [];
+                if (prevWhitelistBatches.includes(batchName)) meta.whitelist = s3Workers?.whitelist ?? [];
                 return [batchName, meta] as const;
             })
         );
-
-        /* Map <batchName, meta> for quick iteration */
         const batchesStatus = new Map<string, any>(prevBatchEntries);
 
-        /* ---------------------------------------------------------
-         * 1) Previous-batch BLACKLIST (S3 or DynamoDB ACL)
-         * --------------------------------------------------------- */
-        for (const [_, meta] of batchesStatus.entries()) {
-            /* Prefer authoritative ACL table if available */
+        /* 1) Previous-batch BLACKLIST. */
+        for (const [, meta] of batchesStatus.entries()) {
             if (meta.tableName) {
                 const result = await this.dynamoDBService.getACLRecordIpAddress(env, ip, meta.tableName);
                 const items: any[] = result?.Items ?? [];
-
-                /* Inline robust IP extraction from DynamoDB item */
                 const match = items.some((it: any) => {
                     const itemIp: string | undefined =
                         (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
                     return itemIp === ip;
                 });
-
                 if (match) {
                     taskAllowed = false;
                     this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_PREVIOUS);
                     break;
                 }
             }
-
-            /* Fall back to legacy S3 identifier blacklist if present */
             if (taskAllowed && Array.isArray(meta.blacklist) && meta.blacklist.includes(this.worker.identifier)) {
                 taskAllowed = false;
                 this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_PREVIOUS);
@@ -740,30 +738,23 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
         }
 
-        /* ---------------------------------------------------------
-         * 2) Previous-batch WHITELIST (can override previous block)
-         * --------------------------------------------------------- */
+        /* 2) Previous-batch WHITELIST can override. */
         if (!taskAllowed) {
-            for (const [_, meta] of batchesStatus.entries()) {
-                /* Check ACL table first if present */
+            for (const [, meta] of batchesStatus.entries()) {
                 if (meta.tableName) {
                     const result = await this.dynamoDBService.getACLRecordIpAddress(env, ip, meta.tableName);
                     const items: any[] = result?.Items ?? [];
-
                     const match = items.some((it: any) => {
                         const itemIp: string | undefined =
                             (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
                         return itemIp === ip;
                     });
-
                     if (match) {
                         taskAllowed = true;
                         this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_PREVIOUS);
                         break;
                     }
                 }
-
-                /* Fall back to legacy S3 identifier whitelist if present */
                 if (!taskAllowed && Array.isArray(meta.whitelist) && meta.whitelist.includes(this.worker.identifier)) {
                     taskAllowed = true;
                     this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_PREVIOUS);
@@ -772,52 +763,44 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
         }
 
-        /* ----------------------------------------------------------------------
-         * 3) Current-batch ACL "returning" block (DynamoDB), if settings.block
-         * ---------------------------------------------------------------------- */
+        /* 3) Current-batch returning block. */
         if (this.worker.settings?.block) {
-            const currentAcl = await this.dynamoDBService.getACLRecordIpAddress(env, ip /* current table inferred server-side */);
+            const currentAcl = await this.dynamoDBService.getACLRecordIpAddress(env, ip /* current table inferred */);
             const items: any[] = currentAcl?.Items ?? [];
-
             const seen = items.some((it: any) => {
                 const itemIp: string | undefined =
                     (it && typeof it === 'object' && ((it as any).ip_address?.S ?? (it as any).ip_address ?? (it as any).ipAddress?.S ?? (it as any).ipAddress)) as string | undefined;
                 return itemIp === ip;
             });
-
             if (seen) {
                 this.worker.setParameter('status_code', StatusCodes.WORKER_RETURNING_BLOCK);
-                return false; /* immediate block */
+                return false;
             }
         }
 
-        /* -----------------------------------------
-         * 4) Current-batch manual BLACKLIST (S3)
-         * ----------------------------------------- */
+        /* 4) Current-batch manual BLACKLIST. */
         if (workersManual?.blacklist?.includes?.(this.worker.identifier)) {
             this.worker.setParameter('status_code', StatusCodes.WORKER_BLACKLIST_CURRENT);
             return false;
         }
 
-        /* ----------------------------------------
-         * 5) Current-batch manual WHITELIST (S3)
-         * ---------------------------------------- */
+        /* 5) Current-batch manual WHITELIST. */
         if (workersManual?.whitelist?.includes?.(this.worker.identifier)) {
             this.worker.setParameter('status_code', StatusCodes.WORKER_WHITELIST_CURRENT);
             return true;
         }
 
-        /* Default: whatever stands after previous checks */
         return taskAllowed;
     }
 
-
-    /* Unlocks the task depending on performWorkerStatusCheck outcome */
+    /* ------------------------------------------------------
+       Unlock the task based on the status check outcome.
+       markForCheck is preferred; spinner is stopped here.
+       ------------------------------------------------------ */
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
         this.sectionService.checkCompleted = true;
         this.changeDetector.markForCheck();
-        /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");
     }
 
@@ -828,7 +811,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         /* The main-instructions card is now dismissed */
         this.sectionService.taskInstructionsRead = true;
 
-        /* Update the browser tab title – keeps your original logic */
+        /* Update the browser tab title – keeps the original logic */
         if (this.configService.environment.taskTitle !== "none") {
             this.titleService.setTitle(
                 `${this.configService.environment.taskTitle}: ${this.task.getElementIndex(this.worker.getPositionCurrent()).elementType}${this.worker.getPositionCurrent()}`
@@ -850,171 +833,86 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
     }
 
-    public async retrieveDataRecords() {
-        /* ------------------------------------------------------
-           Retrieve worker data records (paged), filter on-the-fly
-           ---------------------------------------------------------
-           - Streams DynamoDB pages instead of building a full array
-           - Filters by (identifier == worker.identifier) and IP match
-           - Normalizes sequence/IP checks (array | string | object)
-           - Safely parses JSON payloads (keeps raw if malformed)
-           - Semantics unchanged: same records, same order
-           ------------------------------------------------------ */
-
-        const env = this.configService.environment;
-        const result: any[] = [];
-
-        const workerId = this.worker.identifier;
-        const ipStr = this.getNormalizedWorkerIp(); /* may be null */
-
-        /* Local helper: decide if a record belongs to the current worker/IP */
-        const accept = (entry: any) => {
-            if (!entry) return;
-
-            /* Same worker identifier */
-            if (workerId != entry.identifier) return;
-
-            /* Sequence may be: array of IPs | string | object; normalize to a string check */
-            if (ipStr) {
-                const seq = entry.sequence;
-                let hasIp = false;
-
-                if (Array.isArray(seq)) {
-                    hasIp = seq.includes(ipStr);
-                } else if (typeof seq === 'string') {
-                    hasIp = seq.includes(ipStr);
-                } else if (seq && typeof seq === 'object') {
-                    /* Try common shapes; fallback to JSON stringification */
-                    const probe =
-                        (typeof (seq as any).value === 'string' && (seq as any).value) ??
-                        (typeof (seq as any).ip === 'string' && (seq as any).ip) ??
-                        JSON.stringify(seq);
-                    hasIp = typeof probe === 'string' ? probe.includes(ipStr) : false;
-                }
-
-                if (!hasIp) return;
-            }
-
-            /* Parse JSON payload if needed (keep as string on parse error) */
-            const raw = entry["data"];
-            if (typeof raw === "string") {
-                try {
-                    entry["data"] = JSON.parse(raw);
-                } catch (e) {
-                    console.log("retrieveDataRecords: JSON parse failed for entry", {entryId: entry?.id, err: String(e)});
-                }
-            }
-
-            result.push(entry);
-        };
-
-        /* First page */
-        let page = await this.dynamoDBService.getDataRecord(env, workerId);
-        for (const e of (page?.Items ?? [])) accept(e);
-
-        /* Remaining pages (if any) */
-        let lastEvaluatedKey = page?.LastEvaluatedKey;
-        while (typeof lastEvaluatedKey !== "undefined") {
-            page = await this.dynamoDBService.getDataRecord(env, workerId, null, lastEvaluatedKey);
-            lastEvaluatedKey = page?.LastEvaluatedKey;
-            for (const e of (page?.Items ?? [])) accept(e);
-        }
-
-        return result;
-    }
-
-
     /*
- *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
- *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
- *  Therefore, to use a customized the task the Document interface must be adapted to correctly parse each document's field.
- *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
- */
+     *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
+     *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
+     *  Therefore, to use a customized the task the Document interface must be adapted to correctly parse each document's field.
+     *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
+     *
+     *  Improvement:
+     *  - Direct lookup by unit_id instead of scanning all hits.
+     *  - Static assets (questionnaires/instructions/dimensions) are fetched in parallel.
+     *  - Arrays are preallocated to reduce churn. Semantics are preserved.
+     */
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
 
         this.sectionService.taskStarted = true;
 
-        /* Cache environment locally to avoid repeated property lookups */
-        const env = this.configService.environment;
-
         /* The hits stored on Amazon S3 are retrieved */
-        const hits: Hit[] = await this.S3Service.downloadHits(env);
+        const env = this.configService.environment;
+        const hits = await this.S3Service.downloadHits(env);
 
-        /* Scan for the hit matching the current worker's assigned unit_id (fast exit if found) */
+        /* Scan each entry for the token input → now direct find by unit_id */
         const unitId = this.worker.getParameter('unit_id');
-        const currentHit = hits.find(h => h.unit_id === unitId);
+        let currentHit = hits.find(h => h.unit_id === unitId);
 
         if (!currentHit) {
-            /* Defensive guard: if the assigned unit is not found (e.g., stale assignment), stop setup gracefully */
+            /* Defensive guard: assignment became stale or corrupted. */
             this.sectionService.taskFailed = true;
             this.sectionService.taskCompleted = false;
             this.showSnackbar("The assigned unit is no longer available. Please reload the task.", "Dismiss", 8000);
             return;
         }
 
-        /* The matching hit is found: initialize Task core fields */
+        /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+        currentHit = currentHit as Hit;
         this.task.tokenInput = currentHit.token_input;
         this.task.tokenOutput = currentHit.token_output;
         this.task.unitId = currentHit.unit_id;
         this.task.documentsAmount = currentHit.documents.length;
         this.task.hit = currentHit;
-
         /* The array of documents is initialized */
         this.task.initializeDocuments(currentHit.documents, (currentHit as any)["documents_params"]);
 
-        /* The logging service receives the current unit id if it is enabled */
         if (this.task.settings.logger_enable)
             this.actionLogger.unitId = this.task.unitId;
 
-        /* A form for each document is initialized (pre-sized for performance/readability) */
+        /* Preallocate document arrays. */
         this.documentsForm = new Array<UntypedFormGroup>(this.task.documentsAmount);
         this.documentsFormsAdditional = Array.from({length: this.task.documentsAmount}, () => []);
-
-        /* Arrays for the search engine forms and results are initialized (pre-sized) */
         this.searchEngineForms = new Array<Array<UntypedFormGroup>>(this.task.documentsAmount);
         this.resultsRetrievedForms = new Array<Array<Object>>(this.task.documentsAmount);
 
-        /* The questionnaires, evaluation instructions, and dimensions are retrieved in parallel from Amazon S3 */
-        const [questionnaires, instructionsEvaluation, dimensions] = await Promise.all([
+        /* Static assets are read in parallel. */
+        const [questionnaires, instructions, dimensions] = await Promise.all([
             this.S3Service.downloadQuestionnaires(env),
             this.S3Service.downloadEvaluationInstructions(env),
             this.S3Service.downloadDimensions(env)
         ]);
-
-        /* The questionnaires are initialized */
         this.task.initializeQuestionnaires(questionnaires);
 
-        /* A form for each questionnaire is initialized (pre-sized) */
+        /* A form for each questionnaire is initialized */
         this.questionnairesForm = new Array<UntypedFormGroup>(this.task.questionnaireAmount);
 
-        /* The evaluation instructions stored on Amazon S3 are retrieved and initialized */
-        this.task.initializeInstructionsEvaluation(instructionsEvaluation);
-
-        /* The dimensions are retrieved and initialized */
+        /* The evaluation instructions stored on Amazon S3 are retrieved */
+        this.task.initializeInstructionsEvaluation(instructions);
         this.task.initializeDimensions(dimensions);
 
-        /* The access counter is initialized */
         this.task.initializeAccessCounter();
-
-        /* The timestamps are initialized */
         this.task.initializeTimestamps();
-
-        /* The post-assessment arrays are initialized if needed */
         this.task.initializePostAssessment();
 
-        /* The initial task payload is uploaded the first time the worker starts the task */
-        if (this.worker.identifier != null) {
+        /* Initial data record is written only once per worker. */
+        if (!(this.worker.identifier == null)) {
             if (this.task.dataRecords.length <= 0) {
                 const taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
                 await this.dynamoDBService.insertDataRecord(env, this.worker, this.task, taskInitialPayload);
             }
         }
 
-        /* Change detection is triggered to update the UI */
         this.changeDetector.detectChanges();
     }
-
 
     public storePositionCurrent(data) {
         this.worker.setParameter("position_current", String(data))
@@ -1153,7 +1051,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let jumpIndex = this.computeJumpIndex()
         this.worker.setParameter('position_current', String(jumpIndex))
 
-        /* Force change detection so we still have a valid Stepper ref */
+        /* Force change detection so a valid Stepper ref is ensured */
         this.changeDetector.detectChanges();
 
         /* Jump straight to the desired step (no intermediate instantiation) */
@@ -1202,7 +1100,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         // Track the last questionnaire index with allow_back === false (or undefined), i.e., locked.
         let lastLockedQuestionnaireIdx = -1;
 
-        // Tracks if any previous checks have failed, to restrict how far back we can go.
+        // Tracks if any previous checks have failed, to restrict how far back the flow can go.
         let failChecksCurrent = false;
 
         // Used for referencing current step's allow_back setting and form validity.
@@ -1243,12 +1141,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.task.timestampsElapsed[i] < timeCheckAmount[i];
 
                 /* If allow_back is absent or false, treat as locked (no back allowed).
-                   We must not allow jumping to or before this questionnaire on reset. */
+                   The jump target must not land on or before this questionnaire. */
                 if (!objAllowBack["allow_back"]) {
                     lastLockedQuestionnaireIdx = i;
                 }
             } else {
-                /* For documents: perform checks after evaluating allow_back (not needed for allow_back). */
+                /* For documents: check validity and time spent. */
                 failChecksCurrent =
                     failChecksCurrent ||
                     objFormValidity.valid === false ||
@@ -1259,7 +1157,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         /*
          * If the computed jumpIndex is before or at a locked questionnaire step,
          * jump to the first step immediately after the last locked questionnaire (if possible).
-         * This ensures we never land on or before a locked questionnaire.
          */
         if (lastLockedQuestionnaireIdx >= 0 && jumpIndex <= lastLockedQuestionnaireIdx) {
             return lastLockedQuestionnaireIdx + 1 < totalSteps ? lastLockedQuestionnaireIdx + 1 : lastLockedQuestionnaireIdx;
@@ -1271,42 +1168,45 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return Math.min(jumpIndex, totalSteps - 1);
     }
 
-    public storeQuestionnaireForm(data, stepIndex) {
-        let questionnaireIndex = this.task.getElementIndex(stepIndex)['elementIndex']
-        if (!this.questionnairesForm[questionnaireIndex])
-            this.questionnairesForm[questionnaireIndex] = data["form"];
-        let action = data["action"];
-        if (action)
-            this.produceData(action, stepIndex);
-    }
+    /* ------------------------------------------------------
+       Data records retrieval.
+       - Paged query by identifier is used (no full-table scan).
+       - Entries are filtered by sequence IP match (normalized).
+       - Items are parsed incrementally to cap memory usage.
+       ------------------------------------------------------ */
+    public async retrieveDataRecords() {
+        const env = this.configService.environment;
+        const out: any[] = [];
+        const ip = this.getNormalizedWorkerIp();
+        const ipNeedle = ip ?? (this.worker.getIP() as any)?.ip ?? '';
 
-    public storeDocumentForm(data, stepIndex) {
-        let documentIndex = this.task.getElementIndex(stepIndex)['elementIndex']
-        let type = data['type']
-        /* Added a check for null and undefined values in post-assessment cases, where the main form bounces when clicking on Next, Back, or Finish. */
-        if (type == 'initial' || type === null || type === undefined) {
-            if (!this.documentsForm[documentIndex]) {
-                this.documentsForm[documentIndex] = data["form"];
-                this.documentsFormsAdditional[documentIndex] = []
+        let page = await this.dynamoDBService.getDataRecord(env, this.worker.identifier);
+        for (const it of (page.Items ?? [])) {
+            if (this.worker.identifier == it["identifier"] && String(it["sequence"] ?? '').includes(ipNeedle)) {
+                try {
+                    it["data"] = JSON.parse(it["data"]);
+                } catch { /* keep original if parsing fails */
+                }
+                out.push(it);
             }
-        } else {
-            this.documentsFormsAdditional[documentIndex].push(data["form"])
         }
-        let action = data["action"];
-        if (action)
-            this.produceData(action, stepIndex);
-    }
 
-    /*
-     * This function allows the worker to provide a comment when a try is finished, whether successful or not.
-     * The comment can be typed in a textarea, and when the worker clicks the "Send" button, such a comment is uploaded to an Amazon S3 bucket.
-     */
-    public async storeComment(data) {
-        this.outcomeSection.commentSent = true;
-        if (!(this.worker.identifier == null)) {
-            let comment = this.task.buildCommentPayload(data);
-            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
+        let lastEvaluatedKey = page.LastEvaluatedKey;
+        while (typeof lastEvaluatedKey != "undefined") {
+            page = await this.dynamoDBService.getDataRecord(env, this.worker.identifier, null, lastEvaluatedKey);
+            lastEvaluatedKey = page.LastEvaluatedKey;
+            for (const it of (page.Items ?? [])) {
+                if (this.worker.identifier == it["identifier"] && String(it["sequence"] ?? '').includes(ipNeedle)) {
+                    try {
+                        it["data"] = JSON.parse(it["data"]);
+                    } catch { /* ignore */
+                    }
+                    out.push(it);
+                }
+            }
         }
+
+        return out;
     }
 
     /*
@@ -1344,7 +1244,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
 
         let qualityChecks = null;
-        let qualityChecksPayload = null;
 
         if (action == "Finish") {
             qualityChecks = this.performQualityChecks();
@@ -1355,7 +1254,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 this.sectionService.taskSuccessful = false;
                 this.sectionService.taskFailed = true;
             }
-            /* Lastly, we update the ACL */
+            /* Lastly, the ACL is updated. */
             if (!(this.worker.identifier == null)) {
                 this.worker.setParameter("time_completion", new Date().toUTCString());
                 if (this.sectionService.taskSuccessful) {
@@ -1399,7 +1298,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
-                qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
+                const qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
                 this.storePositionCurrent(String(currentElement))
             }
@@ -1408,9 +1307,63 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (action == "Finish") {
             this.sectionService.taskCompleted = true;
             this.ngxService.stopLoader("skeleton-inner");
-            this.changeDetector.markForCheck();
+            this.changeDetector.detectChanges();
         }
     }
+
+    /* ==================== FORM EVENT HANDLERS ==================== */
+
+    /**
+     * Stores a questionnaire form reference and forwards the action to produceData.
+     * Preserves original behavior.
+     */
+    public storeQuestionnaireForm(data: any, stepIndex: number) {
+        const questionnaireIndex = this.task.getElementIndex(stepIndex)['elementIndex'];
+        if (!this.questionnairesForm[questionnaireIndex]) {
+            this.questionnairesForm[questionnaireIndex] = data['form'];
+        }
+        const action = data['action'];
+        if (action) {
+            this.produceData(action, stepIndex);
+        }
+    }
+
+    /**
+     * Stores a document form reference (initial vs additional/post-assessment) and forwards the action to produceData.
+     * Preserves original behavior and the null/undefined guard for post-assessment bounces.
+     */
+    public storeDocumentForm(data: any, stepIndex: number) {
+        const documentIndex = this.task.getElementIndex(stepIndex)['elementIndex'];
+        const type = data['type'];
+
+        // In post-assessment cases the main form can bounce; keep the null/undefined guard.
+        if (type === 'initial' || type === null || type === undefined) {
+            if (!this.documentsForm[documentIndex]) {
+                this.documentsForm[documentIndex] = data['form'];
+                this.documentsFormsAdditional[documentIndex] = [];
+            }
+        } else {
+            this.documentsFormsAdditional[documentIndex].push(data['form']);
+        }
+
+        const action = data['action'];
+        if (action) {
+            this.produceData(action, stepIndex);
+        }
+    }
+
+    /**
+     * Writes a free-form comment when a try finishes (successful or not).
+     * Preserves original behavior.
+     */
+    public async storeComment(data: any) {
+        this.outcomeSection.commentSent = true;
+        if (this.worker.identifier != null) {
+            const comment = this.task.buildCommentPayload(data);
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
+        }
+    }
+
 
     public computeTimestamps(
         currentElement: number,
@@ -1476,12 +1429,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
         if (currentDocumentData.elementType === "S" && !this.task.countdownsExpired[currentDocumentData.elementIndex] && this.task.countdownsStarted[currentDocumentData.elementIndex]) {
             const currentCountdown = getCountdown(currentDocumentData.elementIndex);
-            const initial = this.task.documentsCountdownTime[currentDocumentData.elementIndex];
-            const secsLeft = currentCountdown.i.value / 1000;
-            if (Math.abs(secsLeft - initial) < 0.5)
-                currentCountdown.begin();
-            else
-                currentCountdown.resume();
+            /* Tolerance is added to avoid equality edge cases on begin/resume. */
+            const remaining = currentCountdown.i.value / 1000;
+            const total = this.task.documentsCountdownTime[currentDocumentData.elementIndex];
+            const nearStart = Math.abs(remaining - total) <= 0.25; // ~250ms tolerance
+            if (nearStart) currentCountdown.begin();
+            else currentCountdown.resume();
         }
     }
 

@@ -1,0 +1,55 @@
+/* |--- INSTRUCTION LIST (shared for inline & dialog) --| */
+
+.instruction-list {
+    font-family: inherit;
+    color: #222;
+
+    h1 {
+        text-align: center;
+        font-weight: 500;
+        font-size: 2rem; /* 32px */
+        color: #2d3a4b;
+        letter-spacing: 0.02em;
+    }
+
+    /* Supports <p> and legacy <span [innerHTML]> */
+    p,
+    span {
+        line-height: 1.6;
+        font-size: 1.0625rem; /* ~17px */
+        color: #333;
+        margin: 0 0 0.85rem;
+        text-align: justify;
+    }
+
+    ul,
+    ol {
+        margin-left: 2rem;
+        margin-bottom: 1.2rem;
+    }
+
+    li {
+        line-height: 1.85;
+        margin: 0.4rem 0 0.4rem 0.2rem;
+        font-size: 1.0625rem; /* match paragraph size */
+    }
+}
+
+/* Optional quote block used within instructions */
+.instructions-quote {
+    margin: 1.2rem 0;
+    border-left: 7px #d1d5db solid;
+    background: #f6f7fa;
+    padding: 0.8rem 1rem;
+    color: #4a5568;
+    font-style: italic;
+    font-size: 1.0625rem; /* ~17px */
+    box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .instruction-list h1 {
+        font-size: 1.25rem; /* clearer on small screens */
+    }
+}
