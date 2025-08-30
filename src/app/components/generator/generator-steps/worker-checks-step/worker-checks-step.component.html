@@ -91,13 +91,13 @@
 
                                             <!-- Batch mode: None / Blacklist / Whitelist -->
                                             <mat-chip-listbox
-                                                [multiple]="false"
-                                                [value]="getBatchMode(batch['counter'])"
-                                                (valueChange)="setBatchMode(batch['counter'], $event)">
+                                                formControlName="mode"
+                                                [multiple]="false">
                                                 <mat-chip-option value="none"><span i18n>None</span></mat-chip-option>
                                                 <mat-chip-option value="blacklist"><span i18n>Blacklist</span></mat-chip-option>
                                                 <mat-chip-option value="whitelist"><span i18n>Whitelist</span></mat-chip-option>
                                             </mat-chip-listbox>
+
                                         </div>
                                     }
                                 </mat-expansion-panel>

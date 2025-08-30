@@ -191,7 +191,7 @@ Re-usable template that prints a list of dimensions
                                                             <mat-slider [min]="task.dimensionIntervalMinValues[documentIndex]"
                                                                         [max]="task.dimensionIntervalMaxValues[documentIndex]"
                                                                         [step]="dimension.scale.step"
-                                                                        discrete>
+                                                                        discrete="true">
                                                                 <input matSliderThumb
                                                                        formControlName="{{ dimension.name + '_value' + controlSuffix }}"
                                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
@@ -400,7 +400,7 @@ Re-usable template that prints a list of dimensions
                                                             <mat-slider [min]="dimension.scale.min"
                                                                         [max]="dimension.scale.max"
                                                                         [step]="dimension.scale.step"
-                                                                        discrete>
+                                                                        discrete="true">
                                                                 <input matSliderThumb
                                                                        formControlName="{{ dimension.name + '_value_element_' + k }}"
                                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);

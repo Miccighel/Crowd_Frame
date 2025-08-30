@@ -398,7 +398,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false);
 
                 if (expiredTime || exhaustedTries || notInProgress) {
-                    // TODO: Implementare controlli per gli status codes nel caso di task overbooking
                     /* As of today, such a worker is not allowed to perform the task */
                     if (expiredTime) this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
                     if (notInProgress && parseInt(aclEntry["try_left"]) < 1) this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);

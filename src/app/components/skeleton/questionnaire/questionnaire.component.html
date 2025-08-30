@@ -183,10 +183,10 @@
                   }
                   <!-- DETAILS -->
                   @if (question.detail) {
-                    <mat-expansion-panel hideToggle
-                      class="question-detail"
-                      (opened)="question.show_detail = true"
-                      (closed)="question.show_detail = false">
+                    <mat-expansion-panel hideToggle="true"
+                                         class="question-detail"
+                                         (opened)="question.show_detail = true"
+                                         (closed)="question.show_detail = false">
                       <mat-expansion-panel-header class="mat-button">
                         <mat-panel-title>
                           {{ question.show_detail ? 'Hide details' : 'Show details' }}
