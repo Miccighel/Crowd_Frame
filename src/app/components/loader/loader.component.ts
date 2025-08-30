@@ -3,8 +3,10 @@ import {
     ChangeDetectorRef,
     Component,
     OnInit,
+    AfterViewInit,
     DestroyRef,
-    inject
+    inject,
+    NgZone
 } from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
@@ -26,7 +28,7 @@ import CryptoES from 'crypto-es';
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
-export class LoaderComponent implements OnInit {
+export class LoaderComponent implements OnInit, AfterViewInit {
     /* Task metadata */
     readonly taskName: string;
     readonly batchName: string;
@@ -51,7 +53,7 @@ export class LoaderComponent implements OnInit {
     password: UntypedFormControl;
 
     /* Internals */
-    private readonly LOADER_ID = 'global';      /* Use the global host declared in BaseComponent */
+    private readonly LOADER_ID = 'global'; /* Global host is declared in BaseComponent */
     private adminHashes?: Set<string>;
     private readonly destroyRef = inject(DestroyRef);
 
@@ -62,7 +64,8 @@ export class LoaderComponent implements OnInit {
         private readonly s3: S3Service,
         formBuilder: UntypedFormBuilder,
         private readonly snackBar: MatSnackBar,
-        private readonly route: ActivatedRoute
+        private readonly route: ActivatedRoute,
+        private readonly zone: NgZone
     ) {
         this.taskName = this.config.environment.taskName;
         this.batchName = this.config.environment.batchName;
@@ -76,23 +79,44 @@ export class LoaderComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.route.queryParamMap.pipe(
-            map(q => ({
-                workerID: q.get('workerID'),
-                admin: q.get('admin') === 'true'
-            })),
-            takeUntilDestroyed(this.destroyRef)
-        ).subscribe(({workerID, admin}) => {
-            this.workerIdentifier = workerID;
-            this.adminAccess = admin;
-            this.cdr.markForCheck();
-        });
+        this.route.queryParamMap
+            .pipe(
+                map(q => ({
+                    workerID: q.get('workerID'),
+                    admin: q.get('admin') === 'true'
+                })),
+                takeUntilDestroyed(this.destroyRef)
+            )
+            .subscribe(({workerID, admin}) => {
+                this.workerIdentifier = workerID;
+                this.adminAccess = admin;
+
+                /* On entry, make sure the global overlay is not covering the action buttons. */
+                this.drainGlobal();
+
+                this.cdr.markForCheck();
+            });
     }
 
+    ngAfterViewInit(): void {
+        /* Extra safety after first paint of this component. */
+        this.stopGlobalOnNextPaint();
+    }
+
+    /* ───────────────── Actions ───────────────── */
+
     loadAction(action: 'generate' | 'perform'): void {
+        /* Start global again while we flip to the next branch (login/skeleton). */
+        this.ngx.startLoader(this.LOADER_ID);
+
         this.actionChosen = action;
         this.selectionPerformed = true;
+
+        /* With OnPush, explicitly request a refresh. */
         this.cdr.markForCheck();
+
+        /* Stop global after the new branch is rendered and painted. */
+        this.stopGlobalOnNextPaint();
     }
 
     async performAdminCheck(): Promise<void> {
@@ -101,6 +125,7 @@ export class LoaderComponent implements OnInit {
             return;
         }
 
+        /* Keep admin login spinner semantics on the SAME 'global' host. */
         this.ngx.startLoader(this.LOADER_ID);
         try {
             await this.ensureAdminHashesLoaded();
@@ -124,9 +149,17 @@ export class LoaderComponent implements OnInit {
             this.showSnackbar('Unexpected error during login. Please retry.', 'Dismiss', 6000);
         } finally {
             this.cdr.markForCheck();
+            /* Balance the login spinner start. */
             this.ngx.stopLoader(this.LOADER_ID);
+
+            /* If the DOM flips to <app-generator> after success, ensure global is down. */
+            if (this.loginSuccessful) {
+                this.stopGlobalOnNextPaint();
+            }
         }
     }
+
+    /* ───────────────── Utils ───────────────── */
 
     private async ensureAdminHashesLoaded(): Promise<void> {
         if (this.adminHashes) return;
@@ -145,5 +178,36 @@ export class LoaderComponent implements OnInit {
 
     checkFormControl(form: UntypedFormGroup, field: string, key: string): boolean {
         return !!form?.get(field)?.hasError(key);
+    }
+
+    /**
+     * Stop the 'global' host after the browser has painted the current frame.
+     * This avoids racing with @if branch creation under OnPush.
+     */
+    private stopGlobalOnNextPaint(): void {
+        /* Run outside Angular to avoid triggering extra CD, then back in to stop. */
+        this.zone.runOutsideAngular(() => {
+            /* rAF twice => after layout & paint of the new branch. */
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.zone.run(() => this.drainGlobal());
+                });
+            });
+        });
+    }
+
+    /**
+     * Drain the 'global' loader counter safely (no stopAll(), no 'master' warnings).
+     * If upstream started multiple times (route + click), a few stops zero it.
+     */
+    private drainGlobal(times = 4): void {
+        for (let i = 0; i < times; i++) {
+            try {
+                this.ngx.stopLoader(this.LOADER_ID);
+            } catch {
+                /* Already stopped; idempotent. */
+                break;
+            }
+        }
     }
 }

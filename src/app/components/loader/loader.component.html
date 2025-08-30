@@ -3,16 +3,24 @@
   Uses the global host declared in BaseComponent via LOADER_ID='global'.
 -->
 
-<!-- Admin gate: choose action -->
+<!-- Choice screen: Generate / Perform -->
 @if (adminAccess && actionChosen === null) {
     <mat-grid-list cols="1" rowHeight="fit" id="selection-grid">
         <mat-grid-tile class="green-theme">
-            <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')">
+            <button
+                id="generate-button"
+                mat-raised-button
+                color="primary"
+                (click)="loadAction('generate')">
                 <span i18n>Generate</span>
             </button>
         </mat-grid-tile>
         <mat-grid-tile>
-            <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')">
+            <button
+                id="perform-button"
+                mat-raised-button
+                color="primary"
+                (click)="loadAction('perform')">
                 <span i18n>Perform</span>
             </button>
         </mat-grid-tile>
@@ -22,13 +30,13 @@
 <!-- Admin login for generator -->
 @if (adminAccess && actionChosen === 'generate' && !loginSuccessful) {
     <div class="login-section green-theme">
-        <form [formGroup]="loginForm">
+        <form [formGroup]="loginForm" novalidate>
             <mat-card appearance="outlined">
                 <mat-card-content>
                     <!-- Username -->
                     <mat-form-field>
                         <mat-label><span i18n>Insert your username</span></mat-label>
-                        <input matInput type="text" placeholder="your_username" formControlName="username">
+                        <input matInput type="text" placeholder="your_username" formControlName="username" autocomplete="username">
                         @if (checkFormControl(loginForm, 'username', 'required')) {
                             <mat-error><span i18n>This field is required</span></mat-error>
                         }
@@ -37,7 +45,7 @@
                     <!-- Password -->
                     <mat-form-field>
                         <mat-label><span i18n>Insert your password</span></mat-label>
-                        <input matInput type="password" placeholder="your_password" formControlName="password">
+                        <input matInput type="password" placeholder="your_password" formControlName="password" autocomplete="current-password">
                         @if (checkFormControl(loginForm, 'password', 'required')) {
                             <mat-error><span i18n>This field is required</span></mat-error>
                         }
@@ -49,8 +57,8 @@
                     }
                 </mat-card-content>
 
-                <mat-card-actions>
-                    <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()">
+                <mat-card-actions align="end">
+                    <button id="start-button" mat-flat-button color="primary" type="button" (click)="performAdminCheck()">
                         <span i18n>Login</span>
                     </button>
                 </mat-card-actions>
