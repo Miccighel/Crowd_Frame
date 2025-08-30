@@ -10,8 +10,10 @@ import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} f
     selector: "button",
     standalone: false
 })
+
 export class ButtonDirective {
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
+    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
+    }
 
     ngAfterViewInit() {
         if (this.actionLogger.isActive) {
@@ -401,7 +403,7 @@ export class SearchEngineBodyDirective {
 
     @HostListener('visitedRowEmitter', ['$event'])
     onVisited(result) {
-        if(this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['general'])
+        if (this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['general'])
             this.actionLogger.onVisited(result)
     }
 

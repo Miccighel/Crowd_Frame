@@ -1,6 +1,45 @@
-@if (currentComponent=='loader') {
+<!--
+  Global loader host for the whole app.
+  IMPORTANT: Ensure there is only ONE host with loaderId 'global' in the app.
+-->
+<ngx-ui-loader
+  [loaderId]="'global'"
+  [bgsColor]="'#3f51b5'"
+  [fgsColor]="'#3f51b5'"
+  [pbColor]="'#3f51b5'"
+  [fgsSize]="150"
+  [bgsPosition]="'bottom-right'"
+  [bgsSize]="80"
+  [bgsType]="'ball-spin-clockwise'"
+  [text]="'Loading...'"
+  [textColor]="'#FFFFFF'"
+  [textPosition]="'bottom-center'">
+</ngx-ui-loader>
+
+<!-- Background search loader host (used via start/stopBackgroundLoader('search-loader')) -->
+<ngx-ui-loader
+  [loaderId]="'search-loader'"
+  [bgsColor]="'#3f51b5'"
+  [fgsColor]="'#3f51b5'"
+  [pbColor]="'#3f51b5'"
+  [fgsSize]="150"
+  [bgsPosition]="'bottom-center'"
+  [bgsSize]="120"
+  [bgsType]="'ball-spin-clockwise'"
+  [text]="'Searching…'"
+  [textColor]="'#FFFFFF'"
+  [textPosition]="'bottom-center'">
+</ngx-ui-loader>
+
+<!--
+  BaseComponent view switcher.
+  - Renders either Loader or PreRetrievedResultSummary based on `currentComponent`.
+  - Bindings kept stable for OnPush.
+-->
+@if (currentComponent === 'loader') {
   <app-loader></app-loader>
 }
-@if (currentComponent=='result-summary') {
-  <app-pre-retrieved-result-summary [resultUUID]="this.resultUUID"></app-pre-retrieved-result-summary>
+
+@if (currentComponent === 'result-summary') {
+  <app-pre-retrieved-result-summary [resultUUID]="resultUUID"></app-pre-retrieved-result-summary>
 }

@@ -1,12 +1,32 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { TaskSettings } from "../../models/skeleton/taskSettings";
-import { SearchEngineSettings } from "../../models/searchEngine/searchEngineSettings";
-import { SectionService } from "../../services/section.service";
-import { ConfigService } from "../../services/config.service";
-import { S3Service } from "../../services/aws/s3.service";
-import { ActivatedRoute } from "@angular/router";
-import { Subscription, catchError, tap, switchMap, of, distinctUntilChanged, debounceTime } from 'rxjs';
-import {Task} from "../../models/skeleton/task";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    OnInit,
+    Output,
+    DestroyRef,
+    inject
+} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {
+    catchError,
+    debounceTime,
+    distinctUntilChanged,
+    map,
+    of,
+    switchMap,
+    from
+} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+
+import {Task} from '../../models/skeleton/task';
+import {TaskSettings} from '../../models/skeleton/taskSettings';
+import {SearchEngineSettings} from '../../models/searchEngine/searchEngineSettings';
+import {SectionService} from '../../services/section.service';
+import {ConfigService} from '../../services/config.service';
+import {S3Service} from '../../services/aws/s3.service';
+import {NgxUiLoaderService} from 'ngx-ui-loader';
 
 @Component({
     selector: 'app-base',
@@ -15,69 +35,82 @@ import {Task} from "../../models/skeleton/task";
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
-export class BaseComponent implements OnInit, OnDestroy {
-    currentComponent;
-    private subscriptions: Subscription = new Subscription();
+export class BaseComponent implements OnInit {
+    /* Lean, typed state */
+    currentComponent: 'loader' | 'result-summary' = 'loader';
+    resultUUID?: string;
+
+    /* Shared Task instance */
     task: Task;
-    resultUUID: string;
+
     @Output() initializationCompleted = new EventEmitter<boolean>();
 
+    /* Valid inject context for DestroyRef */
+    private readonly destroyRef = inject(DestroyRef);
+
+    /* Single global loader id used across the app */
+    private readonly LOADER_ID = 'global';
+
     constructor(
-        private route: ActivatedRoute,
-        public sectionService: SectionService,
-        private configService: ConfigService,
-        private S3Service: S3Service,
-        private cdr: ChangeDetectorRef  // Inject ChangeDetectorRef
+        private readonly route: ActivatedRoute,
+        public readonly sectionService: SectionService,
+        private readonly configService: ConfigService,
+        private readonly s3: S3Service,
+        private readonly cdr: ChangeDetectorRef,
+        private readonly ngx: NgxUiLoaderService
     ) {
         this.sectionService.task = new Task();
         this.task = this.sectionService.task;
     }
 
-    ngOnInit() {
-        this.subscriptions.add(
-            this.route.queryParams.pipe(
-                debounceTime(10),
-                distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-                tap(params => {
-                    if ('result-summary' in params) {
-                        this.currentComponent = 'result-summary';
-                        this.resultUUID = params['result-summary'];
-                    } else {
-                        this.currentComponent = 'loader';
-                        this.cdr.markForCheck();
-                    }
-                }),
-                switchMap(() => this.fetchData()),
-                catchError(error => {
-                    console.error('Error downloading data:', error);
-                    return of(null); // Handle error cases
-                })
-            ).subscribe(() => {
-                this.initializationCompleted.emit(true);
-                this.cdr.markForCheck(); // Ensure view is updated once everything is completed
-            })
-        );
+    ngOnInit(): void {
+        this.route.queryParamMap.pipe(
+            debounceTime(10),
+            map(q => q.get('result-summary') || null),
+            distinctUntilChanged(),
+            switchMap((summaryId) => {
+                if (summaryId) {
+                    /* Result Summary branch */
+                    this.currentComponent = 'result-summary';
+                    this.resultUUID = summaryId;
+                    this.cdr.markForCheck();
+                    return of(null);
+                } else {
+                    /* Loader branch */
+                    this.currentComponent = 'loader';
+                    this.resultUUID = undefined;
+                    this.cdr.markForCheck();
+
+                    /* Show global overlay while fetching config/settings.
+                       SkeletonComponent will stop this loader when the UI is ready. */
+                    this.ngx.startLoader(this.LOADER_ID);
+                    return from(this.fetchData());
+                }
+            }),
+            catchError(err => {
+                console.error('[BaseComponent] Initialization error:', err);
+                return of(null);
+            }),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(() => {
+            this.initializationCompleted.emit(true);
+            this.cdr.markForCheck();
+        });
     }
 
     private fetchData(): Promise<void> {
-        const environment = this.configService.environment;
-        this.task.taskName = environment.taskName;
-        this.task.batchName = environment.batchName;
+        const env = this.configService.environment;
+        this.task.taskName = env.taskName;
+        this.task.batchName = env.batchName;
+
         return Promise.all([
-            this.S3Service.downloadTaskSettings(environment),
-            this.S3Service.downloadGeneralInstructions(environment),
-            this.S3Service.downloadSearchEngineSettings(environment)
+            this.s3.downloadTaskSettings(env),
+            this.s3.downloadGeneralInstructions(env),
+            this.s3.downloadSearchEngineSettings(env)
         ]).then(([taskSettings, generalInstructions, searchEngineSettings]) => {
             this.task.settings = new TaskSettings(taskSettings);
             this.task.initializeInstructionsGeneral(generalInstructions);
             this.task.searchEngineSettings = new SearchEngineSettings(searchEngineSettings);
-        }).catch(error => {
-            console.error('Error in data retrieval:', error);
-            throw error;  // Rethrow the error to handle it in catchError
         });
-    }
-
-    ngOnDestroy() {
-        this.subscriptions.unsubscribe();
     }
 }

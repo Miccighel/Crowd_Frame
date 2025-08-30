@@ -7,7 +7,8 @@
 <form [formGroup]="documentSelectionForms[documentIndex]">
     <div class="pairwise-container" role="radiogroup" aria-label="Pairwise elements">
 
-        @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc ?? $index; let j = $index) {
+        <!-- Use the safe VM array to avoid TS2339 on Document.subdocuments -->
+        @for (subdoc of subdocumentsForTemplate; track subdoc ?? $index; let j = $index) {
             <div
                 id="subdocument-{{documentIndex}}-{{j}}"
                 class="element-box"

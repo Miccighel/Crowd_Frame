@@ -23,7 +23,6 @@ import {of, Subject} from "rxjs";
 import {catchError, tap, takeUntil} from "rxjs/operators";
 
 /* Services */
-import {NgxUiLoaderService} from "ngx-ui-loader";
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/aws/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
@@ -34,6 +33,7 @@ import {DynamoDBService} from "../../services/aws/dynamoDB.service";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {LocalStorageService} from "../../services/localStorage.service";
+import {NgxUiLoaderService} from "ngx-ui-loader"; // <-- added
 
 /* Models */
 import {Task} from "../../models/skeleton/task";
@@ -76,8 +76,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
 
-    /* Service to provide loading screens */
-    ngxService: NgxUiLoaderService;
     /* Service to provide an environment-based configuration */
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
@@ -87,7 +85,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     deviceDetectorService: DeviceDetectorService;
     titleService: Title
     /* Service to log to the server */
-    actionLogger: ActionLogger;
+    actionLogger: ActionLogger | null;
     /* Service to track current section */
     sectionService: SectionService;
     utilsService: UtilsService;
@@ -102,6 +100,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* Snackbar reference */
     snackBar: MatSnackBar;
+
+    /* Single global loader controller (host lives in BaseComponent) */
+    ngx: NgxUiLoaderService;
 
     /* This is a convention often used in Angular to manage the cleanup of subscriptions. It involves a Subject that emits a value when the component is
      * about to be destroyed, typically in the ngOnDestroy lifecycle hook. */
@@ -157,7 +158,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     constructor(
         private baseComponent: BaseComponent,
         changeDetector: ChangeDetectorRef,
-        ngxService: NgxUiLoaderService,
         configService: ConfigService,
         S3Service: S3Service,
         dynamoDBService: DynamoDBService,
@@ -170,10 +170,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         sectionService: SectionService,
         localStorageService: LocalStorageService,
         utilsService: UtilsService,
-        debugService: DebugService
+        debugService: DebugService,
+        ngx: NgxUiLoaderService                         // <-- added
     ) {
         this.changeDetector = changeDetector;
-        this.ngxService = ngxService;
         this.configService = configService;
         this.S3Service = S3Service;
         this.dynamoDBService = dynamoDBService;
@@ -189,10 +189,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.formBuilder = formBuilder;
         this.snackBar = snackBar;
 
-        /* Start the main spinner early. */
-        this.ngxService.startLoader("skeleton-inner");
-
         this.generator = false;
+
+        this.ngx = ngx;                                // <-- store loader service
     }
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
@@ -795,13 +794,19 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* ------------------------------------------------------
        Unlock the task based on the status check outcome.
-       markForCheck is preferred; spinner is stopped here.
+       Stop the global overlay here to avoid any gap/flicker.
        ------------------------------------------------------ */
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
         this.sectionService.checkCompleted = true;
+
+        // Ensure first paint, then hide the overlay on the next frame
         this.changeDetector.markForCheck();
-        this.ngxService.stopLoader("skeleton-inner");
+        this.changeDetector.detectChanges?.();
+
+        requestAnimationFrame(() => {
+            this.ngx.stopLoader('global'); // single place to hide the global overlay
+        });
     }
 
     /*
@@ -876,7 +881,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.task.initializeDocuments(currentHit.documents, (currentHit as any)["documents_params"]);
 
         if (this.task.settings.logger_enable)
-            this.actionLogger.unitId = this.task.unitId;
+            this.actionLogger!.unitId = this.task.unitId;
 
         /* Preallocate document arrays. */
         this.documentsForm = new Array<UntypedFormGroup>(this.task.documentsAmount);
@@ -923,7 +928,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* Logging service initialization */
     public initializeLogger(workerIdentifier, taskName, batchName, regionName, http: HttpClient, logOnConsole: boolean) {
-        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, regionName, http, logOnConsole);
+        this.actionLogger!.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, regionName, http, logOnConsole);
     }
 
     /* #################### QUALITY CHECKS #################### */
@@ -983,11 +988,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     }
 
-    /*
-     * This function performs a scan of each form filled by the current worker (i.e., questionnaires + document answers)
-     * to ensure that each form undergoes the validation step (i.e., each field is filled, the URL provided as justification
-     * is retrieved from a search engine, a truth level is selected, etc.).
-     */
     public performGlobalValidityCheck() {
         /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
         let questionnaireFormValidity = true;
@@ -1019,14 +1019,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return questionnaireFormValidity && documentsFormValidity;
     }
 
-    /*
-     * This function resets the task by bringing the worker to the first document if he still has some available tries.
-     * The worker can trigger this operation by clicking the "Reset" button when quality checks are completed and the outcome is shown.
-     */
     public performReset() {
-
-        /* Start the loading spinner */
-        this.ngxService.startLoader('skeleton-inner');
 
         /* Reset status flags */
         this.sectionService.taskFailed = false;
@@ -1055,31 +1048,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
 
         /* Jump straight to the desired step (no intermediate instantiation) */
-        this.stepper.selectedIndex = jumpIndex;
+        this.stepper!.selectedIndex = jumpIndex;
         this.sectionService.stepIndex = jumpIndex;
-
-        /* Stop the spinner */
-        this.ngxService.stopLoader('skeleton-inner');
 
         /* Store the new start timestamp (initialise array slot on first use) */
         if (!this.task.timestampsStart[jumpIndex]) {
             this.task.timestampsStart[jumpIndex] = [];
         }
         this.task.timestampsStart[jumpIndex].push(Date.now() / 1000);
-
     }
 
-    /**
-     * Computes the index to jump to on reset.
-     *
-     * Logic:
-     * - Prefer jumping to the first document with "reset_jump" if set; otherwise, to the first document.
-     * - Never land on or before a questionnaire where allow_back is false or absent (locked questionnaires).
-     * - Performs validity and timing checks for each step before the jump.
-     *
-     * Returns:
-     * - The safest index to jump to, respecting locked questionnaires and workflow requirements.
-     */
     public computeJumpIndex() {
         let jumpIndex = 0;
 
@@ -1154,17 +1132,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
         }
 
-        /*
-         * If the computed jumpIndex is before or at a locked questionnaire step,
-         * jump to the first step immediately after the last locked questionnaire (if possible).
-         */
         if (lastLockedQuestionnaireIdx >= 0 && jumpIndex <= lastLockedQuestionnaireIdx) {
             return lastLockedQuestionnaireIdx + 1 < totalSteps ? lastLockedQuestionnaireIdx + 1 : lastLockedQuestionnaireIdx;
         }
 
-        /*
-         * Otherwise, jump to the intended step, but never go beyond the last valid step.
-         */
         return Math.min(jumpIndex, totalSteps - 1);
     }
 
@@ -1209,17 +1180,130 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return out;
     }
 
+    /* =========================================================
+ * Child -> parent questionnaire emit handler
+ * - Keeps original behavior: register the form once and
+ *   forward any action to produceData(action, stepIndex).
+ * - Adds light guards to avoid runtime errors.
+ * ========================================================= */
+    public storeQuestionnaireForm(data: any, stepIndex: number) {
+        try {
+            /* Resolve the element metadata; ignore if not a questionnaire */
+            const el = this.task.getElementIndex(stepIndex);
+            if (!el || el.elementType !== 'Q') return;
+
+            /* Extract payload bits defensively */
+            const form = data?.form;
+            const action: string | undefined = data?.action;
+
+            /* Ensure the array exists */
+            this.questionnairesForm ??= [];
+
+            /* Index of the questionnaire in Task */
+            const qIndex: number = el.elementIndex;
+
+            /* Register the form exactly once (first time we see it) */
+            if (!this.questionnairesForm[qIndex] && form && typeof form.get === 'function') {
+                this.questionnairesForm[qIndex] = form;
+            }
+
+            /* Forward action (unchanged semantics) */
+            if (action && typeof action === 'string') {
+                this.produceData(action, stepIndex);
+            }
+        } catch (err) {
+            /* Fail-soft: ignore malformed emissions but keep the app running */
+            console.warn('[storeQuestionnaireForm] skipped due to error:', err);
+        }
+    }
+
+    /* =========================================================
+     * Child -> parent document emit handler
+     * - Keeps original behavior:
+     *   - store initial form in documentsForm[docIdx] once
+     *   - push post/extra forms into documentsFormsAdditional[docIdx]
+     *   - call produceData(action, stepIndex) when action is present
+     * - Adds null-safety and duplicate-guarding.
+     * ========================================================= */
+    public storeDocumentForm(data: any, stepIndex: number) {
+        try {
+            /* Resolve the element metadata; ignore if not a document */
+            const el = this.task.getElementIndex(stepIndex);
+            if (!el || el.elementType !== 'S') return;
+
+            /* Extract payload defensively */
+            const form = data?.form;
+            const type = (data?.type ?? 'initial') as 'initial' | 'post';
+            const action: string | undefined = data?.action;
+
+            /* Ensure storage arrays exist */
+            this.documentsForm ??= [];
+            this.documentsFormsAdditional ??= [];
+
+            /* Index of the document in Task */
+            const docIdx: number = el.elementIndex;
+
+            /* Ensure nested array for additional/post forms exists */
+            this.documentsFormsAdditional[docIdx] ??= [];
+
+            if (type === 'initial' || type == null) {
+                /* Register the initial form once */
+                if (!this.documentsForm[docIdx] && form && typeof form.get === 'function') {
+                    this.documentsForm[docIdx] = form;
+                }
+            } else {
+                /* Append post-assessment forms, avoiding duplicates */
+                if (form && typeof form.get === 'function' &&
+                    !this.documentsFormsAdditional[docIdx].includes(form)) {
+                    this.documentsFormsAdditional[docIdx].push(form);
+                }
+            }
+
+            /* Forward action (unchanged semantics) */
+            if (action && typeof action === 'string') {
+                this.produceData(action, stepIndex);
+            }
+        } catch (err) {
+            /* Fail-soft: ignore malformed emissions but keep the app running */
+            console.warn('[storeDocumentForm] skipped due to error:', err);
+        }
+    }
+
+    /* ------------------------------------------------------
+     * Outcome comment handler
+     * - Marks the UI as sent so the component can disable the input
+     * - Persists the comment as a data record (if worker has an id)
+     * ------------------------------------------------------ */
+    public async storeComment(data: any): Promise<void> {
+        /* Update child UI immediately */
+        if (this.outcomeSection) {
+            this.outcomeSection.commentSent = true;
+        }
+
+        /* Best-effort persistence */
+        try {
+            if (this.worker?.identifier != null) {
+                const commentPayload = this.task.buildCommentPayload(data);
+                await this.dynamoDBService.insertDataRecord(
+                    this.configService.environment,
+                    this.worker,
+                    this.task,
+                    commentPayload
+                );
+            }
+        } catch (err) {
+            /* Non-fatal: keep UI responsive even if logging fails */
+            console.error('[Skeleton] Failed to store comment:', err);
+        }
+    }
+
+
     /*
      * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
      */
     public async produceData(action: string, completedElement) {
 
-        if (action == "Finish") {
-            /* The current try is completed and the final can shall begin */
-            this.ngxService.startLoader("skeleton-inner");
-        }
-
-        let currentElement = this.stepper.selectedIndex;
+        let currentElement = this.stepper!.selectedIndex;
         if (action == "Finish")
             currentElement = this.task.getElementsNumber() - 1;
 
@@ -1306,64 +1390,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         if (action == "Finish") {
             this.sectionService.taskCompleted = true;
-            this.ngxService.stopLoader("skeleton-inner");
             this.changeDetector.detectChanges();
         }
     }
-
-    /* ==================== FORM EVENT HANDLERS ==================== */
-
-    /**
-     * Stores a questionnaire form reference and forwards the action to produceData.
-     * Preserves original behavior.
-     */
-    public storeQuestionnaireForm(data: any, stepIndex: number) {
-        const questionnaireIndex = this.task.getElementIndex(stepIndex)['elementIndex'];
-        if (!this.questionnairesForm[questionnaireIndex]) {
-            this.questionnairesForm[questionnaireIndex] = data['form'];
-        }
-        const action = data['action'];
-        if (action) {
-            this.produceData(action, stepIndex);
-        }
-    }
-
-    /**
-     * Stores a document form reference (initial vs additional/post-assessment) and forwards the action to produceData.
-     * Preserves original behavior and the null/undefined guard for post-assessment bounces.
-     */
-    public storeDocumentForm(data: any, stepIndex: number) {
-        const documentIndex = this.task.getElementIndex(stepIndex)['elementIndex'];
-        const type = data['type'];
-
-        // In post-assessment cases the main form can bounce; keep the null/undefined guard.
-        if (type === 'initial' || type === null || type === undefined) {
-            if (!this.documentsForm[documentIndex]) {
-                this.documentsForm[documentIndex] = data['form'];
-                this.documentsFormsAdditional[documentIndex] = [];
-            }
-        } else {
-            this.documentsFormsAdditional[documentIndex].push(data['form']);
-        }
-
-        const action = data['action'];
-        if (action) {
-            this.produceData(action, stepIndex);
-        }
-    }
-
-    /**
-     * Writes a free-form comment when a try finishes (successful or not).
-     * Preserves original behavior.
-     */
-    public async storeComment(data: any) {
-        this.outcomeSection.commentSent = true;
-        if (this.worker.identifier != null) {
-            const comment = this.task.buildCommentPayload(data);
-            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
-        }
-    }
-
 
     public computeTimestamps(
         currentElement: number,

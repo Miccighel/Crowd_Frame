@@ -1,29 +1,3 @@
-<!-- ======================= LOADERS ======================= -->
-
-<ng-container
-    *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'skeleton-inner', bgsPosition: 'bottom-right' }">
-</ng-container>
-<ng-container
-    *ngTemplateOutlet="loaderTemplate; context: { loaderId: 'search-loader', bgsPosition: 'bottom-center' }">
-</ng-container>
-
-<ng-template #loaderTemplate let-loaderId="loaderId" let-bgsPosition="bgsPosition">
-    <ngx-ui-loader
-        [attr.aria-live]="'polite'"
-        [loaderId]="loaderId"
-        [bgsColor]="'#3f51b5'"
-        [fgsColor]="'#3f51b5'"
-        [pbColor]="'#3f51b5'"
-        [fgsSize]="150"
-        [bgsSize]="150"
-        [bgsType]="'ball-spin-clockwise'"
-        [text]="loaderId === 'search-loader' ? 'Searching…' : 'Loading task...'"
-        [textColor]="'#FFFFFF'"
-        [textPosition]="'bottom-center'"
-        [bgsPosition]="bgsPosition">
-    </ngx-ui-loader>
-</ng-template>
-
 <!-- ============== OUTCOME: TASK NOT ALLOWED ============== -->
 
 @if (!this.sectionService.taskAllowed) {
@@ -64,7 +38,8 @@
                 <button
                     mat-flat-button
                     color="primary"
-                    (click)="enableTask()"
+                    (click)="enableTask()
+          "
                     [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
                     <span i18n>Start</span>
                 </button>
