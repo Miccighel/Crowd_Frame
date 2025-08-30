@@ -1,20 +1,29 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": ["node"]
-  },
-  "files": [
-    "src/main.ts",
-  ],
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/test.ts",
-    "src/**/*.spec.ts"
-  ],
-  "angularCompilerOptions": {
-    "enableIvy": true
-  }
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc/app",
+        "types": [
+            "node"
+        ],
+        // Explicitly re-declare target + libs for the application context
+        "target": "ES2022",
+        // 👇 Keep DOM.Iterable here too so Angular compiler sees it during template check
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "downlevelIteration": false
+        // safe with ES2022 target
+    },
+    "files": [
+        "src/main.ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "src/test.ts",
+        "src/**/*.spec.ts"
+    ]
 }

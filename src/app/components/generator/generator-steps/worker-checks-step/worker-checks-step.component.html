@@ -20,7 +20,7 @@
             <!-- Blacklist (input chips) -->
             <mat-form-field class="width-100" appearance="fill">
                 <mat-label><span i18n>Worker IDs Blacklisted</span></mat-label>
-                <mat-chip-grid #blacklistChips formControlName="blacklist" multiple>
+                <mat-chip-grid #blacklistChips formControlName="blacklist">
                     @for (workerId of this.blacklistedWorkerId; track workerId) {
                         <mat-chip-row [removable]="true" (removed)="removeBlacklistedId(workerId)">
                             {{ workerId }}
@@ -44,7 +44,7 @@
             <!-- Whitelist (input chips) -->
             <mat-form-field class="width-100" appearance="fill">
                 <mat-label><span i18n>Worker IDs Whitelisted</span></mat-label>
-                <mat-chip-grid #whitelistChips formControlName="whitelist" multiple>
+                <mat-chip-grid #whitelistChips formControlName="whitelist">
                     @for (workerId of this.whitelistedWorkerId; track workerId) {
                         <mat-chip-row [removable]="true" (removed)="removeWhitelistedId(workerId)">
                             {{ workerId }}

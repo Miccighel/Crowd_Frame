@@ -1,40 +1,48 @@
 {
-    "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
-    // --- PATHS & OUTPUT ---
-    "compilerOptions": {
-        "baseUrl": "./",
-        "outDir": "./dist/out-tsc",
-        // --- MODULE & TARGET (Angular 18+ with esbuild) ---
-        "moduleResolution": "bundler",
-        "module": "esnext",
-        "target": "ES2022",
-        // --- TYPESCRIPT/ANGULAR FEATURES ---
-        "importHelpers": true,
-        "experimentalDecorators": true,
-        "useDefineForClassFields": false,
-        // --- INTEROP ---
-        "esModuleInterop": true,
-        // --- DIAGNOSTICS & SAFETY NETS ---
-        "sourceMap": true,
-        "declaration": false,
-        "forceConsistentCasingInFileNames": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noImplicitOverride": true,
-        "noImplicitAny": false,
-        "noPropertyAccessFromIndexSignature": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        // --- STANDARD LIBS & JSON IMPORTS ---
-        "resolveJsonModule": true,
-        "lib": [
-            "ES2022",
-            "dom"
-        ]
-    },
-    // --- ANGULAR COMPILER OPTIONS ---
+  "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
+
+  "compilerOptions": {
+    /* ========= PATHS & OUTPUT ========= */
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+
+    /* ========= MODULE & TARGET ========= */
+    "moduleResolution": "bundler", // modern Angular 18+ with esbuild
+    "module": "esnext",
+    "target": "ES2022",
+
+    /* ========= TYPESCRIPT/ANGULAR FEATURES ========= */
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false, // keep false until migration
+
+    /* ========= INTEROP ========= */
+    "esModuleInterop": true,
+
+    /* ========= DIAGNOSTICS & SAFETY ========= */
+    "sourceMap": true,
+    "declaration": false,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+      "noImplicitOverride": true,
+      "noImplicitAny": false,
+      "noPropertyAccessFromIndexSignature": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      /* ========= STANDARD LIBS ========= */
+      "resolveJsonModule": true,
+      // 👇 Important: DOM.Iterable ensures NodeList, DataTransferItemList, HTMLCollection etc
+      // are seen as iterable, fixing "[Symbol.iterator]" errors in templates
+      "lib": [
+          "ES2022",
+          "DOM",
+          "DOM.Iterable"
+      ]
+  },
     "angularCompilerOptions": {
         "strictTemplates": false,
+        // can toggle to true later
         "strictInjectionParameters": true,
         "strictInputAccessModifiers": true
     }
