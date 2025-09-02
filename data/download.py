@@ -2462,73 +2462,88 @@ step_index = step_index + 1
 def load_data_col_names(dimensions, settings=None):
     columns = []
 
-    columns.append("worker_id")
-    columns.append("paid")
-    columns.append("task_name")
-    columns.append("batch_name")
-    columns.append("unit_id")
-    columns.append("try_last")
-    columns.append("try_current")
-    columns.append("action")
-    columns.append("time_submit")
-    columns.append("time_submit_parsed")
+    # --- Global metadata (before pairwise flags & dimensions) ---
+    columns += [
+        "worker_id", "paid", "task_name", "batch_name", "unit_id",
+        "try_last", "try_current", "action",
+        "time_submit", "time_submit_parsed",
+        "document_id", "document_index",
+        "global_outcome", "global_form_validity", "gold_checks", "time_spent_check",
+        # Pairwise flags (global, parsed once)
+        "element_0_selected", "element_1_selected", "pairwise_selected_index",
+    ]
 
-    columns.append("document_id")
-    columns.append("document_index")
+    # --- Dimension columns (all BEFORE any time_* fields) ---
+    has_pa = bool(settings and settings.get("post_assessment"))
+    pa_attrs = settings["post_assessment"]["attributes"] if has_pa else []
+    pa_dims = settings["post_assessment"].get("dimensions", []) if has_pa else []
 
     for dimension in dimensions:
-        if f"{dimension['name']}_value" not in columns:
-            columns.append(f"{dimension['name']}_value")
-        if f"{dimension['name']}_description" not in columns:
-            columns.append(f"{dimension['name']}_description")
-        if f"{dimension['name']}_label" not in columns:
-            columns.append(f"{dimension['name']}_label")
-        if f"{dimension['name']}_index" not in columns:
-            columns.append(f"{dimension['name']}_index")
-        if f"{dimension['name']}_justification" not in columns:
-            if dimension['justification'] is not None:
-                columns.append(f"{dimension['name']}_justification")
-        if f"{dimension['name']}_url" not in columns:
-            if dimension['url'] is not None:
-                columns.append(f"{dimension['name']}_url")
-        if settings is not None:
-            if 'post_assessment' in settings.keys():
-                post_assessment_data = settings['post_assessment']
-                if post_assessment_data is not None:
-                    post_assessment_attributes = settings['post_assessment']['attributes']
-                    for assessment_data in post_assessment_attributes:
-                        post_assessment_index = assessment_data['index']
-                        if 'dimensions' in settings['post_assessment']:
-                            post_assessment_dimensions = settings['post_assessment']['dimensions']
-                            for dimension_data in post_assessment_dimensions:
-                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                    columns.append(f"{dimension['name']}_value_post_{post_assessment_index}")
-                                    if 'justification' in dimension.keys():
-                                        if dimension['justification'] is not None:
-                                            columns.append(f"{dimension['name']}_justification_post_{post_assessment_index}")
-                                    if 'url' in dimension.keys():
-                                        if dimension['url'] is not None:
-                                            columns.append(f"{dimension['name']}_url_post_{post_assessment_index}")
+        name = dimension["name"]
+        is_pairwise = bool(dimension.get("pairwise", False))
 
-    columns.append("time_start")
-    columns.append("time_end")
-    columns.append("time_elapsed")
-    columns.append("time_start_parsed")
-    columns.append("time_end_parsed")
-    columns.append("accesses")
+        if is_pairwise:
+            # Pairwise values + labels (paired per element)
+            columns.append(f"{name}_value_element_0")
+            columns.append(f"{name}_label_element_0")
+            columns.append(f"{name}_value_element_1")
+            columns.append(f"{name}_label_element_1")
 
-    columns.append("countdown_time_start")
-    columns.append("countdown_time_value")
-    columns.append('countdown_end')
-    columns.append("countdown_time_text")
-    columns.append("countdown_time_expired")
-    columns.append("countdown_time_started")
-    columns.append("overtime")
+            # Keep unified mapping fields for parity (will be NaN at row-fill time)
+            columns.append(f"{name}_description")
+            columns.append(f"{name}_label")
+            columns.append(f"{name}_index")
 
-    columns.append("global_outcome")
-    columns.append("global_form_validity")
-    columns.append("gold_checks")
-    columns.append("time_spent_check")
+            # Post-assessment (element-wise): pair value/label per element
+            if has_pa:
+                for a in pa_attrs:
+                    idx = a["index"]
+                    if any(d.get("name") == name and idx in d.get("indexes", []) for d in pa_dims):
+                        columns.append(f"{name}_value_post_{idx}_element_0")
+                        columns.append(f"{name}_label_post_{idx}_element_0")
+                        columns.append(f"{name}_value_post_{idx}_element_1")
+                        columns.append(f"{name}_label_post_{idx}_element_1")
+
+        else:
+            # Pointwise unified value + label first (paired), then description/index
+            columns.append(f"{name}_value")
+            columns.append(f"{name}_label")
+            columns.append(f"{name}_description")
+            columns.append(f"{name}_index")
+
+            # Post-assessment (unified): pair value/label
+            if has_pa:
+                for a in pa_attrs:
+                    idx = a["index"]
+                    if any(d.get("name") == name and idx in d.get("indexes", []) for d in pa_dims):
+                        columns.append(f"{name}_value_post_{idx}")
+                        columns.append(f"{name}_label_post_{idx}")
+
+        # Optional common fields (kept after value/label blocks)
+        if dimension.get("justification"):
+            columns.append(f"{name}_justification")
+            if has_pa:
+                for a in pa_attrs:
+                    idx = a["index"]
+                    if any(d.get("name") == name and idx in d.get("indexes", []) for d in pa_dims):
+                        columns.append(f"{name}_justification_post_{idx}")
+
+        if dimension.get("url"):
+            columns.append(f"{name}_url")
+            if has_pa:
+                for a in pa_attrs:
+                    idx = a["index"]
+                    if any(d.get("name") == name and idx in d.get("indexes", []) for d in pa_dims):
+                        columns.append(f"{name}_url_post_{idx}")
+
+    # --- Time & remaining globals at the end ---
+    columns += [
+        "time_start", "time_end", "time_elapsed",
+        "time_start_parsed", "time_end_parsed",
+        "accesses",
+        "countdown_time_start", "countdown_time_value", "countdown_end",
+        "countdown_time_text", "countdown_time_expired", "countdown_time_started", "overtime",
+    ]
 
     return columns
 
@@ -2616,130 +2631,215 @@ if not os.path.exists(df_data_path):
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
+
+                    # ---- Global pairwise flags (once, before the loop) ----
+                    row['element_0_selected'] = current_answers.get('element_0_selected', np.nan)
+                    row['element_1_selected'] = current_answers.get('element_1_selected', np.nan)
+                    _raw_sel = current_answers.get('pairwise_selected_index', None)
+                    try:
+                        if _raw_sel is not None and str(_raw_sel) != '':
+                            row['pairwise_selected_index'] = int(_raw_sel)
+                        else:
+                            row['pairwise_selected_index'] = np.nan
+                    except (TypeError, ValueError):
+                        row['pairwise_selected_index'] = np.nan
+
+                    # ---- Per-dimension parsing ----
                     for dimension in dimensions:
                         task_type_check = True
                         if 'task_type' in dimension.keys():
-                            task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
+                            task_type_check = check_task_type(
+                                documents[document_data['serialization']['info']['index']],
+                                dimension['task_type']
+                            )
+
                         if dimension['scale'] is not None and task_type_check:
-                            if settings is not None:
-                                if 'post_assessment' in settings.keys():
-                                    if settings['post_assessment'] is not None:
-                                        if 'attributes' in settings['post_assessment']:
-                                            post_assessment_data = settings['post_assessment']['attributes']
-                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                            for assessment_data in post_assessment_data:
-                                                post_assessment_index = assessment_data['index']
-                                                for dimension_data in post_assessment_dimensions:
-                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                        if post_assessment_index == 0:
-                                                            value = current_answers[f"{dimension['name']}_value"]
-                                                            if type(value) is str:
-                                                                value = value.strip()
-                                                                value = re.sub('\n', '', value)
-                                                            row[f"{dimension['name']}_value"] = value
-                                                        value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index + 1}"]
-                                                        if type(value_post) is str:
-                                                            value_post = value_post.strip()
-                                                            value_post = re.sub('\n', '', value_post)
-                                                        row[f"{dimension['name']}_value_post_{post_assessment_index}"] = value_post
-                                    else:
-                                        value = current_answers[f"{dimension['name']}_value"]
-                                        if type(value) is str:
-                                            value = value.strip()
-                                            value = re.sub('\n', '', value)
-                                        row[f"{dimension['name']}_value"] = value
+                            base_value_key = f"{dimension['name']}_value"
+                            has_e0 = f"{base_value_key}_element_0" in current_answers
+                            has_e1 = f"{base_value_key}_element_1" in current_answers
+                            is_pairwise_dim = has_e0 or has_e1
+
+                            # ---------------- Pairwise ----------------
+                            if is_pairwise_dim:
+                                # element_0
+                                v0 = current_answers.get(f"{base_value_key}_element_0", np.nan)
+                                if isinstance(v0, str):
+                                    v0 = re.sub('\n', '', v0.strip())
+                                row[f"{dimension['name']}_value_element_0"] = v0
+                                if dimension["scale"]["type"] == "categorical":
+                                    lbl0 = np.nan
+                                    for mapping in dimension["scale"]['mapping']:
+                                        if mapping['value'] == v0:
+                                            lbl0 = '-'.join(mapping['label'].lower().split(" "))
+                                            break
+                                    row[f"{dimension['name']}_label_element_0"] = lbl0
                                 else:
-                                    value = current_answers[f"{dimension['name']}_value"]
-                                    if type(value) is str:
-                                        value = value.strip()
-                                        value = re.sub('\n', '', value)
-                                    row[f"{dimension['name']}_value"] = value
-                            if dimension["scale"]["type"] == "categorical":
-                                for mapping in dimension["scale"]['mapping']:
-                                    label = mapping['label'].lower().split(" ")
-                                    label = '-'.join([str(c) for c in label])
-                                    if mapping['value'] == row[f"{dimension['name']}_value"]:
-                                        row[f"{dimension['name']}_label"] = label
-                                        row[f"{dimension['name']}_index"] = mapping['index']
-                                        if not (mapping['description']):
-                                            row[f"{dimension['name']}_description"] = np.nan
-                                        else:
-                                            row[f"{dimension['name']}_description"] = np.nan if len(mapping['description']) <= 0 else mapping['description']
+                                    row[f"{dimension['name']}_label_element_0"] = np.nan
+
+                                # element_1
+                                v1 = current_answers.get(f"{base_value_key}_element_1", np.nan)
+                                if isinstance(v1, str):
+                                    v1 = re.sub('\n', '', v1.strip())
+                                row[f"{dimension['name']}_value_element_1"] = v1
+                                if dimension["scale"]["type"] == "categorical":
+                                    lbl1 = np.nan
+                                    for mapping in dimension["scale"]['mapping']:
+                                        if mapping['value'] == v1:
+                                            lbl1 = '-'.join(mapping['label'].lower().split(" "))
+                                            break
+                                    row[f"{dimension['name']}_label_element_1"] = lbl1
+                                else:
+                                    row[f"{dimension['name']}_label_element_1"] = np.nan
+
+                                # Keep unified mapping fields (always NaN for pairwise)
+                                row[f"{dimension['name']}_description"] = np.nan
+                                row[f"{dimension['name']}_label"] = np.nan
+                                row[f"{dimension['name']}_index"] = np.nan
+
+                                # Post-assessment: per element
+                                if settings and settings.get('post_assessment'):
+                                    post_assessment_data = settings['post_assessment']['attributes']
+                                    post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                    for assessment_data in post_assessment_data:
+                                        post_assessment_index = assessment_data['index']
+                                        for dimension_data in post_assessment_dimensions:
+                                            if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                key0p = f"{base_value_key}_post_{post_assessment_index + 1}_element_0"
+                                                key1p = f"{base_value_key}_post_{post_assessment_index + 1}_element_1"
+                                                v0p = current_answers.get(key0p, np.nan)
+                                                v1p = current_answers.get(key1p, np.nan)
+                                                if isinstance(v0p, str):
+                                                    v0p = re.sub('\n', '', v0p.strip())
+                                                if isinstance(v1p, str):
+                                                    v1p = re.sub('\n', '', v1p.strip())
+
+                                                row[f"{dimension['name']}_value_post_{post_assessment_index}_element_0"] = v0p
+                                                if dimension["scale"]["type"] == "categorical":
+                                                    lbl0p = np.nan
+                                                    for mapping in dimension["scale"]['mapping']:
+                                                        if mapping['value'] == v0p:
+                                                            lbl0p = '-'.join(mapping['label'].lower().split(" "))
+                                                            break
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}_element_0"] = lbl0p
+                                                else:
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}_element_0"] = np.nan
+
+                                                row[f"{dimension['name']}_value_post_{post_assessment_index}_element_1"] = v1p
+                                                if dimension["scale"]["type"] == "categorical":
+                                                    lbl1p = np.nan
+                                                    for mapping in dimension["scale"]['mapping']:
+                                                        if mapping['value'] == v1p:
+                                                            lbl1p = '-'.join(mapping['label'].lower().split(" "))
+                                                            break
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}_element_1"] = lbl1p
+                                                else:
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}_element_1"] = np.nan
+
+                            # ---------------- Pointwise ----------------
                             else:
-                                row[f"{dimension['name']}_label"] = np.nan
-                                row[f"{dimension['name']}_index"] = np.nan
-                                row[f"{dimension['name']}_description"] = np.nan
-                        else:
-                            # If the dimension has been used in a training scenario, its values must not be null.
-                            if 'Training' not in dimension['task_type']:
-                                row[f"{dimension['name']}_value"] = np.nan
-                                row[f"{dimension['name']}_label"] = np.nan
-                                row[f"{dimension['name']}_index"] = np.nan
-                                row[f"{dimension['name']}_description"] = np.nan
-                        if dimension['justification'] and task_type_check:
-                            if settings is not None:
-                                if 'post_assessment' in settings.keys():
-                                    if settings['post_assessment'] is not None:
-                                        if 'attributes' in settings['post_assessment']:
-                                            post_assessment_data = settings['post_assessment']['attributes']
-                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                            for assessment_data in post_assessment_data:
-                                                post_assessment_index = assessment_data['index']
-                                                for dimension_data in post_assessment_dimensions:
-                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                        if post_assessment_index == 0:
-                                                            justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                                            justification = re.sub('\n', '', justification)
-                                                            row[f"{dimension['name']}_justification"] = justification
-                                                        justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index + 1}"].strip()
-                                                        justification_post = re.sub('\n', '', justification_post)
-                                                        row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
-                                    else:
-                                        justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                        justification = re.sub('\n', '', justification)
-                                        row[f"{dimension['name']}_justification"] = justification
+                                value = np.nan
+                                if f"{dimension['name']}_value" in current_answers:
+                                    value = current_answers[f"{dimension['name']}_value"]
+                                    if isinstance(value, str):
+                                        value = re.sub('\n', '', value.strip())
+                                row[f"{dimension['name']}_value"] = value
+                                if dimension["scale"]["type"] == "categorical":
+                                    lbl = np.nan
+                                    for mapping in dimension["scale"]['mapping']:
+                                        if mapping['value'] == value:
+                                            lbl = '-'.join(mapping['label'].lower().split(" "))
+                                            row[f"{dimension['name']}_index"] = mapping['index']
+                                            row[f"{dimension['name']}_description"] = mapping['description'] or np.nan
+                                            break
+                                    row[f"{dimension['name']}_label"] = lbl
                                 else:
-                                    justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                    justification = re.sub('\n', '', justification)
-                                    row[f"{dimension['name']}_justification"] = justification
+                                    row[f"{dimension['name']}_label"] = np.nan
+                                    row[f"{dimension['name']}_index"] = np.nan
+                                    row[f"{dimension['name']}_description"] = np.nan
+
+                                # Always present element columns (NaN for schema parity)
+                                row[f"{dimension['name']}_value_element_0"] = np.nan
+                                row[f"{dimension['name']}_label_element_0"] = np.nan
+                                row[f"{dimension['name']}_value_element_1"] = np.nan
+                                row[f"{dimension['name']}_label_element_1"] = np.nan
+
+                                # Post-assessment: unified
+                                if settings and settings.get('post_assessment'):
+                                    post_assessment_data = settings['post_assessment']['attributes']
+                                    post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                    for assessment_data in post_assessment_data:
+                                        post_assessment_index = assessment_data['index']
+                                        for dimension_data in post_assessment_dimensions:
+                                            if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                value_post = current_answers.get(f"{dimension['name']}_value_post_{post_assessment_index + 1}", np.nan)
+                                                if isinstance(value_post, str):
+                                                    value_post = re.sub('\n', '', value_post.strip())
+                                                row[f"{dimension['name']}_value_post_{post_assessment_index}"] = value_post
+                                                if dimension["scale"]["type"] == "categorical":
+                                                    lblp = np.nan
+                                                    for mapping in dimension["scale"]['mapping']:
+                                                        if mapping['value'] == value_post:
+                                                            lblp = '-'.join(mapping['label'].lower().split(" "))
+                                                            break
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}"] = lblp
+                                                else:
+                                                    row[f"{dimension['name']}_label_post_{post_assessment_index}"] = np.nan
+
+                        else:
+                            # scale missing / excluded
+                            row[f"{dimension['name']}_value"] = np.nan
+                            row[f"{dimension['name']}_label"] = np.nan
+                            row[f"{dimension['name']}_index"] = np.nan
+                            row[f"{dimension['name']}_description"] = np.nan
+                            row[f"{dimension['name']}_value_element_0"] = np.nan
+                            row[f"{dimension['name']}_label_element_0"] = np.nan
+                            row[f"{dimension['name']}_value_element_1"] = np.nan
+                            row[f"{dimension['name']}_label_element_1"] = np.nan
+
+                        # ---- Justification (unchanged) ----
+                        if dimension['justification'] and task_type_check:
+                            if settings and settings.get('post_assessment'):
+                                post_assessment_data = settings['post_assessment']['attributes']
+                                post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                for assessment_data in post_assessment_data:
+                                    post_assessment_index = assessment_data['index']
+                                    for dimension_data in post_assessment_dimensions:
+                                        if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                            if post_assessment_index == 0:
+                                                justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                                justification = re.sub('\n', '', justification)
+                                                row[f"{dimension['name']}_justification"] = justification
+                                            justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index + 1}"].strip()
+                                            justification_post = re.sub('\n', '', justification_post)
+                                            row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
+                            else:
+                                justification = current_answers.get(f"{dimension['name']}_justification", np.nan)
+                                if isinstance(justification, str):
+                                    justification = re.sub('\n', '', justification.strip())
+                                row[f"{dimension['name']}_justification"] = justification
                         else:
                             row[f"{dimension['name']}_justification"] = np.nan
+
+                        # ---- URL (unchanged) ----
                         if dimension['url'] and task_type_check:
-                            try:
-                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                            except KeyError:
-                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                            if settings is not None:
-                                if 'post_assessment' in settings.keys():
-                                    if settings['post_assessment'] is not None:
-                                        if 'attributes' in settings['post_assessment']:
-                                            post_assessment_data = settings['post_assessment']['attributes']
-                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                            for assessment_data in post_assessment_data:
-                                                post_assessment_index = assessment_data['index']
-                                                for dimension_data in post_assessment_dimensions:
-                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                        if post_assessment_index == 0:
-                                                            try:
-                                                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                                            except KeyError:
-                                                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                                                        row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index + 1}"]
-                                        else:
-                                            try:
-                                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                            except KeyError:
-                                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                                else:
-                                    try:
-                                        row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                    except KeyError:
-                                        console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                            row[f"{dimension['name']}_url"] = current_answers.get(f"{dimension['name']}_url", np.nan)
+                            if settings and settings.get('post_assessment'):
+                                post_assessment_data = settings['post_assessment']['attributes']
+                                post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                for assessment_data in post_assessment_data:
+                                    post_assessment_index = assessment_data['index']
+                                    for dimension_data in post_assessment_dimensions:
+                                        if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                            row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers.get(f"{dimension['name']}_url_post_{post_assessment_index + 1}", np.nan)
                         else:
                             row[f"{dimension['name']}_url"] = np.nan
+
+                    # --- (4) Finally write the time_* fields AFTER all dimensions ---
+                    row['time_start'] = document_data.get('time_start', np.nan)
+                    row['time_end'] = document_data.get('time_end', np.nan)
+                    row['time_elapsed'] = document_data.get('time_elapsed', np.nan)
+                    row['time_start_parsed'] = document_data.get('time_start_parsed', np.nan)
+                    row['time_end_parsed'] = document_data.get('time_end_parsed', np.nan)
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
