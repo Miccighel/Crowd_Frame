@@ -1,21 +1,24 @@
 <!-- ────────────────────────────────────────────────────────────
-Re-usable template that prints a list of dimensions
-(works for both initial and post-assessment forms)
-──────────────────────────────────────────────────────────── -->
-<ng-template #dimensionTemplate
-             let-dimensions="dimensions"
-             let-position="position"
-             let-assessmentForm="assessmentForm"
-             let-controlSuffix="controlSuffix">
-    <form [formGroup]="assessmentForm">
+     Re-usable template that prints a list of dimensions
+     (works for both initial and post-assessment forms)
+     ──────────────────────────────────────────────────────────── -->
+<ng-template
+    #dimensionTemplate
+    let-dimensions="dimensions"
+    let-position="position"
+    let-assessmentForm="assessmentForm"
+    let-controlSuffix="controlSuffix">
 
-        @for (dimension of dimensions; track dimension; let i = $index) {
+    <form [formGroup]="assessmentForm">
+        @for (dimension of dimensions; track dimension) {
             <div class="dimension">
                 <!-- ───────────────────────────── NON-PAIRWISE ───────────────────────────── -->
                 @if (!dimension.pairwise) {
+
                     <!-- ───────────── LIST STYLE ───────────── -->
                     @if (dimension.style.type == 'list') {
                         <div class="dimension">
+
                             <!-- Search-engine widget (optional) -->
                             <app-search-engine
                                 [documentIndex]="documentIndex"
@@ -25,7 +28,9 @@ Re-usable template that prints a list of dimensions
                                 [resultsRetrievedForms]="resultsRetrievedForms"
                                 (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
                             </app-search-engine>
+
                             @if (verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)) {
+
                                 <!-- Optional instructions -->
                                 @if (dimension.scale?.instructions; as ins) {
                                     <div class="evaluation-instructions">
@@ -45,36 +50,50 @@ Re-usable template that prints a list of dimensions
                                                 }{{ ins.captionRepetition }}
                                             </h2>
                                         }
+                                        <!-- NEW: rich HTML instructions text -->
+                                        @if (ins.text) {
+                                            <div class="evaluation-instructions-body" [innerHTML]="ins.text"></div>
+                                        }
                                     </div>
                                 }
-                                <!-- Pretty name & description -->
+
+                                <!-- Pretty name -->
                                 @if (dimension.name_pretty) {
                                     <div class="dimension-name">
                                         <h2>{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
                                     </div>
                                 }
-                                @if (dimension.description) {
+
+                                <!-- Description + Example -->
+                                @if (dimension.description || dimension.example) {
                                     <div class="dimension-container dimension-description">
                                         <div class="dimension-content">
-                                            <p>{{ dimension.description }}</p>
+                                            @if (dimension.description) {
+                                                <p>{{ dimension.description }}</p>
+                                            }
                                             @if (dimension.example) {
                                                 <i class="dimension-example">{{ dimension.example }}</i>
                                             }
                                         </div>
                                     </div>
                                 }
+
                                 <!-- ───────────── SCALE CONTROLS ───────────── -->
                                 @if (dimension.scale) {
                                     <div class="dimension-container dimension-scale">
                                         <div class="dimension-content">
+
                                             <!-- ───── Vertical layout ───── -->
                                             @if (dimension.style.orientation == 'vertical') {
+
                                                 <!-- ─── Categorical ─── -->
                                                 @if (dimension.scale.type == 'categorical') {
-                                                    <!-- video special-case -->
+
+                                                    <!-- video special-case (secondary categorical disabled based on primary) -->
                                                     @if (isVideoTypeLabelCategorical(dimension)) {
-                                                        <mat-radio-group class="radio-button-group"
-                                                                         formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+                                                        <mat-radio-group
+                                                            class="radio-button-group"
+                                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}">
                                                             @if (!dimension.scale.multipleSelection) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     @if (mapping.separator) {
@@ -82,8 +101,7 @@ Re-usable template that prints a list of dimensions
                                                                     }
                                                                     <mat-radio-button
                                                                         value="{{ mapping.value }}"
-                                                                        [disabled]="categoricalDimensionDisabled(dimension)"
-                                                                        [attr.disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'"
+                                                                        [disabled]="categoricalDimensionDisabled(dimension) || (task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms')"
                                                                         [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
                                                                         (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
                                                                         <span class="mapping-label">{{ mapping.label }}</span>
@@ -99,8 +117,9 @@ Re-usable template that prints a list of dimensions
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {
                                                                             <div>
-                                                                                <mat-checkbox formControlName="{{ k }}"
-                                                                                              (change)="handleCheckbox($event, dimension, k)">
+                                                                                <mat-checkbox
+                                                                                    formControlName="{{ k }}"
+                                                                                    (change)="handleCheckbox($event, dimension, k)">
                                                                                     {{ mapping.label }}
                                                                                 </mat-checkbox>
                                                                             </div>
@@ -112,9 +131,16 @@ Re-usable template that prints a list of dimensions
                                                                 </div>
                                                             }
                                                         </mat-radio-group>
+
+                                                        <!-- mat-error for categorical required (video special-case) -->
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')) {
+                                                            <mat-error><span>This field is required</span></mat-error>
+                                                        }
+
                                                     } @else {
-                                                        <mat-radio-group class="radio-button-group"
-                                                                         formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+                                                        <mat-radio-group
+                                                            class="radio-button-group"
+                                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}">
                                                             @if (!dimension.scale.multipleSelection) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     @if (mapping.separator) {
@@ -122,7 +148,7 @@ Re-usable template that prints a list of dimensions
                                                                     }
                                                                     <mat-radio-button
                                                                         value="{{ mapping.value }}"
-                                                                        [attr.disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'"
+                                                                        [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'"
                                                                         [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'"
                                                                         (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); detectCategoricalDimensionOnChange($event)">
                                                                         <span class="mapping-label">{{ mapping.label }}</span>
@@ -138,8 +164,9 @@ Re-usable template that prints a list of dimensions
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {
                                                                             <div>
-                                                                                <mat-checkbox formControlName="{{ k }}"
-                                                                                              (change)="handleCheckbox($event, dimension, k)">
+                                                                                <mat-checkbox
+                                                                                    formControlName="{{ k }}"
+                                                                                    (change)="handleCheckbox($event, dimension, k)">
                                                                                     {{ mapping.label }}
                                                                                 </mat-checkbox>
                                                                             </div>
@@ -151,105 +178,101 @@ Re-usable template that prints a list of dimensions
                                                                 </div>
                                                             }
                                                         </mat-radio-group>
+
+                                                        <!-- mat-error for categorical required -->
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')) {
+                                                            <mat-error><span>This field is required</span></mat-error>
+                                                        }
                                                     }
-                                                    <!-- regular categorical -->
+                                                    <!-- /categorical -->
                                                 }
+
                                                 <!-- ─── Interval ─── -->
                                                 @if (dimension.scale.type == 'interval') {
+
                                                     <!-- video timestamp slider -->
                                                     @if (isVideoTimestampInterval()) {
                                                         <div class="scale-interval">
-                                                            <mat-slider [disabled]="sliderDisabled()"
-                                                                        [min]="task.dimensionIntervalMinValues[documentIndex]"
-                                                                        [max]="task.dimensionIntervalMaxValues[documentIndex]"
-                                                                        [step]="dimension.scale.step">
-                                                                <input matSliderThumb
-                                                                       formControlName="{{ dimension.name + '_value' + controlSuffix }}"
-                                                                       (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
-                                                                       [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                  task.settings.countdown_behavior == 'disable_forms'">
+                                                            <mat-slider
+                                                                [disabled]="sliderDisabled()"
+                                                                [min]="task.dimensionIntervalMinValues[documentIndex]"
+                                                                [max]="task.dimensionIntervalMaxValues[documentIndex]"
+                                                                [step]="dimension.scale.step">
+                                                                <input
+                                                                    matSliderThumb
+                                                                    formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+                                                                    (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+                                                                    [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                             </mat-slider>
-                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === '') {
-                                                                <span>
-                                        Value: 00:00.00
-                                      </span>
+
+                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value == null || assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === '') {
+                                                                <span>Value: 00:00.00</span>
                                                             }
-                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== '') {
+                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value != null && assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== '') {
                                                                 <span>
-                                        Value:
-                                                                    {{ videoTimestampVisualization(assessmentForm.controls[dimension.name + '_value' + controlSuffix].value) }}
-                                      </span>
+                                                                    Value: {{ videoTimestampVisualization(assessmentForm.controls[dimension.name + '_value' + controlSuffix].value) }}
+                                                                </span>
                                                             }
+
                                                             @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') && !sliderDisabled()) {
-                                                                <mat-error>
-                                                                    <br><span>This field is required</span>
-                                                                </mat-error>
+                                                                <mat-error><br><span>This field is required</span></mat-error>
                                                             }
                                                         </div>
                                                     } @else {
                                                         <div class="scale-interval">
-                                                            <mat-slider [min]="task.dimensionIntervalMinValues[documentIndex]"
-                                                                        [max]="task.dimensionIntervalMaxValues[documentIndex]"
-                                                                        [step]="dimension.scale.step"
-                                                                        discrete="true">
-                                                                <input matSliderThumb
-                                                                       formControlName="{{ dimension.name + '_value' + controlSuffix }}"
-                                                                       (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
-                                                                       [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                  task.settings.countdown_behavior == 'disable_forms'">
+                                                            <mat-slider
+                                                                [min]="dimension.scale.min"
+                                                                [max]="dimension.scale.max"
+                                                                [step]="dimension.scale.step"
+                                                                discrete="true">
+                                                                <input
+                                                                    matSliderThumb
+                                                                    formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+                                                                    (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+                                                                    [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                             </mat-slider>
-                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === '') {
-                                                                <span>
-                                          Value: #
-                                        </span>
+
+                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value == null || assessmentForm.controls[dimension.name + '_value' + controlSuffix].value === '') {
+                                                                <span>Value: #</span>
                                                             }
-                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== '') {
-                                                                <span>
-                                          Value: {{ assessmentForm.controls[dimension.name + '_value' + controlSuffix].value }}
-                                        </span>
+                                                            @if (assessmentForm.controls[dimension.name + '_value' + controlSuffix].value != null && assessmentForm.controls[dimension.name + '_value' + controlSuffix].value !== '') {
+                                                                <span>Value: {{ assessmentForm.controls[dimension.name + '_value' + controlSuffix].value }}</span>
                                                             }
+
                                                             @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')) {
-                                                                <mat-error>
-                                                                    <span>This field is required</span>
-                                                                </mat-error>
+                                                                <mat-error><span>This field is required</span></mat-error>
                                                             }
                                                         </div>
                                                     }
-                                                    <!-- numeric slider -->
+                                                    <!-- /interval -->
                                                 }
+
                                                 <!-- ─── Magnitude estimation ─── -->
                                                 @if (dimension.scale.type == 'magnitude_estimation') {
                                                     <mat-form-field appearance="fill">
                                                         <mat-label>Value</mat-label>
-                                                        <input matInput
-                                                               formControlName="{{ dimension.name + '_value' + controlSuffix }}"
-                                                               (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
-                                                               class="magnitude_estimation"
-                                                               [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                              task.settings.countdown_behavior == 'disable_forms'">
+                                                        <input
+                                                            matInput
+                                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}"
+                                                            (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
+                                                            class="magnitude_estimation"
+                                                            [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')) {
-                                                            <mat-error>
-                                                                <span>This field is required</span>
-                                                            </mat-error>
+                                                            <mat-error><span>This field is required</span></mat-error>
                                                         }
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'isNumber')) {
-                                                            <mat-error>
-                                                                <span>Value has to be a number (whole or decimal)</span>
-                                                            </mat-error>
+                                                            <mat-error><span>Value has to be a number (whole or decimal)</span></mat-error>
                                                         }
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberFormat')) {
-                                                            <mat-error>
-                                                                <span>Numbers must use dot as decimal separator (e.g. 1,234.56)</span>
-                                                            </mat-error>
+                                                            <mat-error><span>Numbers must use dot as decimal separator (e.g. 1,234.56)</span></mat-error>
                                                         }
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberGreaterThan')) {
-                                                            <mat-error>
-                                                                <span>Value has to be greater than {{ dimension.scale.min }}</span>
-                                                            </mat-error>
+                                                            <mat-error><span>Value has to be greater than {{ dimension.scale.min }}</span></mat-error>
                                                         }
                                                     </mat-form-field>
                                                 }
                                             }
+
                                             <!-- ───── Horizontal layout (categorical implemented) ───── -->
                                             @if (dimension.style.orientation == 'horizontal') {
                                                 @if (dimension.scale.type == 'categorical') {
@@ -259,8 +282,7 @@ Re-usable template that prints a list of dimensions
                                                                 class="radio-button"
                                                                 value="{{ mapping.value }}"
                                                                 (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
-                                                                [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                         task.settings.countdown_behavior == 'disable_forms'">
+                                                                [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                                 <span class="mapping-label">{{ mapping.label }}</span>
                                                                 @if (mapping.description) {
                                                                     <span>{{ ' (' + mapping.description + ')' }}</span>
@@ -268,8 +290,12 @@ Re-usable template that prints a list of dimensions
                                                             </mat-radio-button>
                                                         }
                                                     </mat-radio-group>
+                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')) {
+                                                        <mat-error><span>This field is required</span></mat-error>
+                                                    }
                                                 }
-                                                <!-- horizontal interval / magnitude placeholders -->
+
+                                                <!-- placeholders for horizontal interval/magnitude -->
                                                 @if (dimension.scale.type == 'interval' || dimension.scale.type == 'magnitude_estimation') {
                                                     <p i18n>TO BE IMPLEMENTED</p>
                                                 }
@@ -277,6 +303,7 @@ Re-usable template that prints a list of dimensions
                                         </div>
                                     </div>
                                 }
+
                                 <!-- ───────────── Justification ───────────── -->
                                 @if (dimension.justification) {
                                     <div class="dimension-container dimension-justification">
@@ -284,24 +311,19 @@ Re-usable template that prints a list of dimensions
                                             <div class="dimension-text-field">
                                                 <mat-form-field appearance="fill" class="width-100">
                                                     <mat-label>{{ dimension.justification.text }}</mat-label>
-                                                    <textarea matInput
-                                                              rows="3"
-                                                              formControlName="{{ dimension.name + '_justification' + controlSuffix }}"
-                                                              (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
+                                                    <textarea
+                                                        matInput
+                                                        rows="3"
+                                                        formControlName="{{ dimension.name + '_justification' + controlSuffix }}"
+                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
                                                     @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'required')) {
-                                                        <mat-error>
-                                                            <span>This field is required</span>
-                                                        </mat-error>
+                                                        <mat-error><span>This field is required</span></mat-error>
                                                     }
                                                     @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'longer')) {
-                                                        <mat-error>
-                                                            <span>This justification must have at least {{ dimension.justification.min_words }} words.</span>
-                                                        </mat-error>
+                                                        <mat-error><span>This justification must have at least {{ dimension.justification.min_words }} words.</span></mat-error>
                                                     }
                                                     @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'invalid')) {
-                                                        <mat-error>
-                                                            <span>You cannot use the selected search-engine URL as part of the justification.</span>
-                                                        </mat-error>
+                                                        <mat-error><span>You cannot use the selected search-engine URL as part of the justification.</span></mat-error>
                                                     }
                                                 </mat-form-field>
                                             </div>
@@ -311,42 +333,62 @@ Re-usable template that prints a list of dimensions
                             }
                         </div>
                     }
+
                     <!-- ───────────── MATRIX STYLE (skeleton placeholder) ───────────── -->
                     @if (dimension.style.type == 'matrix') {
-                        <div>
-                            <p i18n>TO BE IMPLEMENTED</p>
-                        </div>
+                        <div><p i18n>TO BE IMPLEMENTED</p></div>
                     }
                 }
+
                 <!-- ───────────────────────────── PAIRWISE ───────────────────────────── -->
                 @if (dimension.pairwise) {
+
                     <!-- LIST-style pairwise -->
                     @if (dimension.style.type == 'list') {
                         <div class="dimension">
-                            <!-- show only when previous pairwise step unlocked -->
+
+                            <!-- keep the helper (gate) -->
                             @if (unlockNextDimension(documentIndex, dimension.index)) {
-                                <div class="dimension-content-split">
-                                    <div class="dimension-name-center">
-                                        <mat-divider inset></mat-divider>
-                                        @if (!dimension.name_pretty) {
-                                            <h2>{{ utilsService.capitalize(dimension.name) }}</h2>
-                                        }
-                                        @if (dimension.name_pretty) {
-                                            <h2>{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
-                                        }
-                                        <mat-divider inset></mat-divider>
-                                    </div>
+
+                                <!-- centered name -->
+                                <div class="dimension-name-center">
+                                    @if (!dimension.name_pretty) {
+                                        <h2>{{ utilsService.capitalize(dimension.name) }}</h2>
+                                    }
+                                    @if (dimension.name_pretty) {
+                                        <h2>{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
+                                    }
                                 </div>
-                                @if (dimension.description) {
+
+
+                                <!-- optional description + example -->
+                                @if (dimension.description || dimension.example) {
                                     <div class="dimension-name-center">
                                         <div class="dimension-split-inside">
-                                            <p>{{ dimension.description }}</p>
+                                            @if (dimension.description) {
+                                                <p>{{ dimension.description }}</p>
+                                            }
                                             @if (dimension.example) {
                                                 <i>{{ dimension.example }}</i>
                                             }
                                         </div>
                                     </div>
                                 }
+
+                                <!-- Optional instructions (PAIRWISE) -->
+                                @if (dimension.scale?.instructions; as ins) {
+                                    <div class="evaluation-instructions">
+                                        <h2>
+                                            @if (ins.label) {
+                                                <span>{{ ins.label }} – </span>
+                                            }{{ ins.caption }}
+                                        </h2>
+                                        @if (ins.text) {
+                                            <div class="evaluation-instructions-body" [innerHTML]="ins.text"></div>
+                                        }
+                                    </div>
+                                }
+
                                 <!-- search engine -->
                                 <app-search-engine
                                     [documentIndex]="documentIndex"
@@ -356,27 +398,31 @@ Re-usable template that prints a list of dimensions
                                     [resultsRetrievedForms]="resultsRetrievedForms"
                                     (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
                                 </app-search-engine>
+
                                 <!-- scale controls -->
                                 @if (dimension.scale) {
                                     <div class="dimension-container dimension-scale">
-                                        <div class="dimension-content-split">
+                                        <div class="dimension-content-split pairwise-columns">
+
+                                            <!-- Head labels for the two columns -->
+                                            <div class="pairwise-column-title"><strong>Element A</strong></div>
+                                            <div class="pairwise-column-title"><strong>Element B</strong></div>
+
                                             @if (dimension.style.orientation == 'vertical') {
+
                                                 <!-- categorical vertical -->
                                                 @if (dimension.scale.type == 'categorical') {
-                                                    @for (_ of task.documents[documentIndex].pairwise; track _; let k = $index) {
-                                                        <div class="dimension-split-inside dimension-box"
-                                                        >
-                                                            <p><span i18n>Answer for Element</span> {{ k }}</p>
-                                                            <mat-radio-group class="radio-button-group"
-                                                                             formControlName="{{ dimension.name + '_value_element_' + k }}">
+                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                        <div class="dimension-split-inside dimension-box pairwise-col-surface">
+                                                            <mat-radio-group
+                                                                class="radio-button-group"
+                                                                formControlName="{{ dimension.name + '_value_element_' + k }}">
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     <mat-radio-button
                                                                         class="radio-button"
                                                                         value="{{ mapping.value }}"
-                                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
-                                                    updateDimensionValueSelection(documentIndex, dimension.index, k)"
-                                                                        [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                           task.settings.countdown_behavior == 'disable_forms'">
+                                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); updateDimensionValueSelection(documentIndex, dimension.index, k)"
+                                                                        [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                                         <span class="mapping-label">{{ mapping.label }}</span>
                                                                         @if (mapping.description) {
                                                                             <span>{{ ' (' + mapping.description + ')' }}</span>
@@ -384,77 +430,69 @@ Re-usable template that prints a list of dimensions
                                                                     </mat-radio-button>
                                                                 }
                                                             </mat-radio-group>
-                                                        </div>
-                                                    }
-                                                }
-                                                <!-- interval vertical -->
-                                                @if (dimension.scale.type == 'interval') {
-                                                    @for (_ of task.documents[documentIndex].pairwise; track _; let k = $index) {
-                                                        <div class="dimension-split-inside dimension-box"
-                                                        >
-                                                            <p><span i18n>Answer for Element</span> {{ k }}</p>
-                                                            <label style="margin-left:10px;">
-                                                                <span i18n>Selected value:</span>
-                                                                {{ assessmentForm.controls[dimension.name + '_value_element_' + k].value }}
-                                                            </label>
-                                                            <mat-slider [min]="dimension.scale.min"
-                                                                        [max]="dimension.scale.max"
-                                                                        [step]="dimension.scale.step"
-                                                                        discrete="true">
-                                                                <input matSliderThumb
-                                                                       formControlName="{{ dimension.name + '_value_element_' + k }}"
-                                                                       (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false);
-                                         updateDimensionValueSelection(documentIndex, dimension.index, k)"
-                                                                       [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                task.settings.countdown_behavior == 'disable_forms'">
-                                                            </mat-slider>
                                                             @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'required')) {
-                                                                <mat-error>
-                                                                    <span i18n>This field is required</span>
-                                                                </mat-error>
+                                                                <mat-error><span i18n>This field is required</span></mat-error>
                                                             }
                                                         </div>
                                                     }
                                                 }
+
+                                                <!-- interval vertical -->
+                                                @if (dimension.scale.type == 'interval') {
+                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                        <div class="dimension-split-inside dimension-box pairwise-col-surface">
+                                                            <label class="pairwise-inline-label">
+                                                                <span i18n>Selected value:</span>
+                                                                {{ assessmentForm.controls[dimension.name + '_value_element_' + k].value }}
+                                                            </label>
+                                                            <mat-slider
+                                                                [min]="dimension.scale.min"
+                                                                [max]="dimension.scale.max"
+                                                                [step]="dimension.scale.step"
+                                                                discrete="true">
+                                                                <input
+                                                                    matSliderThumb
+                                                                    formControlName="{{ dimension.name + '_value_element_' + k }}"
+                                                                    (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); updateDimensionValueSelection(documentIndex, dimension.index, k)"
+                                                                    [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
+                                                            </mat-slider>
+                                                            @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'required')) {
+                                                                <mat-error><span i18n>This field is required</span></mat-error>
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+
                                                 <!-- magnitude estimation vertical -->
                                                 @if (dimension.scale.type == 'magnitude_estimation') {
-                                                    @for (_ of task.documents[documentIndex].pairwise; track _; let k = $index) {
-                                                        <div class="dimension-split-inside dimension-box"
-                                                        >
-                                                            <p><span i18n>Answer for Element</span> {{ k }}</p>
-                                                            <mat-form-field appearance="fill" style="margin-left: 10px;">
+                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                        <div class="dimension-split-inside dimension-box pairwise-col-surface">
+                                                            <mat-form-field appearance="fill" class="pairwise-magnitude-field">
                                                                 <mat-label><span i18n>Value</span></mat-label>
-                                                                <input matInput
-                                                                       formControlName="{{ dimension.name + '_value_element_' + k }}"
-                                                                       (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); updateDimensionValueSelection(documentIndex, dimension.index, k)"
-                                                                       class="magnitude_estimation"
-                                                                       [attr.disabled]="task.countdownsExpired[documentIndex] &&
-                                                task.settings.countdown_behavior == 'disable_forms'">
+                                                                <input
+                                                                    matInput
+                                                                    formControlName="{{ dimension.name + '_value_element_' + k }}"
+                                                                    (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false); updateDimensionValueSelection(documentIndex, dimension.index, k)"
+                                                                    class="magnitude_estimation"
+                                                                    [disabled]="task.countdownsExpired[documentIndex] && task.settings.countdown_behavior == 'disable_forms'">
                                                                 @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'required')) {
-                                                                    <mat-error>
-                                                                        <span i18n>This field is required</span>
-                                                                    </mat-error>
+                                                                    <mat-error><span i18n>This field is required</span></mat-error>
                                                                 }
                                                                 @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'isNumber')) {
-                                                                    <mat-error>
-                                                                        <span i18n>Value has to be a number (whole or decimal)</span>
-                                                                    </mat-error>
+                                                                    <mat-error><span i18n>Value has to be a number (whole or decimal)</span></mat-error>
                                                                 }
                                                                 @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'numberFormat')) {
-                                                                    <mat-error>
-                                                                        <span i18n>Numbers must use dot as decimal separator</span>
-                                                                    </mat-error>
+                                                                    <mat-error><span i18n>Numbers must use dot as decimal separator</span></mat-error>
                                                                 }
                                                                 @if (utilsService.hasError(assessmentForm, dimension.name + '_value_element_' + k, 'numberGreaterThan')) {
-                                                                    <mat-error>
-                                                                        <span i18n>Value has to be greater than</span> {{ dimension.scale.min }}
-                                                                    </mat-error>
+                                                                    <mat-error><span i18n>Value has to be greater than</span> {{ dimension.scale.min }}</mat-error>
                                                                 }
                                                             </mat-form-field>
                                                         </div>
                                                     }
                                                 }
                                             }
+
                                             <!-- horizontal pairwise placeholders -->
                                             @if (dimension.style.orientation == 'horizontal') {
                                                 <p i18n>TO BE IMPLEMENTED</p>
@@ -462,34 +500,31 @@ Re-usable template that prints a list of dimensions
                                         </div>
                                     </div>
                                 }
+
                                 <!-- pairwise justification -->
                                 @if (dimension.justification) {
-                                    <div class="dimension-content-split">
-                                        @for (_ of task.documents[documentIndex].pairwise; track _; let k = $index) {
-                                            <div class="dimension-box"
-                                            >
-                                                <p><span i18n>Justification for Element</span> {{ k }}</p>
-                                                <div class="dimension-text-field" style="margin-left: 10px;">
+                                    <div class="dimension-content-split pairwise-columns">
+                                        <div class="pairwise-column-title"><strong>Element A</strong></div>
+                                        <div class="pairwise-column-title"><strong>Element B</strong></div>
+
+                                        @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                            <div class="dimension-box pairwise-col-surface">
+                                                <div class="dimension-text-field">
                                                     <mat-form-field appearance="fill">
                                                         <mat-label>{{ dimension.justification.text }}</mat-label>
-                                                        <textarea matInput
-                                                                  rows="5"
-                                                                  formControlName="{{ dimension.name + '_justification_element_' + k }}"
-                                                                  (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
+                                                        <textarea
+                                                            matInput
+                                                            rows="5"
+                                                            formControlName="{{ dimension.name + '_justification_element_' + k }}"
+                                                            (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'required')) {
-                                                            <mat-error>
-                                                                <span i18n>This field is required</span>
-                                                            </mat-error>
+                                                            <mat-error><span i18n>This field is required</span></mat-error>
                                                         }
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'longer')) {
-                                                            <mat-error>
-                                                                <span i18n>This justification must have at least {{ dimension.justification.min_words }} words.</span>
-                                                            </mat-error>
+                                                            <mat-error><span i18n>This justification must have at least {{ dimension.justification.min_words }} words.</span></mat-error>
                                                         }
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'invalid')) {
-                                                            <mat-error>
-                                                                <span i18n>You cannot use the selected search-engine URL as part of the justification.</span>
-                                                            </mat-error>
+                                                            <mat-error><span i18n>You cannot use the selected search-engine URL as part of the justification.</span></mat-error>
                                                         }
                                                     </mat-form-field>
                                                 </div>
@@ -500,11 +535,10 @@ Re-usable template that prints a list of dimensions
                             }
                         </div>
                     }
+
                     <!-- MATRIX-style pairwise placeholder -->
                     @if (dimension.style.type == 'matrix') {
-                        <div class="dimension-matrix">
-                            <p i18n>TO BE IMPLEMENTED</p>
-                        </div>
+                        <div class="dimension-matrix"><p i18n>TO BE IMPLEMENTED</p></div>
                     }
                 }
             </div>
@@ -512,20 +546,20 @@ Re-usable template that prints a list of dimensions
     </form>
 </ng-template>
 
-
 <!-- ─────────────────── INITIAL (non-post) RENDERING ─────────────────── -->
 @if (!postAssessment) {
     <!-- iterate over positions & types -->
     @for (pos of ['top', 'middle', 'bottom']; track pos) {
         @for (kind of ['list', 'matrix']; track kind) {
-            @if (assessmentForm &&
-            filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
+            @if (assessmentForm && filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
-                    [ngTemplateOutletContext]="{ dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-                                     position: pos,
-                                     assessmentForm: assessmentForm,
-                                     controlSuffix: '' }">
+                    [ngTemplateOutletContext]="{
+                        dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+                        position: pos,
+                        assessmentForm: assessmentForm,
+                        controlSuffix: ''
+                    }">
                 </ng-template>
             }
         }
@@ -536,14 +570,15 @@ Re-usable template that prints a list of dimensions
 @if (postAssessment && followingAssessmentAllowed) {
     @for (pos of ['top', 'middle', 'bottom']; track pos) {
         @for (kind of ['list', 'matrix']; track kind) {
-            @if (assessmentFormAdditional &&
-            filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
+            @if (assessmentFormAdditional && filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
-                    [ngTemplateOutletContext]="{ dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-                                     position: pos,
-                                     assessmentForm: assessmentFormAdditional,
-                                     controlSuffix: '_post_' + postAssessmentIndex }">
+                    [ngTemplateOutletContext]="{
+                        dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+                        position: pos,
+                        assessmentForm: assessmentFormAdditional,
+                        controlSuffix: '_post_' + postAssessmentIndex
+                    }">
                 </ng-template>
             }
         }

@@ -229,7 +229,8 @@ export class Task {
     public initializeDocuments(rawDocuments, documentsParams) {
         this.documents = new Array<Document>();
         this.showMessageFailGoldCheck = new Array<String>();
-        /*  Each document of the current hit is parsed using the Document interface.  */
+
+        /* Parse and store each raw document into the Task.documents array */
         for (let index = 0; index < rawDocuments.length; index++) {
             let currentDocument = rawDocuments[index];
             let currentParams = {} as JSON
@@ -238,10 +239,13 @@ export class Task {
             this.documents.push(new Document(index, currentDocument, currentParams));
             this.showMessageFailGoldCheck.push(null);
         }
+
+        /* Restore the most recent data record per document, if available */
         this.mostRecentDataRecordsForDocuments = new Array<DataRecord>(this.documentsAmount)
         for (let index = 0; index < this.documentsAmount; index++)
             this.mostRecentDataRecordsForDocuments[index] = this.retrieveMostRecentDataRecord('document', index)
 
+        /* Initialize search engine queries per document (empty by default, restored from history if possible) */
         this.searchEngineQueries = new Array<object>(this.documentsAmount);
         this.currentQuery = 0;
         for (let index = 0; index < this.searchEngineQueries.length; index++) {
@@ -255,9 +259,9 @@ export class Task {
                 this.currentQuery = existingSearchEngineQueries.amount - 1
             }
         }
-        this.searchEngineRetrievedResponses = new Array<object>(
-            this.documentsAmount
-        );
+
+        /* Initialize retrieved responses for search engine per document */
+        this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
         for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
             this.searchEngineRetrievedResponses[index] = {};
             this.searchEngineRetrievedResponses[index]["data"] = [];
@@ -268,9 +272,9 @@ export class Task {
                 this.searchEngineRetrievedResponses[index]["amount"] = existingSearchEngineRetrievedResponse.amount
             }
         }
-        this.searchEngineSelectedResponses = new Array<object>(
-            this.documentsAmount
-        );
+
+        /* Initialize selected responses for search engine per document */
+        this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
         for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
             this.searchEngineSelectedResponses[index] = {};
             this.searchEngineSelectedResponses[index]["data"] = [];
@@ -281,13 +285,14 @@ export class Task {
                 this.searchEngineSelectedResponses[index]["amount"] = existingSearchEngineSelectedResponses.amount
             }
         }
-        this.searchEnginePreRetrievedResults = new Array<Array<PreRetrievedResult>>(
-            this.documentsAmount
-        );
+
+        /* Initialize pre-retrieved results per document */
+        this.searchEnginePreRetrievedResults = new Array<Array<PreRetrievedResult>>(this.documentsAmount);
         for (let index = 0; index < this.searchEnginePreRetrievedResults.length; index++) {
             this.searchEnginePreRetrievedResults[index] = this.retrieveSearchEnginePreRetrievedResults(index)
         }
         this.searchEnginePreRetrievedResultsSettings = this.searchEngineSettings.pre_retrieved_results_settings
+
         this.notesDone = new Array<boolean>();
         this.annotationsDisabled = new Array<boolean>();
         if (this.settings.annotator) {
@@ -300,7 +305,6 @@ export class Task {
                         this.annotationsDisabled.push(true);
                     break;
                 case "laws":
-                    // TODO: Add initialization from past records also for this case
                     this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
                     this.notesDone = new Array<boolean>(this.documentsAmount);
                     for (let i = 0; i < this.notes.length; i++)
@@ -314,6 +318,26 @@ export class Task {
             for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
             for (let index = 0; index < this.notes.length; index++)
                 this.annotationsDisabled.push(true);
+        }
+
+        /* Ensure every document exposes a pairwise array; default to 2 elements if missing */
+        const PAIRWISE_FALLBACK_COUNT = 2;
+        for (let i = 0; i < this.documents.length; i++) {
+            const docAny = this.documents[i] as any;
+            const configuredCount = Array.isArray(docAny?.pairwise) ? docAny.pairwise.length : 0;
+
+            if (!Array.isArray(docAny?.pairwise) || configuredCount === 0) {
+                /* Minimal placeholder subdocuments so the UI has two slots */
+                docAny.pairwise = Array.from({length: PAIRWISE_FALLBACK_COUNT}, () => ({}));
+            }
+        }
+
+        /* Initialize selection flags per document, sized to actual subdocuments if pairwise */
+        this.documentsPairwiseSelection = new Array<Array<boolean>>(this.documentsAmount);
+        for (let i = 0; i < this.documentsAmount; i++) {
+            const doc = this.documents[i];
+            const pairCount = doc.pairwise_split && Array.isArray(doc.subdocuments) ? doc.subdocuments.length : 0;  /* Non-pairwise documents have no subdocs */
+            this.documentsPairwiseSelection[i] = Array(pairCount).fill(false);
         }
 
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
@@ -457,13 +481,15 @@ export class Task {
             }
         }
 
-        /* @Cristian Abbondo: Defines a three-dimensional array for element selection. */
+        /* Initialize pairwise selection flags for each document/dimension */
         for (let i = 0; i < this.documentsAmount; i++) {
             this.dimensionsPairwiseSelection[i] = [];
+
+            const doc = this.documents[i];
+            const pairCount = doc.pairwise_split && Array.isArray(doc.subdocuments) ? doc.subdocuments.length : 0;
+
             for (let j = 0; j < this.dimensionsAmount; j++) {
-                this.dimensionsPairwiseSelection[i][j] = [];
-                this.dimensionsPairwiseSelection[i][j][0] = false;
-                this.dimensionsPairwiseSelection[i][j][1] = false;
+                this.dimensionsPairwiseSelection[i][j] = Array(pairCount).fill(false);
             }
         }
 
@@ -652,36 +678,15 @@ export class Task {
         return filteredDimensions;
     }
 
-    public verifyDimensionsQuantity(position) {
-        let dimensionsToCheck = [];
-        for (let dimension of this.dimensions) {
-            if (dimension.style.position == position) {
-                dimensionsToCheck.push(dimension);
-            }
-        }
-        return dimensionsToCheck.length;
-    }
-
-    public retrieveFirstDimension(position) {
-        let dimensionFirst = null;
-        for (let dimension of this.dimensions) {
-            if (dimension.style.position == position && dimension.scale) {
-                dimensionFirst = dimension;
-                break;
-            }
-        }
-        return dimensionFirst;
-    }
-
     /*
-     * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
-     * The parameters are:
-     * - A JSON object that holds the selected value.
-     * - A reference to the current document.
-     * - A reference to the current dimension.
-     * This array can be empty if the worker does not select any value and leaves the task or if a dimension does not require a value.
-     * This information is parsed and stored in the corresponding data structure.
-     */
+         * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
+         * The parameters are:
+         * - A JSON object that holds the selected value.
+         * - A reference to the current document.
+         * - A reference to the current dimension.
+         * This array can be empty if the worker does not select any value and leaves the task or if a dimension does not require a value.
+         * This information is parsed and stored in the corresponding data structure.
+         */
     public storeDimensionValue(
         eventData,
         document: number,
@@ -812,13 +817,6 @@ export class Task {
             /* IMPORTANT: the document_index of the last query inserted for a document will be <amount -1> */
             this.searchEngineQueries[document.index]["amount"] = 1;
         }
-    }
-
-    public retrieveLatestQuery(documentIndex: number) {
-        let queryAmount = this.searchEngineQueries[documentIndex]["amount"]
-        if (queryAmount > 0)
-            return this.searchEngineQueries[documentIndex]["data"][queryAmount - 1];
-        return null
     }
 
     /*
@@ -981,13 +979,6 @@ export class Task {
         return null
     }
 
-    public isSearchEnginePreRetrievedResultVisited(resultUUID: string) {
-        let preRetrievedSearchResult = this.retrieveSearchEnginePreRetrievedResult(resultUUID)
-        if (preRetrievedSearchResult)
-            return preRetrievedSearchResult.visited
-        return false
-    }
-
     /*
      * This function checks if each undeleted note of a document has a corresponding
      * option; if this is true the worker can proceed to the following element
@@ -1022,14 +1013,6 @@ export class Task {
             check = true;
         }
         return check;
-    }
-
-    public checkAtLeastOneDocumentSelected(documentIndex: number) {
-        let atLeastOneDocument = false;
-        for (let selection of this.documentsPairwiseSelection[documentIndex]) {
-            if (selection) atLeastOneDocument = true;
-        }
-        return atLeastOneDocument;
     }
 
     /*
@@ -1221,7 +1204,8 @@ export class Task {
          * The partial data about the completed questionnaire are uploaded */
         let data = {};
         let questionnaire = this.questionnaires[elementData['elementIndex']];
-        let actionInfo = {
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = {
             action: action,
             access: this.elementsAccesses[elementData['overallIndex']],
             try: this.tryCurrent,
@@ -1229,8 +1213,6 @@ export class Task {
             sequence: this.sequenceNumber,
             element: "questionnaire",
         };
-        /* Info about the performed action ("Next"? "Back"? From where?) */
-        data["info"] = actionInfo;
         /* Worker's answers to the current questionnaire */
         let questionsFull = [];
         for (let question of questionnaire.questions) {
@@ -1240,23 +1222,26 @@ export class Task {
         data["answers"] = answers;
         /* Start, end and elapsed timestamps for the current questionnaire */
 
-        let timestampsStart = this.timestampsStart[elementData['overallIndex']];
-        data["timestamps_start"] = timestampsStart;
-        let timestampsEnd = this.timestampsEnd[elementData['overallIndex']];
-        data["timestamps_end"] = timestampsEnd;
-        let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
-        data["timestamps_elapsed"] = timestampsElapsed;
+        data["timestamps_start"] = this.timestampsStart[elementData['overallIndex']];
+        data["timestamps_end"] = this.timestampsEnd[elementData['overallIndex']];
+        data["timestamps_elapsed"] = this.timestampsElapsed[elementData['overallIndex']];
         /* Number of accesses to the current questionnaire */
         data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
 
         return data;
     }
 
-    public buildTaskDocumentPayload(elementData, answers, additionalAnswers = {}, countdown, action) {
-        /* If the worker has completed the first questionnaire
-         * The partial data about the completed questionnaire are uploaded */
+    public buildTaskDocumentPayload(
+        elementData,
+        answers,
+        additionalAnswers = {},
+        countdown,
+        action
+    ) {
         let data = {};
-        let actionInfo = {
+
+        /* Info about the performed action ("Next", "Back", etc.) */
+        data["info"] = {
             action: action,
             access: this.elementsAccesses[elementData['overallIndex']],
             try: this.tryCurrent,
@@ -1264,100 +1249,86 @@ export class Task {
             sequence: this.sequenceNumber,
             element: "document",
         };
-        /* Info about the performed action ("Next"? "Back"? From where?) */
-        data["info"] = actionInfo;
 
-        /* Worker's answers for the current document (dimension coercions) */
+        /* Normalize worker answers by coercing magnitude-estimation values to numbers */
         for (let [attribute, value] of Object.entries(answers)) {
             let answerDimensionName = attribute.split("_")[0];
             for (let dimension of this.dimensions) {
                 if (answerDimensionName == dimension.name) {
-                    answers[attribute] = dimension.scale && dimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, "") : value;
+                    answers[attribute] =
+                        dimension.scale && dimension.scale instanceof ScaleMagnitude
+                            ? +String(value).replace(/,/g, "")
+                            : value;
                     break;
                 }
             }
         }
 
-        /* Merge additional answers */
+        /* Merge additional answers (e.g., from other form controls) */
         for (let [additionalAnswerName, value] of Object.entries(additionalAnswers)) {
             answers[additionalAnswerName] = value;
         }
 
-        /* ─────────────────────────────────────────────────────────────
-         * NEW: Persist pairwise selection into answers for history restore.
-         *  - Writes element_<j>_selected boolean flags
-         *  - Writes pairwise_selected_index (0-based; -1 if none)
-         *  This enables element-pairwise to hydrate from record.data.answers.
-         * ───────────────────────────────────────────────────────────── */
-        if (this.settings?.modality === 'pairwise') {
-            const docIdx = elementData['elementIndex'];
-            const selectionArr = this.documentsPairwiseSelection?.[docIdx] || [];
+        /* Persist pairwise selection into answers so history can be restored */
+        const docIdx = elementData['elementIndex'];
+        const doc = this.documents[docIdx];
+        const selectionArr = this.documentsPairwiseSelection?.[docIdx];
 
-            /* TS-safe subdocument count: the autogenerated Document type may not declare `subdocuments` */
-            const docAny = (this.documents?.[docIdx] as any);
-            const subdocCount = selectionArr.length > 0
-                ? selectionArr.length
-                : (Array.isArray(docAny?.subdocuments) ? docAny.subdocuments.length : 0);
+        if (doc.pairwise_split && Array.isArray(selectionArr) && selectionArr.length > 0) {
+            const subdocCount = doc.subdocuments.length;
+            let selectedIndex = -1;
 
-            if (subdocCount > 0) {
-                let selectedIndex = -1;
-                for (let j = 0; j < subdocCount; j++) {
-                    const key = `element_${j}_selected`;
-                    const isSelected = !!selectionArr[j];
-                    answers[key] = isSelected;
-                    if (isSelected && selectedIndex === -1) selectedIndex = j;
+            for (let j = 0; j < subdocCount; j++) {
+                const key = `element_${j}_selected`;
+                const isSelected = !!selectionArr[j];
+                answers[key] = isSelected;
+                if (isSelected && selectedIndex === -1) {
+                    selectedIndex = j;
                 }
-                answers['pairwise_selected_index'] = selectedIndex;
             }
-        }
-        /* ───────────────────────────────────────────────────────────── */
 
+            answers['pairwise_selected_index'] = selectedIndex;
+        }
+
+        /* Store worker answers for this document */
         data["answers"] = answers;
 
-        let notes = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
-        data["notes"] = notes;
+        /* Notes/annotations (empty if no annotator enabled) */
+        data["notes"] = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
 
-        /* Worker's dimensions selected values for the current document */
-        let dimensionsSelectedValues = this.dimensionsSelectedValues[elementData['elementIndex']];
-        data["dimensions_selected"] = dimensionsSelectedValues;
+        /* Worker’s dimensions selected values for this document */
+        data["dimensions_selected"] = this.dimensionsSelectedValues[elementData['elementIndex']];
 
-        /* Worker's search engine queries for the current document */
-        let searchEngineQueries = this.searchEngineQueries[elementData['elementIndex']];
-        data["queries"] = searchEngineQueries;
+        /* Worker’s search engine queries for this document */
+        data["queries"] = this.searchEngineQueries[elementData['elementIndex']];
 
-        /* Start, end and elapsed timestamps for the current document */
-        let timestampsStart = this.timestampsStart[elementData['overallIndex']];
-        data["timestamps_start"] = timestampsStart;
-        let timestampsEnd = this.timestampsEnd[elementData['overallIndex']];
-        data["timestamps_end"] = timestampsEnd;
-        let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
-        data["timestamps_elapsed"] = timestampsElapsed;
+        /* Start, end and elapsed timestamps for this document */
+        data["timestamps_start"] = this.timestampsStart[elementData['overallIndex']];
+        data["timestamps_end"] = this.timestampsEnd[elementData['overallIndex']];
+        data["timestamps_elapsed"] = this.timestampsElapsed[elementData['overallIndex']];
 
-        /* Countdown data */
-        let countdownTimeStart = this.settings.countdownTime >= 0 ? this.documentsStartCountdownTime[elementData['elementIndex']] : [];
-        data["countdowns_times_start"] = countdownTimeStart;
-        let countdownTime = this.settings.countdownTime >= 0 ? countdown : [];
-        data["countdowns_times_left"] = countdownTime;
-        let countdown_started = this.settings.countdownTime >= 0 ? this.countdownsStarted[elementData['elementIndex']] : [];
-        data["countdowns_started"] = countdown_started;
-        let countdown_expired = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
-        data["countdowns_expired"] = countdown_expired;
+        /* Countdown data (start, left, status, expiration, overtime) */
+        data["countdowns_times_start"] = this.settings.countdownTime >= 0 ? this.documentsStartCountdownTime[elementData['elementIndex']] : [];
+        data["countdowns_times_left"] = this.settings.countdownTime >= 0 ? countdown : [];
+        data["countdowns_started"] = this.settings.countdownTime >= 0 ? this.countdownsStarted[elementData['elementIndex']] : [];
+        data["countdowns_expired"] = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
+
         let countdown_expired_timestamp = this.settings.countdownTime >= 0 ? this.countdownExpiredTimestamp[elementData['elementIndex']] : [];
         let overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
+
         data['countdown_expired_timestamp'] = countdown_expired_timestamp;
         data['overtime'] = overtime;
 
         /* Number of accesses to the current document */
         data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
 
-        /* Search engine responses */
-        let responsesRetrieved = this.searchEngineRetrievedResponses[elementData['elementIndex']];
-        data["responses_retrieved"] = responsesRetrieved;
-        let responsesSelected = this.searchEngineSelectedResponses[elementData['elementIndex']];
-        data["responses_selected"] = responsesSelected;
+        /* Search engine responses (retrieved + selected) */
+        data["responses_retrieved"] = this.searchEngineRetrievedResponses[elementData['elementIndex']];
+        data["responses_selected"] = this.searchEngineSelectedResponses[elementData['elementIndex']];
 
         return data;
     }
+
 
     public buildQualityChecksPayload(qualityChecks) {
         let checks = {};
@@ -1372,12 +1343,11 @@ export class Task {
 
     public buildCommentPayload(comment) {
         let data = {};
-        let actionInfo = {
+        data["info"] = {
             try: this.tryCurrent,
             sequence: this.sequenceNumber,
             element: "comment",
         };
-        data["info"] = actionInfo;
         data["comment"] = comment;
         this.sequenceNumber = this.sequenceNumber + 1;
         return data;

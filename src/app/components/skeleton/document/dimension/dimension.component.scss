@@ -1,246 +1,360 @@
+/* ─────────────────────────────────────────────────────────────
+   Base dimension block
+   ───────────────────────────────────────────────────────────── */
 .dimension {
+    mat-form-field {
+        width: 100%;
+    }
 
-	mat-form-field {
-		width: 100%;
-	}
+    margin-bottom: 12px;
 
-	margin-bottom: 1%;
+    h2 {
+        font-weight: normal;
+        margin: 0 0 6px 0;
+        text-align: center;
+    }
+
+    mat-radio-group,
+    .radio-button-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        width: 100%;
+        margin: 0;
+    }
+
+    .magnitude_estimation {
+        font-size: 1.1em;
+    }
+
+    .checkbox {
+        margin: 0;
+        padding: 0;
+
+        mat-checkbox {
+            float: left;
+            margin-right: 1%;
+        }
+    }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Containers
+   ───────────────────────────────────────────────────────────── */
 .dimension-container {
-	display: flex;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
 }
 
 .dimension-content {
-	flex-grow: 1;
-	font-size: 1.1em;
-}
-
-.mapping-label {
-	font-size: 1.2em;
+    flex: 1 1 auto;
+    width: 100%;
+    font-size: 1.1em;
+    text-align: left;
 }
 
 .dimension-name {
-	margin-bottom: 1%;
+    margin-bottom: 8px;
 }
 
 .dimension-description {
-	margin-bottom: 1%;
-}
+    margin-bottom: 8px;
 
-.dimension-example {
-	display: block;
-	margin-top: 1%;
-}
+    p {
+        margin: 6px 0 0 0;
+    }
 
-.dimension-description p {
-	margin-bottom: 0;
-	margin-top: 0.5%;
+    .dimension-example {
+        display: block;
+        margin-top: 6px;
+        opacity: 0.9;
+    }
 }
 
 .dimension-scale {
-	margin-bottom: 1%;
+    margin-bottom: 12px;
 }
 
 .dimension-url {
-	margin-bottom: 1%;
+    margin-bottom: 12px;
 }
 
-.dimension mat-radio-group {
-	margin-top: 0;
-	margin-bottom: 0;
+.mapping-label {
+    font-size: 1.2em;
 }
 
-.dimension .checkbox {
-	margin: 0;
-	padding: 0;
-
-	mat-checkbox {
-		float: left;
-		margin-right: 1%;
-	}
-}
-
-/* Updated MDC selectors for hiding form-field visuals in checkbox containers */
-::ng-deep .dimension .checkbox .mat-mdc-form-field-infix {
-	display: none;
-}
-
-::ng-deep .dimension .checkbox .mat-mdc-form-field-flex {
-	display: none;
-}
-
+/* Hide MDC visuals inside the checkbox container */
+::ng-deep .dimension .checkbox .mat-mdc-form-field-infix,
+::ng-deep .dimension .checkbox .mat-mdc-form-field-flex,
 ::ng-deep .dimension .checkbox .mat-mdc-form-field-underline {
-	display: none;
+    display: none;
 }
 
 ::ng-deep .dimension .checkbox .mat-mdc-form-field-wrapper {
-	padding: 0;
+    padding: 0;
 }
 
-.dimension .magnitude_estimation {
-	font-size: 1.1em;
+/* ─────────────────────────────────────────────────────────────
+   Interval scale specifics
+   ───────────────────────────────────────────────────────────── */
+.scale-interval {
+    span {
+        font-size: 1.1em;
+    }
+
+    mat-slider {
+        width: 100% !important;
+    }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Matrix placeholders
+   ───────────────────────────────────────────────────────────── */
 .dimension-matrix-single {
-	border: 2px solid lightgray;
-	border-radius: 8px;
-	padding: 10px;
-	margin-bottom: 2em;
+    border: 2px solid lightgray;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 2em;
 }
 
-.dimension-matrix-multiple {
-	margin-bottom: 1em;
-}
-
+.dimension-matrix-multiple,
 .dimension-matrix-container {
-	margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 
-.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
-	position: relative;
-	right: 5px;
-	text-align: center;
+.dimension-matrix .matrix-header .matrix-header-value,
+.dimension-matrix .matrix-header .matrix-header-text {
+    position: relative;
+    right: 5px;
+    text-align: center;
 }
 
 .dimension-matrix mat-radio-group {
-	display: flex !important;
-	justify-content: flex-start;
+    display: flex !important;
+    justify-content: flex-start;
 }
 
 .dimension-matrix mat-radio-group > div {
-	display: flex !important;
-	flex-basis: 0;
-	flex-grow: 1;
-	overflow-wrap: break-word;
-	align-items: center;
-	flex-wrap: wrap;
+    display: flex !important;
+    flex-basis: 0;
+    flex-grow: 1;
+    overflow-wrap: break-word;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
-	font-size: medium;
-	margin-bottom: 1%;
-	justify-content: center;
+.dimension-matrix mat-radio-group .matrix-header-body,
+.dimension-matrix mat-radio-group .matrix-header-body-wide {
+    font-size: medium;
+    margin-bottom: 1%;
+    justify-content: center;
 }
 
-.dimension-matrix .matrix-header-body-wide:first-child, .dimension-matrix .matrix-header-body:first-child {
-	width: 15%;
+.dimension-matrix .matrix-header-body-wide:first-child,
+.dimension-matrix .matrix-header-body:first-child {
+    width: 15%;
 }
 
 .dimension-matrix .matrix-value div {
-	width: 100%;
+    width: 100%;
 }
 
 .dimension-matrix .matrix-value-control {
-	justify-content: center;
+    justify-content: center;
 }
 
 .dimension-matrix mat-radio-group .matrix-value-description {
-	.description-main {
-		font-size: 1.1em;
-		padding-bottom: 20px;
-	}
+    text-align: left;
 
-	.description-main-with-sub {
-		border: none;
-		padding-bottom: 0;
-		font-size: 1.1em;
-	}
+    .description-main {
+        font-size: 1.1em;
+        padding-bottom: 20px;
+    }
 
-	text-align: left;
+    .description-main-with-sub {
+        border: none;
+        padding-bottom: 0;
+        font-size: 1.1em;
+    }
 }
 
 .dimension-matrix .description-sub {
-	p {
-		margin-top: 0;
-	}
+    padding: 5px 10px 3px 0;
 
-	padding: 5px 10px 3px 0;
+    p {
+        margin-top: 0;
+    }
 }
 
 .dimension-matrix .name-pretty {
-	p {
-		margin-top: 0;
-		text-align: left;
-		font-size: 1.3em;
-	}
+    p {
+        margin-top: 0;
+        text-align: left;
+        font-size: 1.3em;
+    }
 
-	strong {
-		font-size: medium;
-	}
+    strong {
+        font-size: medium;
+    }
 }
 
 .dimension-matrix p {
-	margin-bottom: 0;
-}
-
-.dimension h2 {
-	font-weight: normal;
+    margin-bottom: 0;
 }
 
 .instructions h2 {
-	font-weight: normal;
+    font-weight: normal;
 }
 
-.dimension-matrix .dimension-separate {
-	background-color: #F8F8F8;
-}
-
+/* Optional counter column */
 .dimension-counter {
-	flex-grow: 0;
-	flex-basis: 1%;
-	justify-content: center;
-	align-self: center;
-	vertical-align: top;
-	margin-right: 1%;
+    flex-grow: 0;
+    flex-basis: 1%;
+    justify-content: center;
+    align-self: center;
+    vertical-align: top;
+    margin-right: 1%;
 }
 
-.scale-interval {
-	span {
-		font-size: 1.1em;
-	}
+/* ─────────────────────────────────────────────────────────────
+   Pairwise (subdocuments) – grid container and columns
+   ───────────────────────────────────────────────────────────── */
+.dimension-name-center {
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
-.scale-interval mat-slider {
-	width: 100% !important;
-}
-
-/* Pairwise splitted dimension css */
+/* Two-column grid */
 .dimension-content-split {
-	display: table;
-	border-spacing: 2cm 0px;
-	width: 100%;
-	margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 20px;
+    justify-items: stretch;
+    align-items: start;
+}
+
+.pairwise-columns {
+    background: #fafafa;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.pairwise-col-surface {
+    background: none; /* ⟵ removed grey background */
+    border: none; /* ⟵ removed border */
+    border-radius: 0;
+    padding: 10px 12px;
+    width: 100%;
+    justify-self: stretch;
+}
+
+.pairwise-column-title {
+    text-align: center;
+    font-size: 0.95rem;
+    margin: -2px 0 2px 0;
 }
 
 .dimension-split-inside {
-	display: table-cell;
-	margin-bottom: 30px;
-}
-
-.spanDocument {
-	font-size: 15px;
-	font-weight: bold;
-	text-align: center;
-	padding-bottom: 20px;
-}
-
-.dimension-name-center {
-	text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    width: 100%;
 }
 
 .dimension-box {
-	display: table-cell;
-	background-color: #FCFCFC;
-	padding-top: 1px;
-	margin-top: -1px;
-	overflow: hidden;
-	border-radius: 5px;
-	cursor: pointer;
-	box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    cursor: default;
+
+    p {
+        margin: 0 0 6px 0;
+        font-weight: 500;
+        text-align: left;
+    }
 }
 
-.test {
-	opacity: 100%;
-	z-index: 110;
+.pairwise-inline-label {
+    display: inline-block;
+    margin: 0 0 6px 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Instructions block – centered title, readable body
+   ───────────────────────────────────────────────────────────── */
+.evaluation-instructions {
+    margin: 8px 0 12px 0;
+    text-align: center;
+
+    h2 {
+        margin: 0 0 6px 0;
+        font-weight: 500;
+    }
+}
+
+.evaluation-instructions-body {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: left;
+    font-size: 0.975rem;
+    line-height: 1.45;
+
+    p {
+        margin: 6px 0;
+    }
+
+    ul,
+    ol {
+        margin: 6px 0 6px 18px;
+        padding-left: 18px;
+    }
+
+    li {
+        margin: 3px 0;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive tweaks
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 599px) {
+    .mapping-label {
+        font-size: 1.05em;
+    }
+
+    .dimension-content {
+        font-size: 1em;
+    }
+
+    .pairwise-columns {
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .pairwise-col-surface {
+        padding: 8px 10px;
+    }
+
+    .dimension-content-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX: center dimension titles and instruction headings
+   ───────────────────────────────────────────────────────────── */
+.dimension .dimension-name h2,
+.dimension .evaluation-instructions h2,
+.dimension .dimension-name-center h2 {
+    text-align: center;
 }

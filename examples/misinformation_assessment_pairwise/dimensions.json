@@ -1,12 +1,13 @@
 [
     {
         "name": "rate_truth",
+        "name_pretty": "Truthfulness",
         "task_type": [
             "Main"
         ],
-        "name_pretty": false,
         "description": false,
         "gold": false,
+        "pairwise": true,
         "justification": false,
         "url": false,
         "scale": {
@@ -16,7 +17,7 @@
             "step": 1,
             "instructions": {
                 "label": "A",
-                "caption": "Rate truthfulness from 1 (definitely false) to 10 (definitely true).",
+                "caption": "Rate truthfulness from 1 (definitely false) to 10 (definitely true)",
                 "text": "<p>Judge the claim using only the information provided in this task. Consider the full context of the element. Do not search externally.</p><ul><li><strong>1–2</strong>: clearly false</li><li><strong>3–4</strong>: probably false</li><li><strong>5–6</strong>: unclear or mixed evidence</li><li><strong>7–8</strong>: probably true</li><li><strong>9–10</strong>: clearly true</li></ul><p>If uncertain, choose the closest value.</p>"
             }
         },
@@ -29,13 +30,14 @@
     },
     {
         "name": "agree_statement",
+        "name_pretty": "Agreement",
         "task_type": [
             "Main"
         ],
-        "name_pretty": false,
         "description": false,
         "gold": false,
         "justification": false,
+        "pairwise": true,
         "url": false,
         "scale": {
             "type": "categorical",
@@ -68,7 +70,7 @@
             ],
             "instructions": {
                 "label": "B",
-                "caption": "Indicate your level of agreement with the statement.",
+                "caption": "Indicate your level of agreement with the statement",
                 "text": "<p>Select one option that best reflects your view of the statement based on the content provided. Do not use external sources.</p><ul><li>Choose the closest option if unsure.</li><li>Use “Undecided” only when you are genuinely neutral or lack sufficient information.</li></ul>"
             }
         },
