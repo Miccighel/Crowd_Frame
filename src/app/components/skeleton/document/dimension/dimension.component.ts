@@ -9,16 +9,16 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 /* Services */
-import { SectionService } from '../../../../services/section.service';
-import { UtilsService } from '../../../../services/utils.service';
+import {SectionService} from '../../../../services/section.service';
+import {UtilsService} from '../../../../services/utils.service';
 /* Models */
-import { Task } from '../../../../models/skeleton/task';
-import { Dimension, ScaleCategorical, ScaleInterval, ScaleMagnitude } from '../../../../models/skeleton/dimension';
+import {Task} from '../../../../models/skeleton/task';
+import {Dimension, ScaleCategorical, ScaleInterval, ScaleMagnitude} from '../../../../models/skeleton/dimension';
 /* Components */
-import { Worker } from '../../../../models/worker/worker';
-import { DataRecord } from '../../../../models/skeleton/dataRecord';
+import {Worker} from '../../../../models/worker/worker';
+import {DataRecord} from '../../../../models/skeleton/dataRecord';
 
 @Component({
     selector: 'app-dimension',
@@ -88,11 +88,11 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     /*
-     * Initializes form controls for evaluating the task's dimensions.
-     * Used by the initialization method, where controlSuffix customizes post-assessment control names.
-     * For the initial assessment, the suffix is set to ''. Otherwise, it will be '_post_{postAssessmentIndex}'.
-     * NOTE: Interval sliders now start as null (no pre-filled min) to ensure validators trigger properly.
-     */
+ * Initializes form controls for evaluating the task's dimensions.
+ * Used by the initialization method, where controlSuffix customizes post-assessment control names.
+ * For the initial assessment, the suffix is set to ''. Otherwise, it will be '_post_{postAssessmentIndex}'.
+ * NOTE: Interval sliders now start as null (no pre-filled min) to ensure validators trigger properly.
+ */
     public initializeControls(controlSuffix: string) {
         let controlsConfig: any = {};
         for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
@@ -151,9 +151,28 @@ export class DimensionComponent implements OnInit, OnChanges {
                             controlsConfig[`${dimension.name}_justification${controlSuffix}`] =
                                 new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)]);
                         }
+
+                        /* ───────────── URL (Search Engine) COPY FOR POST-ASSESSMENT ─────────────
+                         * In post-assessment steps (controlSuffix !== ''), expose an optional URL control:
+                         *   - Name: "<dimension>_url" + controlSuffix  (e.g., _post_1)
+                         *   - No Validators.required (additional source, not mandatory)
+                         *   - Prefill from most recent answers if available (suffixed first, then base)
+                         * We do NOT create the base "<dimension>_url" at initial step here to preserve the
+                         * current search-UI → form reference behavior handled by storeSearchEngineUrl().
+                         */
+                        if ((dimension as any).url && controlSuffix !== '') {
+                            let urlPrev = '';
+                            if (this.mostRecentDataRecord) {
+                                const answers = this.mostRecentDataRecord.loadAnswers();
+                                urlPrev = answers[`${dimension.name}_url${controlSuffix}`]
+                                    ?? answers[`${dimension.name}_url`]
+                                    ?? '';
+                            }
+                            controlsConfig[`${dimension.name}_url${controlSuffix}`] = new UntypedFormControl(urlPrev);
+                        }
                     }
 
-                /* ───────────── PAIRWISE ───────────── */
+                    /* ───────────── PAIRWISE ───────────── */
                 } else {
                     /* Iterate using subdocuments length, aligned to new Document interface */
                     const subdocs = (this.task.documents[this.documentIndex] as any)?.subdocuments || [];
@@ -202,6 +221,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         }
         return controlsConfig;
     }
+
 
     ngOnInit() {
         this.task = this.sectionService.task;
@@ -354,14 +374,14 @@ export class DimensionComponent implements OnInit, OnChanges {
     /* #################### INTERVAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
     public isVideoTimestampInterval(): boolean {
         return this.task.settings.attributesMain.some(attribute => attribute.is_video) &&
-               this.task.dimensions.some(dimension => dimension.scale.type == 'categorical');
+            this.task.dimensions.some(dimension => dimension.scale.type == 'categorical');
     }
 
     public isVideoTypeLabelCategorical(currentCategoricalDimension: Dimension): boolean {
         if (currentCategoricalDimension.scale && currentCategoricalDimension.scale instanceof ScaleCategorical) {
             let primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             return this.task.settings.attributesMain.some(attribute => attribute.is_video) &&
-                   currentCategoricalDimension.name != primaryCategoricalDimension.name;
+                currentCategoricalDimension.name != primaryCategoricalDimension.name;
         }
         return false;
     }
@@ -400,7 +420,7 @@ export class DimensionComponent implements OnInit, OnChanges {
             const primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
                 return this.assessmentForm.controls[(primaryCategoricalDimension.name).concat('_value').concat('')].value !== primaryCategoricalDimension.scale.mapping[1].value &&
-                       currentDimension.name != primaryCategoricalDimension.name;
+                    currentDimension.name != primaryCategoricalDimension.name;
             }
         }
         return false;
@@ -482,7 +502,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                     let response = selectedUrl['response'];
                     /* The controls are performed */
                     for (let word of cleanedWords) {
-                        if (word == response['url']) return { 'invalid': 'You cannot use the selected search engine url as part of the justification.' };
+                        if (word == response['url']) return {'invalid': 'You cannot use the selected search engine url as part of the justification.'};
                     }
                 }
             }
@@ -498,7 +518,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                         }
                     }
                 }
-                return cleanedWords.length > minWords ? null : { 'longer': 'This is not valid.' };
+                return cleanedWords.length > minWords ? null : {'longer': 'This is not valid.'};
             }
         }
         return null;
@@ -510,8 +530,15 @@ export class DimensionComponent implements OnInit, OnChanges {
     public verifyUrlSelection(position: string) {
         let positionsToCheck: Array<string> = [];
         if (position == 'top') positionsToCheck.push('top');
-        if (position == 'middle') { positionsToCheck.push('top'); positionsToCheck.push('middle'); }
-        if (position == 'bottom') { positionsToCheck.push('top'); positionsToCheck.push('middle'); positionsToCheck.push('bottom'); }
+        if (position == 'middle') {
+            positionsToCheck.push('top');
+            positionsToCheck.push('middle');
+        }
+        if (position == 'bottom') {
+            positionsToCheck.push('top');
+            positionsToCheck.push('middle');
+            positionsToCheck.push('bottom');
+        }
 
         let dimensionsToCheck: Array<Dimension> = [];
         for (let dimension of this.task.dimensions) {
@@ -520,29 +547,82 @@ export class DimensionComponent implements OnInit, OnChanges {
             }
         }
 
+        /* Require a URL control with a non-empty value for the current step (base or suffixed). */
+        const currentAssessmentForm = this.getCurrentAssessmentForm();
+        const suffix = (this.postAssessment && this.postAssessmentIndex) ? `_post_${this.postAssessmentIndex}` : '';
+
         let result = true;
         for (let dimension of dimensionsToCheck) {
             if ((dimension as any).url) {
-                let currentAssessmentForm = this.getCurrentAssessmentForm();
-                if (currentAssessmentForm?.get(dimension.name.concat('_url'))) {
-                    let value = currentAssessmentForm?.get(dimension.name.concat('_url')).value;
-                    if (!value) result = false;
+                const keyBase = `${dimension.name}_url`;
+                const keyStep = `${dimension.name}_url${suffix}`;
+                const ctrl = currentAssessmentForm?.get(keyStep) ?? currentAssessmentForm?.get(keyBase);
+                if (!ctrl || !ctrl.value) {
+                    result = false;
                 }
             }
         }
         return result;
     }
 
+
+    /* #################### SEARCH ENGINE INTERACTION #################### */
+
+    /*
+     * Adds or syncs URL controls coming from the search engine UI.
+     * - Initial assessment: keep the existing behavior (add the base "<dimension>_url" by reference).
+     * - Post assessment: if a suffixed control exists ("<dimension>_url_post_i"), sync that instead of
+     *   injecting the base control into the post form. This avoids duplicating base + suffixed URLs.
+     * - If neither exists in post, create the suffixed control (value copy) to keep forms consistent.
+     */
     public storeSearchEngineUrl(urlFormGroup: UntypedFormGroup, dimensionIndex: number) {
-        for (const [key, _value] of Object.entries(urlFormGroup.controls)) {
-            let currentAssessmentForm = this.getCurrentAssessmentForm();
-            if (!currentAssessmentForm?.get(key) && (this.task.dimensions[dimensionIndex] as any).url) {
-                currentAssessmentForm?.addControl(key, (urlFormGroup as any)?.get(key));
-                if (!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex] = [];
-                this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup;
+        for (const [key, _] of Object.entries(urlFormGroup.controls)) {
+            const currentAssessmentForm = this.getCurrentAssessmentForm();
+            if (!currentAssessmentForm) continue;
+
+            /* Guard: only act for dimensions that declare a URL field */
+            const dimHasUrl = (this.task.dimensions[dimensionIndex] as any).url;
+            if (!dimHasUrl) continue;
+
+            /* Detect post-assessment suffix target for this step, if any */
+            const isPost = !!this.postAssessment && !!this.postAssessmentIndex;
+            const suffixedKey = isPost ? `${key}_post_${this.postAssessmentIndex}` : null;
+
+            const baseCtrl = currentAssessmentForm.get(key);
+            const postCtrl = suffixedKey ? currentAssessmentForm.get(suffixedKey) : null;
+
+            const sourceControl = (urlFormGroup as any).get(key);
+            const sourceValue = sourceControl?.value;
+
+            if (baseCtrl) {
+                /* Base control exists in the active form → sync from search UI */
+                baseCtrl.setValue(sourceValue);
+            } else if (postCtrl) {
+                /* Post-assessment copy exists → sync the suffixed control */
+                postCtrl.setValue(sourceValue);
+            } else {
+                if (!isPost) {
+                    /*
+                     * Initial assessment:
+                     * Add the base control by reference to preserve two-way binding with the search UI group.
+                     */
+                    currentAssessmentForm.addControl(key, sourceControl);
+                } else {
+                    /*
+                     * Post assessment and neither control is present:
+                     * Create the suffixed control as a value copy (no direct reference available from the search UI).
+                     * This keeps the post form self-contained and avoids mixing base and post URLs.
+                     */
+                    currentAssessmentForm.addControl(suffixedKey!, new UntypedFormControl(sourceValue));
+                }
             }
+
+            /* Track the search engine form group per document/dimension (unchanged behavior) */
+            if (!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex] = [];
+            this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup;
         }
     }
+
 
     /* #################### CHECKBOX-BASED CONTROL #################### */
 
@@ -568,7 +648,7 @@ export class DimensionComponent implements OnInit, OnChanges {
         }
 
         (formControl as any).markAsTouched();
-        this.task.storeDimensionValue(Object({ 'value': (formControl as any).value }), this.documentIndex, (dimension as any).index, this.postAssessmentIndex, false);
+        this.task.storeDimensionValue(Object({'value': (formControl as any).value}), this.documentIndex, (dimension as any).index, this.postAssessmentIndex, false);
     }
 
     /* #################### PAIRWISE ASSESSMENT #################### */
@@ -576,10 +656,10 @@ export class DimensionComponent implements OnInit, OnChanges {
     public unlockNextDimension(documentIndex: number, dimensionIndex: number) {
         if (dimensionIndex == 0) {
             return this.task.documentsPairwiseSelection[documentIndex][0] == true ||
-                   this.task.documentsPairwiseSelection[documentIndex][1] == true;
+                this.task.documentsPairwiseSelection[documentIndex][1] == true;
         } else {
             return this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][0] == true &&
-                   this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][1] == true;
+                this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][1] == true;
         }
     }
 
