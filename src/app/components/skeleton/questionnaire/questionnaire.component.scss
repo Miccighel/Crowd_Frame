@@ -1,186 +1,147 @@
-/* --- STEP HEADER: disable pointer events (OK with ::ng-deep if needed) --- */
-::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: none !important;
+/* =========================
+ * Questionnaire styles (refactored, non-breaking)
+ * ========================= */
+
+/* Tokens (scoped to component); move to :root for global */
+:host {
+  --cf-space-0: 0;
+  --cf-space-1: 4px;
+  --cf-space-2: 8px;
+  --cf-space-3: 12px;
+  --cf-space-4: 16px;
+  --cf-space-5: 20px;
+  --cf-space-6: 24px;
+
+  --cf-border: rgba(0, 0, 0, .12);
+  --cf-error: #c62828;
+  --cf-muted: #495057;
+  --cf-muted-2: #616161;
+  --cf-info-bg: #f8f9fa;
+  --cf-accent: #1565c0;
+
+  --cf-title-size: 24px;
+  --cf-question-size: 1.2em;
+  --cf-sub-size: 1.1em;
 }
+
+/* --- STEP HEADER: prefer a wrapper class over ::ng-deep; keep deep as fallback --- */
+/* If you can, wrap the stepper in .no-click-headers and use the first rule only. */
+.no-click-headers .mat-horizontal-stepper-header { pointer-events: none; }
+/* Fallback (kept): */
+::ng-deep .mat-horizontal-stepper-header { pointer-events: none !important; }
 
 /* --- CARD TITLE --- */
 mat-card-title {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  margin-bottom: 0;
-  margin-top: 8px;
+  padding-block: var(--cf-space-2);
+  margin-block: var(--cf-space-2) var(--cf-space-0);
   font-weight: 400;
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
-  font-size: 24px;
+  border-bottom: 1px solid var(--cf-border);
+  font-size: var(--cf-title-size);
 }
 
-/* --- CARD CONTENT --- */
-mat-card-content {
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-/* --- CARD ACTIONS --- */
+/* --- CARD CONTENT / ACTIONS --- */
+mat-card-content { margin-block: var(--cf-space-2); }
 mat-card-actions {
-  margin: 16px auto 1em auto;
+  margin: var(--cf-space-4) auto 1em;
   width: 85%;
 }
 
 /* --- CHECKBOX --- */
 mat-checkbox {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-block: var(--cf-space-1);
   font-size: 1.1em;
 }
 
 /* --- FORM FIELD WIDTH --- */
-mat-form-field {
-  width: 100%;
-}
+mat-form-field { width: 100%; }
 
 /* --- QUESTIONNAIRE STANDARD --- */
-.questionnaire-standard {
-  margin-bottom: 8px !important;
-}
+.questionnaire-standard { margin-bottom: var(--cf-space-2) !important; }
 
 /* --- QUESTION TEXTS, DESCRIPTION, CAPTION --- */
-.question-text {
-  font-size: 1.2em;
-  font-weight: normal;
-}
-
-.questionnaire-description {
-  margin-bottom: 8px;
-}
-.questionnaire-caption {
-  font-style: italic;
-}
+.question-text { font-size: var(--cf-question-size); font-weight: 400; }
+.questionnaire-description { margin-bottom: var(--cf-space-2); }
+.questionnaire-caption { font-style: italic; }
 
 /* --- QUESTION FREE TEXT --- */
-.question-free-text-tall {
-  margin-top: 5px;
-}
+.question-free-text-tall { margin-top: 5px; }
 
-/* --- QUESTION MCQ --- */
-.question-mcq span {
-  font-size: 1.1em;
-}
-.questionnaire-value {
-  font-size: 1.1em;
-}
+/* --- QUESTION MCQ / VALUES --- */
+.question-mcq span,
+.questionnaire-value { font-size: var(--cf-sub-size); }
 
 /* --- QUESTION BOX, GENERAL SPACING --- */
-.question-box {
-  margin-bottom: 16px;
-}
+.question-box { margin-bottom: var(--cf-space-4); }
 
 /* --- INDENT FOR NESTED/RECURSIVE --- */
-.indent {
-  margin-left: 2%;
-  margin-top: 1%;
-}
+.indent { margin: 1% 0 0 2%; }
 
 /* --- CHECKED SUMMARY --- */
 .checked-summary {
   display: flex;
   align-items: center;
-  margin: 8px 0 8px 0;
+  margin-block: var(--cf-space-2);
   font-size: 0.97em;
-  color: #495057;
-  background: #f8f9fa;
+  color: var(--cf-muted);
+  background: var(--cf-info-bg);
   border-radius: 4px;
-  padding: 4px 8px;
-
-  .checked-summary-label {
-    font-weight: 500;
-    margin-right: 4px;
-    color: #616161;
-  }
-  .checked-summary-values {
-    font-style: italic;
-    color: #1565c0;
-  }
+  padding: var(--cf-space-1) var(--cf-space-2);
+}
+.checked-summary .checked-summary-label {
+  font-weight: 500;
+  margin-right: var(--cf-space-1);
+  color: var(--cf-muted-2);
+}
+.checked-summary .checked-summary-values {
+  font-style: italic;
+  color: var(--cf-accent);
 }
 
 /* --- ERROR MESSAGES --- */
 /* Always ensure separation below field! */
-.app-error-message,
-.mat-error,
-app-error-message {
+:where(.app-error-message, .mat-error, app-error-message) {
   display: block;
-  color: #c62828;
+  color: var(--cf-error);
   font-size: 0.95em;
-  margin-top: 6px;
-  margin-bottom: 4px;
-  margin-left: 2px;
+  margin: 6px 0 4px 2px;
   min-height: 1.2em;
   line-height: 1.3;
   font-weight: 500;
 }
-
-.question-box .app-error-message,
-.question-box app-error-message {
-  margin-top: 6px;
-  margin-bottom: 0;
-  margin-left: 0;
+.question-box :where(.app-error-message, app-error-message) {
+  margin: 6px 0 0 0;
 }
-
 /* For checkboxes: error message below group */
 .question-box[formgroupname] + .app-error-message,
 .question-box[formgroupname] + app-error-message {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  margin-left: 0;
+  margin: 8px 0;
 }
 
 /* --- HIDE UNUSED MAT-FORM-FIELD PARTS FOR CHECKBOX FIELD --- */
 .question-checkbox-field .mat-form-field-infix,
 .question-checkbox-field .mat-form-field-flex,
-.question-checkbox-field .mat-form-field-underline {
-  display: none !important;
-}
-.question-checkbox-field .mat-form-field-wrapper {
-  padding: 0 !important;
-}
+.question-checkbox-field .mat-form-field-underline { display: none !important; }
+.question-checkbox-field .mat-form-field-wrapper { padding: 0 !important; }
 
 /* --- EXPANSION PANEL DETAILS --- */
-.question .question-detail {
-  box-shadow: none;
-}
-.question-detail mat-panel-title {
-  text-transform: uppercase;
-  flex-grow: 0;
-}
-.question-detail mat-panel-description {
-  font-weight: normal;
-  text-align: left;
-}
-.question-detail mat-expansion-panel-header,
-.question-detail mat-expansion-panel {
-  padding-left: 0.75%;
-}
+.question .question-detail { box-shadow: none; }
+.question-detail mat-panel-title { text-transform: uppercase; flex-grow: 0; }
+.question-detail mat-panel-description { font-weight: 400; text-align: left; }
+.question-detail :where(mat-expansion-panel-header, mat-expansion-panel) { padding-left: 0.75%; }
 
 /* --- LIKERT MATRIX --- */
-.questionnaire-matrix {
-  margin-top: 16px;
-}
+.questionnaire-matrix { margin-top: var(--cf-space-4); }
 .questionnaire-matrix .matrix-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: #fff;
-  display: flex;
+  position: sticky; top: 0; z-index: 1000;
+  background: #fff; display: flex;
 }
-.questionnaire-matrix .matrix-header-text,
-.questionnaire-matrix .matrix-header-text-wide {
-  font-size: 1.1em;
+.questionnaire-matrix :where(.matrix-header-text, .matrix-header-text-wide) {
+  font-size: var(--cf-sub-size);
   padding-left: 0;
 }
-.questionnaire-matrix .matrix-header-text-wide {
-  padding-left: 20%;
-}
+.questionnaire-matrix .matrix-header-text-wide { padding-left: 20%; }
 .questionnaire-matrix .matrix-header div {
-  display: flex !important;
+  display: flex;
   justify-content: center;
   flex-basis: 0;
   flex-grow: 1;
@@ -192,20 +153,18 @@ app-error-message {
   text-align: left;
   flex-basis: 15%;
 }
-.questionnaire-matrix .radio-button-wide {
-  padding-left: 20%;
-}
+.questionnaire-matrix .radio-button-wide { padding-left: 20%; }
 .questionnaire-matrix mat-radio-group {
-  display: flex !important;
+  display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--cf-border);
 }
 .questionnaire-matrix mat-radio-group div {
   padding: 1%;
   flex-basis: 0;
   flex-grow: 1;
-  display: flex !important;
+  display: flex;
   overflow-wrap: break-word;
   justify-content: center;
   align-items: center;
@@ -214,10 +173,5 @@ app-error-message {
   flex-basis: 15%;
   justify-content: flex-start;
 }
-.questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: left;
-  width: 15%;
-}
-.questionnaire-matrix mat-radio-group > div p {
-  margin: 0;
-}
+.questionnaire-matrix mat-radio-group > div:first-child { text-align: left; width: 15%; }
+.questionnaire-matrix mat-radio-group > div p { margin: 0; }

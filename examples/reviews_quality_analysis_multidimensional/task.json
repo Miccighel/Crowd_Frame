@@ -1,0 +1,93 @@
+{
+    "modality": "pointwise",
+    "allowed_tries": 10,
+    "time_assessment": 1,
+    "time_check_amount": 3,
+    "attributes": [
+        {
+            "name": "id",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "product_title",
+            "name_pretty": "Product",
+            "show": [
+                "Main"
+            ],
+            "required": false,
+            "annotate": false
+        },
+        {
+            "name": "review_text",
+            "name_pretty": "Review",
+            "show": [
+                "Main"
+            ],
+            "required": false,
+            "annotate": false
+        }
+    ],
+    "element_labels": {
+        "main": "Review",
+        "main_short": "R"
+    },
+    "annotator": false,
+    "countdown_time": false,
+    "countdown_behavior": false,
+    "additional_times": false,
+    "countdown_modality": false,
+    "countdown_attribute": false,
+    "countdown_attribute_values": [],
+    "countdown_position_values": [],
+    "logger": false,
+    "logger_option": {
+        "button": {
+            "general": false,
+            "click": false
+        },
+        "mouse": {
+            "general": false,
+            "mouseMovements": false,
+            "leftClicks": false,
+            "rightClicks": false
+        },
+        "keyboard": {
+            "general": false,
+            "shortcuts": false,
+            "keys": false
+        },
+        "textInput": {
+            "general": false,
+            "paste": false,
+            "delete": false
+        },
+        "clipboard": {
+            "general": false,
+            "copy": false,
+            "cut": false
+        },
+        "radio": {
+            "general": false,
+            "change": false
+        },
+        "search-engine-body": {
+            "general": false,
+            "query": false,
+            "result": false
+        },
+        "various": {
+            "general": false,
+            "selection": false,
+            "unload": false,
+            "focus&blur": false,
+            "scroll": false,
+            "resize": false
+        }
+    },
+    "server_endpoint": "",
+    "messages": [
+        "You have already started this task without finishing it"
+    ]
+}

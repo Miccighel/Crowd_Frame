@@ -59,34 +59,12 @@
                 }
             }
 
-            <!-- evaluation instructions -->
-            @if (task.instructionsEvaluation.instructions.length > 0) {
-                <div class="evaluation-instructions-block">
-                    @if (task.instructionsEvaluation.element) {
-                        <h2>
-                            {{ task.instructionsEvaluation.element.label }} -
-                            {{ task.instructionsEvaluation.element.caption }}
-                        </h2>
-                        <div><p>{{ task.instructionsEvaluation.element.text }}</p></div>
-                    }
-                    <div>
-                        @for (instruction of task.instructionsEvaluation.instructions; track instruction) {
-                            <div>
-                                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
-                                    <h2>
-                                        {{ instruction.caption }}
-                                    </h2>
-                                }
-                                @if (task.checkCurrentTaskType(document, instruction.task_type)) {
-                                    <div>
-                                        <p [innerHTML]="instruction.text"></p>
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
+            <app-instruction-list
+                [element]="task.instructionsEvaluation?.element"
+                [instructions]="task.instructionsEvaluation?.instructions"
+                [currentTaskType]="document.params['task_type']">
+            </app-instruction-list>
+
 
             <!-- main annotation / dimension blocks -->
             @if (task.settings.modality === 'pointwise') {

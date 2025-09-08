@@ -1,7 +1,7 @@
 /* =============================================================================
  * GeneratorComponent – cache-first batches + horizontal stepper + tidy clone UI
  * Perf: OnPush CD, runOutsideAngular for heavy work, debounced filter, trackBy
- * ============================================================================ */
+ * ============================================================================= */
 
 import {
     ChangeDetectionStrategy,
@@ -33,6 +33,10 @@ import {TaskSettingsStepComponent} from './generator-steps/task-settings-step/ta
 
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
+
+type BatchNode = { batch: string; whitelist: boolean; blacklist: boolean; id: number };
+type TaskNode = { task: string; batches: BatchNode[] };
+type BatchesCache = { ts: number; tree: TaskNode[] };
 
 @Component({
     selector: 'app-generator',
@@ -107,10 +111,10 @@ export class GeneratorComponent implements OnDestroy {
     taskCloned = false;
 
     /** Raw tree from S3 */
-    batchesTree: Array<{ task: string; batches: Array<{ batch: string; whitelist: boolean; blacklist: boolean; id: number }> }> = [];
+    batchesTree: TaskNode[] = [];
 
     /** Filtered view bound to the select */
-    filteredBatchesTree: Array<{ task: string; batches: Array<{ batch: string; whitelist: boolean; blacklist: boolean; id: number }> }> = [];
+    filteredBatchesTree: TaskNode[] = [];
 
     batchesTreeInitialization = false;
     public showBatchesToolbar = true;
@@ -157,33 +161,34 @@ export class GeneratorComponent implements OnDestroy {
         ]
     };
 
-    /* Cache keys (localStorage) */
-    private static readonly BATCHES_CACHE_KEY = 'batches-tree.v2';
-    private static readonly BATCHES_META_KEY = 'batches-tree.v2.meta';
+    /* Cache key (localStorage) — single key, no separate “meta” entry */
+    private static readonly BATCHES_CACHE_KEY = 'batches-tree.v3'; // { ts:number, tree:TaskNode[] }
     private static readonly BATCHES_TTL_MS = 5 * 60 * 1000; /* 5 minutes */
 
     /* ---------------------------------- Cache helpers ---------------------------------- */
-    private readBatchesCache(): { tree: any[] | null; meta: { ts: number } | null } {
+    private readBatchesCache(): BatchesCache | null {
         const raw = this.localStorageService.getItem(GeneratorComponent.BATCHES_CACHE_KEY);
-        const metaRaw = this.localStorageService.getItem(GeneratorComponent.BATCHES_META_KEY);
-        return {
-            tree: raw ? JSON.parse(raw) : null,
-            meta: metaRaw ? JSON.parse(metaRaw) : null,
-        };
+        if (!raw) return null;
+        try {
+            const parsed = JSON.parse(raw);
+            if (typeof parsed?.ts === 'number' && Array.isArray(parsed?.tree)) {
+                return parsed as BatchesCache;
+            }
+        } catch { /* ignore */ }
+        return null;
     }
 
-    private writeBatchesCache(tree: any[]): void {
-        this.localStorageService.setItem(GeneratorComponent.BATCHES_CACHE_KEY, JSON.stringify(tree));
-        this.localStorageService.setItem(GeneratorComponent.BATCHES_META_KEY, JSON.stringify({ts: Date.now()}));
+    private writeBatchesCache(tree: TaskNode[]): void {
+        const payload: BatchesCache = { ts: Date.now(), tree };
+        this.localStorageService.setItem(GeneratorComponent.BATCHES_CACHE_KEY, JSON.stringify(payload));
     }
 
-    private isCacheFresh(meta: { ts: number } | null, ttlMs = GeneratorComponent.BATCHES_TTL_MS): boolean {
-        return !!meta && (Date.now() - meta.ts) < ttlMs;
+    private isCacheFresh(ts: number | null, ttlMs = GeneratorComponent.BATCHES_TTL_MS): boolean {
+        return ts !== null && (Date.now() - ts) < ttlMs;
     }
 
     private evictBatchesCache(): void {
         this.localStorageService.removeItem(GeneratorComponent.BATCHES_CACHE_KEY);
-        this.localStorageService.removeItem(GeneratorComponent.BATCHES_META_KEY);
     }
 
     /* ---------------------------------- Setup ---------------------------------- */
@@ -232,11 +237,11 @@ export class GeneratorComponent implements OnDestroy {
         this.batchesTreeInitialization = false;
         this.changeDetector.markForCheck();
 
-        const {tree: cachedTree, meta} = this.readBatchesCache();
-        const fresh = this.isCacheFresh(meta);
+        const cached = this.readBatchesCache();
+        const fresh = this.isCacheFresh(cached?.ts ?? null);
 
-        if (!forceNetwork && cachedTree) {
-            this.setBatchesTree(cachedTree);
+        if (!forceNetwork && cached) {
+            this.setBatchesTree(cached.tree);
             this.batchesTreeInitialization = true;
             this.changeDetector.markForCheck();
 
@@ -246,11 +251,11 @@ export class GeneratorComponent implements OnDestroy {
         try {
             const env = this.configService.environment as S3Config;
 
-            const [tasksRaw, workerSettingsRaw] = await Promise.all([
-                this.S3Service.listFolders(env),
-                this.S3Service.downloadWorkers(env).catch(() => null),
-            ]);
+            // All S3 calls are read-only and optional; empty buckets are handled gracefully.
+            const tasksRaw: any[] = await this.S3Service.listFolders(env).catch(() => []) ?? [];
 
+            // Try to read worker settings; if missing (e.g., after a fresh deploy), default to empty.
+            const workerSettingsRaw = await this.S3Service.downloadWorkers(env).catch(() => null as any);
             const workerSettings = {
                 blacklist_batches: Array.isArray(workerSettingsRaw?.blacklist_batches) ? workerSettingsRaw.blacklist_batches : [],
                 whitelist_batches: Array.isArray(workerSettingsRaw?.whitelist_batches) ? workerSettingsRaw.whitelist_batches : [],
@@ -259,23 +264,19 @@ export class GeneratorComponent implements OnDestroy {
             const whitelistSet = new Set(workerSettings.whitelist_batches);
 
             // Build the tree outside Angular to avoid extra change detection passes
-            const tree = await this.ngZone.runOutsideAngular(async () => {
-                const tasks = tasksRaw ?? [];
+            const tree: TaskNode[] = await this.ngZone.runOutsideAngular(async () => {
                 const perTaskResults = await Promise.all(
-                    tasks.map(async (task: any) => {
+                    tasksRaw.map(async (task: any) => {
                         const taskPrefix = task['Prefix'];
-                        try {
-                            const batches = await this.S3Service
-                                .listFolders(env, taskPrefix);
-                            return ({taskPrefix, batches: batches ?? []});
-                        } catch {
-                            return ({taskPrefix, batches: []});
-                        }
+                        const batches = await this.S3Service
+                            .listFolders(env, taskPrefix)
+                            .catch(() => []) ?? [];
+                        return ({ taskPrefix, batches });
                     })
                 );
 
                 let counter = 0;
-                return perTaskResults.map(({taskPrefix, batches}) => ({
+                return perTaskResults.map(({ taskPrefix, batches }) => ({
                     task: taskPrefix,
                     batches: batches.map((b: any) => {
                         const batchPrefix = b['Prefix'];
@@ -284,9 +285,9 @@ export class GeneratorComponent implements OnDestroy {
                             blacklist: blacklistSet.has(batchPrefix),
                             whitelist: whitelistSet.has(batchPrefix),
                             id: counter++,
-                        };
+                        } as BatchNode;
                     }),
-                }));
+                })) as TaskNode[];
             });
 
             this.setBatchesTree(tree);
@@ -298,10 +299,10 @@ export class GeneratorComponent implements OnDestroy {
         }
     }
 
-    private setBatchesTree(tree: any[]): void {
-        this.batchesTree = tree;
-        this.totalTasks = tree.length;
-        this.totalBatches = tree.reduce((sum, t) => sum + (t?.batches?.length ?? 0), 0);
+    private setBatchesTree(tree: TaskNode[]): void {
+        this.batchesTree = tree ?? [];
+        this.totalTasks = this.batchesTree.length;
+        this.totalBatches = this.batchesTree.reduce((sum, t) => sum + (t?.batches?.length ?? 0), 0);
         this.applyBatchesFilter(this.batchFilterCtrl.value ?? '');
     }
 
@@ -312,13 +313,13 @@ export class GeneratorComponent implements OnDestroy {
             this.filteredBatches = this.totalBatches;
             return;
         }
-        const filtered = [];
+        const filtered: TaskNode[] = [];
         for (const t of this.batchesTree) {
             const batches = (t.batches || []).filter(b =>
                 t.task.toLowerCase().includes(q) ||
                 b.batch.toLowerCase().includes(q)
             );
-            if (batches.length) filtered.push({task: t.task, batches});
+            if (batches.length) filtered.push({ task: t.task, batches });
         }
         this.filteredBatchesTree = filtered;
         this.filteredBatches = filtered.reduce((sum, t) => sum + t.batches.length, 0);

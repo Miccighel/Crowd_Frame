@@ -1,55 +1,124 @@
-/* |--- INSTRUCTION LIST (shared for inline & dialog) --| */
+/* |--- INSTRUCTION LIST (shared) --| */
 
 .instruction-list {
-    font-family: inherit;
-    color: #222;
+  font-family: inherit;
+  color: #222;
+}
 
-    h1 {
-        text-align: center;
-        font-weight: 500;
-        font-size: 2rem; /* 32px */
-        color: #2d3a4b;
-        letter-spacing: 0.02em;
-    }
+/* Element header: centered by default; slightly larger */
+.instruction-element-header {
+  font-size: 1.2em;            /* ↑ a bit bigger */
+  font-weight: inherit;        /* not bold unless parent says so */
+  color: #2d3a4b;
 
-    /* Supports <p> and legacy <span [innerHTML]> */
-    p,
-    span {
-        line-height: 1.6;
-        font-size: 1.0625rem; /* ~17px */
-        color: #333;
-        margin: 0 0 0.85rem;
-        text-align: justify;
-    }
+  display: flex;
+  align-items: center;         /* vertical centering */
+  justify-content: center;     /* centered by default */
+  gap: .7rem;
+  margin: 0 0 6px 0;           /* match evaluation block spacing */
+  flex-wrap: wrap;
+}
 
-    ul,
-    ol {
-        margin-left: 2rem;
-        margin-bottom: 1.2rem;
-    }
+/* If a pill is present → left align and bump size a touch more */
+.instruction-element-header:has(.element-label-pill),
+.instruction-element-header.has-pill {
+  justify-content: flex-start; /* left align */
+  text-align: left;
+  font-size: 1.35em;           /* ↑ a bit bigger than default */
+  gap: .8rem;
+}
 
-    li {
-        line-height: 1.85;
-        margin: 0.4rem 0 0.4rem 0.2rem;
-        font-size: 1.0625rem; /* match paragraph size */
-    }
+/* Pill: scales with header size; not bold; slightly larger */
+.element-label-pill {
+  --pill-bg: #e8efff;
+  --pill-fg: #244fbe;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 2em;              /* ↑ from ~1.85em */
+  height: 2em;                 /* ↑ from ~1.85em */
+  padding: 0 .7em;             /* a bit more horizontal room */
+  border-radius: 999px;
+
+  background: var(--pill-bg);
+  color: var(--pill-fg);
+
+  font-size: 1.05em;           /* pill text slightly larger */
+  line-height: 1;
+  text-align: center;
+}
+
+/* Caption next to pill (not bold) */
+.element-caption {
+  color: #2d3a4b;
+}
+
+/* Optional element text under the header */
+.element-text {
+  line-height: 1.6;
+  font-size: 1.15rem;           /* ↑ from ~1.0625rem */
+  color: #333;
+  margin: 0 0 0.9rem;
+  text-align: justify;
+}
+
+/* Individual instruction blocks */
+.instruction {
+  margin: 0 0 1rem;
+}
+
+.instruction-caption {
+  text-align: center;
+  font-weight: 500;            /* mild emphasis only */
+  color: #2d3a4b;
+  margin: 0 0 0.45rem;
+  letter-spacing: 0.01em;
+}
+
+.instruction-text,
+.instruction-list p,
+.instruction-list span {
+  line-height: 1.6;
+  font-size: 1.15rem;           /* ↑ keep body readable */
+  color: #333;
+  margin: 0 0 0.9rem;
+  text-align: justify;
+}
+
+/* List support inside instruction HTML */
+.instruction-list ul,
+.instruction-list ol {
+  margin: 6px 0 6px 18px;
+  padding-left: 18px;
+}
+
+.instruction-list li {
+  line-height: 1.85;
+  margin: 4px 0;
 }
 
 /* Optional quote block used within instructions */
 .instructions-quote {
-    margin: 1.2rem 0;
-    border-left: 7px #d1d5db solid;
-    background: #f6f7fa;
-    padding: 0.8rem 1rem;
-    color: #4a5568;
-    font-style: italic;
-    font-size: 1.0625rem; /* ~17px */
-    box-shadow: none;
+  margin: 1.2rem 0;
+  border-left: 7px #d1d5db solid;
+  background: #f6f7fa;
+  padding: 0.85rem 1.05rem;
+  color: #4a5568;
+  font-style: italic;
+  box-shadow: none;
+}
+
+/* Context helper: keep default evaluation layout spacing */
+.evaluation-instructions .instruction-element-header {
+  margin: 0 0 6px 0;
 }
 
 /* Responsive */
 @media (max-width: 600px) {
-    .instruction-list h1 {
-        font-size: 1.25rem; /* clearer on small screens */
-    }
+  .instruction-element-header { font-size: 1.15em; gap: .6rem; }
+  .instruction-element-header:has(.element-label-pill),
+  .instruction-element-header.has-pill { font-size: 1.25em; }
+  .element-label-pill { min-width: 1.9em; height: 1.9em; padding: 0 .6em; }
 }

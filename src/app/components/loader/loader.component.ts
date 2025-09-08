@@ -79,6 +79,16 @@ export class LoaderComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        /* ───────────────── EARLY STOP when landing with ?admin=true ─────────────────
+           Use the snapshot to react immediately on first paint and avoid the overlay
+           covering the admin login UI if the URL already has admin=true. */
+        const adminSnap = this.route.snapshot.queryParamMap.get('admin') === 'true';
+        if (adminSnap) {
+            this.adminAccess = true;
+            this.stopGlobalEarlyForAdmin();
+            this.cdr.markForCheck();
+        }
+
         this.route.queryParamMap
             .pipe(
                 map(q => ({
@@ -209,5 +219,14 @@ export class LoaderComponent implements OnInit, AfterViewInit {
                 break;
             }
         }
+    }
+
+    /**
+     * When landing directly on the admin URL (?admin=true), perform an immediate stop
+     * and schedule a post-paint stop to cover any late starts from parent components.
+     */
+    private stopGlobalEarlyForAdmin(): void {
+        this.drainGlobal();          /* immediate */
+        this.stopGlobalOnNextPaint();/* after first paint */
     }
 }

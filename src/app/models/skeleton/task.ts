@@ -661,6 +661,54 @@ export class Task {
         return filteredDimensions;
     }
 
+    /**
+     * Returns the first dimension in a given position.
+     * By default it requires the dimension to have a `scale` (same as legacy).
+     * You can optionally restrict by style kind ('list' | 'matrix').
+     */
+    public retrieveFirstDimension(
+        position: 'top' | 'middle' | 'bottom',
+        kind?: 'list' | 'matrix',
+        requireScale: boolean = true
+    ): Dimension | null {
+        const dims = (this as any).dimensions as Dimension[] | undefined;
+        if (!Array.isArray(dims)) return null;
+
+        for (const d of dims) {
+            if (!d?.style) continue;
+            if (d.style.position !== position) continue;
+            if (kind && d.style.type !== kind) continue;
+            if (requireScale && !d.scale) continue;
+            return d;
+        }
+        return null;
+    }
+
+    /**
+     * Counts dimensions in a given position.
+     * Optional filters:
+     *  - kind: limit to 'list' or 'matrix'
+     *  - requireScale: count only those that have a `scale` (default = false to match legacy)
+     */
+    public verifyDimensionsQuantity(
+        position: 'top' | 'middle' | 'bottom',
+        kind?: 'list' | 'matrix',
+        requireScale: boolean = false
+    ): number {
+        const dims = (this as any).dimensions as Dimension[] | undefined;
+        if (!Array.isArray(dims)) return 0;
+
+        let count = 0;
+        for (const d of dims) {
+            if (!d?.style) continue;
+            if (d.style.position !== position) continue;
+            if (kind && d.style.type !== kind) continue;
+            if (requireScale && !d.scale) continue;
+            count++;
+        }
+        return count;
+    }
+
     /*
          * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
          * The parameters are:

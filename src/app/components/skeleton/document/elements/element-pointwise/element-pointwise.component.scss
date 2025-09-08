@@ -1,27 +1,92 @@
+/* Subtle pairwise accent & shadow */
+:host {
+  --pairwise-accent: #b8ccfd;
+  --pairwise-shadow: rgba(70,121,246,0.06);
+}
+
+/* Card aspect applied to each element block */
+.element {
+    background: #fff;
+    border-radius: 10px;
+    border: 2px solid var(--pairwise-accent);
+    box-shadow: 0 4px 16px var(--pairwise-shadow),
+    0 2px 10px rgba(60, 60, 60, 0.06);
+    padding: 1.5em 1.25em 1.25em;
+    margin: 1.2em 0 2em;
+}
+
+/* Tidy inner spacing */
+.element p {
+    margin: 0;
+    line-height: 1.45;
+    color: #111;
+}
+
+.element p + p {
+    margin-top: .6em;
+}
+
+.element strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Media inside elements */
+.element img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Responsive video container (used below) */
+.video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Your existing styles (kept) */
 .button-continue {
-	margin-bottom: 2%;
+    margin-bottom: 2%;
 }
 
 .hidden-statement-card {
-	background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
-	padding: 50px;
+    background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
+    padding: 50px;
 }
 
 .hidden-statement-content {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	text-align: center;
-	gap: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 25px;
 }
 
 .hidden-statement-icon {
-	color: #3b3b3b;
-	transform: scale(2.3);
+    color: #3b3b3b;
+    transform: scale(2.3);
 }
 
 .hidden-statement-message {
-	color: #3b3b3b;
-	font-weight: 500;
-	font-size: 18px;
+    color: #3b3b3b;
+    font-weight: 500;
+    font-size: 18px;
+}
+
+/* Small-screen padding tweak */
+@media (max-width: 900px) {
+    .element {
+        padding: 1.25em 1em;
+    }
 }

@@ -10,7 +10,7 @@
     let-controlSuffix="controlSuffix">
 
     <form [formGroup]="assessmentForm">
-        @for (dimension of dimensions; track dimension) {
+        @for (dimension of dimensions; track dimension; let i = $index) {
             <div class="dimension">
                 <!-- ───────────────────────────── NON-PAIRWISE (POINTWISE) ───────────────────────────── -->
                 @if (!dimension.pairwise) {
@@ -33,25 +33,17 @@
 
                                 <!-- Optional instructions (POINTWISE = left aligned by modifier) -->
                                 @if (dimension.scale?.instructions; as ins) {
-                                    <div class="evaluation-instructions">
-                                        @if (!postAssessment) {
-                                            <h2>
-                                                @if (ins.label) {
-                                                    <span>{{ ins.label }} – </span>
-                                                }{{ ins.caption }}
-                                            </h2>
-                                        }
-                                        @if (postAssessment && ins.labelRepetition && ins.captionRepetition) {
-                                            <h2>
-                                                @if (ins.labelRepetition) {
-                                                    <span>{{ ins.labelRepetition }} – </span>
-                                                }{{ ins.captionRepetition }}
-                                            </h2>
-                                        }
-                                        @if (ins.text) {
-                                            <div class="evaluation-instructions-body" [innerHTML]="ins.text"></div>
-                                        }
-                                    </div>
+                                    @if (ins) {
+                                        <app-instruction-list
+                                            [wrapperClass]="'evaluation-instructions'"
+                                            [bodyClass]="'evaluation-instructions-body'"
+                                            [element]="{
+                                                  label:   (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.labelRepetition : ins.label,
+                                                  caption: (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.captionRepetition : ins.caption,
+                                                  text: ins.text
+                                                }">
+                                        </app-instruction-list>
+                                    }
                                 }
 
                                 <!-- Pretty name -->
@@ -127,7 +119,6 @@
                                                             }
                                                         </mat-radio-group>
 
-                                                        <!-- categorical required (video special-case) -->
                                                         @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
                                                         shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
                                                         assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
@@ -306,44 +297,155 @@
 
                                 <!-- ───────────── Justification ───────────── -->
                                 @if (dimension.justification) {
-                                    <div class="dimension-container dimension-justification">
-                                        <div class="dimension-content justification">
-                                            <div class="dimension-text-field">
-                                                <mat-form-field appearance="fill" class="width-100">
-                                                    <mat-label>{{ dimension.justification.text }}</mat-label>
-                                                    <textarea
-                                                        matInput
-                                                        rows="3"
-                                                        formControlName="{{ dimension.name + '_justification' + controlSuffix }}"
-                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
-                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'required') &&
-                                                    shouldShowValidation(assessmentForm, dimension.name + '_justification' + controlSuffix) &&
-                                                    assessmentForm.controls[dimension.name + '_justification' + controlSuffix].enabled) {
-                                                        <mat-error><span>This field is required</span></mat-error>
-                                                    }
-                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'longer') &&
-                                                    shouldShowValidation(assessmentForm, dimension.name + '_justification' + controlSuffix) &&
-                                                    assessmentForm.controls[dimension.name + '_justification' + controlSuffix].enabled) {
-                                                        <mat-error><span>This justification must have at least {{ dimension.justification.min_words }} words.</span></mat-error>
-                                                    }
-                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_justification' + controlSuffix, 'invalid') &&
-                                                    shouldShowValidation(assessmentForm, dimension.name + '_justification' + controlSuffix) &&
-                                                    assessmentForm.controls[dimension.name + '_justification' + controlSuffix].enabled) {
-                                                        <mat-error><span>You cannot use the selected search-engine URL as part of the justification.</span></mat-error>
-                                                    }
-                                                </mat-form-field>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <app-justification-field
+                                        [form]="assessmentForm"
+                                        [controlName]="dimension.name + '_justification' + controlSuffix"
+                                        [label]="dimension.justification.text"
+                                        [rows]="3"
+                                        [minWords]="dimension.justification.min_words"
+                                        [showCounter]="true"
+                                        [submitted]="submitted"
+                                        [documentIndex]="documentIndex"
+                                        [dimensionIndex]="dimension.index"
+                                        [postAssessmentIndex]="postAssessmentIndex">
+                                    </app-justification-field>
                                 }
                             }
                         </div>
                     }
 
-                    <!-- ───────────── MATRIX STYLE (skeleton placeholder) ───────────── -->
                     @if (dimension.style.type == 'matrix') {
-                        <div><p i18n>TO BE IMPLEMENTED</p></div>
+                        <div class="dimension dimension--pointwise">
+
+                            <app-search-engine
+                                [documentIndex]="documentIndex"
+                                [dimensionIndex]="dimension.index"
+                                [worker]="worker"
+                                [searchEngineForms]="searchEngineForms"
+                                [resultsRetrievedForms]="resultsRetrievedForms"
+                                (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
+                            </app-search-engine>
+
+                            @if (verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)) {
+
+                                <div class="{{ (dimensions.length === 1) ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple' }}">
+
+                                    @let ins = dimension.scale?.instructions;
+                                    @if (ins) {
+                                        <app-instruction-list
+                                            [wrapperClass]="'evaluation-instructions'"
+                                            [bodyClass]="'evaluation-instructions-body'"
+                                            [element]="postAssessment
+                                              ? { label: ins.labelRepetition || ins.label,
+                                                  caption: ins.captionRepetition || ins.caption,
+                                                  text: ins.text }
+                                              : { label: ins.label,
+                                                  caption: ins.caption,
+                                                  text: ins.text }">
+                                        </app-instruction-list>
+                                    }
+
+
+                                    <!-- Header row: render once for the first dimension in this batch -->
+                                    @if (dimension.scale && dimension === dimensions[0]) {
+                                        <mat-radio-group
+                                            class="matrix-header matrix-grid"
+                                            [style.--cols]="dimension.scale.mapping.length"
+                                            [style.--col-name]="'180px'"
+                                            [style.--col-desc]="'320px'">
+
+                                            <div class="matrix-cell matrix-stub"></div>
+                                            <div class="matrix-cell matrix-stub"></div>
+
+                                            @for (mapping of dimension.scale.mapping; track mapping) {
+                                                <div class="matrix-cell matrix-header-cell">
+                                                    @if (mapping.label) {
+                                                        <div class="mapping-label"><strong [innerHTML]="mapping.label"></strong></div>
+                                                    }
+                                                    @if (mapping.description) {
+                                                        <div><span> ({{ mapping.description }})</span></div>
+                                                    }
+                                                </div>
+                                            }
+                                        </mat-radio-group>
+                                    }
+
+                                    <!-- NEW: Divider ABOVE the row if separator flag is set -->
+                                    @if (dimension.style?.separator) {
+                                        <div class="matrix-row-separator">
+                                            <mat-divider></mat-divider>
+                                        </div>
+                                    }
+
+                                    <!-- Matrix row: [Name] [Description/Example] [one radio per mapping] -->
+                                    @if (dimension.scale) {
+                                        <mat-radio-group
+                                            class="matrix-row matrix-grid"
+                                            [style.--cols]="dimension.scale.mapping.length"
+                                            [style.--col-name]="'180px'"
+                                            [style.--col-desc]="'320px'"
+                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+
+                                            <!-- 1) Name -->
+                                            <div class="matrix-cell matrix-name">
+                                                @if (dimension.name_pretty) {
+                                                    <p><strong>{{ dimension.name_pretty }}</strong></p>
+                                                }
+                                                @if (!dimension.name_pretty) {
+                                                    <p><strong>{{ dimension.name }}</strong></p>
+                                                }
+                                            </div>
+
+                                            <!-- 2) Description / Example -->
+                                            <div class="matrix-cell matrix-desc">
+                                                @if (dimension.description) {
+                                                    <div class="{{ dimension.example ? '' : 'description-sub' }}"><p>{{ dimension.description }}</p></div>
+                                                }
+                                                @if (dimension.example) {
+                                                    <div class="description-sub"><i>{{ dimension.example }}</i></div>
+                                                }
+                                            </div>
+
+                                            <!-- 3..N) One radio per mapping -->
+                                            @for (mapping of dimension.scale.mapping; track mapping) {
+                                                <div class="matrix-cell matrix-value-control">
+                                                    <mat-radio-button
+                                                        class="radio-button"
+                                                        value="{{ mapping.value }}"
+                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
+                                                    </mat-radio-button>
+                                                </div>
+                                            }
+                                        </mat-radio-group>
+
+                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
+                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
+                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                            <mat-error><span i18n>This field is required</span></mat-error>
+                                        }
+                                    }
+                                </div>
+
+                                <!-- Optional justification under the matrix row -->
+                                @if (dimension.justification) {
+                                    <app-justification-field
+                                        [form]="assessmentForm"
+                                        [controlName]="dimension.name + '_justification' + controlSuffix"
+                                        [label]="dimension.justification.text"
+                                        [rows]="5"
+                                        [minWords]="dimension.justification.min_words"
+                                        [showCounter]="true"
+                                        [submitted]="submitted"
+                                        [documentIndex]="documentIndex"
+                                        [dimensionIndex]="dimension.index"
+                                        [postAssessmentIndex]="postAssessmentIndex">
+                                    </app-justification-field>
+                                }
+                            }
+                        </div>
                     }
+
+
                 }
 
                 <!-- ───────────────────────────── PAIRWISE ───────────────────────────── -->
@@ -377,17 +479,11 @@
                                     </div>
                                 }
 
+                                <!-- Dimension scale instructions via shared component -->
                                 @if (dimension.scale?.instructions; as ins) {
-                                    <div class="evaluation-instructions">
-                                        <h2>
-                                            @if (ins.label) {
-                                                <span>{{ ins.label }} – </span>
-                                            }{{ ins.caption }}
-                                        </h2>
-                                        @if (ins.text) {
-                                            <div class="evaluation-instructions-body" [innerHTML]="ins.text"></div>
-                                        }
-                                    </div>
+                                    <app-instruction-list
+                                        [element]="ins">
+                                    </app-instruction-list>
                                 }
 
                                 <app-search-engine
@@ -511,31 +607,19 @@
 
                                         @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
                                             <div class="dimension-box pairwise-col-surface">
-                                                <div class="dimension-text-field">
-                                                    <mat-form-field appearance="fill">
-                                                        <mat-label>{{ dimension.justification.text }}</mat-label>
-                                                        <textarea
-                                                            matInput
-                                                            rows="5"
-                                                            formControlName="{{ dimension.name + '_justification_element_' + k }}"
-                                                            (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, true)"></textarea>
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'required') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_justification_element_' + k) &&
-                                                        assessmentForm.controls[dimension.name + '_justification_element_' + k].enabled) {
-                                                            <mat-error><span i18n>This field is required</span></mat-error>
-                                                        }
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'longer') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_justification_element_' + k) &&
-                                                        assessmentForm.controls[dimension.name + '_justification_element_' + k].enabled) {
-                                                            <mat-error><span i18n>This justification must have at least {{ dimension.justification.min_words }} words.</span></mat-error>
-                                                        }
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_justification_element_' + k, 'invalid') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_justification_element_' + k) &&
-                                                        assessmentForm.controls[dimension.name + '_justification_element_' + k].enabled) {
-                                                            <mat-error><span i18n>You cannot use the selected search-engine URL as part of the justification.</span></mat-error>
-                                                        }
-                                                    </mat-form-field>
-                                                </div>
+                                                <app-justification-field
+                                                    [form]="assessmentForm"
+                                                    [controlName]="dimension.name + '_justification_element_' + k"
+                                                    [label]="dimension.justification.text"
+                                                    [rows]="5"
+                                                    [minWords]="dimension.justification.min_words"
+                                                    [showCounter]="true"
+                                                    [surface]="false"
+                                                    [submitted]="submitted"
+                                                    [documentIndex]="documentIndex"
+                                                    [dimensionIndex]="dimension.index"
+                                                    [postAssessmentIndex]="postAssessmentIndex">
+                                                </app-justification-field>
                                             </div>
                                         }
                                     </div>
@@ -544,6 +628,7 @@
                         </div>
                     }
 
+                    <!-- MATRIX-style pairwise placeholder -->
                     @if (dimension.style.type == 'matrix') {
                         <div class="dimension-matrix"><p i18n>TO BE IMPLEMENTED</p></div>
                     }
@@ -561,11 +646,11 @@
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
                     [ngTemplateOutletContext]="{
-                        dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-                        position: pos,
-                        assessmentForm: assessmentForm,
-                        controlSuffix: ''
-                    }">
+            dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+            position: pos,
+            assessmentForm: assessmentForm,
+            controlSuffix: ''
+          }">
                 </ng-template>
             }
         }
@@ -580,11 +665,11 @@
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
                     [ngTemplateOutletContext]="{
-                        dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-                        position: pos,
-                        assessmentForm: assessmentFormAdditional,
-                        controlSuffix: '_post_' + postAssessmentIndex
-                    }">
+            dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
+            position: pos,
+            assessmentForm: assessmentFormAdditional,
+            controlSuffix: '_post_' + postAssessmentIndex
+          }">
                 </ng-template>
             }
         }

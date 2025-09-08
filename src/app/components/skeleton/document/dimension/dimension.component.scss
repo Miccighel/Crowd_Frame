@@ -1,11 +1,17 @@
+/* ======================================================================
+   DIMENSION COMPONENT STYLES (integrated, grid-aligned matrix)
+   ----------------------------------------------------------------------
+   - Keep Material typography (no custom font-sizes).
+   - Matrix: rows = dimensions, columns = mappings; first TWO columns fixed.
+   - Pointwise instructions left-aligned via .dimension--pointwise.
+   - Validation messages stable (no layout jumps).
+   - NEW: matrix row divider when dimension.style.separator is true.
+   ====================================================================== */
+
 /* ─────────────────────────────────────────────────────────────
    Base dimension block
    ───────────────────────────────────────────────────────────── */
 .dimension {
-    mat-form-field {
-        width: 100%;
-    }
-
     margin-bottom: 12px;
 
     h2 {
@@ -14,7 +20,12 @@
         text-align: center;
     }
 
-    mat-radio-group,
+    mat-form-field {
+        width: 100%;
+    }
+
+    /* Only stack groups that explicitly opt-in via this helper.
+       Matrix uses CSS grid, so do NOT style all mat-radio-group globally. */
     .radio-button-group {
         display: flex;
         flex-direction: column;
@@ -22,10 +33,6 @@
         justify-content: flex-start;
         width: 100%;
         margin: 0;
-    }
-
-    .magnitude_estimation {
-        font-size: 1.1em;
     }
 
     .checkbox {
@@ -39,8 +46,19 @@
     }
 }
 
+/* Hide MDC internals inside the checkbox container (scoped) */
+::ng-deep .dimension .checkbox .mat-mdc-form-field-infix,
+::ng-deep .dimension .checkbox .mat-mdc-form-field-flex,
+::ng-deep .dimension .checkbox .mat-mdc-form-field-underline {
+    display: none;
+}
+
+::ng-deep .dimension .checkbox .mat-mdc-form-field-wrapper {
+    padding: 0;
+}
+
 /* ─────────────────────────────────────────────────────────────
-   Containers
+   Containers and content blocks
    ───────────────────────────────────────────────────────────── */
 .dimension-container {
     display: flex;
@@ -51,7 +69,6 @@
 .dimension-content {
     flex: 1 1 auto;
     width: 100%;
-    font-size: 1.1em;
     text-align: left;
 }
 
@@ -82,36 +99,32 @@
 }
 
 .mapping-label {
-    font-size: 1.2em;
-}
-
-/* Hide MDC visuals inside the checkbox container */
-::ng-deep .dimension .checkbox .mat-mdc-form-field-infix,
-::ng-deep .dimension .checkbox .mat-mdc-form-field-flex,
-::ng-deep .dimension .checkbox .mat-mdc-form-field-underline {
-    display: none;
-}
-
-::ng-deep .dimension .checkbox .mat-mdc-form-field-wrapper {
-    padding: 0;
 }
 
 /* ─────────────────────────────────────────────────────────────
    Interval scale specifics
    ───────────────────────────────────────────────────────────── */
 .scale-interval {
-    span {
-        font-size: 1.1em;
+    span { /* keep Material sizes */
     }
 
     mat-slider {
-        width: 100% !important;
+        width: 100%;
     }
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Matrix placeholders
-   ───────────────────────────────────────────────────────────── */
+   MATRIX — grid-aligned, 2 fixed text columns + N mapping columns
+   ----------------------------------------------------------------
+   Template sets:
+     --cols     = number of mapping columns
+     --col-name = width of name column (e.g., 180px)
+     --col-desc = width of description column (e.g., 320px)
+   ---------------------------------------------------------------- */
+.dimension-matrix {
+    overflow-x: auto; /* allow scroll if many mappings */
+}
+
 .dimension-matrix-single {
     border: 2px solid lightgray;
     border-radius: 8px;
@@ -124,6 +137,98 @@
     margin-bottom: 1em;
 }
 
+/* Core grid: [name][desc][map1][map2]... */
+.matrix-grid {
+    display: grid;
+    grid-template-columns:
+    var(--col-name, 180px)
+    var(--col-desc, 320px)
+    repeat(var(--cols), 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 6px;
+
+    /* include fixed columns so grid doesn’t squash */
+    min-width: calc(var(--col-name, 180px) + var(--col-desc, 320px) + (var(--cols) * 120px));
+}
+
+/* Generic cell container */
+.matrix-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* make long strings wrap nicely in text columns */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Header spacing */
+.matrix-header {
+    margin-bottom: 8px;
+}
+
+/* Header cells: center labels/desc, allow multi-line */
+.matrix-header-cell {
+    text-align: center;
+    flex-direction: column;
+}
+
+/* Two empty header stubs matching the first two fixed columns */
+.matrix-stub {
+    justify-content: flex-start;
+}
+
+/* First fixed column: Name (left aligned) */
+.matrix-name {
+    justify-content: flex-start;
+    text-align: left;
+
+    p {
+        margin: 0;
+    }
+}
+
+/* Second fixed column: Description / Example (left aligned, wraps) */
+.matrix-desc {
+    justify-content: flex-start;
+    text-align: left;
+
+    .description-sub {
+        padding: 5px 10px 3px 0;
+    }
+
+    .description-sub p {
+        margin-top: 0;
+    }
+}
+
+/* Mapping cells: radios centered by parent .matrix-cell */
+.matrix-value-control .mat-radio-button {
+}
+
+/* Row divider that spans the whole grid (added when style.separator = true) */
+.matrix-row-separator {
+    grid-column: 1 / -1; /* span across all columns */
+    margin: 8px 0 4px 0; /* space above/below the divider */
+}
+
+.matrix-row-separator mat-divider {
+    width: 100%;
+}
+
+/* Optional subtle background for separated rows (legacy helper) */
+.dimension-matrix .dimension-separate {
+    background-color: #f8f8f8;
+}
+
+/* Normalize paragraph spacing inside matrix cells */
+.dimension-matrix p {
+    margin-bottom: 0;
+}
+
+/* Legacy helpers kept */
 .dimension-matrix .matrix-header .matrix-header-value,
 .dimension-matrix .matrix-header .matrix-header-text {
     position: relative;
@@ -131,95 +236,8 @@
     text-align: center;
 }
 
-.dimension-matrix mat-radio-group {
-    display: flex !important;
-    justify-content: flex-start;
-}
-
-.dimension-matrix mat-radio-group > div {
-    display: flex !important;
-    flex-basis: 0;
-    flex-grow: 1;
-    overflow-wrap: break-word;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.dimension-matrix mat-radio-group .matrix-header-body,
-.dimension-matrix mat-radio-group .matrix-header-body-wide {
-    font-size: medium;
-    margin-bottom: 1%;
-    justify-content: center;
-}
-
-.dimension-matrix .matrix-header-body-wide:first-child,
-.dimension-matrix .matrix-header-body:first-child {
-    width: 15%;
-}
-
-.dimension-matrix .matrix-value div {
-    width: 100%;
-}
-
-.dimension-matrix .matrix-value-control {
-    justify-content: center;
-}
-
-.dimension-matrix mat-radio-group .matrix-value-description {
-    text-align: left;
-
-    .description-main {
-        font-size: 1.1em;
-        padding-bottom: 20px;
-    }
-
-    .description-main-with-sub {
-        border: none;
-        padding-bottom: 0;
-        font-size: 1.1em;
-    }
-}
-
-.dimension-matrix .description-sub {
-    padding: 5px 10px 3px 0;
-
-    p {
-        margin-top: 0;
-    }
-}
-
-.dimension-matrix .name-pretty {
-    p {
-        margin-top: 0;
-        text-align: left;
-        font-size: 1.3em;
-    }
-
-    strong {
-        font-size: medium;
-    }
-}
-
-.dimension-matrix p {
-    margin-bottom: 0;
-}
-
-.instructions h2 {
-    font-weight: normal;
-}
-
-/* Optional counter column */
-.dimension-counter {
-    flex-grow: 0;
-    flex-basis: 1%;
-    justify-content: center;
-    align-self: center;
-    vertical-align: top;
-    margin-right: 1%;
-}
-
 /* ─────────────────────────────────────────────────────────────
-   Pairwise (subdocuments) – grid container and columns
+   Pairwise (subdocuments)
    ───────────────────────────────────────────────────────────── */
 .dimension-name-center {
     text-align: center;
@@ -227,7 +245,7 @@
     margin-top: 10px;
 }
 
-/* Two-column grid */
+/* Two equal columns for A/B */
 .dimension-content-split {
     display: grid;
     grid-template-columns: repeat(2, minmax(280px, 1fr));
@@ -245,8 +263,8 @@
 }
 
 .pairwise-col-surface {
-    background: none; /* ⟵ removed grey background */
-    border: none; /* ⟵ removed border */
+    background: none;
+    border: none;
     border-radius: 0;
     padding: 10px 12px;
     width: 100%;
@@ -255,7 +273,6 @@
 
 .pairwise-column-title {
     text-align: center;
-    font-size: 0.95rem;
     margin: -2px 0 2px 0;
 }
 
@@ -285,8 +302,18 @@
     margin: 0 0 6px 0;
 }
 
+/* Optional counter column */
+.dimension-counter {
+    flex-grow: 0;
+    flex-basis: 1%;
+    justify-content: center;
+    align-self: center;
+    vertical-align: top;
+    margin-right: 1%;
+}
+
 /* ─────────────────────────────────────────────────────────────
-   Instructions block – centered title, readable body
+   Instructions block — centered by default
    ───────────────────────────────────────────────────────────── */
 .evaluation-instructions {
     margin: 8px 0 12px 0;
@@ -295,23 +322,21 @@
     h2 {
         margin: 0 0 6px 0;
         font-weight: 500;
-        text-align: inherit;
+        text-align: inherit; /* inherit center; overridden in pointwise */
     }
 }
 
+/* Readable body; keep Material typography sizes */
 .evaluation-instructions-body {
     max-width: 720px;
     margin: 0 auto;
     text-align: left;
-    font-size: 0.975rem;
-    line-height: 1.45;
 
     p {
         margin: 6px 0;
     }
 
-    ul,
-    ol {
+    ul, ol {
         margin: 6px 0 6px 18px;
         padding-left: 18px;
     }
@@ -325,35 +350,12 @@
     }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Responsive tweaks
-   ───────────────────────────────────────────────────────────── */
-@media (max-width: 599px) {
-    .mapping-label {
-        font-size: 1.05em;
-    }
-
-    .dimension-content {
-        font-size: 1em;
-    }
-
-    .pairwise-columns {
-        padding: 10px;
-        border-radius: 6px;
-    }
-
-    .pairwise-col-surface {
-        padding: 8px 10px;
-    }
-
-    .dimension-content-split {
-        grid-template-columns: 1fr;
-    }
+/* Legacy helper kept */
+.instructions h2 {
+    font-weight: normal;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX: center dimension titles and instruction headings
-   ───────────────────────────────────────────────────────────── */
+/* Center dimension titles and instruction headings by default */
 .dimension .dimension-name h2,
 .dimension .evaluation-instructions h2,
 .dimension .dimension-name-center h2 {
@@ -361,7 +363,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Pointwise (non-pairwise) overrides via modifier
+   Pointwise (non-pairwise) overrides — left-aligned instructions
    ───────────────────────────────────────────────────────────── */
 .dimension.dimension--pointwise .evaluation-instructions {
     text-align: left;
@@ -380,37 +382,49 @@
 /* ─────────────────────────────────────────────────────────────
    Validation errors — consistent look & spacing
    ───────────────────────────────────────────────────────────── */
-
-/* Reserve a little space so layout doesn't jump when the error appears */
 .dimension .mat-mdc-form-field-subscript-wrapper {
-  min-height: 20px;
+    min-height: 20px; /* reserve space; prevent jump */
 }
 
-/* Generic error token */
 .dimension mat-error {
-  display: block;
-  margin: 6px 0 0;
-  font-size: 0.875rem;   /* ~14px */
-  line-height: 1.3;
-  text-align: left;
-  /* Use MDC theme error if available, fallback to Material red 700 */
-  color: var(--mdc-theme-error, #d32f2f);
+    display: block;
+    margin: 6px 0 0;
+    /* rely on Material tokens for color/size */
 }
 
-/* Errors for controls that aren't inside mat-form-field (radio groups, sliders) */
 .dimension .radio-button-group + mat-error,
 .dimension .scale-interval + mat-error,
 .dimension .dimension-text-field + mat-error {
-  margin-top: 8px;
+    margin-top: 8px;
 }
 
-/* Pairwise columns: keep left alignment inside each column box */
 .pairwise-col-surface mat-error {
-  text-align: left;
+    text-align: left;
 }
 
-/* Optional: slightly tighten spacing when an error follows a <br> you add conditionally */
 .dimension mat-error br + span {
-  margin-top: 0;
-  display: inline-block;
+    margin-top: 0;
+    display: inline-block;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive tweaks
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 599px) {
+    .dimension-content-split {
+        grid-template-columns: 1fr;
+    }
+
+    .matrix-grid {
+        min-width: calc(var(--col-name, 160px) + var(--col-desc, 260px) + (var(--cols) * 100px));
+        column-gap: 6px;
+    }
+
+    .pairwise-columns {
+        padding: 10px;
+        border-radius: 6px;
+    }
+    .pairwise-col-surface {
+        padding: 8px 10px;
+    }
 }
