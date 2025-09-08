@@ -295,6 +295,7 @@
     h2 {
         margin: 0 0 6px 0;
         font-weight: 500;
+        text-align: inherit;
     }
 }
 
@@ -357,4 +358,59 @@
 .dimension .evaluation-instructions h2,
 .dimension .dimension-name-center h2 {
     text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Pointwise (non-pairwise) overrides via modifier
+   ───────────────────────────────────────────────────────────── */
+.dimension.dimension--pointwise .evaluation-instructions {
+    text-align: left;
+}
+
+.dimension.dimension--pointwise .evaluation-instructions h2 {
+    text-align: left;
+}
+
+.dimension.dimension--pointwise .evaluation-instructions-body {
+    max-width: none;
+    margin: 0;
+    text-align: left;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Validation errors — consistent look & spacing
+   ───────────────────────────────────────────────────────────── */
+
+/* Reserve a little space so layout doesn't jump when the error appears */
+.dimension .mat-mdc-form-field-subscript-wrapper {
+  min-height: 20px;
+}
+
+/* Generic error token */
+.dimension mat-error {
+  display: block;
+  margin: 6px 0 0;
+  font-size: 0.875rem;   /* ~14px */
+  line-height: 1.3;
+  text-align: left;
+  /* Use MDC theme error if available, fallback to Material red 700 */
+  color: var(--mdc-theme-error, #d32f2f);
+}
+
+/* Errors for controls that aren't inside mat-form-field (radio groups, sliders) */
+.dimension .radio-button-group + mat-error,
+.dimension .scale-interval + mat-error,
+.dimension .dimension-text-field + mat-error {
+  margin-top: 8px;
+}
+
+/* Pairwise columns: keep left alignment inside each column box */
+.pairwise-col-surface mat-error {
+  text-align: left;
+}
+
+/* Optional: slightly tighten spacing when an error follows a <br> you add conditionally */
+.dimension mat-error br + span {
+  margin-top: 0;
+  display: inline-block;
 }

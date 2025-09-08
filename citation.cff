@@ -23,8 +23,8 @@ abstract: >-
   complex crowdsourcing tasks in a simple and customizable way, making it
   easier for researchers and practitioners to collect high-quality human
   annotations across multiple platforms.
-version: 0.0.0  # update with your release tag (e.g., 1.2.3)
-date-released: 2025-08-27  # update on each release (YYYY-MM-DD)
+version: 1.2.0
+date-released: 2025-08-27
 
 preferred-citation:
   type: inproceedings
