@@ -33,7 +33,7 @@ import {DynamoDBService} from "../../services/aws/dynamoDB.service";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {LocalStorageService} from "../../services/localStorage.service";
-import {NgxUiLoaderService} from "ngx-ui-loader"; // <-- added
+import {NgxUiLoaderService} from "ngx-ui-loader";
 
 /* Models */
 import {Task} from "../../models/skeleton/task";
@@ -53,7 +53,6 @@ import {BaseComponent} from "../base/base.component";
 import {fadeIn} from "../chatbot/animations";
 import {Title} from "@angular/platform-browser";
 
-
 /* Component HTML Tag definition */
 @Component({
     selector: "app-skeleton",
@@ -64,11 +63,6 @@ import {Title} from "@angular/platform-browser";
     encapsulation: ViewEncapsulation.None,
     standalone: false
 })
-
-/*
- * This class implements the skeleton for Crowdsourcing tasks.
- * To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom).
- */
 export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* #################### SERVICES & CORE STUFF #################### */
@@ -83,7 +77,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
-    titleService: Title
+    titleService: Title;
     /* Service to log to the server */
     actionLogger: ActionLogger | null;
     /* Service to track current section */
@@ -104,6 +98,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* Single global loader controller (host lives in BaseComponent) */
     ngx: NgxUiLoaderService;
 
+    /* Single global loader controller state */
+    private overlayStopped = false;
+
     /* This is a convention often used in Angular to manage the cleanup of subscriptions. It involves a Subject that emits a value when the component is
      * about to be destroyed, typically in the ngOnDestroy lifecycle hook. */
     private unsubscribe$ = new Subject<void>();
@@ -117,12 +114,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
 
-    private _stepper!: MatStepper;                 // actual holder
+    private _stepper!: MatStepper; // actual holder
 
     @ViewChild('stepper', {static: false})
     set stepperSetter(stepper: MatStepper | undefined) {
-        if (!stepper) return;                         // view not ready yet
-        this._stepper = stepper;                      // keep a reference
+        if (!stepper) return; // view not ready yet
+        this._stepper = stepper; // keep a reference
 
         /* ----  RESTORE LAST POSITION  -------------------------------- */
         const last = this.worker?.getPositionCurrent() ?? 0;
@@ -132,6 +129,14 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         /* Force CD so that bindings inside the newly-selected step update
            (kept with detectChanges here to sync immediately after view init) */
         this.changeDetector.detectChanges();
+
+        /* Stop the global overlay only now: UI is actually present */
+        if (!this.overlayStopped) {
+            requestAnimationFrame(() => {
+                this.ngx.stopLoader('global'); // single place to hide the global overlay when UI is visible
+                this.overlayStopped = true;
+            });
+        }
     }
 
     /* Expose a readonly getter elsewhere in the class if you still use `this.stepper` */
@@ -152,8 +157,26 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     resultsRetrievedForms: Array<Array<Object>>;
     @ViewChild("urlField") urlField: MatFormField;
 
-    /* Reference to the outcome section component */
-    @ViewChild(OutcomeSectionComponent) outcomeSection: OutcomeSectionComponent;
+    /* Reference to the outcome section component (setter used as a sentinel to stop overlay if we land here directly) */
+    private _outcomeSection?: OutcomeSectionComponent;
+
+    @ViewChild(OutcomeSectionComponent)
+    set outcomeSectionSetter(cmp: OutcomeSectionComponent | undefined) {
+        if (!cmp) return;
+        this._outcomeSection = cmp;
+
+        /* If we show Outcome directly (task completed/already done), ensure overlay is stopped */
+        if (!this.overlayStopped) {
+            requestAnimationFrame(() => {
+                this.ngx.stopLoader('global');
+                this.overlayStopped = true;
+            });
+        }
+    }
+
+    get outcomeSection(): OutcomeSectionComponent | undefined {
+        return this._outcomeSection;
+    }
 
     constructor(
         private baseComponent: BaseComponent,
@@ -171,7 +194,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         localStorageService: LocalStorageService,
         utilsService: UtilsService,
         debugService: DebugService,
-        ngx: NgxUiLoaderService                         // <-- added
+        ngx: NgxUiLoaderService
     ) {
         this.changeDetector = changeDetector;
         this.configService = configService;
@@ -191,7 +214,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         this.generator = false;
 
-        this.ngx = ngx;                                // <-- store loader service
+        this.ngx = ngx; // store loader service
     }
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
@@ -793,19 +816,23 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* ------------------------------------------------------
        Unlock the task based on the status check outcome.
-       Stop the global overlay here to avoid any gap/flicker.
+       Stop the global overlay **only** here when no UI will render.
+       Otherwise, let the stepper / outcome setters stop it when mounted.
        ------------------------------------------------------ */
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
         this.sectionService.checkCompleted = true;
 
-        // Ensure first paint, then hide the overlay on the next frame
+        // Ensure first paint of whichever branch is about to render
         this.changeDetector.markForCheck();
         this.changeDetector.detectChanges?.();
 
-        requestAnimationFrame(() => {
-            this.ngx.stopLoader('global'); // single place to hide the global overlay
-        });
+        /* If the user is NOT allowed (or no stepper/outcome will appear),
+           stop the loader here as a fallback to avoid leaving it running. */
+        if (!taskAllowed && !this.overlayStopped) {
+            this.ngx.stopLoader('global');
+            this.overlayStopped = true;
+        }
     }
 
     /*
@@ -919,7 +946,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public storePositionCurrent(data) {
-        this.worker.setParameter("position_current", String(data))
+        this.worker.setParameter("position_current", String(data));
         this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
     }
 
@@ -960,8 +987,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
             if (this.task.timestampsElapsed[i] < timeCheckAmount[i]) {
-                timeSpentCheck = false
-                break
+                timeSpentCheck = false;
+                break;
             }
         }
 
@@ -996,7 +1023,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 questionnaireFormValidity = false;
         }
         for (let index = 0; index < this.documentsForm.length; index++) {
-            let assessmentForm = this.documentsForm[index]
+            let assessmentForm = this.documentsForm[index];
             if (!this.task.settings.post_assessment) {
                 if (assessmentForm.valid == false)
                     documentsFormValidity = false;
@@ -1040,8 +1067,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.worker.setParameter('try_left', String(triesLeft));
         this.worker.setParameter('try_current', String(this.task.tryCurrent));
 
-        let jumpIndex = this.computeJumpIndex()
-        this.worker.setParameter('position_current', String(jumpIndex))
+        let jumpIndex = this.computeJumpIndex();
+        this.worker.setParameter('position_current', String(jumpIndex));
 
         /* Force change detection so a valid Stepper ref is ensured */
         this.changeDetector.detectChanges();
@@ -1180,11 +1207,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /* =========================================================
- * Child -> parent questionnaire emit handler
- * - Keeps original behavior: register the form once and
- *   forward any action to produceData(action, stepIndex).
- * - Adds light guards to avoid runtime errors.
- * ========================================================= */
+     * Child -> parent questionnaire emit handler
+     * - Keeps original behavior: register the form once and
+     *   forward any action to produceData(action, stepIndex).
+     * - Adds light guards to avoid runtime errors.
+     * ========================================================= */
     public storeQuestionnaireForm(data: any, stepIndex: number) {
         try {
             /* Resolve the element metadata; ignore if not a questionnaire */
@@ -1296,7 +1323,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
     }
 
-
     /*
      * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
      */
@@ -1351,7 +1377,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", this.task.settings.allowed_tries - this.task.tryCurrent > 0 ? StatusCodes.TASK_FAILED_WITH_TRIES : StatusCodes.TASK_FAILED_NO_TRIES);
-                    this.worker.setParameter('position_current', String(this.computeJumpIndex()))
+                    this.worker.setParameter('position_current', String(this.computeJumpIndex()));
                 }
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             }
@@ -1361,35 +1387,38 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             if (completedElementType == "Q") {
                 let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementData, this.questionnairesForm[completedElementIndex].value, action);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);
-                this.storePositionCurrent(String(currentElement))
+                this.storePositionCurrent(String(currentElement));
             }
 
             if (completedElementType == "S") {
                 let countdown = null;
                 if (this.task.settings.countdownTime >= 0)
                     countdown = Math?.round(Number(this.documentComponent?.get(completedElementIndex).countdown.i.value) / 1000);
-                let additionalAnswers = {}
+                let additionalAnswers = {};
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
                     Object.keys(assessmentFormAdditional.controls)?.forEach(controlName => {
-                        additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value
+                        additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value;
                     });
                 }
                 let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, additionalAnswers, countdown, action);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
-                this.storePositionCurrent(String(currentElement))
+                this.storePositionCurrent(String(currentElement));
 
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
                 const qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
-                this.storePositionCurrent(String(currentElement))
+                this.storePositionCurrent(String(currentElement));
             }
         }
 
         if (action == "Finish") {
             this.sectionService.taskCompleted = true;
-            this.changeDetector.detectChanges();
+
+            /* >>> important under OnPush to mount Outcome and unmount the stepper */
+            this.changeDetector.markForCheck();     // <-- added
+            this.changeDetector.detectChanges();    // existing
         }
     }
 
@@ -1448,7 +1477,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             const countdown = getCountdown(index);
             if (!this.task.countdownsExpired[index])
                 countdown.pause();
-        }
+        };
 
         if (completedDocumentData.elementType === "S") {
             pauseCountdown(completedDocumentData.elementIndex);

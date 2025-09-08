@@ -36,6 +36,12 @@
             @case ('WORKER_BLACKLIST_PREVIOUS') {
                 <mat-card-title class="red-title main-title"><span i18n>Blocked</span></mat-card-title>
             }
+            @case ('WORKER_WHITELIST_PREVIOUS') {
+                <mat-card-title class="yellow-title main-title"><span i18n>Not Eligible</span></mat-card-title>
+            }
+            @case ('WORKER_WHITELIST_CURRENT') {
+                <mat-card-title class="yellow-title main-title"><span i18n>Not Eligible</span></mat-card-title>
+            }
             @default {
                 <mat-card-title class="red-title main-title"><span i18n>Unknown Issue</span></mat-card-title>
             }
@@ -113,6 +119,13 @@
 
                 <!-- Kept from original: prior participation prevents current enrollment -->
                 @case ('WORKER_WHITELIST_PREVIOUS') {
+                    <p>
+                        <span i18n>You have participated previously and we are recruiting only new workers. Please return the assignment on the original platform.</span>
+                    </p>
+                }
+
+                <!-- Mirror message for manual whitelist-on-current-batch (rare but consistent) -->
+                @case ('WORKER_WHITELIST_CURRENT') {
                     <p>
                         <span i18n>You have participated previously and we are recruiting only new workers. Please return the assignment on the original platform.</span>
                     </p>

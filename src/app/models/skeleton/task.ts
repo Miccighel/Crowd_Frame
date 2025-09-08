@@ -233,17 +233,19 @@ export class Task {
         /* Parse and store each raw document into the Task.documents array */
         for (let index = 0; index < rawDocuments.length; index++) {
             let currentDocument = rawDocuments[index];
-            let currentParams = {} as JSON
-            if (documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined)
-                currentParams = documentsParams[currentDocument["id"]]
+            let currentParams = {} as JSON;
+            if (documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined) {
+                currentParams = documentsParams[currentDocument["id"]];
+            }
             this.documents.push(new Document(index, currentDocument, currentParams));
             this.showMessageFailGoldCheck.push(null);
         }
 
         /* Restore the most recent data record per document, if available */
-        this.mostRecentDataRecordsForDocuments = new Array<DataRecord>(this.documentsAmount)
-        for (let index = 0; index < this.documentsAmount; index++)
-            this.mostRecentDataRecordsForDocuments[index] = this.retrieveMostRecentDataRecord('document', index)
+        this.mostRecentDataRecordsForDocuments = new Array<DataRecord>(this.documentsAmount);
+        for (let index = 0; index < this.documentsAmount; index++) {
+            this.mostRecentDataRecordsForDocuments[index] = this.retrieveMostRecentDataRecord('document', index);
+        }
 
         /* Initialize search engine queries per document (empty by default, restored from history if possible) */
         this.searchEngineQueries = new Array<object>(this.documentsAmount);
@@ -253,10 +255,10 @@ export class Task {
             this.searchEngineQueries[index]["data"] = [];
             this.searchEngineQueries[index]["amount"] = 0;
             if (this.mostRecentDataRecordsForDocuments[index]) {
-                let existingSearchEngineQueries = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineQueries()
-                this.searchEngineQueries[index]["data"] = existingSearchEngineQueries.data
-                this.searchEngineQueries[index]["amount"] = existingSearchEngineQueries.amount
-                this.currentQuery = existingSearchEngineQueries.amount - 1
+                const existing = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineQueries();
+                this.searchEngineQueries[index]["data"] = existing.data;
+                this.searchEngineQueries[index]["amount"] = existing.amount;
+                this.currentQuery = existing.amount - 1;
             }
         }
 
@@ -266,10 +268,12 @@ export class Task {
             this.searchEngineRetrievedResponses[index] = {};
             this.searchEngineRetrievedResponses[index]["data"] = [];
             this.searchEngineRetrievedResponses[index]["amount"] = 0;
+            this.searchEngineRetrievedResponses[index]["groups"] = 0;
             if (this.mostRecentDataRecordsForDocuments[index]) {
-                let existingSearchEngineRetrievedResponse = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineRetrievedResponses()
-                this.searchEngineRetrievedResponses[index]["data"] = existingSearchEngineRetrievedResponse.data
-                this.searchEngineRetrievedResponses[index]["amount"] = existingSearchEngineRetrievedResponse.amount
+                const existing = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineRetrievedResponses();
+                this.searchEngineRetrievedResponses[index]["data"] = existing.data;
+                this.searchEngineRetrievedResponses[index]["amount"] = existing.amount;
+                this.searchEngineRetrievedResponses[index]["groups"] = existing.data?.length ?? 0;
             }
         }
 
@@ -280,74 +284,63 @@ export class Task {
             this.searchEngineSelectedResponses[index]["data"] = [];
             this.searchEngineSelectedResponses[index]["amount"] = 0;
             if (this.mostRecentDataRecordsForDocuments[index]) {
-                let existingSearchEngineSelectedResponses = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineSelectedResponses()
-                this.searchEngineSelectedResponses[index]["data"] = existingSearchEngineSelectedResponses.data
-                this.searchEngineSelectedResponses[index]["amount"] = existingSearchEngineSelectedResponses.amount
+                const existing = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineSelectedResponses();
+                this.searchEngineSelectedResponses[index]["data"] = existing.data;
+                this.searchEngineSelectedResponses[index]["amount"] = existing.amount;
             }
         }
 
         /* Initialize pre-retrieved results per document */
         this.searchEnginePreRetrievedResults = new Array<Array<PreRetrievedResult>>(this.documentsAmount);
         for (let index = 0; index < this.searchEnginePreRetrievedResults.length; index++) {
-            this.searchEnginePreRetrievedResults[index] = this.retrieveSearchEnginePreRetrievedResults(index)
+            this.searchEnginePreRetrievedResults[index] = this.retrieveSearchEnginePreRetrievedResults(index);
         }
-        this.searchEnginePreRetrievedResultsSettings = this.searchEngineSettings.pre_retrieved_results_settings
+        this.searchEnginePreRetrievedResultsSettings = this.searchEngineSettings.pre_retrieved_results_settings;
 
+        /* Notes / annotator structures */
         this.notesDone = new Array<boolean>();
         this.annotationsDisabled = new Array<boolean>();
         if (this.settings.annotator) {
             switch (this.settings.annotator.type) {
                 case "options":
                     this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
-                    for (let i = 0; i < this.notes.length; i++)
-                        this.notes[i] = [];
-                    for (let index = 0; index < this.notes.length; index++)
-                        this.annotationsDisabled.push(true);
+                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    for (let index = 0; index < this.notes.length; index++) this.annotationsDisabled.push(true);
                     break;
                 case "laws":
                     this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
                     this.notesDone = new Array<boolean>(this.documentsAmount);
-                    for (let i = 0; i < this.notes.length; i++)
-                        this.notes[i] = [];
-                    for (let i = 0; i < this.notesDone.length; i++)
-                        this.notesDone[i] = false;
+                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    for (let i = 0; i < this.notesDone.length; i++) this.notesDone[i] = false;
                     break;
             }
         } else {
             this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
             for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-            for (let index = 0; index < this.notes.length; index++)
-                this.annotationsDisabled.push(true);
+            for (let index = 0; index < this.notes.length; index++) this.annotationsDisabled.push(true);
         }
 
-        /* Ensure every document exposes a pairwise array; default to 2 elements if missing */
-        const PAIRWISE_FALLBACK_COUNT = 2;
-        for (let i = 0; i < this.documents.length; i++) {
-            const docAny = this.documents[i] as any;
-            const configuredCount = Array.isArray(docAny?.pairwise) ? docAny.pairwise.length : 0;
-
-            if (!Array.isArray(docAny?.pairwise) || configuredCount === 0) {
-                /* Minimal placeholder subdocuments so the UI has two slots */
-                docAny.pairwise = Array.from({length: PAIRWISE_FALLBACK_COUNT}, () => ({}));
-            }
-        }
-
-        /* Initialize selection flags per document, sized to actual subdocuments if pairwise */
+        /* Initialize selection flags per document.
+           Non-pairwise → empty array; pairwise → N flags (one per subdoc).
+           Cast to `any` locally so TS doesn't require those fields on the interface. */
         this.documentsPairwiseSelection = new Array<Array<boolean>>(this.documentsAmount);
         for (let i = 0; i < this.documentsAmount; i++) {
-            const doc = this.documents[i];
-            const pairCount = doc.pairwise_split && Array.isArray(doc.subdocuments) ? doc.subdocuments.length : 0;  /* Non-pairwise documents have no subdocs */
-            this.documentsPairwiseSelection[i] = Array(pairCount).fill(false);
+            const d: any = this.documents[i];
+            const pairCount = (d?.pairwise_split && Array.isArray(d?.subdocuments)) ? d.subdocuments.length : 0;
+            this.documentsPairwiseSelection[i] = pairCount > 0 ? Array(pairCount).fill(false) : [];
         }
 
+        /* Countdown arrays */
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
         this.documentsStartCountdownTime = new Array<number>(this.documentsAmount);
         this.countdownsStarted = new Array<boolean>(this.documentsAmount);
         this.countdownsExpired = new Array<boolean>(this.documentsAmount);
         this.countdownExpiredTimestamp = new Array<number>(this.documentsAmount);
         this.overtime = new Array<number>(this.documentsAmount);
+
         for (let index = 0; index < this.documents.length; index++) {
             this.documentsCountdownTime[index] = this.settings.countdownTime;
+
             if (this.mostRecentDataRecordsForDocuments[index]) {
                 this.documentsCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeLeft();
                 this.documentsStartCountdownTime[index] = this.mostRecentDataRecordsForDocuments[index].loadCountdownTimeStart();
@@ -357,16 +350,16 @@ export class Task {
                 this.overtime[index] = this.mostRecentDataRecordsForDocuments[index].loadOvertime();
             } else {
                 if (this.settings.countdown_modality === "attribute" && this.settings.countdown_attribute_values.length > 0) {
-                    const element = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index][this.settings.countdown_attribute]);
-                    if (element != undefined) {
-                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
+                    const elem = this.settings.countdown_attribute_values.find(item => item["name"] === this.documents[index][this.settings.countdown_attribute]);
+                    if (elem != undefined) {
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + elem["time"];
                     }
                 }
 
                 if (this.settings.countdown_modality === "position" && this.settings.countdown_position_values.length > 0) {
-                    const element = this.settings.countdown_position_values.find(item => item["position"] === this.documents[index].index);
-                    if (element != undefined) {
-                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + element["time"];
+                    const elem = this.settings.countdown_position_values.find(item => item["position"] === this.documents[index].index);
+                    if (elem != undefined) {
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + elem["time"];
                     }
                 }
                 this.documentsStartCountdownTime[index] = this.documentsCountdownTime[index];
@@ -375,20 +368,10 @@ export class Task {
                 this.countdownExpiredTimestamp[index] = -1;
                 this.overtime[index] = 0;
             }
-
         }
 
-        this.documentsPairwiseSelection = new Array<Array<boolean>>(
-            this.documentsAmount
-        );
-        for (let i = 0; i < this.documentsPairwiseSelection.length; i++) {
-            let selection = [];
-            selection[0] = false;
-            selection[1] = false;
-            this.documentsPairwiseSelection[i] = selection;
-        }
+        /* Gold documents detection */
         this.goldDocuments = new Array<Document>();
-        /* Indexes of the gold elements are retrieved */
         for (let index = 0; index < this.documentsAmount; index++) {
             if ("id" in this.documents[index]) {
                 if (this.documents[index]["id"].includes("GOLD")) {
@@ -397,6 +380,7 @@ export class Task {
             }
         }
     }
+
 
     public initializeInstructionsGeneral(rawGeneralInstructions) {
         this.instructionsGeneralAmount = rawGeneralInstructions.length;
@@ -438,9 +422,11 @@ export class Task {
         /* The array of dimensions is initialized */
         this.dimensions = new Array<Dimension>();
         this.dimensionsAmount = rawDimensions.length;
+
         /* Each dimension is parsed using the Dimension class */
-        for (let index = 0; index < this.dimensionsAmount; index++)
+        for (let index = 0; index < this.dimensionsAmount; index++) {
             this.dimensions.push(new Dimension(index, rawDimensions[index]));
+        }
 
         this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
         for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
@@ -449,58 +435,55 @@ export class Task {
             this.dimensionsSelectedValues[index]["amount"] = 0;
             if (this.mostRecentDataRecordsForDocuments) {
                 if (this.mostRecentDataRecordsForDocuments[index]) {
-                    let existingDimensionsSelectedValues = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected()
-                    this.dimensionsSelectedValues[index]["data"] = existingDimensionsSelectedValues.data
-                    this.dimensionsSelectedValues[index]["amount"] = existingDimensionsSelectedValues.amount
+                    const existing = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected();
+                    this.dimensionsSelectedValues[index]["data"] = existing.data;
+                    this.dimensionsSelectedValues[index]["amount"] = existing.amount;
                 }
             }
         }
 
-        /* Checks if there are interval scales among the dimensions */
+        /* Interval scales (min/max per document) */
         if (this.dimensions.some(dimension => dimension.scale instanceof ScaleInterval)) {
-            let intervalDimesions = this.dimensions.find(dimension => dimension.scale instanceof ScaleInterval);
+            const intervalDim = this.dimensions.find(d => d.scale instanceof ScaleInterval);
 
-            /* Initialize the arrays of interval min and max values for each document */
             this.dimensionIntervalMinValues = new Array<number>(this.documentsAmount);
             this.dimensionIntervalMaxValues = new Array<number>(this.documentsAmount);
 
-            if (intervalDimesions.scale instanceof ScaleInterval) {
+            if (intervalDim?.scale instanceof ScaleInterval) {
                 for (let index = 0; index < this.documentsAmount; index++) {
-                    /* Check if there is a video attribute in the task attributes and a HITS element called "video_duration"*/
                     if (this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index]['video_duration']) {
-                        /* Set the max interval value to the duration of the video */
                         this.dimensionIntervalMaxValues[index] = this.documents[index]['video_duration'];
+                    } else {
+                        this.dimensionIntervalMaxValues[index] = intervalDim.scale.max;
                     }
-                    /* Otherwise create and array with the default value setted in the dimension.json file */
-                    else {
-                        this.dimensionIntervalMaxValues[index] = intervalDimesions.scale.max;
-                    }
-                    /* Set the min interval value to the default value setted in the dimension.json file */
-                    this.dimensionIntervalMinValues[index] = intervalDimesions.scale.min;
+                    this.dimensionIntervalMinValues[index] = intervalDim.scale.min;
                 }
             }
         }
 
-        /* Initialize pairwise selection flags for each document/dimension */
+        /* Initialize pairwise selection flags per document/dimension.
+           Derive pairCount from documentsPairwiseSelection length (no direct doc.subdocuments access). */
         for (let i = 0; i < this.documentsAmount; i++) {
             this.dimensionsPairwiseSelection[i] = [];
 
-            const doc = this.documents[i];
-            const pairCount = doc.pairwise_split && Array.isArray(doc.subdocuments) ? doc.subdocuments.length : 0;
+            const pairCount = Array.isArray(this.documentsPairwiseSelection?.[i])
+                ? this.documentsPairwiseSelection[i].length
+                : 0;
 
             for (let j = 0; j < this.dimensionsAmount; j++) {
-                this.dimensionsPairwiseSelection[i][j] = Array(pairCount).fill(false);
+                this.dimensionsPairwiseSelection[i][j] = pairCount > 0 ? Array(pairCount).fill(false) : [];
             }
         }
 
+        /* Gold dimensions */
         this.goldDimensions = new Array<Dimension>();
-        /* Indexes of the gold dimensions are retrieved */
         for (let index = 0; index < this.dimensionsAmount; index++) {
             if (this.dimensions[index].gold) {
                 this.goldDimensions.push(this.dimensions[index]);
             }
         }
     }
+
 
     public initializeTimestamps() {
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
@@ -1252,7 +1235,7 @@ export class Task {
 
         /* Normalize worker answers by coercing magnitude-estimation values to numbers */
         for (let [attribute, value] of Object.entries(answers)) {
-            let answerDimensionName = attribute.split("_")[0];
+            const answerDimensionName = attribute.split("_")[0];
             for (let dimension of this.dimensions) {
                 if (answerDimensionName == dimension.name) {
                     answers[attribute] =
@@ -1269,13 +1252,13 @@ export class Task {
             answers[additionalAnswerName] = value;
         }
 
-        /* Persist pairwise selection into answers so history can be restored */
+        /* Persist pairwise selection into answers so history can be restored
+           (derive count from documentsPairwiseSelection, never from doc.subdocuments) */
         const docIdx = elementData['elementIndex'];
-        const doc = this.documents[docIdx];
         const selectionArr = this.documentsPairwiseSelection?.[docIdx];
 
-        if (doc.pairwise_split && Array.isArray(selectionArr) && selectionArr.length > 0) {
-            const subdocCount = doc.subdocuments.length;
+        if (Array.isArray(selectionArr) && selectionArr.length > 0) {
+            const subdocCount = selectionArr.length;
             let selectedIndex = -1;
 
             for (let j = 0; j < subdocCount; j++) {
@@ -1313,8 +1296,8 @@ export class Task {
         data["countdowns_started"] = this.settings.countdownTime >= 0 ? this.countdownsStarted[elementData['elementIndex']] : [];
         data["countdowns_expired"] = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
 
-        let countdown_expired_timestamp = this.settings.countdownTime >= 0 ? this.countdownExpiredTimestamp[elementData['elementIndex']] : [];
-        let overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
+        const countdown_expired_timestamp = this.settings.countdownTime >= 0 ? this.countdownExpiredTimestamp[elementData['elementIndex']] : [];
+        const overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
 
         data['countdown_expired_timestamp'] = countdown_expired_timestamp;
         data['overtime'] = overtime;
