@@ -1,0 +1,60 @@
+name: build
+
+on:
+    push:
+        branches: [ master ]
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: build-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    APP_NAME: Crowd_Frame
+    NODE_VERSION: "20"
+
+jobs:
+    build:
+        name: Build ${{ matrix.config }} (${{ matrix.locale }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   config: production
+                        locale: en-US
+                    -   config: production-it
+                        locale: it
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Setup Node
+                uses: actions/setup-node@v4
+                with:
+                    node-version: ${{ env.NODE_VERSION }}
+                    cache: yarn
+
+            -   name: Enable Corepack (Yarn 4)
+                run: corepack enable
+
+            -   name: Install dependencies
+                run: yarn install --immutable
+
+            # Builds exactly the targets you defined in angular.json
+            -   name: Build (${{ matrix.config }})
+                run: yarn ng build ${{ env.APP_NAME }} --configuration ${{ matrix.config }}
+
+            # Upload whatever Angular produced; supports both dist/Crowd_Frame/en-US and dist/Crowd_Frame/browser/en-US layouts
+            -   name: Upload artifact (${{ matrix.locale }})
+                uses: actions/upload-artifact@v4
+                with:
+                    name: ${{ env.APP_NAME }}-${{ matrix.locale }}
+                    path: |
+                        dist/${{ env.APP_NAME }}/**/*
+                    if-no-files-found: error

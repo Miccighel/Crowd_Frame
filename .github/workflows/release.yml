@@ -1,0 +1,144 @@
+name: release
+
+on:
+    push:
+        tags:
+            # Push tags like: v1.2.3
+            - "v*.*.*"
+    workflow_dispatch:
+
+permissions:
+    contents: write  # needed to create releases
+
+concurrency:
+    group: app-release-${{ github.ref }}
+    cancel-in-progress: false
+
+env:
+    APP_NAME: Crowd_Frame
+    NODE_VERSION: "20"
+
+jobs:
+    build:
+        name: Build ${{ matrix.config }} (${{ matrix.locale }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   config: production
+                        locale: en-US
+                    -   config: production-it
+                        locale: it
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+
+            -   name: Setup Node
+                uses: actions/setup-node@v4
+                with:
+                    node-version: ${{ env.NODE_VERSION }}
+                    cache: yarn
+
+            -   name: Enable Corepack (Yarn 4)
+                run: corepack enable
+
+            -   name: Install dependencies
+                run: yarn install --immutable
+
+            -   name: Derive version from tag
+                id: ver
+                shell: bash
+                run: |
+                    # Tag looks like: app/vX.Y.Z
+                    VERSION="${GITHUB_REF_NAME#app/}"
+                    VERSION="${VERSION#v}"
+                    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+                    echo "Building version: $VERSION"
+
+            -   name: Build (${{ matrix.config }})
+                run: yarn ng build ${{ env.APP_NAME }} --configuration ${{ matrix.config }}
+
+            # Angular 20 "application" builder may emit into:
+            # - dist/Crowd_Frame/en-US
+            # - dist/Crowd_Frame/browser/en-US
+            # - dist/Crowd_Frame
+            -   name: Locate build output
+                id: out
+                shell: bash
+                run: |
+                    ROOT="dist/${{ env.APP_NAME }}"
+                    LOCALE="${{ matrix.locale }}"
+                    CANDIDATES=(
+                      "$ROOT/$LOCALE"
+                      "$ROOT/browser/$LOCALE"
+                      "$ROOT"
+                    )
+                    PACK_DIR=""
+                    for p in "${CANDIDATES[@]}"; do
+                      if [ -d "$p" ]; then
+                        PACK_DIR="$p"
+                        break
+                      fi
+                    done
+                    if [ -z "$PACK_DIR" ]; then
+                      echo "No build output found under $ROOT"
+                      ls -la "$ROOT" || true
+                      exit 1
+                    fi
+                    echo "pack_dir=$PACK_DIR" >> "$GITHUB_OUTPUT"
+                    echo "Using pack dir: $PACK_DIR"
+
+            -   name: Create ZIP
+                shell: bash
+                run: |
+                    mkdir -p release
+                    ZIP="release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}.zip"
+                    cd "${{ steps.out.outputs.pack_dir }}"
+                    zip -r "../../$ZIP" . >/dev/null
+                    cd - >/dev/null
+                    ls -lh "$ZIP"
+
+            -   name: Upload artifact (ZIP)
+                uses: actions/upload-artifact@v4
+                with:
+                    name: ${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}
+                    path: release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}.zip
+                    if-no-files-found: error
+
+    release:
+        name: Create GitHub Release
+        runs-on: ubuntu-latest
+        needs: build
+
+        steps:
+            -   name: Download all artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    path: release-assets
+                    merge-multiple: true
+
+            -   name: Derive version from tag
+                id: ver
+                shell: bash
+                run: |
+                    VERSION="${GITHUB_REF_NAME#app/}"
+                    VERSION="${VERSION#v}"
+                    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+            -   name: List assets
+                run: ls -lh release-assets
+
+            -   name: Create GitHub Release
+                uses: softprops/action-gh-release@v2
+                with:
+                    tag_name: ${{ github.ref_name }}
+                    name: Crowd_Frame v${{ steps.ver.outputs.version }}
+                    generate_release_notes: true
+                    prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
+                    files: |
+                        release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-en-US.zip
+                        release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-it.zip
