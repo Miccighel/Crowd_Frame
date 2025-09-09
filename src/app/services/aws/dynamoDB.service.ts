@@ -3,14 +3,17 @@ import {Injectable} from '@angular/core';
 /* ---------- AWS SDK v3 ---------- */
 import {
     DynamoDBClient,
-    ListTablesCommand
+    ListTablesCommand,
+    ListTablesCommandOutput,
+    DescribeTableCommand,
+    DescribeTableCommandOutput
 } from '@aws-sdk/client-dynamodb';
 import {
     DynamoDBDocumentClient,
-    QueryCommand,
-    ScanCommand,
-    PutCommand,
-    UpdateCommand
+    QueryCommand, QueryCommandOutput,
+    ScanCommand, ScanCommandOutput,
+    PutCommand, PutCommandOutput,
+    UpdateCommand, UpdateCommandOutput
 } from '@aws-sdk/lib-dynamodb';
 
 /* ---------- Domain models ---------- */
@@ -18,6 +21,7 @@ import {Worker} from '../../models/worker/worker';
 import {Task} from '../../models/skeleton/task';
 import {StatusCodes} from '../section.service';
 
+/* ---------- External config shape used by callers ---------- */
 type Cfg = {
     region: string;
     aws_id_key: string;
@@ -26,217 +30,446 @@ type Cfg = {
     table_data_name: string;
 };
 
+/* ---------- Internal normalized config ---------- */
+type NormalizedCfg = {
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+    table_acl_name: string;
+    table_data_name: string;
+    cacheKey: string; /* region + creds fingerprint for client cache */
+};
+
 @Injectable({providedIn: 'root'})
 export class DynamoDBService {
+    /* ================== CLIENT CACHE ================== */
+    private _base?: DynamoDBClient;                 /* low-level client cache */
+    private _doc?: DynamoDBDocumentClient;          /* document client cache */
+    private _cfgKey?: string;                       /* cache discriminator */
 
-    /* ================== CLIENT BUILDERS ================== */
-    private _base?: DynamoDBClient;           /* cached per-app */
-    private _doc?: DynamoDBDocumentClient;    /* cached per-app */
+    /* Cache of table key schema to avoid repetitive DescribeTable calls */
+    private _schemaCache = new Map<string, { pk: string; sk?: string; types: Record<string, 'S' | 'N' | 'B'> }>();
 
-    /**
-     * Builds a low-level DynamoDBClient (cached).
-     */
-    private baseClient(cfg: Cfg) {
-        if (!this._base) {
+    /* ================== CONFIG NORMALIZATION ================== */
+
+    /* Accepts multiple key spellings, returns a normalized shape */
+    private normalize(raw: Cfg | any): NormalizedCfg {
+        const region =
+            raw?.region ?? raw?.aws_region ?? raw?.AWS_REGION ?? raw?.region_name;
+
+        const accessKeyId =
+            raw?.aws_id_key ??
+            raw?.aws_access_key_id ??
+            raw?.accessKeyId ??
+            raw?.AWS_ACCESS_KEY_ID;
+
+        const secretAccessKey =
+            raw?.aws_secret_key ??
+            raw?.aws_secret_access_key ??
+            raw?.secretAccessKey ??
+            raw?.AWS_SECRET_ACCESS_KEY;
+
+        const sessionToken =
+            raw?.aws_session_token ?? raw?.sessionToken ?? raw?.AWS_SESSION_TOKEN;
+
+        const table_acl_name =
+            raw?.table_acl_name ?? raw?.TABLE_ACL_NAME ?? raw?.acl_table ?? raw?.acl;
+
+        const table_data_name =
+            raw?.table_data_name ?? raw?.TABLE_DATA_NAME ?? raw?.data_table ?? raw?.data;
+
+        if (!region || !accessKeyId || !secretAccessKey) {
+            console.error('[DDB] Missing required config fields', {
+                regionSet: !!region,
+                accessKeyIdSet: !!accessKeyId,
+                secretAccessKeySet: !!secretAccessKey,
+                sessionTokenSet: !!sessionToken
+            });
+        }
+
+        /* Include sessionToken in the cache key so STS rotations rebuild the client */
+        const cacheKey = [region || '', accessKeyId || '', sessionToken || ''].join('|');
+
+        return {
+            region,
+            accessKeyId,
+            secretAccessKey,
+            sessionToken,
+            table_acl_name,
+            table_data_name,
+            cacheKey
+        };
+    }
+
+    /* Ensure clients exist and match the provided (normalized) config */
+    private ensureClients(rawCfg: Cfg | any): NormalizedCfg {
+        const cfg = this.normalize(rawCfg);
+        if (!this._base || !this._doc || this._cfgKey !== cfg.cacheKey) {
             this._base = new DynamoDBClient({
                 region: cfg.region,
                 credentials: {
-                    accessKeyId: cfg.aws_id_key,
-                    secretAccessKey: cfg.aws_secret_key
+                    accessKeyId: cfg.accessKeyId,
+                    secretAccessKey: cfg.secretAccessKey,
+                    sessionToken: cfg.sessionToken
                 }
+                /* logger: console, // uncomment for verbose SDK logs in dev */
             });
+            this._doc = DynamoDBDocumentClient.from(this._base);
+            this._cfgKey = cfg.cacheKey;
+            console.log('[DDB] Client initialized', {region: cfg.region});
         }
+        return cfg;
+    }
+
+    private getBase(): DynamoDBClient {
+        if (!this._base) throw new Error('[DDB] Low-level client not initialized (invalid cfg)');
         return this._base;
     }
 
-    /**
-     * Builds a DynamoDBDocumentClient with transparent marshalling (cached).
-     */
-    private docClient(cfg: Cfg) {
-        if (!this._doc) {
-            this._doc = DynamoDBDocumentClient.from(this.baseClient(cfg));
-        }
+    private getDoc(): DynamoDBDocumentClient {
+        if (!this._doc) throw new Error('[DDB] Document client not initialized (invalid cfg)');
         return this._doc;
+    }
+
+    /* Centralized sender with compact error logging; preserves output types via T */
+    private async send<T>(
+        client: DynamoDBClient | DynamoDBDocumentClient,
+        command: any,
+        op: string
+    ): Promise<T> {
+        try {
+            // @ts-ignore
+            return await client.send(command) as T;
+        } catch (err: any) {
+            console.error(`[DDB] ${op} failed`, {
+                name: err?.name,
+                message: err?.message,
+                code: err?.code || err?.Code,
+                httpStatus: err?.$metadata?.httpStatusCode,
+                requestId: err?.$metadata?.requestId
+            });
+            throw err;
+        }
+    }
+
+    /* ======================== HEALTH ===================== */
+
+    /* Lightweight connectivity check; surfaces AWS errors clearly */
+    async ping(cfg: Cfg | any): Promise<void> {
+        this.ensureClients(cfg);
+        await this.send<ListTablesCommandOutput>(
+            this.getBase(),
+            new ListTablesCommand({Limit: 1}),
+            'ListTables(ping)'
+        );
+    }
+
+    /* ===================== INTROSPECTION ==================== */
+
+    /* Describes a table; used internally to discover PK/SK and attribute types */
+    private async describeTable(tableName: string): Promise<DescribeTableCommandOutput> {
+        return this.send<DescribeTableCommandOutput>(
+            this.getBase(),
+            new DescribeTableCommand({TableName: tableName}),
+            `DescribeTable(${tableName})`
+        );
+    }
+
+    /* Returns {pk, sk?, types} for the given table; cached for subsequent calls */
+    private async getAclKeySchema(tableName: string): Promise<{ pk: string; sk?: string; types: Record<string, 'S' | 'N' | 'B'> }> {
+        const cached = this._schemaCache.get(tableName);
+        if (cached) return cached;
+
+        const desc = await this.describeTable(tableName);
+        const ks = desc.Table?.KeySchema ?? [];
+        const attrs = desc.Table?.AttributeDefinitions ?? [];
+
+        const types: Record<string, 'S' | 'N' | 'B'> = {};
+        for (const a of attrs) {
+            if (a.AttributeName && a.AttributeType) {
+                types[a.AttributeName] = a.AttributeType as 'S' | 'N' | 'B';
+            }
+        }
+
+        const pk = ks.find(k => k.KeyType === 'HASH')?.AttributeName!;
+        const sk = ks.find(k => k.KeyType === 'RANGE')?.AttributeName;
+
+        if (!pk) throw new Error('[DDB] ACL table has no HASH key');
+
+        const schema = {pk, sk, types};
+        this._schemaCache.set(tableName, schema);
+        return schema;
     }
 
     /* ======================== LIST ======================= */
 
-    /**
-     * Lists DynamoDB tables for the configured account/region.
-     * Used to locate previous-batch ACL tables precisely.
-     */
-    async listTables(cfg: Cfg) {
-        const client = this.baseClient(cfg);
-        return client.send(new ListTablesCommand({}));
+    /* Lists tables in the current account/region */
+    async listTables(cfg: Cfg | any): Promise<ListTablesCommandOutput> {
+        this.ensureClients(cfg);
+        return this.send<ListTablesCommandOutput>(
+            this.getBase(),
+            new ListTablesCommand({}),
+            'ListTables'
+        );
     }
 
     /* ======================== QUERY ====================== */
 
-    /**
-     * Queries the ACL table by worker identifier (GSI: identifier-index).
-     */
-    async getACLRecordWorkerId(cfg: Cfg, workerId: string, table: string = null) {
-        const client = this.docClient(cfg);
-        return client.send(new QueryCommand({
-            TableName: table ?? cfg.table_acl_name,
-            IndexName: 'identifier-index',
-            KeyConditionExpression: 'identifier = :identifier',
-            ExpressionAttributeValues: {':identifier': workerId},
-            ScanIndexForward: true
-        }));
+    /* ACL by worker identifier (GSI: identifier-index) */
+    async getACLRecordWorkerId(
+        cfg: Cfg | any,
+        workerId: string,
+        table?: string | null
+    ): Promise<QueryCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        return this.send<QueryCommandOutput>(
+            this.getDoc(),
+            new QueryCommand({
+                TableName: table ?? ncfg.table_acl_name,
+                IndexName: 'identifier-index',
+                KeyConditionExpression: 'identifier = :identifier',
+                ExpressionAttributeValues: {':identifier': workerId},
+                ScanIndexForward: true
+            }),
+            'Query(ACL by identifier)'
+        );
     }
 
-    /**
-     * Queries the ACL table by unit id (GSI: unit_id-index).
-     */
-    async getACLRecordUnitId(cfg: Cfg, unitId: string, table: string = null) {
-        const client = this.docClient(cfg);
-        return client.send(new QueryCommand({
-            TableName: table ?? cfg.table_acl_name,
-            IndexName: 'unit_id-index',
-            KeyConditionExpression: 'unit_id = :unit_id',
-            ExpressionAttributeValues: {':unit_id': unitId},
-            ScanIndexForward: true
-        }));
+    /* ACL by unit id (GSI: unit_id-index) */
+    async getACLRecordUnitId(
+        cfg: Cfg | any,
+        unitId: string,
+        table?: string | null
+    ): Promise<QueryCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        return this.send<QueryCommandOutput>(
+            this.getDoc(),
+            new QueryCommand({
+                TableName: table ?? ncfg.table_acl_name,
+                IndexName: 'unit_id-index',
+                KeyConditionExpression: 'unit_id = :unit_id',
+                ExpressionAttributeValues: {':unit_id': unitId},
+                ScanIndexForward: true
+            }),
+            'Query(ACL by unit_id)'
+        );
     }
 
-    /**
-     * Queries the ACL table by IP address (GSI: ip_address-index).
-     * Accepts a string IP or an object with an `ip` field to avoid shape issues.
-     * Returns an empty page if IP cannot be resolved (no throw).
-     */
-    async getACLRecordIpAddress(cfg: Cfg, ipAddress: string | { ip?: string }, table: string = null) {
-        const client = this.docClient(cfg);
-        const ip =
-            typeof ipAddress === 'string'
-                ? ipAddress
-                : (ipAddress && typeof ipAddress === 'object' && ipAddress.ip) || undefined;
+    /* ACL by IP address (GSI: ip_address-index); returns empty page if IP unknown */
+    async getACLRecordIpAddress(
+        cfg: Cfg | any,
+        ipAddress: string | { ip?: string },
+        table?: string | null
+    ): Promise<QueryCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        const ip = typeof ipAddress === 'string' ? ipAddress : ipAddress?.ip;
+        if (!ip) return {Items: []} as QueryCommandOutput;
 
-        if (!ip) return {Items: []};
-
-        return client.send(new QueryCommand({
-            TableName: table ?? cfg.table_acl_name,
-            IndexName: 'ip_address-index',
-            KeyConditionExpression: 'ip_address = :ip',
-            ExpressionAttributeValues: {':ip': ip},
-            ScanIndexForward: true
-        }));
+        return this.send<QueryCommandOutput>(
+            this.getDoc(),
+            new QueryCommand({
+                TableName: table ?? ncfg.table_acl_name,
+                IndexName: 'ip_address-index',
+                KeyConditionExpression: 'ip_address = :ip',
+                ExpressionAttributeValues: {':ip': ip},
+                ScanIndexForward: true
+            }),
+            'Query(ACL by ip_address)'
+        );
     }
 
-    /**
-     * Scans the ACL table via the unit_id index.
-     * Results are locally sorted for deterministic processing.
-     */
+    /* ACL scan via unit_id index; locally sorted for deterministic processing */
     async scanACLRecordUnitId(
-        cfg: Cfg,
-        table: string = null,
-        lastEvaluatedKey: Record<string, unknown> = null,
+        cfg: Cfg | any,
+        table?: string | null,
+        lastEvaluatedKey: Record<string, unknown> | null = null,
         ascending = true
-    ) {
-        const client = this.docClient(cfg);
-        const page: any = await client.send(new ScanCommand({
-            TableName: table ?? cfg.table_acl_name,
-            IndexName: 'unit_id-index',
-            ExclusiveStartKey: lastEvaluatedKey ?? undefined
-        }));
+    ): Promise<ScanCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
 
-        // Local sort by unit_id; callers may re-sort by time fields as needed.
-        page.Items = (page.Items ?? []).sort((a, b) => {
+        const page = await this.send<ScanCommandOutput>(
+            this.getDoc(),
+            new ScanCommand({
+                TableName: table ?? ncfg.table_acl_name,
+                IndexName: 'unit_id-index',
+                ExclusiveStartKey: lastEvaluatedKey ?? undefined
+            }),
+            'Scan(ACL by unit_id-index)'
+        );
+
+        /* Stable sort by unit_id; do not mutate original Items reference in case callers depend on it */
+        const items = (page.Items ?? []).slice().sort((a: any, b: any) => {
             const ua = String(a?.['unit_id'] ?? '');
             const ub = String(b?.['unit_id'] ?? '');
             const cmp = ua.localeCompare(ub);
             return ascending ? cmp : -cmp;
         });
+        (page as any).Items = items;
 
         return page;
     }
 
-    /**
-     * Queries the data table partition for a worker (paged).
-     */
+    /* Data records for a worker (partition = identifier) */
     async getDataRecord(
-        cfg: Cfg,
+        cfg: Cfg | any,
         identifier: string,
-        table: string = null,
-        lastEvaluatedKey: Record<string, unknown> = null
-    ) {
-        const client = this.docClient(cfg);
-        return client.send(new QueryCommand({
-            TableName: table ?? cfg.table_data_name,
-            KeyConditionExpression: '#id = :id',
-            ExpressionAttributeNames: {'#id': 'identifier'},
-            ExpressionAttributeValues: {':id': identifier},
-            ExclusiveStartKey: lastEvaluatedKey ?? undefined
-        }));
+        table?: string | null,
+        lastEvaluatedKey: Record<string, unknown> | null = null
+    ): Promise<QueryCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        return this.send<QueryCommandOutput>(
+            this.getDoc(),
+            new QueryCommand({
+                TableName: table ?? ncfg.table_data_name,
+                KeyConditionExpression: '#id = :id',
+                ExpressionAttributeNames: {'#id': 'identifier'},
+                ExpressionAttributeValues: {':id': identifier},
+                ExclusiveStartKey: lastEvaluatedKey ?? undefined
+            }),
+            'Query(Data by identifier)'
+        );
     }
 
     /* =================== INSERT / PUT ==================== */
 
-    /**
-     * Inserts an ACL row for the worker using Worker.paramsFetched.
-     */
-    async insertACLRecordWorkerID(cfg: Cfg, worker: Worker) {
-        const client = this.docClient(cfg);
-        return client.send(new PutCommand({
-            TableName: cfg.table_acl_name,
-            Item: {...worker.paramsFetched}
-        }));
+    /* Inserts an ACL row (uses Worker.paramsFetched as-is) */
+    async insertACLRecordWorkerID(
+        cfg: Cfg | any,
+        worker: Worker
+    ): Promise<PutCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        return this.send<PutCommandOutput>(
+            this.getDoc(),
+            new PutCommand({
+                TableName: ncfg.table_acl_name,
+                Item: {...worker.paramsFetched}
+            }),
+            'Put(ACL by identifier)'
+        );
     }
 
-    /**
-     * Non-destructive ACL update when possible; falls back to full PUT.
-     * If your ACL PK isn't {identifier}, the UPDATE may fail and we fall back.
+    /*
+     * UPDATE-first ACL write (non-destructive) with runtime key discovery.
+     * - Discovers real PK/SK and builds correct Key
+     * - De-overlaps document paths in SET (e.g., "ua" vs "ua.source")
+     * - Skips UPDATE if key fields missing; falls back to full PUT
+     * Returns which path was used: 'update' or 'put'
      */
-    async updateWorkerAcl(env: Cfg, worker: Worker, statusCode?: StatusCodes, extra?: Record<string, any>) {
+    async updateWorkerAcl(
+        env: Cfg | any,
+        worker: Worker,
+        statusCode?: StatusCodes,
+        extra?: Record<string, any>
+    ): Promise<'update' | 'put'> {
+        const ncfg = this.ensureClients(env);
+
+        /* Merge optional fields into paramsFetched */
         if (statusCode !== undefined && statusCode !== null) {
             worker.setParameter('status_code', statusCode);
         }
         if (extra) {
-            Object.entries(extra).forEach(([k, v]) => worker.setParameter(k, v as any));
+            for (const [k, v] of Object.entries(extra)) {
+                worker.setParameter(k, v as any);
+            }
+        }
+
+        /* Discover table key schema and attribute types */
+        const {pk, sk, types} = await this.getAclKeySchema(ncfg.table_acl_name);
+
+        /* Build UpdateItem key; if incomplete, fallback to PUT */
+        const pkValRaw = (worker.paramsFetched as any)?.[pk];
+        const skValRaw = sk ? (worker.paramsFetched as any)?.[sk] : undefined;
+        if (pkValRaw === undefined || (sk && skValRaw === undefined)) {
+            await this.insertACLRecordWorkerID(ncfg, worker);
+            return 'put';
+        }
+
+        /* Coerce key types to match table definitions */
+        const coerceKey = (name: string, v: any) => {
+            const t = types[name];
+            if (t === 'N') return typeof v === 'number' ? v : Number(v);
+            if (t === 'S') return typeof v === 'string' ? v : String(v);
+            return v; /* 'B' assumed provided as binary */
+        };
+        const key: Record<string, any> = {[pk]: coerceKey(pk, pkValRaw)};
+        if (sk) key[sk] = coerceKey(sk, skValRaw);
+
+        /* Collect update candidates: skip PK/SK and 'time_update' (set explicitly) */
+        const rawEntries = Object.entries(worker.paramsFetched ?? {})
+            .filter(([k]) => k !== pk && k !== sk && k !== 'time_update');
+
+        /* De-duplicate by attribute path (keep last occurrence) */
+        const byKey = new Map<string, any>(rawEntries);
+
+        /* De-overlap: if we set 'a', skip 'a.b'/'a.b.c' etc. */
+        const keys = Array.from(byKey.keys()).sort(
+            (a, b) => this.splitPath(a).length - this.splitPath(b).length
+        );
+        const kept: string[] = [];
+        for (const k of keys) {
+            if (kept.some(p => this.isPrefixPath(p, k))) continue;
+            kept.push(k);
+        }
+        const updates: Array<[string, any]> = kept.map(k => [k, byKey.get(k)]);
+
+        /* Build UpdateExpression: SET time_update = :now, plus each path safely tokenized */
+        const names: Record<string, string> = {'#time_update': 'time_update'};
+        const values: Record<string, any> = {':now': new Date().toUTCString()};
+        const sets: string[] = ['#time_update = :now'];
+
+        let nameTok = 0;
+        let valTok = 0;
+
+        for (const [attrPath, val] of updates) {
+            /* Split dotted path into tokens: user_agent.source -> #n0.#n1 */
+            const segs = this.splitPath(attrPath);
+            const tokens: string[] = [];
+            for (const s of segs) {
+                const tn = `#n${nameTok++}`;
+                names[tn] = s;
+                tokens.push(tn);
+            }
+            const pathExpr = tokens.join('.');
+            const vv = `:v${valTok++}`;
+            values[vv] = val;
+            sets.push(`${pathExpr} = ${vv}`);
         }
 
         try {
-            const names: Record<string, string> = {'#time_update': 'time_update'};
-            const values: Record<string, any> = {':now': new Date().toUTCString()};
-            const sets: string[] = ['#time_update = :now'];
-
-            let i = 0;
-            for (const [k, v] of Object.entries(worker.paramsFetched)) {
-                if (k === 'identifier') continue; // PK, do not set
-                const nk = `#k${i}`;
-                const nv = `:v${i}`;
-                names[nk] = k;
-                values[nv] = v;
-                sets.push(`${nk} = ${nv}`);
-                i++;
-            }
-
-            await this.docClient(env).send(new UpdateCommand({
-                TableName: env.table_acl_name,
-                Key: {identifier: worker.identifier}, // adjust if your real PK differs
-                UpdateExpression: 'SET ' + sets.join(', '),
-                ExpressionAttributeNames: names,
-                ExpressionAttributeValues: values
-            }));
+            await this.send<UpdateCommandOutput>(
+                this.getDoc(),
+                new UpdateCommand({
+                    TableName: ncfg.table_acl_name,
+                    Key: key,
+                    UpdateExpression: 'SET ' + sets.join(', '),
+                    ExpressionAttributeNames: names,
+                    ExpressionAttributeValues: values
+                }),
+                'Update(ACL by key)'
+            );
+            return 'update';
         } catch {
-            // Fallback: if UPDATE fails (e.g., different PK schema), do a full PUT
-            await this.insertACLRecordWorkerID(env, worker);
+            /* If IAM/conditional/schema issues arise, fallback to full PUT */
+            await this.insertACLRecordWorkerID(ncfg, worker);
+            return 'put';
         }
     }
 
-    /**
-     * Inserts or updates an ACL row keyed by `unit_id`.
-     * Optional flags:
-     *  - updateArrivalTime: bumps `time_arrival` and increments `access_counter`.
-     *  - updateRemovalTime: bumps `time_removal`.
+    /*
+     * Insert/update ACL row keyed by unit_id
+     * - updateArrivalTime: bumps time_arrival + increments access_counter
+     * - updateRemovalTime: bumps time_removal
      */
     async insertACLRecordUnitId(
-        cfg: Cfg,
+        cfg: Cfg | any,
         entry: Record<string, any>,
         _currentTry: number,
         updateArrivalTime = false,
         updateRemovalTime = false
-    ) {
+    ): Promise<PutCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+
         const now = new Date().toUTCString();
         const item = {...entry};
 
@@ -250,38 +483,41 @@ export class DynamoDBService {
             item['time_removal'] = now;
         }
 
-        const client = this.docClient(cfg);
-        return client.send(new PutCommand({
-            TableName: cfg.table_acl_name,
-            Item: item
-        }));
+        return this.send<PutCommandOutput>(
+            this.getDoc(),
+            new PutCommand({
+                TableName: ncfg.table_acl_name,
+                Item: item
+            }),
+            'Put(ACL by unit_id)'
+        );
     }
 
-    /**
+    /*
      * Writes a task data record for a worker.
-     * Builds a composite sequence key `identifier-ip-unit-try-seqNumber`.
-     * Increments `task.sequenceNumber` unless `sameSeq` is true.
-     * (No payload trimming.)
+     * - Composite sequence: identifier-ip-unit-try-seqNumber
+     * - Increments task.sequenceNumber unless sameSeq is true
+     * - Stores full payload JSON in 'data'
      */
     async insertDataRecord(
-        cfg: Cfg,
+        cfg: Cfg | any,
         worker: Worker,
         task: Task,
         data: Record<string, any>,
         sameSeq = false
-    ) {
+    ): Promise<PutCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+
         const rawIp = worker.getIP() as any;
         const ip = (typeof rawIp === 'string' ? rawIp : rawIp?.ip) ?? 'unknown';
 
         const seqBase = `${worker.identifier}-${ip}-${task.unitId}-${task.tryCurrent}`;
         const sequence = `${seqBase}-${task.sequenceNumber}`;
 
-        // Flatten info fields; protect against 'sequence' key collision.
+        /* Flatten 'info' fields; avoid clashing with the 'sequence' attribute */
         const infoItem = Object.entries(data['info'] ?? {}).reduce(
             (acc, [k, v]) => {
-                if (k === 'sequence') {
-                    return {...acc, sequence_number: String(v)};
-                }
+                if (k === 'sequence') return {...acc, sequence_number: String(v)};
                 return {...acc, [k]: String(v)};
             },
             {}
@@ -291,65 +527,73 @@ export class DynamoDBService {
             identifier: worker.identifier,
             sequence,
             time: new Date().toUTCString(),
-            data: JSON.stringify(data),   // <-- not trimmed
+            data: JSON.stringify(data),
             ...infoItem
         };
 
-        const result = await this.docClient(cfg).send(new PutCommand({
-            TableName: cfg.table_data_name,
-            Item: item
-        }));
+        const res = await this.send<PutCommandOutput>(
+            this.getDoc(),
+            new PutCommand({
+                TableName: ncfg.table_data_name,
+                Item: item
+            }),
+            'Put(Data record)'
+        );
 
         if (!sameSeq) {
             task.sequenceNumber += 1;
         }
 
-        return result;
+        return res;
     }
 
     /* =================== UTILS / CLAIM =================== */
 
-    /** True if entry is in-progress and not paid. */
+    /* A row is "active unpaid" if in_progress=true and paid=false */
     private isActiveUnpaid(it: any): boolean {
         const inProg = String(it?.['in_progress'] ?? '').toLowerCase() === 'true';
         const paid = String(it?.['paid'] ?? '').toLowerCase() === 'true';
         return inProg && !paid;
     }
 
-    /**
-     * Attempts to claim a unit if no active unpaid holder exists.
-     * Best-effort approach without schema changes:
+    /*
+     * Tries to claim a unit if no active unpaid holder exists:
      *  1) Query current holders
-     *  2) Write our row
-     *  3) Post-verify; if contention > 1, yield our claim
+     *  2) Tentative put (arrival time + counter++)
+     *  3) Post-verify; if contention > 1, yield our claim (removal time)
      */
-    async claimUnitIfUnassigned(cfg: Cfg, unitEntry: Record<string, any>): Promise<{ claimed: boolean }> {
-        // 1) Pre-check existing holders
-        const pre = await this.getACLRecordUnitId(cfg, unitEntry['unit_id']);
+    async claimUnitIfUnassigned(
+        cfg: Cfg | any,
+        unitEntry: Record<string, any>
+    ): Promise<{ claimed: boolean }> {
+        const ncfg = this.ensureClients(cfg);
+
+        /* 1) Pre-check existing holders */
+        const pre = await this.getACLRecordUnitId(ncfg, unitEntry['unit_id']);
         const preItems = pre?.Items ?? [];
         if (preItems.some(it => this.isActiveUnpaid(it))) {
             return {claimed: false};
         }
 
-        // 2) Tentative claim
+        /* 2) Tentative claim */
         await this.insertACLRecordUnitId(
-            cfg,
+            ncfg,
             unitEntry,
-            /* _currentTry */ 0,
-            /* updateArrivalTime */ true,
-            /* updateRemovalTime */ false
+            0 /* _currentTry */,
+            true /* updateArrivalTime */,
+            false /* updateRemovalTime */
         );
 
-        // 3) Post-verify and yield if we lost a race
-        const post = await this.getACLRecordUnitId(cfg, unitEntry['unit_id']);
+        /* 3) Post-verify and yield if we lost a race */
+        const post = await this.getACLRecordUnitId(ncfg, unitEntry['unit_id']);
         const postItems = post?.Items ?? [];
         const activeHolders = postItems.filter(it => this.isActiveUnpaid(it));
 
         if (activeHolders.length > 1) {
-            const mine = activeHolders.find(x => x?.["identifier"] === unitEntry?.["identifier"]);
+            const mine = activeHolders.find(x => x?.['identifier'] === unitEntry?.['identifier']);
             if (mine) {
                 const yielded = {...mine, in_progress: String(false), time_removal: new Date().toUTCString()};
-                await this.insertACLRecordUnitId(cfg, yielded, 0, false, true);
+                await this.insertACLRecordUnitId(ncfg, yielded, 0, false, true);
             }
             return {claimed: false};
         }
@@ -357,4 +601,22 @@ export class DynamoDBService {
         return {claimed: true};
     }
 
+    /* =================== PRIVATE HELPERS =================== */
+
+    /* Splits a dotted document path into segments (ignores empty parts) */
+    private splitPath(k: string): string[] {
+        return String(k).split('.').filter(Boolean);
+    }
+
+    /* Returns true if `parent` is equal to or a strict prefix of `child` path */
+    private isPrefixPath(parent: string, child: string): boolean {
+        if (parent === child) return true;
+        const p = this.splitPath(parent);
+        const c = this.splitPath(child);
+        if (p.length >= c.length) return false;
+        for (let i = 0; i < p.length; i++) {
+            if (p[i] !== c[i]) return false;
+        }
+        return true;
+    }
 }

@@ -1,0 +1,174 @@
+[
+    {
+        "name": "truthfulness",
+        "name_pretty": false,
+        "description": false,
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "scale": {
+            "instructions": {
+                "label": "B",
+                "caption": "Consider the claim, then please assess whether the claim is true or false",
+                "text": false
+            },
+            "type": "categorical",
+            "mapping": [
+                {
+                    "label": "False",
+                    "description": "This claim is false",
+                    "value": "0"
+                },
+                {
+                    "label": "True",
+                    "description": "This claim is true",
+                    "value": "1"
+                }
+            ]
+        },
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "separator": false,
+            "type": "list"
+        }
+    },
+    {
+        "name": "explanation-preference-best",
+        "name_pretty": false,
+        "description": false,
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "scale": {
+            "instructions": {
+                "label": "C",
+                "caption": "Choose the best explanation to justify the truthfulness of the statement",
+                "text": false
+            },
+            "type": "categorical",
+            "multiple_selection": false,
+            "mapping": [
+                {
+                    "label": "Explanation 1",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "Explanation 2",
+                    "description": "",
+                    "value": "2"
+                },
+                {
+                    "label": "Explanation 3",
+                    "description": "",
+                    "value": "3"
+                }
+            ]
+        },
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "separator": false,
+            "type": "list"
+        }
+    },
+    {
+        "name": "explanation-preference-middle",
+        "name_pretty": false,
+        "description": false,
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "scale": {
+            "instructions": {
+                "label": "D",
+                "caption": "Choose the second best explanation to justify the truthfulness of the statement",
+                "text": false
+            },
+            "type": "categorical",
+            "multiple_selection": false,
+            "mapping": [
+                {
+                    "label": "Explanation 1",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "Explanation 2",
+                    "description": "",
+                    "value": "2"
+                },
+                {
+                    "label": "Explanation 3",
+                    "description": "",
+                    "value": "3"
+                }
+            ]
+        },
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "separator": false,
+            "type": "list"
+        }
+    },
+    {
+        "name": "explanation-preference-worst",
+        "name_pretty": false,
+        "description": false,
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "scale": {
+            "instructions": {
+                "label": "E",
+                "caption": "Choose the worst explanation to justify the truthfulness of the statement",
+                "text": false
+            },
+            "type": "categorical",
+            "multiple_selection": false,
+            "mapping": [
+                {
+                    "label": "Explanation 1",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "Explanation 2",
+                    "description": "",
+                    "value": "2"
+                },
+                {
+                    "label": "Explanation 3",
+                    "description": "",
+                    "value": "3"
+                }
+            ]
+        },
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "separator": false,
+            "type": "list"
+        }
+    },
+    {
+        "name": "explanation-preference-justification",
+        "name_pretty": false,
+        "description": "F - Please, explain the rationale behind your choices",
+        "gold": false,
+        "justification": {
+            "text": "Your explanation here",
+            "min_words": 5
+        },
+        "url": false,
+        "scale": false,
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "separator": false,
+            "type": "list"
+        }
+    }
+]

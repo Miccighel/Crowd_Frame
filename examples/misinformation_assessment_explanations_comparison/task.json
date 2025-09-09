@@ -1,0 +1,121 @@
+{
+    "modality": "pointwise",
+    "allowed_tries": 10,
+    "time_assessment": 1,
+    "time_check_amount": 2,
+    "element_labels": {
+        "main": "Explanation Set",
+        "main_short": "ES"
+    },
+    "attributes": [
+        {
+            "name": "id",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "gt_label",
+            "show": false,
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "claim",
+            "show": [
+                "Main"
+            ],
+            "required": false,
+            "annotate": false
+        },
+        {
+            "name": "gold_evidence",
+            "show": false,
+            "required": false,
+            "annotate": false
+        },
+        {
+            "name": "model_baseline_sentences",
+            "name_pretty": "Explanation 1",
+            "show": [
+                "Main"
+            ],
+            "annotate": false,
+            "required": false
+        },
+        {
+            "name": "model_stepbystep_claim_only",
+            "name_pretty": "Explanation 2",
+            "show": [
+                "Main"
+            ],
+            "required": false,
+            "annotate": false
+        },
+        {
+            "name": "model_stepbystep_claim_evidence_suppressed_mentioning_evidence",
+            "name_pretty": "Explanation 3",
+            "show": [
+                "Main"
+            ],
+            "required": false,
+            "annotate": false
+        }
+    ],
+    "annotator": false,
+    "countdown_time": false,
+    "additional_times": false,
+    "countdown_modality": false,
+    "countdown_attribute": false,
+    "countdown_attribute_values": [],
+    "countdown_position_values": [],
+    "logger": false,
+    "logger_option": {
+        "button": {
+            "general": false,
+            "click": false
+        },
+        "mouse": {
+            "general": false,
+            "mouseMovements": false,
+            "leftClicks": false,
+            "rightClicks": false
+        },
+        "keyboard": {
+            "general": false,
+            "shortcuts": false,
+            "keys": false
+        },
+        "textInput": {
+            "general": false,
+            "paste": false,
+            "delete": false
+        },
+        "clipboard": {
+            "general": false,
+            "copy": false,
+            "cut": false
+        },
+        "radio": {
+            "general": false,
+            "change": false
+        },
+        "crowd-xplorer": {
+            "general": false,
+            "query": false,
+            "result": false
+        },
+        "various": {
+            "general": false,
+            "selection": false,
+            "unload": false,
+            "focus&blur": false,
+            "scroll": false,
+            "resize": false
+        }
+    },
+    "server_endpoint": "",
+    "messages": [
+        "A network error may have been happened; try again to access the task after a few minutes. Otherwise, try to access the task from a different access point."
+    ]
+}

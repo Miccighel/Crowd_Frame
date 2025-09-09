@@ -1,0 +1,470 @@
+[
+    {
+        "index": 1,
+        "description": "Current Perception of Longitudinal Studies",
+        "position": "start",
+        "type": "standard",
+        "allow_back": true,
+        "questions": [
+            {
+                "index": 0,
+                "name": "previous_participation",
+                "type": "section",
+                "text": "Have you ever participated in a longitudinal study in the past, even if on other platforms?",
+                "required": false,
+                "questions": [
+                    {
+                        "index": 0,
+                        "name": "how_many",
+                        "type": "number",
+                        "text": "How many?",
+                        "repeat": true,
+                        "times": 3,
+                        "required": true,
+                        "questions": [
+                            {
+                                "index": 0,
+                                "name": "past_experiences",
+                                "type": "section",
+                                "text": "Describe your experience with the longitudinal study nr. ",
+                                "required": false,
+                                "target": "how_many",
+                                "questions": [
+                                    {
+                                        "index": 0,
+                                        "name": "when",
+                                        "type": "mcq",
+                                        "text": "When was the study performed?",
+                                        "required": true,
+                                        "answers": [
+                                            "1 month ago",
+                                            "2 months ago",
+                                            "3 to 5 months ago",
+                                            "6 to 12 months ago",
+                                            "More than 1 year ago"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": false
+                                    },
+                                    {
+                                        "index": 1,
+                                        "name": "sessions",
+                                        "type": "number",
+                                        "text": "How many sessions did the longitudinal study have?",
+                                        "required": true,
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": false
+                                    },
+                                    {
+                                        "index": 2,
+                                        "name": "time_interval",
+                                        "type": "mcq",
+                                        "text": "Which was the time interval between each session?",
+                                        "required": true,
+                                        "answers": [
+                                            "1 day",
+                                            "2 to 4 days",
+                                            "5 to 9 days",
+                                            "10 to 14 days",
+                                            "15 to 20 days",
+                                            "20 to 24 days",
+                                            "25 to 1 month",
+                                            "2 months",
+                                            "3 months",
+                                            "4 months",
+                                            "5 to 6 months",
+                                            "7 to 12 months",
+                                            "More than 1 year"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": true
+                                    },
+                                    {
+                                        "index": 3,
+                                        "name": "time_duration",
+                                        "type": "mcq",
+                                        "text": "What was the duration of each session",
+                                        "required": true,
+                                        "answers": [
+                                            "15 minutes",
+                                            "30 minutes",
+                                            "45 minutes",
+                                            "60 minutes",
+                                            "1 hour",
+                                            "2 hours",
+                                            "3 hours",
+                                            "More than 3 hours"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": true
+                                    },
+                                    {
+                                        "index": 4,
+                                        "name": "platform",
+                                        "type": "mcq",
+                                        "text": "Which was the crowdsourcing platform?",
+                                        "required": true,
+                                        "answers": [
+                                            "Amazon Mechanical Turk",
+                                            "Prolific",
+                                            "Toloka"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": true
+                                    },
+                                    {
+                                        "index": 5,
+                                        "name": "payment_model",
+                                        "type": "list",
+                                        "text": "What was the payment model?",
+                                        "required": true,
+                                        "answers": [
+                                            "Payment after each session",
+                                            "Single final reward"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": true
+                                    },
+                                    {
+                                        "index": 6,
+                                        "name": "satisfaction",
+                                        "type": "section",
+                                        "text": "How was your general satisfaction:",
+                                        "required": false,
+                                        "questions": [
+                                            {
+                                                "index": 0,
+                                                "name": "same_study",
+                                                "type": "mcq",
+                                                "text": "Would you participate in the same study again?",
+                                                "required": true,
+                                                "answers": [
+                                                    "Yes",
+                                                    "No"
+                                                ],
+                                                "detail": null,
+                                                "show_detail": false,
+                                                "free_text": false
+                                            },
+                                            {
+                                                "index": 1,
+                                                "name": "why",
+                                                "type": "text",
+                                                "text": "Please, tell us why",
+                                                "required": true,
+                                                "detail": null,
+                                                "show_detail": false,
+                                                "free_text": false
+                                            }
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": false
+                                    },
+                                    {
+                                        "index": 7,
+                                        "name": "incentives",
+                                        "type": "mcq",
+                                        "text": "What was the main incentives that convince you into participating in the longitudinal study",
+                                        "required": true,
+                                        "answers": [
+                                            "Bonus",
+                                            "Reward",
+                                            "Interest on task",
+                                            "Altruism (to help the research)",
+                                            "Because the task was educative"
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": true
+                                    },
+                                    {
+                                        "index": 8,
+                                        "name": "task_completion",
+                                        "type": "mcq",
+                                        "text": "Did you complete the task?",
+                                        "required": true,
+                                        "answers": [
+                                            "Yes",
+                                            "No"
+                                        ],
+                                        "questions": [
+                                            {
+                                                "index": 0,
+                                                "name": "yes",
+                                                "type": "mcq",
+                                                "text": "What was the main incentives that convince you in completing the longitudinal study?",
+                                                "required": true,
+                                                "target": "task_completion",
+                                                "dependant": true,
+                                                "needed": "Yes",
+                                                "answers": [
+                                                    "Bonus",
+                                                    "Reward",
+                                                    "Interest on task",
+                                                    "Altruism (to help the research)",
+                                                    "Because the task was educative"
+                                                ],
+                                                "detail": null,
+                                                "show_detail": false,
+                                                "free_text": false
+                                            },
+                                            {
+                                                "index": 1,
+                                                "name": "no",
+                                                "type": "text",
+                                                "target": "task_completion",
+                                                "dependant": true,
+                                                "needed": "No",
+                                                "text": "What are the reasons that made you dropout?",
+                                                "required": true,
+                                                "detail": null,
+                                                "show_detail": false,
+                                                "free_text": false
+                                            }
+                                        ],
+                                        "detail": null,
+                                        "show_detail": false,
+                                        "free_text": false
+                                    }
+                                ],
+                                "detail": null,
+                                "show_detail": false,
+                                "free_text": false
+                            }
+                        ],
+                        "detail": null,
+                        "show_detail": false,
+                        "free_text": false
+                    }
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 1,
+                "name": "suitability",
+                "type": "text",
+                "text": "Do you think this crowdsourcing platform is suitable to carry out longitudinal studies? Please, elaborate your answer",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 2,
+                "name": "common",
+                "type": "list",
+                "text": "Longitudinal studies are not very common in crowdsourcing yet. Which of these statements do you agree with?",
+                "required": false,
+                "answers": [
+                    "Longitudinal studies are not optimally supported by current popular crowdsourcing platforms",
+                    "Workers do not like to commit on daily effort",
+                    "Reward and incentives are insufficient",
+                    "Requesters do not need longitudinal participation since most of the tasks work with static data to annotate"
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            }
+        ]
+    },
+    {
+        "index": 2,
+        "description": "Your possible participation and commitment to longitudinal studies",
+        "position": "start",
+        "type": "standard",
+        "allow_back": true,
+        "questions": [
+            {
+                "index": 0,
+                "name": "daily_commitment",
+                "type": "number",
+                "text": "How many days would you be happy to commit to a longitudinal study (imagine a session of about 15 min per day)",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 1,
+                "name": "ls_decline",
+                "type": "list",
+                "text": "Which of the following would make you refuse participation in a longitudinal study?",
+                "required": true,
+                "answers": [
+                    "Too frequent",
+                    "Too long"
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            },
+            {
+                "index": 2,
+                "name": "which_commitment",
+                "type": "mcq",
+                "text": "What's your preferred frequency of participation in a longitudinal study?",
+                "required": true,
+                "answers": [
+                    "Daily",
+                    "Every other day",
+                    "Weekly",
+                    "Biweekly",
+                    "Monthly",
+                    "Every six months",
+                    "Yearly"
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 3,
+                "name": "ideal_session",
+                "type": "number",
+                "text": "What is your preferred session duration (in hours)?",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 4,
+                "name": "ideal_hourly_payment",
+                "type": "number",
+                "text": "What do you consider an acceptable hourly payment for your work on this platform (in US$ dollars)?",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 5,
+                "name": "time_per_day",
+                "type": "number",
+                "text": "How much time would you be happy to allocate per day to work on longitudinal studies (in hours)?",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            },
+            {
+                "index": 6,
+                "name": "incentives_motivation",
+                "type": "list",
+                "text": "Which incentives would most motivate you to participate and engage in longitudinal studies?",
+                "required": true,
+                "answers": [
+                    "Final bonus to be awarded after the last contribution",
+                    "Payment after each session",
+                    "Progressive increment of payment",
+                    "Progressive decrement of payment",
+                    "Being penalised when skipping working sessions",
+                    "Work on different tasks type to increase engagement diversity",
+                    "Experimental variants of the same tasks to reduce repeatability"
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            },
+            {
+                "index": 7,
+                "name": "task_type",
+                "type": "list",
+                "text": "What types of tasks would you like to perform in a longitudinal study?",
+                "required": true,
+                "answers": [
+                    "Information Finding - Such tasks delegate the process of searching to satisfy one’s information need to the workers in the crowd. For example, \"Find information about a company in the UK\".",
+                    "Verification and Validation - These are tasks that require workers in the crowd to either verify certain aspects as per the given instructions, or confirm he validity of various kinds of content. For example, \"Match the names of personal computers and verify corresponding information\".",
+                    "Interpretation and Analysis - Such tasks rely on the wisdom of the crowd to use their interpretation skills during task completion. For example, \"Choose the most suitable category for each URL\".",
+                    "Content Creation - Such tasks usually require the workers to generate new content for a document or website. They include authoring product descriptions or producing question-answer pair. For example, \"Suggest names for a new product\".",
+                    "Surveys - Surveys about a multitude of aspects ranging from demographics to customer satisfaction are crowdsourced. For example, \"Mother’s Day and Father’s Day Survey (18-29 year olds only!)\".",
+                    "Content Access - These tasks require the crowd workers to simply access some content. For example, \"Click on the link and watch the video\"."
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            },
+            {
+                "index": 8,
+                "name": "benefits",
+                "type": "list",
+                "text": "What do you think are the benefits of being involved in longitudinal studies?",
+                "required": true,
+                "answers": [
+                    "No need to spend time regularly searching for new tasks to perform",
+                    "No need to learn how to do the job (Learning curve)",
+                    "Better productivity (more operationale)",
+                    "Intermediate payments would increase trust on requester"
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            },
+            {
+                "index": 9,
+                "name": "downsides",
+                "type": "list",
+                "text": "What do you think are the downsides that limit your interest in participating in longitudinal studies?",
+                "required": true,
+                "answers": [
+                    "Lack of flexibility",
+                    "Long term commitment",
+                    "Reward assigned at the end",
+                    "Lack of diversity "
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": true
+            },
+            {
+                "index": 10,
+                "name": "suggestions",
+                "type": "text",
+                "text": "Do you have any additional suggestions for a requester who plans to design an attractive longitudinal study?",
+                "required": true,
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            }
+        ]
+    },
+    {
+        "index": 3,
+        "description": null,
+        "position": "start",
+        "type": "standard",
+        "questions": [
+            {
+                "index": 0,
+                "name": "share_email",
+                "type": "section",
+                "text": "Would you be happy to be contacted again to participate in an online interview to talk about your experience with longitudinal studies?",
+                "required": false,
+                "questions": [
+                    {
+                        "index": 0,
+                        "name": "address",
+                        "type": "email",
+                        "text": "If so, please share your email address",
+                        "required": false,
+                        "detail": null,
+                        "show_detail": false,
+                        "free_text": false
+                    }
+                ],
+                "detail": null,
+                "show_detail": false,
+                "free_text": false
+            }
+        ]
+    }
+]

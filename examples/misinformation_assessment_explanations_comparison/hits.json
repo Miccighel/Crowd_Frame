@@ -1,0 +1,266 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "EKBLRMLSPGC",
+    "token_output": "BIGMZPSCBXF",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "1717",
+        "gt_label": "SUPPORTS",
+        "claim": "If every nation agrees to limit CO2 emissions, we can achieve significant cuts on a global scale.",
+        "gold_evidence": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_baseline_sentences": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_stepbystep_claim_only": "If every nation agrees to limit CO2 emissions, it would lead to a decrease in overall CO2 emissions on a global scale. Reducing CO2 emissions is a key factor in mitigating climate change, so significant cuts could have a positive impact.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "If all nations make an effort to limit CO2 emissions, significant cuts on a global scale can be achieved."
+      },
+      {
+        "id": "1544",
+        "gt_label": "REFUTES",
+        "claim": "Arctic icemelt is a natural cycle.",
+        "gold_evidence": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_baseline_sentences": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_stepbystep_claim_only": "Arctic icemelt is a natural cycle because it has been occurring for thousands of years and is driven by the Earth's climate cycles. Additionally, recent studies have shown that the Arctic ice cap is currently melting faster than it has in the past due to climate change, but this does not negate the fact that it is a natural cycle.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Arctic icemelt is not only a natural cycle, as the underlying trend of declining sea ice in the Arctic in recent decades indicates that man-made climate change is likely playing a role."
+      },
+      {
+        "id": "1155",
+        "gt_label": "REFUTES",
+        "claim": "But observations, such as those on our CO2 Coalition website, show that increased CO2 levels over the next century will cause modest and beneficial warming—perhaps as much as one degree Celsius (1.8 degrees Fahrenheit)",
+        "gold_evidence": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_baseline_sentences": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_stepbystep_claim_only": "While increased CO2 levels may lead to some warming, the scientific consensus is that the effects are likely to be much more extreme than a one degree Celsius increase over the next century. The Intergovernmental Panel on Climate Change (IPCC) has predicted a temperature increase of 3.2 degrees Celsius by 2100.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "The claim suggests that the temperature increase over the next century will be modest and beneficial, but the evidence indicates that the temperature increase will be disastrous if no action is taken to curb emissions."
+      },
+      {
+        "id": "1708",
+        "gt_label": "SUPPORTS",
+        "claim": "The 'decline' refers to a decline in northern tree-rings, not global temperature, and is openly discussed in papers and the IPCC reports.",
+        "gold_evidence": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_baseline_sentences": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_stepbystep_claim_only": "The 'decline' referred to is a decline in global temperature, not northern tree-rings. This is backed up by the Intergovernmental Panel on Climate Change (IPCC) reports, which clearly outline the decline in global temperature. The decline in northern tree-rings is not discussed in the reports.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Tree-rings serve as a proxy for global temperature and the decline being referred to is a decline in tree-ring climate proxy metrics, not temperature."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_1",
+    "token_input": "GZZLBBPEZBI",
+    "token_output": "TMPRCOIGMCZ",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "2370",
+        "gt_label": "REFUTES",
+        "claim": "If there is  a cloud cover, the heat is trapped by water vapour as a greenhouse gas  and the temperature stays quite warm.",
+        "gold_evidence": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_baseline_sentences": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_stepbystep_claim_only": "Clouds act as an insulating layer that helps to trap heat in the atmosphere. In addition, water vapor is a greenhouse gas that absorbs infrared radiation and helps to keep the temperature warm.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Cloud cover can have a cooling effect on the planet by reflecting sunlight away."
+      },
+      {
+        "id": "1807",
+        "gt_label": "SUPPORTS",
+        "claim": "CO2 emissions were much smaller 100 years ago.",
+        "gold_evidence": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_baseline_sentences": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_stepbystep_claim_only": "Carbon dioxide (CO2) emissions 100 years ago were much smaller compared to today due to the lack of industrialization and burning of fossil fuels. In the last 100 years, the world's population and industrialization have both significantly increased, resulting in a much larger amount of CO2 emissions.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Carbon dioxide mole fractions in the atmosphere have increased by 35 percent since the 1900s, which is a clear indication that CO2 emissions were much higher 100 years ago than they are today."
+      },
+      {
+        "id": "1717",
+        "gt_label": "SUPPORTS",
+        "claim": "If every nation agrees to limit CO2 emissions, we can achieve significant cuts on a global scale.",
+        "gold_evidence": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_baseline_sentences": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_stepbystep_claim_only": "If every nation agrees to limit CO2 emissions, it would lead to a decrease in overall CO2 emissions on a global scale. Reducing CO2 emissions is a key factor in mitigating climate change, so significant cuts could have a positive impact.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "If all nations make an effort to limit CO2 emissions, significant cuts on a global scale can be achieved."
+      },
+      {
+        "id": "2086",
+        "gt_label": "REFUTES",
+        "claim": "Extreme weather isn't caused by global warming",
+        "gold_evidence": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_baseline_sentences": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_stepbystep_claim_only": "Extreme weather is one of the consequences of global warming. Global warming is causing an increase in the Earth's temperature, which can lead to more frequent and intense extreme weather events, such as heat waves, droughts, and floods.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Global warming is linked to extreme weather, as rising temperatures make some weather patterns more likely to occur."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "LMNROQYIIEZ",
+    "token_output": "QQKXBYAWROI",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "2086",
+        "gt_label": "REFUTES",
+        "claim": "Extreme weather isn't caused by global warming",
+        "gold_evidence": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_baseline_sentences": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_stepbystep_claim_only": "Extreme weather is one of the consequences of global warming. Global warming is causing an increase in the Earth's temperature, which can lead to more frequent and intense extreme weather events, such as heat waves, droughts, and floods.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Global warming is linked to extreme weather, as rising temperatures make some weather patterns more likely to occur."
+      },
+      {
+        "id": "1708",
+        "gt_label": "SUPPORTS",
+        "claim": "The 'decline' refers to a decline in northern tree-rings, not global temperature, and is openly discussed in papers and the IPCC reports.",
+        "gold_evidence": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_baseline_sentences": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_stepbystep_claim_only": "The 'decline' referred to is a decline in global temperature, not northern tree-rings. This is backed up by the Intergovernmental Panel on Climate Change (IPCC) reports, which clearly outline the decline in global temperature. The decline in northern tree-rings is not discussed in the reports.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Tree-rings serve as a proxy for global temperature and the decline being referred to is a decline in tree-ring climate proxy metrics, not temperature."
+      },
+      {
+        "id": "903",
+        "gt_label": "SUPPORTS",
+        "claim": "Growers regularly pump CO2 into greenhouses, raising levels to three times that of the natural environment, to produce stronger, greener, healthier plants.”",
+        "gold_evidence": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_baseline_sentences": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_stepbystep_claim_only": "This claim is true. Growers often supplement the carbon dioxide levels in greenhouses in order to increase plant growth and health. This is done by introducing more CO2 into the environment, which can raise levels up to three times the natural environment.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "CO2 is necessary for plants to grow efficiently, and greenhouse cultivation at higher levels of carbon dioxide yields stronger, greener, healthier plants."
+      },
+      {
+        "id": "1155",
+        "gt_label": "REFUTES",
+        "claim": "But observations, such as those on our CO2 Coalition website, show that increased CO2 levels over the next century will cause modest and beneficial warming—perhaps as much as one degree Celsius (1.8 degrees Fahrenheit)",
+        "gold_evidence": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_baseline_sentences": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_stepbystep_claim_only": "While increased CO2 levels may lead to some warming, the scientific consensus is that the effects are likely to be much more extreme than a one degree Celsius increase over the next century. The Intergovernmental Panel on Climate Change (IPCC) has predicted a temperature increase of 3.2 degrees Celsius by 2100.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "The claim suggests that the temperature increase over the next century will be modest and beneficial, but the evidence indicates that the temperature increase will be disastrous if no action is taken to curb emissions."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_3",
+    "token_input": "SYXAJXDEBNY",
+    "token_output": "NCOVAPFWPIF",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "2370",
+        "gt_label": "REFUTES",
+        "claim": "If there is  a cloud cover, the heat is trapped by water vapour as a greenhouse gas  and the temperature stays quite warm.",
+        "gold_evidence": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_baseline_sentences": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_stepbystep_claim_only": "Clouds act as an insulating layer that helps to trap heat in the atmosphere. In addition, water vapor is a greenhouse gas that absorbs infrared radiation and helps to keep the temperature warm.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Cloud cover can have a cooling effect on the planet by reflecting sunlight away."
+      },
+      {
+        "id": "1544",
+        "gt_label": "REFUTES",
+        "claim": "Arctic icemelt is a natural cycle.",
+        "gold_evidence": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_baseline_sentences": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_stepbystep_claim_only": "Arctic icemelt is a natural cycle because it has been occurring for thousands of years and is driven by the Earth's climate cycles. Additionally, recent studies have shown that the Arctic ice cap is currently melting faster than it has in the past due to climate change, but this does not negate the fact that it is a natural cycle.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Arctic icemelt is not only a natural cycle, as the underlying trend of declining sea ice in the Arctic in recent decades indicates that man-made climate change is likely playing a role."
+      },
+      {
+        "id": "1807",
+        "gt_label": "SUPPORTS",
+        "claim": "CO2 emissions were much smaller 100 years ago.",
+        "gold_evidence": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_baseline_sentences": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_stepbystep_claim_only": "Carbon dioxide (CO2) emissions 100 years ago were much smaller compared to today due to the lack of industrialization and burning of fossil fuels. In the last 100 years, the world's population and industrialization have both significantly increased, resulting in a much larger amount of CO2 emissions.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Carbon dioxide mole fractions in the atmosphere have increased by 35 percent since the 1900s, which is a clear indication that CO2 emissions were much higher 100 years ago than they are today."
+      },
+      {
+        "id": "1717",
+        "gt_label": "SUPPORTS",
+        "claim": "If every nation agrees to limit CO2 emissions, we can achieve significant cuts on a global scale.",
+        "gold_evidence": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_baseline_sentences": "To cut carbon emissions by 25% below 2000 levels by 2020 if the world agrees to an ambitious global deal to stabilise levels of CO2e to 450 ppm or lower. \"Cut Global Emissions by 7.6 Percent Every Year for Next Decade to Meet 1.5°C Paris Target - UN Report\".",
+        "model_stepbystep_claim_only": "If every nation agrees to limit CO2 emissions, it would lead to a decrease in overall CO2 emissions on a global scale. Reducing CO2 emissions is a key factor in mitigating climate change, so significant cuts could have a positive impact.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "If all nations make an effort to limit CO2 emissions, significant cuts on a global scale can be achieved."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_4",
+    "token_input": "OWEEGAHGMAR",
+    "token_output": "MTVCAPABYWC",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "1708",
+        "gt_label": "SUPPORTS",
+        "claim": "The 'decline' refers to a decline in northern tree-rings, not global temperature, and is openly discussed in papers and the IPCC reports.",
+        "gold_evidence": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_baseline_sentences": "Several scientific sources state that the decline being referred to is a decline in tree ring climate proxy metrics, not temperature.",
+        "model_stepbystep_claim_only": "The 'decline' referred to is a decline in global temperature, not northern tree-rings. This is backed up by the Intergovernmental Panel on Climate Change (IPCC) reports, which clearly outline the decline in global temperature. The decline in northern tree-rings is not discussed in the reports.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Tree-rings serve as a proxy for global temperature and the decline being referred to is a decline in tree-ring climate proxy metrics, not temperature."
+      },
+      {
+        "id": "1544",
+        "gt_label": "REFUTES",
+        "claim": "Arctic icemelt is a natural cycle.",
+        "gold_evidence": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_baseline_sentences": "As well as the regular seasonal cycle there has been an underlying trend of declining sea ice in the Arctic in recent decades.",
+        "model_stepbystep_claim_only": "Arctic icemelt is a natural cycle because it has been occurring for thousands of years and is driven by the Earth's climate cycles. Additionally, recent studies have shown that the Arctic ice cap is currently melting faster than it has in the past due to climate change, but this does not negate the fact that it is a natural cycle.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Arctic icemelt is not only a natural cycle, as the underlying trend of declining sea ice in the Arctic in recent decades indicates that man-made climate change is likely playing a role."
+      },
+      {
+        "id": "2370",
+        "gt_label": "REFUTES",
+        "claim": "If there is  a cloud cover, the heat is trapped by water vapour as a greenhouse gas  and the temperature stays quite warm.",
+        "gold_evidence": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_baseline_sentences": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+        "model_stepbystep_claim_only": "Clouds act as an insulating layer that helps to trap heat in the atmosphere. In addition, water vapor is a greenhouse gas that absorbs infrared radiation and helps to keep the temperature warm.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Cloud cover can have a cooling effect on the planet by reflecting sunlight away."
+      },
+      {
+        "id": "903",
+        "gt_label": "SUPPORTS",
+        "claim": "Growers regularly pump CO2 into greenhouses, raising levels to three times that of the natural environment, to produce stronger, greener, healthier plants.”",
+        "gold_evidence": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_baseline_sentences": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_stepbystep_claim_only": "This claim is true. Growers often supplement the carbon dioxide levels in greenhouses in order to increase plant growth and health. This is done by introducing more CO2 into the environment, which can raise levels up to three times the natural environment.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "CO2 is necessary for plants to grow efficiently, and greenhouse cultivation at higher levels of carbon dioxide yields stronger, greener, healthier plants."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_5",
+    "token_input": "BSFFNYRAOPV",
+    "token_output": "NMARMGEQFYL",
+    "documents_number": 4,
+    "documents": [
+      {
+        "id": "903",
+        "gt_label": "SUPPORTS",
+        "claim": "Growers regularly pump CO2 into greenhouses, raising levels to three times that of the natural environment, to produce stronger, greener, healthier plants.”",
+        "gold_evidence": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_baseline_sentences": "Adequate levels of CO2 must be maintained for the plants to grow efficiently. Secondary metabolites, e.g., cardiac glycosides in Digitalis lanata, are produced in higher amounts by greenhouse cultivation at enhanced temperature and at enhanced carbon dioxide concentration.",
+        "model_stepbystep_claim_only": "This claim is true. Growers often supplement the carbon dioxide levels in greenhouses in order to increase plant growth and health. This is done by introducing more CO2 into the environment, which can raise levels up to three times the natural environment.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "CO2 is necessary for plants to grow efficiently, and greenhouse cultivation at higher levels of carbon dioxide yields stronger, greener, healthier plants."
+      },
+      {
+        "id": "1807",
+        "gt_label": "SUPPORTS",
+        "claim": "CO2 emissions were much smaller 100 years ago.",
+        "gold_evidence": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_baseline_sentences": "Global anthropogenic greenhouse gas emissions in 2010 were equivalent to 49 billion tonnes of carbon dioxide (using the most recent global warming potentials over 100 years from the AR5 report). Carbon dioxide mole fractions in the atmosphere have gone up by approximately 35 percent since the 1900s, rising from 280 parts per million by volume to 387 parts per million in 2009.",
+        "model_stepbystep_claim_only": "Carbon dioxide (CO2) emissions 100 years ago were much smaller compared to today due to the lack of industrialization and burning of fossil fuels. In the last 100 years, the world's population and industrialization have both significantly increased, resulting in a much larger amount of CO2 emissions.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Carbon dioxide mole fractions in the atmosphere have increased by 35 percent since the 1900s, which is a clear indication that CO2 emissions were much higher 100 years ago than they are today."
+      },
+      {
+        "id": "2086",
+        "gt_label": "REFUTES",
+        "claim": "Extreme weather isn't caused by global warming",
+        "gold_evidence": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_baseline_sentences": "Extreme Weather Prompts Unprecedented Global Warming Alert. Scientists attribute extreme weather to man-made climate change.",
+        "model_stepbystep_claim_only": "Extreme weather is one of the consequences of global warming. Global warming is causing an increase in the Earth's temperature, which can lead to more frequent and intense extreme weather events, such as heat waves, droughts, and floods.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "Global warming is linked to extreme weather, as rising temperatures make some weather patterns more likely to occur."
+      },
+      {
+        "id": "1155",
+        "gt_label": "REFUTES",
+        "claim": "But observations, such as those on our CO2 Coalition website, show that increased CO2 levels over the next century will cause modest and beneficial warming—perhaps as much as one degree Celsius (1.8 degrees Fahrenheit)",
+        "gold_evidence": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_baseline_sentences": "In it was the prediction that on our current course the planet will warm a disastrous seven degrees Fahrenheit (or about 3.9 degrees Celsius) by the end of this century. \"A projected increase of 4.05 degrees Fahrenheit in average temperature is expected by 2065, and a projected increase of 9.37 degrees Fahrenheit in average temperature can be expected by the turn of the century if nothing is done to curb emissions.",
+        "model_stepbystep_claim_only": "While increased CO2 levels may lead to some warming, the scientific consensus is that the effects are likely to be much more extreme than a one degree Celsius increase over the next century. The Intergovernmental Panel on Climate Change (IPCC) has predicted a temperature increase of 3.2 degrees Celsius by 2100.",
+        "model_stepbystep_claim_evidence_suppressed_mentioning_evidence": "The claim suggests that the temperature increase over the next century will be modest and beneficial, but the evidence indicates that the temperature increase will be disastrous if no action is taken to curb emissions."
+      }
+    ]
+  }
+]

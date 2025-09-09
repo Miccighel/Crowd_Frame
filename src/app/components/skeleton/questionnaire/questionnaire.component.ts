@@ -1,26 +1,26 @@
 /* ###########################################################################
  *  Questionnaire component – Angular 19 strict-forms compliant
  *  --------------------------------------------------------------------------
- *  − Builds ALL base controls synchronously in ngOnInit.
- *  − Wait-flag `ready` lets the template render only after the form is ready.
- *  − ViewChild MatStepper is accessed in ngAfterViewInit (never in ngOnInit).
- *  − Original repeat / dependency / serialisation logic preserved.
+ *  • Builds ALL base controls synchronously in ngOnInit (non-section, non-dependant).
+ *  • Repeat branches expand live as you type (listen on (input)).
+ *  • Derives questionsToRepeat if the model didn’t populate it (e.g., "how_many").
+ *  • Free-text controls created for both `free_text` and `freeText`.
  *  ########################################################################### */
 
 import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    AfterViewInit,
-    Output,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  AfterViewInit,
+  Output
 } from '@angular/core';
 import {
-    UntypedFormBuilder,
-    UntypedFormControl,
-    UntypedFormGroup,
-    Validators,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators
 } from '@angular/forms';
 
 /* Services ---------------------------------------------------------------- */
@@ -29,13 +29,13 @@ import { LocalStorageService } from '../../../services/localStorage.service';
 
 /* Models ------------------------------------------------------------------ */
 import {
-    Questionnaire,
-    QNode,
-    walkNode,
-    firstNode,
-    allNodes,
-    addChildNode,
-    dropNode,
+  Questionnaire,
+  QNode,
+  walkNode,
+  firstNode,
+  allNodes,
+  addChildNode,
+  dropNode
 } from '../../../models/skeleton/questionnaires/questionnaire';
 import { Question }    from '../../../models/skeleton/questionnaires/question';
 import { Task }        from '../../../models/skeleton/task';
@@ -46,324 +46,382 @@ import { DataRecord }  from '../../../models/skeleton/dataRecord';
 import { MatStepper } from '@angular/material/stepper';
 
 @Component({
-    selector   : 'app-questionnaire',
-    templateUrl: './questionnaire.component.html',
-    styleUrls  : ['./questionnaire.component.scss'],
-    standalone : false,
+  selector   : 'app-questionnaire',
+  templateUrl: './questionnaire.component.html',
+  styleUrls  : ['./questionnaire.component.scss'],
+  standalone : false
 })
 export class QuestionnaireComponent implements OnInit, AfterViewInit {
 
-    /* ======================= INPUTS / OUTPUTS ============================ */
-    @Input() questionnaireIndex!: number;
-    @Input() questionnairesForm!: UntypedFormGroup[];
-    @Input() stepper!: MatStepper;
-    @Input() worker!: Worker;
+  /* ======================= INPUTS / OUTPUTS ============================ */
+  @Input() questionnaireIndex!: number;
+  @Input() questionnairesForm!: UntypedFormGroup[];
+  @Input() stepper!: MatStepper;
+  @Input() worker!: Worker;
 
-    @Output() formEmitter = new EventEmitter<{
-        form  : UntypedFormGroup;
-        action: 'Back' | 'Next' | 'Finish' | null;
-    }>();
+  @Output() formEmitter = new EventEmitter<{
+    form  : UntypedFormGroup;
+    action: 'Back' | 'Next' | 'Finish' | null;
+  }>();
 
-    /* =========================== STATE =================================== */
-    questionnaireForm!: UntypedFormGroup;        // reactive form
-    questionnaire!: Questionnaire;
-    task!: Task;
-    mostRecentDataRecord: DataRecord | null = null;
-    nodes: QNode[] = [];
-    configurationSerialized = '';
+  /* =========================== STATE =================================== */
+  questionnaireForm!: UntypedFormGroup;
+  questionnaire!: Questionnaire;
+  task!: Task;
+  mostRecentDataRecord: DataRecord | null = null;
+  configurationSerialized = '';
+  ready = false; /* template gate */
 
-    /* Template gate: becomes true once the form is ready */
-    ready = false;
+  constructor(
+    private changeDetector: ChangeDetectorRef,
+    public  sectionService: SectionService,
+    private formBuilder: UntypedFormBuilder,
+    private localStorageService: LocalStorageService
+  ) {
+    this.task = this.sectionService.task;
+  }
 
-    /* ========================= LIFE-CYCLE ================================ */
-    constructor(
-        private cdr: ChangeDetectorRef,
-        public  sectionService: SectionService,
-        private fb: UntypedFormBuilder,
-        private localStorageService: LocalStorageService,
-    ) {
-        this.task = this.sectionService.task;
+  async ngOnInit(): Promise<void> {
+    /* ---------- base init --------------------------------------------- */
+    this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
+    this.questionnaireForm = this.formBuilder.group({});
+    this.mostRecentDataRecord =
+      this.task.retrieveMostRecentDataRecord('questionnaire', this.questionnaireIndex) ?? null;
+
+    const previousAnswers: Record<string, any> = this.mostRecentDataRecord?.loadAnswers() ?? {};
+
+    /* Safety: ensure containers exist */
+    (this.questionnaire as any).questionDependencies ??= {};
+    (this.questionnaire as any).questionsToRepeat ??= this.questionnaire.questionsToRepeat ?? [];
+
+    /* ---------- derive repeat controllers if missing ------------------ */
+    /* The model’s constructor may not fill questionsToRepeat. We derive it:
+       pick questions that own a repeat counter (e.g., "how_many"). */
+    if (!Array.isArray(this.questionnaire.questionsToRepeat) ||
+        this.questionnaire.questionsToRepeat.length === 0) {
+      this.questionnaire.questionsToRepeat = this.questionnaire.questions.filter(q => !!q.repeat);
     }
 
-    async ngOnInit(): Promise<void> {
+    /* ---------- reuse or build a new form ----------------------------- */
+    if (!this.questionnairesForm[this.questionnaireIndex]) {
 
-        /* ---------- base initialisation -------------------------------- */
-        this.questionnaire   = this.task.questionnaires[this.questionnaireIndex];
-        this.questionnaireForm = this.fb.group({});
-        this.mostRecentDataRecord =
-            this.task.retrieveMostRecentDataRecord('questionnaire', this.questionnaireIndex) ?? null;
+      /* Add ALL always-present controls (non-section, non-dependant) */
+      this.addBaseControlsFromTree(this.questionnaire.treeCut, previousAnswers);
 
-        const prevAnswers = this.mostRecentDataRecord?.loadAnswers() ?? {};
+      /* Restore repeat branches & their controls from previously saved state */
+      this.restoreRepeatBranches(previousAnswers);
 
-        /* ---------- reuse or build brand-new form ---------------------- */
-        if (!this.questionnairesForm[this.questionnaireIndex]) {
+    } else {
+      this.questionnaireForm = this.questionnairesForm[this.questionnaireIndex];
+    }
 
-            /* 1️⃣  add ALL always-present controls */
-            this.questionnaire.questions.forEach(q => this.initControl(q, prevAnswers));
+    /* ---------- emit & subscribe to changes --------------------------- */
+    this.formEmitter.emit({ form: this.questionnaireForm, action: null });
+    this.questionnaireForm.valueChanges.subscribe(() => this.serializeConfiguration());
+    this.serializeConfiguration();
 
-            /* 2️⃣  restore repeat branches & their controls */
-            this.restoreRepeats(prevAnswers);
+    /* ---------- template can render now ------------------------------- */
+    this.ready = true;
+  }
 
+  ngAfterViewInit(): void {
+    /* MatStepper exists only now */
+    if (this.stepper) {
+      const currentStepIndex = this.worker.getPositionCurrent();
+      this.stepper.selectedIndex = currentStepIndex;
+      this.sectionService.stepIndex = currentStepIndex;
+      this.changeDetector.detectChanges(); /* sync view */
+    }
+  }
+
+  /* ====================== CONTROL BUILDERS ============================ */
+
+  private addBaseControlsFromTree(node: QNode, previousAnswers: Record<string, any>): void {
+    /* Walk the current cut; add controls for renderable nodes */
+    const isRenderable = node.type && node.type !== 'section' && !(node as any).dependant;
+    if (isRenderable) this.addBaseControlsForQuestion(node as any, previousAnswers);
+    node.questions?.forEach(child => this.addBaseControlsFromTree(child, previousAnswers));
+  }
+
+  private addBaseControlsForQuestion(questionModel: Question | any,
+                                     previousAnswers: Record<string, any>): void {
+    /* Skip structural sections and dependants (dependants are enabled dynamically) */
+    if (questionModel.type === 'section' || questionModel.dependant) return;
+
+    const controlKeyBase = (questionModel.nameFull ?? questionModel.name) as string;
+
+    /* Validators */
+    const validators: any[] = [];
+    if (questionModel.required) validators.push(Validators.required);
+    if (questionModel.type === 'number') validators.push(Validators.min(0), Validators.max(100));
+    if (questionModel.type === 'email')  validators.push(Validators.email);
+    if (questionModel.repeat)            validators.push(Validators.min(0), Validators.max(questionModel.times));
+
+    /* Previous values */
+    const answerKey   = `${controlKeyBase}_answer`;
+    const freeTextKey = `${controlKeyBase}_free_text`;
+    const listKey     = `${controlKeyBase}_list`;
+
+    const prevAnswer   = previousAnswers[answerKey]   ?? '';
+    const prevFreeText = previousAnswers[freeTextKey] ?? '';
+
+    /* List/checkbox group (boolean map keyed by option index) */
+    if (questionModel.type === 'list') {
+      const options: string[] = Array.isArray(questionModel.answers)
+        ? questionModel.answers
+        : Object.values(questionModel.answers ?? {});
+      const checkboxState: Record<number, boolean> = {};
+      options.forEach((_, optionIndex) => checkboxState[optionIndex] = !!(prevAnswer?.[optionIndex]));
+      if (!this.questionnaireForm.contains(listKey)) {
+        this.questionnaireForm.addControl(listKey, this.formBuilder.group(checkboxState));
+      }
+    }
+
+    /* Main answer control */
+    if (!this.questionnaireForm.contains(answerKey)) {
+      this.questionnaireForm.addControl(answerKey, new UntypedFormControl(prevAnswer, validators));
+    }
+
+    /* Free-text sibling — support both `free_text` and `freeText` */
+    const hasFreeTextFlag = Boolean(questionModel.freeText ?? questionModel.free_text);
+    if (hasFreeTextFlag && !this.questionnaireForm.contains(freeTextKey)) {
+      this.questionnaireForm.addControl(freeTextKey, new UntypedFormControl(prevFreeText));
+    }
+  }
+
+  /* ========================= REPEATS ================================= */
+
+  private restoreRepeatBranches(previousAnswers: Record<string, any>): void {
+    /* Expand repeat branches based on previously saved answer counts */
+    const repeatControllers = this.questionnaire.questionsToRepeat ?? [];
+    for (const repeatController of repeatControllers) {
+      const repeatBase = repeatController.nameFull ?? repeatController.name;
+      if (!repeatBase) continue;
+      const repeatAnswerKey = `${repeatBase}_answer`;
+      const savedRepeatCount = Number(previousAnswers[repeatAnswerKey]);
+      if (savedRepeatCount && savedRepeatCount > 1) {
+        if (!this.questionnaireForm.contains(repeatAnswerKey)) {
+          this.questionnaireForm.addControl(repeatAnswerKey, new UntypedFormControl(savedRepeatCount));
+        }
+        this.handleQuestionRepetition(repeatController);
+      }
+    }
+  }
+
+  /* =============== QUESTION INTERACTION HELPERS ====================== */
+
+  public handleCheckbox(listQuestion: Question | any, checkboxGroupName: string): void {
+    let anyOptionChecked = false;
+    const group = this.questionnaireForm.get(checkboxGroupName);
+    const answerControl = this.questionnaireForm.get(`${(listQuestion.nameFull ?? listQuestion.name)}_answer`);
+    Object.values(group?.value ?? {}).forEach(v => anyOptionChecked ||= !!v);
+    answerControl?.setValue(anyOptionChecked ? group?.value : '');
+    answerControl?.markAsTouched();
+  }
+
+  public displayCheckedLabels(listQuestion: Question | any): string {
+    const answerKey = `${(listQuestion.nameFull ?? listQuestion.name)}_answer`;
+    const answerValue = this.questionnaireForm.get(answerKey)?.value;
+    if (!answerValue || typeof answerValue !== 'object') return '';
+    const checkedIndices = Object.entries(answerValue)
+      .filter(([, isChecked]) => isChecked)
+      .map(([idx]) => Number(idx));
+    const options: string[] = Array.isArray(listQuestion.answers)
+      ? listQuestion.answers
+      : Object.values(listQuestion.answers ?? {});
+    return checkedIndices.map(i => options[i]).join(', ');
+  }
+
+  public handleQuestionDependency(dependantQuestion: Question | any): boolean {
+    if (!dependantQuestion.dependant) return true;
+
+    const dependantBase = (dependantQuestion.nameFull ?? dependantQuestion.name) as string;
+    this.questionnaire.questionDependencies[dependantBase] = false;
+
+    /* Find parent by simple name; compare selected label with needed */
+    walkNode(this.questionnaire.treeCut, (candidateParent: QNode) => {
+      if (candidateParent.name === dependantQuestion.target) {
+        const parentKey = `${(candidateParent.nameFull ?? candidateParent.name)}_answer`;
+        const parentValue = this.questionnaireForm.get(parentKey)?.value ?? '';
+        if (parentValue !== '') {
+          const parentLabel = Array.isArray(candidateParent.answers)
+            ? (candidateParent.answers as string[])[parentValue]
+            : (candidateParent.answers as Record<string, string> | undefined)?.[parentValue];
+          if (parentLabel === dependantQuestion.needed) {
+            this.enableDependantQuestion(dependantQuestion);
+            this.questionnaire.questionDependencies[dependantBase] = true;
+          }
         } else {
-            this.questionnaireForm = this.questionnairesForm[this.questionnaireIndex];
+          this.questionnaireForm.get(`${dependantBase}_answer`)?.clearValidators();
+          this.questionnaire.questionDependencies[dependantBase] = false;
         }
+      }
+    });
 
-        /* ---------- emit & watch changes ------------------------------- */
-        this.formEmitter.emit({ form: this.questionnaireForm, action: null });
-        this.questionnaireForm.valueChanges.subscribe(() => this.serializeConfiguration());
-        this.serializeConfiguration();
+    /* Clear state for disabled dependants */
+    Object.entries(this.questionnaire.questionDependencies).forEach(([nf, isEnabled]) => {
+      if (!isEnabled) {
+        const ctrl = this.questionnaireForm.get(`${nf}_answer`);
+        ctrl?.clearValidators();
+        ctrl?.setErrors(null);
+        ctrl?.setValue('');
+      }
+    });
 
-        /* ---------- template can render now ---------------------------- */
-        this.ready = true;
+    return this.questionnaire.questionDependencies[dependantBase];
+  }
+
+  private enableDependantQuestion(dependantQuestion: Question | any): void {
+    const baseKey = (dependantQuestion.nameFull ?? dependantQuestion.name) as string;
+    const answerKey   = `${baseKey}_answer`;
+    const freeTextKey = `${baseKey}_free_text`;
+
+    if (this.questionnaireForm.contains(answerKey)) return;
+
+    const validators: any[] = [];
+    if (dependantQuestion.required) validators.push(Validators.required);
+    if (dependantQuestion.type === 'number') validators.push(Validators.min(0), Validators.max(100));
+    if (dependantQuestion.type === 'email')  validators.push(Validators.email);
+
+    const previous = this.mostRecentDataRecord?.loadAnswers() ?? {};
+    this.questionnaireForm.addControl(answerKey, new UntypedFormControl(previous[answerKey] ?? '', validators));
+
+    /* Free-text sibling for dependants (supports both flags) */
+    const hasFreeText = Boolean(dependantQuestion.freeText ?? dependantQuestion.free_text);
+    if (hasFreeText && !this.questionnaireForm.contains(freeTextKey)) {
+      this.questionnaireForm.addControl(freeTextKey, new UntypedFormControl(previous[freeTextKey] ?? ''));
     }
+  }
 
-    ngAfterViewInit(): void {
-        /* MatStepper exists only now */
-        if (this.stepper) {
-            this.stepper.selectedIndex = this.worker.getPositionCurrent();
-            this.sectionService.stepIndex = this.worker.getPositionCurrent();
-            this.cdr.detectChanges();                 // sync view
-        }
-    }
+  public handleQuestionRepetition(repeatQuestion: Question | any): void {
+    /* Recalculate branches under a repeat controller (e.g., "how_many") */
+    const repeatAnswerKey = `${(repeatQuestion.nameFull ?? repeatQuestion.name)}_answer`;
+    const repeatControl = this.questionnaireForm.get(repeatAnswerKey);
+    if (!repeatControl) return;
 
-    /* ====================== CONTROL BUILDERS ============================ */
-    private initControl(q: Question, prev: Record<string, any>): void {
-        if (q.type === 'section' || q.dependant) return;
+    const desiredBranchCount = Number(repeatControl.value);
 
-        /* ---- validators ---------------------------------------------- */
-        const v: any[] = [];
-        if (q.required)         v.push(Validators.required);
-        if (q.type === 'number')v.push(Validators.min(0), Validators.max(100));
-        if (q.type === 'email') v.push(Validators.email);
-        if (q.repeat)           v.push(Validators.min(0), Validators.max(q.times));
+    /* Ensure we have the config for this repeat controller */
+    const repeatConfig = (this.questionnaire.questionsToRepeat ?? []).find(r => r.name === repeatQuestion.name);
+    if (!repeatConfig) return;
+    if (desiredBranchCount > repeatConfig.times) return;
 
-        /* ---- previous value(s) --------------------------------------- */
-        const prevVal  = prev[`${q.nameFull}_answer`]    ?? '';
-        const prevFree = prev[`${q.nameFull}_free_text`] ?? '';
+    /* Identify original template branch and current children in the cut */
+    const templateBranch = firstNode(this.questionnaire.treeOriginal, n => n.target === repeatConfig.name);
+    const currentBranches = allNodes(this.questionnaire.treeCut,      n => n.target === repeatConfig.name);
+    const repeatParentNode = firstNode(this.questionnaire.treeCut,    n => n.name   === repeatConfig.name);
+    if (!templateBranch || !repeatParentNode) return;
 
-        /* ---- add controls -------------------------------------------- */
-        if (q.type === 'list') {
-            const opts = Array.isArray(q.answers) ? q.answers : Object.values(q.answers ?? {});
-            const listState: Record<number, boolean> = {};
-            opts.forEach((_, i) => listState[i] = !!(prevVal?.[i]));
-            this.questionnaireForm.addControl(`${q.nameFull}_list`, this.fb.group(listState));
-        }
-        this.questionnaireForm.addControl(`${q.nameFull}_answer`, new UntypedFormControl(prevVal, v));
-        if (q.freeText) {
-            this.questionnaireForm.addControl(`${q.nameFull}_free_text`, new UntypedFormControl(prevFree));
-        }
-    }
+    /* ---- Increase (add branches) ------------------------------------- */
+    if (desiredBranchCount >= currentBranches.length) {
+      for (let branchIndex = currentBranches.length; branchIndex < desiredBranchCount; branchIndex++) {
+        const clonedBranch: QNode = JSON.parse(JSON.stringify(templateBranch));
+        const parentIndexFull = Array.isArray((repeatParentNode as any).indexFull)
+          ? (repeatParentNode as any).indexFull.join('.')
+          : (repeatParentNode as any).indexFull as string | undefined;
 
-    /* ========================= REPEATS ================================= */
-    private restoreRepeats(prev: Record<string, any>): void {
-        this.questionnaire.questions.filter(q => q.repeat).forEach(q => {
-            const repeatCount = Number(prev[`${q.nameFull}_answer`]);
-            if (repeatCount && repeatCount > 1) {
-                if (!this.questionnaireForm.contains(`${q.nameFull}_answer`)) {
-                    this.questionnaireForm.addControl(
-                        `${q.nameFull}_answer`,
-                        new UntypedFormControl(repeatCount)
-                    );
-                }
-                this.handleQuestionRepetition(q);
-            }
-        });
-
-        /* store nodes for later helpers */
-        this.nodes = [];
-        walkNode(this.questionnaire.treeCut, n => {
-            if (n === this.questionnaire.treeCut) return;
-            if (!('position' in n)) {
-                if (n.questions?.length) n.questions.forEach(c => this.nodes.push(c));
-                else this.nodes.push(n);
-            }
-        });
-    }
-
-    /* =============== QUESTION INTERACTION HELPERS ====================== */
-    public handleCheckbox(q: Question, grpName: string): void {
-        let anyChecked = false;
-        const grp  = this.questionnaireForm.get(grpName);
-        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
-        Object.values(grp?.value ?? {}).forEach(v => anyChecked ||= !!v);
-        ctrl?.setValue(anyChecked ? grp?.value : '');
-        ctrl?.markAsTouched();
-    }
-
-    public displayCheckedLabels(q: Question): string {
-        const answerObj = this.questionnaireForm.get(`${q.nameFull}_answer`)?.value;
-        if (!answerObj || typeof answerObj !== 'object') return '';
-        const checkedIdx = Object.entries(answerObj).filter(([,v]) => v).map(([k]) => Number(k));
-        const options = Array.isArray(q.answers) ? q.answers : Object.values(q.answers ?? {});
-        return checkedIdx.map(i => options[i]).join(', ');
-    }
-
-    public handleQuestionDependency(q: Question): boolean {
-        if (!q.dependant) return true;
-        this.questionnaire.questionDependencies[q.nameFull] = false;
-
-        walkNode(this.questionnaire.treeCut, node => {
-            if (node.name === q.target && q.indexFull && q.indexFull === q.indexFull) {
-                const value = this.questionnaireForm.get(`${node.nameFull}_answer`)?.value ?? '';
-                if (value !== '') {
-                    const label = Array.isArray(node.answers)
-                        ? (node.answers as string[])[value]
-                        : node.answers?.[value];
-                    if (label === q.needed) {
-                        this.enableDependant(q);
-                        this.questionnaire.questionDependencies[q.nameFull] = true;
-                    }
-                } else {
-                    this.questionnaireForm.get(`${q.nameFull}_answer`)?.clearValidators();
-                    this.questionnaire.questionDependencies[q.nameFull] = false;
-                }
-            }
-        });
-
-        Object.entries(this.questionnaire.questionDependencies).forEach(([nf, ok]) => {
-            if (!ok) {
-                const ctrl = this.questionnaireForm.get(`${nf}_answer`);
-                ctrl?.clearValidators();
-                ctrl?.setErrors(null);
-                ctrl?.setValue('');
-            }
-        });
-        return this.questionnaire.questionDependencies[q.nameFull];
-    }
-
-    private enableDependant(q: Question): void {
-        if (this.questionnaireForm.contains(`${q.nameFull}_answer`)) return;
-
-        const v: any[] = [];
-        if (q.required)         v.push(Validators.required);
-        if (q.type === 'number')v.push(Validators.min(0), Validators.max(100));
-        if (q.type === 'email') v.push(Validators.email);
-
-        const prev = this.mostRecentDataRecord?.loadAnswers() ?? {};
-        this.questionnaireForm.addControl(
-            `${q.nameFull}_answer`,
-            new UntypedFormControl(prev[`${q.nameFull}_answer`] ?? '', v)
-        );
-        if (q.freeText) {
-            this.questionnaireForm.addControl(
-                `${q.nameFull}_free_text`,
-                new UntypedFormControl(prev[`${q.nameFull}_free_text`] ?? '')
-            );
-        }
-    }
-
-    public handleQuestionRepetition(q: Question): void {
-        const ctrl = this.questionnaireForm.get(`${q.nameFull}_answer`);
-        if (!ctrl) return;
-
-        for (const repQ of this.questionnaire.questionsToRepeat) {
-            const updatedVal = ctrl.value;
-
-            for (const cur of this.questionnaire.questions) {
-                if (cur.target !== repQ.name) continue;
-                if (updatedVal > repQ.times) continue;
-
-                const targetNode = firstNode(this.questionnaire.treeOriginal, n => n.target === repQ.name);
-                const childNodes = allNodes(this.questionnaire.treeCut,      n => n.target === repQ.name);
-                const parentNode = firstNode(this.questionnaire.treeCut,     n => n.name   === repQ.name);
-                if (!targetNode || !parentNode) continue;
-
-                /* ---- increase repeats ---------------------------------- */
-                if (updatedVal >= childNodes.length) {
-                    for (let i = childNodes.length; i < updatedVal; i++) {
-                        const newBranch: QNode = JSON.parse(JSON.stringify(targetNode));
-                        const safeIndexFull = Array.isArray(parentNode.indexFull)
-                            ? parentNode.indexFull.join('.')
-                            : (parentNode.indexFull as string | undefined);
-                        this.questionnaire.updateIndicesForRepeat(newBranch, safeIndexFull, parentNode.nameFull, i);
-                        this.questionnaire.registerQuestionsFromNode(newBranch);
-                        addChildNode(parentNode, newBranch);
-                        this.questionnaire.questions
-                            .filter(qx => !qx.dropped)
-                            .forEach(qx => this.initControl(qx, {}));
-                        this.cdr.detectChanges();
-                    }
-                /* ---- decrease repeats ---------------------------------- */
-                } else {
-                    const toDrop = childNodes.at(-1);
-                    if (!toDrop) continue;
-                    dropNode(this.questionnaire.treeCut, toDrop);
-                    const removeQs: Question[] = [];
-                    walkNode(toDrop, node => {
-                        const m = this.questionnaire.questions.find(qx => qx.index === node.index);
-                        if (m) removeQs.push(m);
-                    });
-                    for (const rem of removeQs) {
-                        this.questionnaireForm.removeControl(`${rem.nameFull}_answer`);
-                        this.questionnaireForm.removeControl(`${rem.nameFull}_free_text`);
-                        this.questionnaireForm.removeControl(`${rem.nameFull}_list`);
-                        delete this.questionnaire.questionDependencies[rem.nameFull];
-                        delete (this.questionnaire.questionsToRepeat as any)[rem.nameFull];
-                        this.questionnaire.questions =
-                            this.questionnaire.questions.filter(qx => qx.index !== rem.index);
-                    }
-                }
-            }
-        }
-    }
-
-    /* ===================== NAVIGATION / SERIALISATION =================== */
-    public handleQuestionnaireCompletion(action: 'Back' | 'Next' | 'Finish'): void {
-        this.sectionService.stepIndex += (action === 'Back' ? -1 : 1);
-        this.formEmitter.emit({ form: this.questionnaireForm, action });
-    }
-
-    private serializeConfiguration(): void {
-        const cache = Object.keys(localStorage).filter(k => k.startsWith('questionnaire-'));
-        cache.forEach(k => this.localStorageService.removeItem(k));
-
-        const questionnairesJSON = JSON.parse(
-            JSON.stringify(this.questionnaireForm.get('questionnaires')?.value ?? [])
+        this.questionnaire.updateIndicesForRepeat(
+          clonedBranch,
+          parentIndexFull,
+          (repeatParentNode as any).nameFull,
+          branchIndex
         );
 
-        questionnairesJSON.forEach((questionnaire: any, qIdx: number) => {
-            switch (questionnaire.type) {
-                case 'crt':
-                    delete questionnaire.description;
-                    questionnaire.questions.forEach((q: any) => {
-                        q.type = 'number';
-                        q.required = true;
-                        delete q.answers;
-                    });
-                    delete questionnaire.mapping;
-                    break;
-                case 'likert':
-                    questionnaire.questions.forEach((q: any) => {
-                        delete q.answers;
-                        q.type = 'mcq';
-                        q.required = true;
-                        q.free_text = false;
-                        q.detail = null;
-                        q.show_detail = false;
-                    });
-                    break;
-                case 'standard':
-                    delete questionnaire.description;
-                    questionnaire.questions.forEach((q: any) => {
-                        const ans: string[] = [];
-                        q.answers.forEach((a: any) => ans.push(a.answer));
-                        q.answers = ans;
-                        q.type = 'mcq';
-                        q.required = true;
-                        q.free_text = false;
-                        q.detail = null;
-                        q.show_detail = false;
-                    });
-                    delete questionnaire.mapping;
-                    break;
-                default:
-                    break;
-            }
-            this.localStorageService.setItem(
-                `questionnaire-${qIdx}`,
-                JSON.stringify(questionnaire)
-            );
+        this.questionnaire.registerQuestionsFromNode(clonedBranch);
+        addChildNode(repeatParentNode, clonedBranch);
+
+        /* Initialize controls for each newly visible question */
+        walkNode(clonedBranch, (newNode: QNode) => {
+          if (newNode.type && newNode.type !== 'section' && !(newNode as any).dependant) {
+            this.addBaseControlsForQuestion(newNode as any, {});
+          }
         });
-        this.configurationSerialized = JSON.stringify(questionnairesJSON);
+
+        this.changeDetector.detectChanges();
+      }
+
+    /* ---- Decrease (drop last branch) --------------------------------- */
+    } else {
+      const lastBranch = currentBranches.at(-1);
+      if (!lastBranch) return;
+
+      dropNode(this.questionnaire.treeCut, lastBranch);
+
+      /* Remove controls belonging to the dropped subtree */
+      walkNode(lastBranch, (removed: QNode) => {
+        const baseKey = (removed.nameFull ?? removed.name) as string | undefined;
+        if (!baseKey) return;
+        this.questionnaireForm.removeControl(`${baseKey}_answer`);
+        this.questionnaireForm.removeControl(`${baseKey}_free_text`);
+        this.questionnaireForm.removeControl(`${baseKey}_list`);
+        delete this.questionnaire.questionDependencies[baseKey];
+      });
     }
+  }
+
+  /* ===================== NAVIGATION / SERIALISATION =================== */
+
+  public handleQuestionnaireCompletion(action: 'Back' | 'Next' | 'Finish'): void {
+    this.sectionService.stepIndex += (action === 'Back' ? -1 : 1);
+    this.formEmitter.emit({ form: this.questionnaireForm, action });
+  }
+
+  private serializeConfiguration(): void {
+    const cacheKeys = Object.keys(localStorage).filter(k => k.startsWith('questionnaire-'));
+    cacheKeys.forEach(k => this.localStorageService.removeItem(k));
+
+    const questionnairesJSON = JSON.parse(
+      JSON.stringify(this.questionnaireForm.get('questionnaires')?.value ?? [])
+    );
+
+    questionnairesJSON.forEach((serialized: any, qIdx: number) => {
+      switch (serialized.type) {
+        case 'crt':
+          delete serialized.description;
+          serialized.questions.forEach((q: any) => {
+            q.type = 'number';
+            q.required = true;
+            delete q.answers;
+          });
+          delete serialized.mapping;
+          break;
+
+        case 'likert':
+          serialized.questions.forEach((q: any) => {
+            delete q.answers;
+            q.type = 'mcq';
+            q.required = true;
+            q.free_text = false;
+            q.detail = null;
+            q.show_detail = false;
+          });
+          break;
+
+        case 'standard':
+          delete serialized.description;
+          serialized.questions.forEach((q: any) => {
+            const flatAnswers: string[] = [];
+            q.answers.forEach((a: any) => flatAnswers.push(a.answer));
+            q.answers = flatAnswers;
+            q.type = 'mcq';
+            q.required = true;
+            q.free_text = false;
+            q.detail = null;
+            q.show_detail = false;
+          });
+          delete serialized.mapping;
+          break;
+
+        default:
+          break;
+      }
+
+      this.localStorageService.setItem(
+        `questionnaire-${qIdx}`,
+        JSON.stringify(serialized)
+      );
+    });
+
+    this.configurationSerialized = JSON.stringify(questionnairesJSON);
+  }
 }

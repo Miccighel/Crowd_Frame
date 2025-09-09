@@ -535,6 +535,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Action": [
                     "dynamodb:DescribeTable",
                     "dynamodb:PutItem",
+                    "dynamodb:UpdateItem"
                     "dynamodb:GetItem",
                     "dynamodb:Query",
                     "dynamodb:Scan",
@@ -1870,75 +1871,135 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     task_config_items_updated_names = []
     task_config_items_updated_names_local = []
 
-    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", Delimiter='/')
-    if 'CommonPrefixes' in response:
-        for path in response['CommonPrefixes']:
-            current_batch_name = path.get('Prefix').split("/")[1]
-            if batch_name in current_batch_name:
-                task_batch_names.append(current_batch_name)
+    def sync_task_configs_simple(
+        s3,
+        *,
+        aws_private_bucket: str,
+        task_name: str,
+        batch_name: str,
+        task_config_filenames,
+        folder_build_task_path: str,
+        console
+    ):
+        """
+        One-shot sync:
+          - finds batches under f"{task_name}/" where batch_name is contained in the batch dir
+          - picks the newest remote object per expected filename across all matching batches
+          - compares LastModified vs local mtime; downloads if remote is newer or local missing
+        """
 
-        prefix = f"{task_name}/"
-        for current_batch_name in task_batch_names:
-            response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
-            if 'Contents' in response_batch:
-                for filename_config in task_config_filenames:
-                    file_config_local_path = f"{folder_build_task_path}{filename_config}"
-                    for batch_config_object in response_batch['Contents']:
-                        if filename_config in batch_config_object['Key']:
-                            file_config_remote_path = f"{prefix}{current_batch_name}/Task/{filename_config}"
-                            metadata = s3.head_object(Bucket=aws_private_bucket, Key=file_config_remote_path)
-                            if os.path.exists(file_config_local_path):
-                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] detected")
-                                date_modified_local = os.path.getmtime(file_config_local_path)
-                                date_modified_local = datetime.fromtimestamp(date_modified_local).isoformat()
-                                if 'last-modified' in metadata['ResponseMetadata']['HTTPHeaders']:
-                                    date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')
-                                    date_modified_local_parsed = date_modified_local
-                                    for date in datefinder.find_dates(date_modified_local):
-                                        date_modified_local_parsed = date
-                                    if date_modified_remote_parsed is not None and date_modified_local_parsed is not None:
-                                        from_zone = tz.tzutc()
-                                        to_zone = tz.tzlocal()
-                                        date_modified_remote_parsed_utc = datetime.strptime(str(date_modified_remote_parsed), '%Y-%m-%d %H:%M:%S').replace(tzinfo=from_zone)
-                                        date_modified_remote_parsed = date_modified_remote_parsed_utc.astimezone(to_zone)
-                                        date_modified_remote_parsed = date_modified_remote_parsed.replace(tzinfo=None)
-                                        if date_modified_remote_parsed > date_modified_local_parsed:
-                                            console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
-                                            s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
-                                            task_config_items_updated += 1
-                                            task_config_items_updated_names.append(filename_config)
-                                        else:
-                                            console.print(f"Most recent version: [blue underline]LOCAL[/blue underline], date: {date_modified_local_parsed}")
-                                            task_config_items_updated_local += 1
-                                            task_config_items_updated_names_local.append(filename_config)
-                                        task_config_items_checked.append(filename_config)
-                            else:
-                                date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
-                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
-                                console.print(f"Fetching remote version, date: {date_modified_remote_parsed}")
-                                # folder is created if it doesn't exist
-                                if not os.path.exists(folder_build_task_path):
-                                    os.makedirs(folder_build_task_path)
+        expected = list(task_config_filenames)
+        expected_set = set(expected)
+        local_dir = Path(folder_build_task_path)
+        local_dir.mkdir(parents=True, exist_ok=True)
 
-                                s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
-                                task_config_items_updated += 1
-                                task_config_items_checked.append(filename_config)
-                                task_config_items_updated_names.append(filename_config)
+        # Collect batch names (top-level dirs under task_name/)
+        prefix_root = f"{task_name}/"
+        paginator = s3.get_paginator("list_objects_v2")
+        matching_batches = []
 
-                    if filename_config not in task_config_items_checked:
-                        if os.path.exists(file_config_local_path):
-                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] not detected")
-                            task_config_items_updated_local += 1
-                            task_config_items_updated_names_local.append(filename_config)
-                        else:
-                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] not detected")
-                            console.print(f"Sample generation during next step")
-                        task_config_items_checked.append(filename_config)
+        for page in paginator.paginate(Bucket=aws_private_bucket, Prefix=prefix_root, Delimiter="/"):
+            for cp in page.get("CommonPrefixes", []):
+                name = cp["Prefix"].split("/")[1]  # "TaskName/BatchX/" -> "BatchX"
+                if batch_name in name:
+                    matching_batches.append(name)
 
-    console.print(f"Configuration items synchronized: {task_config_items_updated}")
-    console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
-    console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
-    console.print(f"Items to generate: {len(task_config_filenames) - (task_config_items_updated + task_config_items_updated_local)}")
+        if not matching_batches:
+            console.print(f"[yellow]No batches found[/yellow] under [blue]{task_name}/[/blue] matching '{batch_name}'")
+
+        # Build newest remote per filename across all matching batches
+        newest_remote_by_name = {}  # filename -> obj dict with Key, LastModified, ...
+        for bn in matching_batches:
+            prefix = f"{task_name}/{bn}/Task/"
+            for page in paginator.paginate(Bucket=aws_private_bucket, Prefix=prefix):
+                for obj in page.get("Contents", []):
+                    fname = Path(obj["Key"]).name
+                    if fname in expected_set:
+                        prev = newest_remote_by_name.get(fname)
+                        if prev is None or obj["LastModified"] > prev["LastModified"]:
+                            newest_remote_by_name[fname] = obj
+
+        # Counters
+        task_config_items_updated = 0  # pulled from REMOTE
+        task_config_items_updated_names = []
+        task_config_items_updated_local = 0  # kept LOCAL
+        task_config_items_updated_names_local = []
+        task_config_items_to_generate = 0
+
+        # Decide for each expected file
+        for filename in expected:
+            local_path = local_dir / filename
+            remote_obj = newest_remote_by_name.get(filename)
+
+            if remote_obj is None:
+                if local_path.exists():
+                    console.print(
+                        f"Configuration item [blue]{filename}[/blue] status: "
+                        f"[green]LOCAL[/green] detected, [green]REMOTE[/green] not detected"
+                    )
+                    task_config_items_updated_local += 1
+                    task_config_items_updated_names_local.append(filename)
+                else:
+                    console.print(
+                        f"Configuration item [blue]{filename}[/blue] status: "
+                        f"[green]LOCAL[/green] not detected, [green]REMOTE[/green] not detected"
+                    )
+                    console.print("Sample generation during next step")
+                    task_config_items_to_generate += 1
+                continue
+
+            # Remote present
+            remote_key = remote_obj["Key"]
+            remote_dt = remote_obj["LastModified"]  # tz-aware datetime
+            remote_ts = remote_dt.timestamp()
+
+            if local_path.exists():
+                local_ts = local_path.stat().st_mtime
+                console.print(
+                    f"Configuration item [blue]{filename}[/blue] status: "
+                    f"[green]LOCAL[/green] detected, [green]REMOTE[/green] detected"
+                )
+                if remote_ts > local_ts:
+                    console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {remote_dt}")
+                    tmp_path = local_path.with_suffix(local_path.suffix + ".tmp")
+                    s3.download_file(aws_private_bucket, remote_key, str(tmp_path))
+                    os.replace(tmp_path, local_path)  # atomic move
+                    task_config_items_updated += 1
+                    task_config_items_updated_names.append(filename)
+                else:
+                    console.print(
+                        f"Most recent version: [blue underline]LOCAL[/blue underline], date: {datetime.fromtimestamp(local_ts)}"
+                    )
+                    task_config_items_updated_local += 1
+                    task_config_items_updated_names_local.append(filename)
+            else:
+                console.print(
+                    f"Configuration item [blue]{filename}[/blue] status: "
+                    f"[green]LOCAL[/green] not detected, [green]REMOTE[/green] detected"
+                )
+                console.print(f"Fetching remote version, date: {remote_dt}")
+                tmp_path = local_path.with_suffix(local_path.suffix + ".tmp")
+                s3.download_file(aws_private_bucket, remote_key, str(tmp_path))
+                os.replace(tmp_path, local_path)
+                task_config_items_updated += 1
+                task_config_items_updated_names.append(filename)
+
+        # Summary (kept identical in spirit to your original)
+        console.print(f"Configuration items synchronized: {task_config_items_updated}")
+        console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
+        console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
+        console.print(f"Items to generate: {task_config_items_to_generate}")
+
+
+    sync_task_configs_simple(
+        s3,
+        aws_private_bucket=aws_private_bucket,
+        task_name=task_name,
+        batch_name=batch_name,
+        task_config_filenames=task_config_filenames,
+        folder_build_task_path=folder_build_task_path,
+        console=console,
+    )
 
     console.rule(f"{step_index} - Sample task configuration")
     step_index = step_index + 1
@@ -2335,6 +2396,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number,"), file=file)
+        print(wrapper.fill("// @ts-expect-error TS6133: 'data' is declared but its value is never read"), file=file)
         print(wrapper.fill("data: JSON,"), file=file)
         print(wrapper.fill("params: JSON"), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)

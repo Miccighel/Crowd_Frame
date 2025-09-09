@@ -1,0 +1,68 @@
+{
+    "modality": "pointwise",
+    "allowed_tries": 10,
+    "time_assessment": 1,
+    "time_check_amount": 3,
+    "element_labels": {
+		"main": "Sheet",
+		"main_short": "S"
+	},
+    "attributes": [],
+    "annotator": false,
+    "countdown_time": false,
+    "additional_times": false,
+    "countdown_modality": false,
+    "countdown_attribute": false,
+    "countdown_attribute_values": [],
+    "countdown_position_values": [],
+    "logger": false,
+    "logger_option": {
+        "button": {
+            "general": false,
+            "click": false
+        },
+        "mouse": {
+            "general": false,
+            "mouseMovements": false,
+            "leftClicks": false,
+            "rightClicks": false
+        },
+        "keyboard": {
+            "general": false,
+            "shortcuts": false,
+            "keys": false
+        },
+        "textInput": {
+            "general": false,
+            "paste": false,
+            "delete": false
+        },
+        "clipboard": {
+            "general": false,
+            "copy": false,
+            "cut": false
+        },
+        "radio": {
+            "general": false,
+            "change": false
+        },
+        "crowd-xplorer": {
+            "general": false,
+            "query": false,
+            "result": false
+        },
+        "various": {
+            "general": false,
+            "selection": false,
+            "unload": false,
+            "focus&blur": false,
+            "scroll": false,
+            "resize": false
+        }
+    },
+    "server_endpoint": "",
+    "messages": [
+        "A network error may have been happened; try again to access the task",
+        "You have already started this task without finishing it"
+    ]
+}
