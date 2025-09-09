@@ -1,60 +1,122 @@
-name: build
+name: Build (Crowd_Frame)
 
 on:
-    push:
-        branches: [ master ]
-    pull_request:
-    workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
 
 permissions:
-    contents: read
+  contents: read
 
 concurrency:
-    group: build-${{ github.ref }}
-    cancel-in-progress: true
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-    APP_NAME: Crowd_Frame
-    NODE_VERSION: "20"
+  APP_NAME: Crowd_Frame
+  NODE_VERSION: "20"
 
 jobs:
-    build:
-        name: Build ${{ matrix.config }} (${{ matrix.locale }})
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                    -   config: production
-                        locale: en-US
-                    -   config: production-it
-                        locale: it
+  build:
+    name: Build production (en-US)
+    runs-on: ubuntu-latest
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            -   name: Setup Node
-                uses: actions/setup-node@v4
-                with:
-                    node-version: ${{ env.NODE_VERSION }}
-                    cache: yarn
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
 
-            -   name: Enable Corepack (Yarn 4)
-                run: corepack enable
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
 
-            -   name: Install dependencies
-                run: yarn install --immutable
+      - name: Install dependencies
+        run: yarn install --immutable
 
-            # Builds exactly the targets you defined in angular.json
-            -   name: Build (${{ matrix.config }})
-                run: yarn ng build ${{ env.APP_NAME }} --configuration ${{ matrix.config }}
+      - name: Prepare Angular environment files
+        shell: bash
+        run: |
+          mkdir -p data/build/environments
+          cat > data/build/environments/environment.ts <<'EOF'
+          export const environment = {
+            production: false,
+            configuration_local: false,
+            platform: 'none',
+            taskName: '',
+            batchName: '',
+            taskTitle: 'none',
+            region: '',
+            bucket: '',
+            bucket_deploy: '',
+            websiteEndpoint: '',
+            cloudfrontEndpoint: '',
+            languageCode: 'en-US',
+            aws_id_key: '',
+            aws_secret_key: '',
+            prolific_completion_code: false,
+            bing_api_key: '',
+            pubmed_api_key: '',
+            log_on_console: true,
+            log_server_config: 'none',
+            table_acl_name: '',
+            table_data_name: '',
+            table_log_name: '',
+            api_gateway_endpoint: '',
+            hit_solver_endpoint: null
+          };
+          EOF
+          cat > data/build/environments/environment.prod.ts <<'EOF'
+          export const environment = {
+            production: true,
+            configuration_local: false,
+            platform: 'none',
+            taskName: '',
+            batchName: '',
+            taskTitle: 'none',
+            region: '',
+            bucket: '',
+            bucket_deploy: '',
+            websiteEndpoint: '',
+            cloudfrontEndpoint: '',
+            languageCode: 'en-US',
+            aws_id_key: '',
+            aws_secret_key: '',
+            prolific_completion_code: false,
+            bing_api_key: '',
+            pubmed_api_key: '',
+            log_on_console: false,
+            log_server_config: 'none',
+            table_acl_name: '',
+            table_data_name: '',
+            table_log_name: '',
+            api_gateway_endpoint: '',
+            hit_solver_endpoint: null
+          };
+          EOF
 
-            # Upload whatever Angular produced; supports both dist/Crowd_Frame/en-US and dist/Crowd_Frame/browser/en-US layouts
-            -   name: Upload artifact (${{ matrix.locale }})
-                uses: actions/upload-artifact@v4
-                with:
-                    name: ${{ env.APP_NAME }}-${{ matrix.locale }}
-                    path: |
-                        dist/${{ env.APP_NAME }}/**/*
-                    if-no-files-found: error
+      - name: Compute base href
+        id: base
+        shell: bash
+        run: |
+          TASK="${{ vars.TASK_NAME }}"
+          BATCH="${{ vars.BATCH_NAME }}"
+          : "${TASK:=task}"
+          : "${BATCH:=batch}"
+          echo "href=/${TASK}/${BATCH}/" >> "$GITHUB_OUTPUT"
+          echo "Base href: /${TASK}/${BATCH}/"
+
+      - name: Build (production, en-US)
+        run: yarn ng build ${{ env.APP_NAME }} --configuration production --base-href "${{ steps.base.outputs.href }}"
+
+      - name: Upload artifact (en-US)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-en-US
+          path: |
+            dist/${{ env.APP_NAME }}/**/*
+          if-no-files-found: error

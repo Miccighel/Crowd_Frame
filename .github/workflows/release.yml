@@ -1,144 +1,183 @@
-name: release
+name: Release (Crowd_Frame)
 
 on:
-    push:
-        tags:
-            # Push tags like: v1.2.3
-            - "v*.*.*"
-    workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
-    contents: write  # needed to create releases
+  contents: write
 
 concurrency:
-    group: app-release-${{ github.ref }}
-    cancel-in-progress: false
+  group: app-release-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
-    APP_NAME: Crowd_Frame
-    NODE_VERSION: "20"
+  APP_NAME: Crowd_Frame
+  NODE_VERSION: "20"
 
 jobs:
-    build:
-        name: Build ${{ matrix.config }} (${{ matrix.locale }})
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                    -   config: production
-                        locale: en-US
-                    -   config: production-it
-                        locale: it
+  build:
+    name: Build production (en-US)
+    runs-on: ubuntu-latest
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
-                with:
-                    fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            -   name: Setup Node
-                uses: actions/setup-node@v4
-                with:
-                    node-version: ${{ env.NODE_VERSION }}
-                    cache: yarn
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
 
-            -   name: Enable Corepack (Yarn 4)
-                run: corepack enable
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
 
-            -   name: Install dependencies
-                run: yarn install --immutable
+      - name: Install dependencies
+        run: yarn install --immutable
 
-            -   name: Derive version from tag
-                id: ver
-                shell: bash
-                run: |
-                    # Tag looks like: app/vX.Y.Z
-                    VERSION="${GITHUB_REF_NAME#app/}"
-                    VERSION="${VERSION#v}"
-                    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-                    echo "Building version: $VERSION"
+      - name: Derive version from tag
+        id: ver
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
 
-            -   name: Build (${{ matrix.config }})
-                run: yarn ng build ${{ env.APP_NAME }} --configuration ${{ matrix.config }}
+      - name: Prepare Angular environment files
+        shell: bash
+        run: |
+          mkdir -p data/build/environments
+          cat > data/build/environments/environment.ts <<'EOF'
+          export const environment = {
+            production: false,
+            configuration_local: false,
+            platform: 'none',
+            taskName: '',
+            batchName: '',
+            taskTitle: 'none',
+            region: '',
+            bucket: '',
+            bucket_deploy: '',
+            websiteEndpoint: '',
+            cloudfrontEndpoint: '',
+            languageCode: 'en-US',
+            aws_id_key: '',
+            aws_secret_key: '',
+            prolific_completion_code: false,
+            bing_api_key: '',
+            pubmed_api_key: '',
+            log_on_console: true,
+            log_server_config: 'none',
+            table_acl_name: '',
+            table_data_name: '',
+            table_log_name: '',
+            api_gateway_endpoint: '',
+            hit_solver_endpoint: null
+          };
+          EOF
+          cat > data/build/environments/environment.prod.ts <<'EOF'
+          export const environment = {
+            production: true,
+            configuration_local: false,
+            platform: 'none',
+            taskName: '',
+            batchName: '',
+            taskTitle: 'none',
+            region: '',
+            bucket: '',
+            bucket_deploy: '',
+            websiteEndpoint: '',
+            cloudfrontEndpoint: '',
+            languageCode: 'en-US',
+            aws_id_key: '',
+            aws_secret_key: '',
+            prolific_completion_code: false,
+            bing_api_key: '',
+            pubmed_api_key: '',
+            log_on_console: false,
+            log_server_config: 'none',
+            table_acl_name: '',
+            table_data_name: '',
+            table_log_name: '',
+            api_gateway_endpoint: '',
+            hit_solver_endpoint: null
+          };
+          EOF
 
-            # Angular 20 "application" builder may emit into:
-            # - dist/Crowd_Frame/en-US
-            # - dist/Crowd_Frame/browser/en-US
-            # - dist/Crowd_Frame
-            -   name: Locate build output
-                id: out
-                shell: bash
-                run: |
-                    ROOT="dist/${{ env.APP_NAME }}"
-                    LOCALE="${{ matrix.locale }}"
-                    CANDIDATES=(
-                      "$ROOT/$LOCALE"
-                      "$ROOT/browser/$LOCALE"
-                      "$ROOT"
-                    )
-                    PACK_DIR=""
-                    for p in "${CANDIDATES[@]}"; do
-                      if [ -d "$p" ]; then
-                        PACK_DIR="$p"
-                        break
-                      fi
-                    done
-                    if [ -z "$PACK_DIR" ]; then
-                      echo "No build output found under $ROOT"
-                      ls -la "$ROOT" || true
-                      exit 1
-                    fi
-                    echo "pack_dir=$PACK_DIR" >> "$GITHUB_OUTPUT"
-                    echo "Using pack dir: $PACK_DIR"
+      - name: Compute base href
+        id: base
+        shell: bash
+        run: |
+          TASK="${{ vars.TASK_NAME }}"
+          BATCH="${{ vars.BATCH_NAME }}"
+          : "${TASK:=task}"
+          : "${BATCH:=batch}"
+          echo "href=/${TASK}/${BATCH}/" >> "$GITHUB_OUTPUT"
+          echo "Base href: /${TASK}/${BATCH}/"
 
-            -   name: Create ZIP
-                shell: bash
-                run: |
-                    mkdir -p release
-                    ZIP="release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}.zip"
-                    cd "${{ steps.out.outputs.pack_dir }}"
-                    zip -r "../../$ZIP" . >/dev/null
-                    cd - >/dev/null
-                    ls -lh "$ZIP"
+      - name: Build (production, en-US)
+        run: yarn ng build ${{ env.APP_NAME }} --configuration production --base-href "${{ steps.base.outputs.href }}"
 
-            -   name: Upload artifact (ZIP)
-                uses: actions/upload-artifact@v4
-                with:
-                    name: ${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}
-                    path: release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-${{ matrix.locale }}.zip
-                    if-no-files-found: error
+      - name: Locate build output
+        id: out
+        shell: bash
+        run: |
+          ROOT="dist/${{ env.APP_NAME }}"
+          for p in "$ROOT/en-US" "$ROOT/browser/en-US" "$ROOT"; do
+            if [ -d "$p" ]; then echo "pack_dir=$p" >> "$GITHUB_OUTPUT"; echo "Using: $p"; break; fi
+          done
 
-    release:
-        name: Create GitHub Release
-        runs-on: ubuntu-latest
-        needs: build
+      - name: Create ZIP
+        if: ${{ steps.out.outputs.pack_dir }}
+        shell: bash
+        run: |
+          mkdir -p release
+          ZIP="release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US.zip"
+          cd "${{ steps.out.outputs.pack_dir }}"
+          zip -r "../../$ZIP" . >/dev/null
+          cd - >/dev/null
+          ls -lh "$ZIP"
 
-        steps:
-            -   name: Download all artifacts
-                uses: actions/download-artifact@v4
-                with:
-                    path: release-assets
-                    merge-multiple: true
+      - name: Upload artifact (ZIP)
+        if: ${{ steps.out.outputs.pack_dir }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US
+          path: release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US.zip
 
-            -   name: Derive version from tag
-                id: ver
-                shell: bash
-                run: |
-                    VERSION="${GITHUB_REF_NAME#app/}"
-                    VERSION="${VERSION#v}"
-                    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
 
-            -   name: List assets
-                run: ls -lh release-assets
+      - name: Derive version from tag
+        id: ver
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-            -   name: Create GitHub Release
-                uses: softprops/action-gh-release@v2
-                with:
-                    tag_name: ${{ github.ref_name }}
-                    name: Crowd_Frame v${{ steps.ver.outputs.version }}
-                    generate_release_notes: true
-                    prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
-                    files: |
-                        release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-en-US.zip
-                        release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-it.zip
+      - name: List assets
+        run: ls -lh release-assets || true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Crowd_Frame v${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
+          fail_on_unmatched_files: false
+          files: |
+            release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-en-US.zip
