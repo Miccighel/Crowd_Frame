@@ -7,6 +7,8 @@
  *  • listFolders() pagination + small in-memory TTL cache (default 60s)
  *  • download<T>() generic return for better inference (still optional)
  *  • Defensive JSON parse with clearer error messages
+ *  • NEW: listPrivateObjects() + deletePrivateObjects() for Admin storage tab
+ *  • Optional session token + private bucket alias resolution
  * ============================================================================ */
 
 import {Injectable} from '@angular/core';
@@ -17,9 +19,11 @@ import {
     GetObjectCommand,
     ListObjectsV2Command,
     HeadObjectCommand,
+    DeleteObjectsCommand,
     GetObjectCommandOutput,
     ListObjectsV2CommandOutput,
     HeadObjectCommandOutput,
+    DeleteObjectsCommandOutput
 } from '@aws-sdk/client-s3';
 import {Upload} from '@aws-sdk/lib-storage';
 
@@ -35,7 +39,7 @@ import localRawInstructionsMain from '../../../../data/build/task/instructions_g
 import localRawAdmin from '../../../../data/build/config/admin.json';
 
 /* ---------- Domain models ---------- */
-import {Worker} from "../../models/worker/worker";
+import {Worker} from '../../models/worker/worker';
 
 /* Minimal, stable shape of the config object used across calls */
 export interface S3Config {
@@ -43,28 +47,35 @@ export interface S3Config {
     bucket: string;
     aws_id_key: string;
     aws_secret_key: string;
+    aws_session_token?: string;     // NEW: support STS
     configuration_local?: boolean;
     taskName?: string;
     batchName?: string;
+
+    /* Optional private bucket (falls back to bucket if unspecified) */
+    private_bucket?: string;        // snake_case
+    bucket_private?: string;        // alias
+    privateBucket?: string;         // camelCase
 }
 
 @Injectable({providedIn: 'root'})
 export class S3Service {
 
     /* --------------------------------------------------------------------------
-     * Client reuse: create clients once per (region + credentials) combo
+     * Client reuse: create clients once per (region + credentials + token) combo
      * ------------------------------------------------------------------------ */
     private clientCache = new Map<string, S3Client>();
 
     private getClient(cfg: S3Config): S3Client {
-        const key = `${cfg.region}:${cfg.aws_id_key}:${cfg.aws_secret_key}`;
+        const key = `${cfg.region}:${cfg.aws_id_key}:${cfg.aws_secret_key}:${cfg.aws_session_token || ''}`;
         let client = this.clientCache.get(key);
         if (!client) {
             client = new S3Client({
                 region: cfg.region,
                 credentials: {
                     accessKeyId: cfg.aws_id_key,
-                    secretAccessKey: cfg.aws_secret_key
+                    secretAccessKey: cfg.aws_secret_key,
+                    sessionToken: cfg.aws_session_token
                 }
             });
             this.clientCache.set(key, client);
@@ -75,6 +86,16 @@ export class S3Service {
     /* Backwards-compatible alias (keeps existing call sites & tests happy) */
     private buildClient(cfg: S3Config): S3Client {
         return this.getClient(cfg);
+    }
+
+    /* Resolve private bucket name with aliases, fallback to main bucket */
+    private resolvePrivateBucket(cfg: S3Config): string {
+        return (
+            cfg.private_bucket ||
+            cfg.bucket_private ||
+            cfg.privateBucket ||
+            cfg.bucket
+        );
     }
 
     /* ---------- BASIC CRUD ---------- */
@@ -92,7 +113,6 @@ export class S3Service {
         try {
             return JSON.parse(text) as T;
         } catch (e) {
-            /* Provide a clearer error surface for upstream logging */
             throw new Error(`S3Service.download: invalid JSON at key "${key}": ${(e as Error)?.message || e}`);
         }
     }
@@ -106,7 +126,7 @@ export class S3Service {
                 Bucket: cfg.bucket,
                 Key: key,
                 Body: typeof payload === 'string' ? payload : JSON.stringify(payload),
-                ContentType: 'application/json',
+                ContentType: 'application/json'
             }
         });
         return uploader.done();
@@ -130,7 +150,6 @@ export class S3Service {
         const s3 = this.buildClient(cfg);
         const cacheKey = `${cfg.bucket}|${cfg.region}|${prefix}`;
 
-        /* Serve from cache if still fresh */
         const cached = this.foldersCache.get(cacheKey);
         if (cached && (Date.now() - cached.ts) < S3Service.LIST_TTL_MS) {
             return cached.prefixes;
@@ -162,9 +181,7 @@ export class S3Service {
             ContinuationToken = resp.IsTruncated ? resp.NextContinuationToken : undefined;
         } while (ContinuationToken);
 
-        /* Write to cache */
         this.foldersCache.set(cacheKey, {ts: Date.now(), prefixes: allPrefixes});
-
         return allPrefixes;
     }
 
@@ -175,8 +192,7 @@ export class S3Service {
     }
 
     getFolder(cfg: S3Config) {
-        return cfg.batchName ? `${cfg.taskName}/${cfg.batchName}/`
-            : `${cfg.taskName}/`;
+        return cfg.batchName ? `${cfg.taskName}/${cfg.batchName}/` : `${cfg.taskName}/`;
     }
 
     getWorkerFolder(cfg: S3Config, worker: Worker) {
@@ -210,7 +226,6 @@ export class S3Service {
         return cfg.configuration_local ? localRawInstructionsMain : this.download(cfg, file);
     }
 
-    /* Keep the original strict method (throws on 404 when not local) */
     downloadEvaluationInstructions(cfg: S3Config) {
         const file = `${this.getFolder(cfg)}Task/instructions_evaluation.json`;
         return cfg.configuration_local ? localRawInstructionsDimensions : this.download(cfg, file);
@@ -302,5 +317,65 @@ export class S3Service {
 
     uploadWorkersCheck(cfg: S3Config, data: unknown) {
         return this.upload(cfg, this.getWorkerChecksConfigPath(cfg), data);
+    }
+
+    /* ============================================================================
+     * NEW: Private bucket helpers for Admin “Storage” tab
+     * ========================================================================== */
+
+    /**
+     * List objects from the **private bucket** (falls back to cfg.bucket).
+     * Returns the raw ListObjectsV2CommandOutput so callers can read
+     * `Contents` and `NextContinuationToken`.
+     */
+    async listPrivateObjects(
+        cfg: S3Config,
+        opts: { prefix?: string; continuationToken?: string; maxKeys?: number } = {}
+    ): Promise<ListObjectsV2CommandOutput> {
+        if (cfg.configuration_local) {
+            // Local dev: return an empty, well-shaped result
+            return {
+                $metadata: {},
+                IsTruncated: false,
+                KeyCount: 0,
+                MaxKeys: opts.maxKeys ?? 1000,
+                Name: this.resolvePrivateBucket(cfg),
+                Prefix: opts.prefix || ''
+            } as ListObjectsV2CommandOutput;
+        }
+
+        const s3 = this.buildClient(cfg);
+        const Bucket = this.resolvePrivateBucket(cfg);
+
+        return s3.send(new ListObjectsV2Command({
+            Bucket,
+            Prefix: opts.prefix || undefined,
+            ContinuationToken: opts.continuationToken || undefined,
+            MaxKeys: opts.maxKeys ?? 1000
+        }));
+    }
+
+    /**
+     * Bulk delete keys from the **private bucket** (falls back to cfg.bucket).
+     * Handles S3 limit of 1000 objects per request via chunking.
+     */
+    async deletePrivateObjects(cfg: S3Config, keys: string[]): Promise<void> {
+        if (!keys || keys.length === 0) return;
+        if (cfg.configuration_local) return; // no-op in local mode
+
+        const s3 = this.buildClient(cfg);
+        const Bucket = this.resolvePrivateBucket(cfg);
+
+        const CHUNK = 1000;
+        for (let i = 0; i < keys.length; i += CHUNK) {
+            const slice = keys.slice(i, i + CHUNK);
+            await s3.send(new DeleteObjectsCommand({
+                Bucket,
+                Delete: {
+                    Objects: slice.map(k => ({Key: k})),
+                    Quiet: true
+                }
+            })) as DeleteObjectsCommandOutput;
+        }
     }
 }

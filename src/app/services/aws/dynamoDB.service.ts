@@ -13,7 +13,8 @@ import {
     QueryCommand, QueryCommandOutput,
     ScanCommand, ScanCommandOutput,
     PutCommand, PutCommandOutput,
-    UpdateCommand, UpdateCommandOutput
+    UpdateCommand, UpdateCommandOutput,
+    DeleteCommand, DeleteCommandOutput
 } from '@aws-sdk/lib-dynamodb';
 
 /* ---------- Domain models ---------- */
@@ -200,6 +201,11 @@ export class DynamoDBService {
         const schema = {pk, sk, types};
         this._schemaCache.set(tableName, schema);
         return schema;
+    }
+
+    /* Generic alias (for ACL/DATA); preserves existing cache + logic */
+    private async getKeySchema(tableName: string) {
+        return this.getAclKeySchema(tableName);
     }
 
     /* ======================== LIST ======================= */
@@ -599,6 +605,93 @@ export class DynamoDBService {
         }
 
         return {claimed: true};
+    }
+
+    /* =================== ADMIN: GENERIC TABLE HELPERS =================== */
+
+    /**
+     * Scan ACL/DATA table with pagination.
+     * - `logical`: 'ACL' | 'DATA'
+     * - `limit`: page size
+     * - `startKey`: ExclusiveStartKey from previous page
+     */
+    async scanTable(
+        cfg: Cfg | any,
+        logical: 'ACL' | 'DATA',
+        limit = 50,
+        startKey?: Record<string, any>
+    ): Promise<{ Items: any[]; LastEvaluatedKey?: Record<string, any> }> {
+        const ncfg = this.ensureClients(cfg);
+        const TableName = logical === 'ACL' ? ncfg.table_acl_name : ncfg.table_data_name;
+
+        const out = await this.send<ScanCommandOutput>(
+            this.getDoc(),
+            new ScanCommand({
+                TableName,
+                Limit: limit,
+                ExclusiveStartKey: startKey
+            }),
+            `Scan(${logical})`
+        );
+
+        return {
+            Items: out.Items ?? [],
+            LastEvaluatedKey: out.LastEvaluatedKey
+        };
+    }
+
+    /**
+     * Put/upsert an item into ACL/DATA.
+     * Full-document replace; keys must be present in `item`.
+     */
+    async putItemToTable(
+        cfg: Cfg | any,
+        logical: 'ACL' | 'DATA',
+        item: any
+    ): Promise<PutCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        const TableName = logical === 'ACL' ? ncfg.table_acl_name : ncfg.table_data_name;
+        return this.send<PutCommandOutput>(
+            this.getDoc(),
+            new PutCommand({TableName, Item: item}),
+            `Put(${logical})`
+        );
+    }
+
+    /**
+     * Delete an item from ACL/DATA by deriving the Key from the table schema.
+     * - Reads PK/SK from DescribeTable (cached)
+     * - Coerces key value types to match attribute definitions (S/N/B)
+     */
+    async deleteItemFromTable(
+        cfg: Cfg | any,
+        logical: 'ACL' | 'DATA',
+        item: any
+    ): Promise<DeleteCommandOutput> {
+        const ncfg = this.ensureClients(cfg);
+        const TableName = logical === 'ACL' ? ncfg.table_acl_name : ncfg.table_data_name;
+
+        const {pk, sk, types} = await this.getKeySchema(TableName);
+
+        const coerce = (name: string, v: any) => {
+            const t = types[name];
+            if (t === 'N') return typeof v === 'number' ? v : Number(v);
+            if (t === 'S') return typeof v === 'string' ? v : String(v);
+            return v; /* 'B' assumed provided as Uint8Array/Buffer */
+        };
+
+        if (!(pk in item)) throw new Error(`Cannot delete: missing PK "${pk}" in item`);
+        const Key: Record<string, any> = {[pk]: coerce(pk, item[pk])};
+        if (sk) {
+            if (!(sk in item)) throw new Error(`Cannot delete: missing SK "${sk}" in item`);
+            Key[sk] = coerce(sk, item[sk]);
+        }
+
+        return this.send<DeleteCommandOutput>(
+            this.getDoc(),
+            new DeleteCommand({TableName, Key}),
+            `Delete(${logical})`
+        );
     }
 
     /* =================== PRIVATE HELPERS =================== */

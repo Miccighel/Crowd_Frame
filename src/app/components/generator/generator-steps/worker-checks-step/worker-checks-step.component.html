@@ -1,4 +1,4 @@
-<form [formGroup]="this.formStep">
+<form [formGroup]="formStep">
     <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
         <mat-card-header>
             <mat-card-title><span i18n>Step #7: Worker Checks</span></mat-card-title>
@@ -21,7 +21,7 @@
             <mat-form-field class="width-100" appearance="fill">
                 <mat-label><span i18n>Worker IDs Blacklisted</span></mat-label>
                 <mat-chip-grid #blacklistChips formControlName="blacklist">
-                    @for (workerId of this.blacklistedWorkerId; track workerId) {
+                    @for (workerId of blacklistedWorkerId; track workerId) {
                         <mat-chip-row [removable]="true" (removed)="removeBlacklistedId(workerId)">
                             {{ workerId }}
                             <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
@@ -45,7 +45,7 @@
             <mat-form-field class="width-100" appearance="fill">
                 <mat-label><span i18n>Worker IDs Whitelisted</span></mat-label>
                 <mat-chip-grid #whitelistChips formControlName="whitelist">
-                    @for (workerId of this.whitelistedWorkerId; track workerId) {
+                    @for (workerId of whitelistedWorkerId; track workerId) {
                         <mat-chip-row [removable]="true" (removed)="removeWhitelistedId(workerId)">
                             {{ workerId }}
                             <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
@@ -65,15 +65,16 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
+            <!-- Batches -->
             <h3 class="lighter"><span i18n>Batches</span></h3>
 
             <div formArrayName="batches" class="mt-16px">
-                @if (this.batches().controls.length <= 0) {
+                @if (batches().controls.length <= 0) {
                     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
                 }
 
-                @if (this.batches().controls.length > 0) {
-                    @for (taskNode of this.batchesTree; track taskNode) {
+                @if (batches().controls.length > 0) {
+                    @for (taskNode of batchesTree; track trackTask($index, taskNode)) {
                         <div>
                             <mat-accordion class="generator-accordion">
                                 <mat-expansion-panel>
@@ -84,21 +85,19 @@
                                         <mat-panel-description></mat-panel-description>
                                     </mat-expansion-panel-header>
 
-                                    @for (batch of taskNode['batches']; track batch) {
-                                        <!-- 'counter' is a valid index set in TS -->
-                                        <div [formGroupName]="batch['counter']" class="mb-16px">
-                                            <mat-label class="block mb-8px">{{ batch['batch'] }}</mat-label>
+                                    @for (batch of taskNode['batches']; track trackBatch($index, batch)) {
+                                        @if (idxFor(taskNode, batch) > -1) {
+                                            <div [formGroupName]="idxFor(taskNode, batch)" class="mb-16px">
+                                                <mat-label class="block mb-8px">{{ batch['batch'] }}</mat-label>
 
-                                            <!-- Batch mode: None / Blacklist / Whitelist -->
-                                            <mat-chip-listbox
-                                                formControlName="mode"
-                                                [multiple]="false">
-                                                <mat-chip-option value="none"><span i18n>None</span></mat-chip-option>
-                                                <mat-chip-option value="blacklist"><span i18n>Blacklist</span></mat-chip-option>
-                                                <mat-chip-option value="whitelist"><span i18n>Whitelist</span></mat-chip-option>
-                                            </mat-chip-listbox>
-
-                                        </div>
+                                                <!-- Batch mode: None / Blacklist / Whitelist -->
+                                                <mat-chip-listbox formControlName="mode" [multiple]="false">
+                                                    <mat-chip-option value="none"><span i18n>None</span></mat-chip-option>
+                                                    <mat-chip-option value="blacklist"><span i18n>Blacklist</span></mat-chip-option>
+                                                    <mat-chip-option value="whitelist"><span i18n>Whitelist</span></mat-chip-option>
+                                                </mat-chip-listbox>
+                                            </div>
+                                        }
                                     }
                                 </mat-expansion-panel>
                             </mat-accordion>

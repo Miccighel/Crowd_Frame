@@ -40,6 +40,7 @@
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#environment-variables">Environment Variables</a></li>
     <li><a href="#task-configuration">Task Configuration</a></li>
+    <li><a href="#admin-dashboard">Admin Dashboard</a></li>
     <li><a href="#hits-allocation">HITs Allocation</a></li>
     <li><a href="#quality-checks">Quality Checks</a></li>
     <li><a href="#local-development">Local Development</a></li>
@@ -221,10 +222,10 @@ The following table lists the variables you can set in `your_repo_folder/data/.e
 
 Use the Generator (admin panel) to configure your deployed task:
 
-1. Open the admin panel by appending `?admin=true` to the task URL, e.g.  
-   `https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/?admin=true`
-2. Click **Generate** to open the login form.
-3. Sign in with the admin credentials from `data/.env` (`admin_user`, `admin_password`).
+1. Open the admin panel by appending `admin` to the task URL, e.g.  
+   `https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/admin`
+2. Sign in with the admin credentials from `data/.env` (`admin_user`, `admin_password`).
+3. Click the `Generator` tab.
 4. Go through each configuration step and upload the final configuration.
 
 ### Step Overview
@@ -252,10 +253,18 @@ The following table details the content of each configuration file.
 
 > **Note — Blocking & reset:** Crowd_Frame enforces limits via a DynamoDB **ACL**. Workers are blocked if they exceed max tries or the time limit (`time_assessment`). For testing, use a **high `time_assessment`** to avoid accidental blocks. To reset, **clear the task’s ACL records** — this **irreversibly deletes access history**, so use only when starting from a clean slate.
 
+## Admin Dashboard
+
+Open the console by adding `/admin` to your task URL.
+
+- **ACL** *(default)* — review current access entries, see who holds which units, and resolve or release entries when needed.
+- **DATA** — look up a worker’s submissions and open any row to see the full details.
+- **Private bucket** — browse the files for the current task/batch and remove items you no longer need.
+
 ## HITs Allocation
 
-The HITs for a crowdsourcing task designed and deployed using Crowd_Frame must be stored in a special JSON file.
-Such a file can be manually uploaded when configuring the crowdsourcing task itself.
+The HITs for a task must be stored in a special JSON file.
+Such a file can be manually uploaded when configuring the task itself.
 The file must comply with a special format that satisfies 5 requirements:
 
 1. There must be an array of HITs (also called _units_);

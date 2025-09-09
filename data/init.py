@@ -535,7 +535,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Action": [
                     "dynamodb:DescribeTable",
                     "dynamodb:PutItem",
-                    "dynamodb:UpdateItem"
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
                     "dynamodb:Scan",
