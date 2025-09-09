@@ -1,4 +1,4 @@
-name: Release (Crowd_Frame)
+name: App Release (Crowd_Frame)
 
 on:
   push:
@@ -109,6 +109,183 @@ jobs:
           };
           EOF
 
+      - name: Prepare build data stubs
+        shell: bash
+        run: |
+          mkdir -p data/build/skeleton data/build/task data/build/config
+
+          cat > data/build/skeleton/goldChecker.ts <<'EOF'
+          export class GoldChecker {
+            static performGoldCheck(_goldConfiguration: Array<object>, _taskType: string | null = null): boolean[] {
+              return [true];
+            }
+          }
+          EOF
+
+          cat > data/build/skeleton/document.ts <<'EOF'
+          export class Document {
+            index: number;
+            params: any;
+            [key: string]: any;
+            constructor(index: number, data: any = {}, params: any = {}) {
+              this.index = index;
+              this.params = params || {};
+              for (const k in (data || {})) (this as any)[k] = (data as any)[k];
+            }
+          }
+          EOF
+
+          cat > data/build/task/hits.json <<'EOF'
+          [
+            {
+              "unit_id": "unit_0",
+              "token_input": "ABCDEFGHILM",
+              "token_output": "MNOPQRSTUVZ",
+              "documents_number": 1,
+              "documents_params": {
+                "identifier_1": {
+                  "task_type": "Main",
+                  "allow_back": true,
+                  "check_gold": {"message": null, "jump": null},
+                  "reset_jump": false
+                }
+              },
+              "documents": [
+                { "id": "identifier_1", "text": "Lorem ipsum dolor sit amet" }
+              ]
+            }
+          ]
+          EOF
+
+          cat > data/build/task/dimensions.json <<'EOF'
+          [
+            {
+              "name": "sample-dimension",
+              "name_pretty": "Sample Dimension",
+              "description": "Example dimension",
+              "task_type": ["Main"],
+              "example": false,
+              "gold": false,
+              "pairwise": false,
+              "url": false,
+              "justification": false,
+              "scale": {
+                "type": "categorical",
+                "multiple_selection": false,
+                "instructions": {"label":"Label","caption":"Caption","text":"Instruction text"},
+                "mapping": [
+                  {"label":"False","description":"...","value":"0"},
+                  {"label":"True","description":"...","value":"1"}
+                ]
+              },
+              "style": {"type":"list","position":"middle","orientation":"vertical","separator":false}
+            }
+          ]
+          EOF
+
+          cat > data/build/task/instructions_evaluation.json <<'EOF'
+          {
+            "instructions": [
+              {
+                "caption": "Evaluation Instructions",
+                "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>",
+                "task_type": ["Main"]
+              }
+            ],
+            "element": {"label":"Label","caption":"Caption","text":"Instruction text"}
+          }
+          EOF
+
+          cat > data/build/task/instructions_general.json <<'EOF'
+          [
+            { "caption": "Task Instructions", "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>" }
+          ]
+          EOF
+
+          cat > data/build/task/questionnaires.json <<'EOF'
+          [
+            {
+              "type": "standard",
+              "name": "questionnaire_1",
+              "description": "Standard questionnaire",
+              "caption": false,
+              "position": "start",
+              "allow_back": false,
+              "questions": [
+                {
+                  "index": 0,
+                  "name": "age",
+                  "text": "What is your age range?",
+                  "type": "mcq",
+                  "required": true,
+                  "free_text": false,
+                  "show_detail": false,
+                  "detail": null,
+                  "answers": ["0-18","19-25","26-35","36-50","50-80","80"]
+                }
+              ]
+            },
+            {
+              "type": "crt",
+              "name": "questionnaire_2",
+              "description": "CRT questionnaire",
+              "caption": false,
+              "position": "start",
+              "allow_back": false,
+              "questions": [
+                { "index": 0, "name": "farmers", "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?" }
+              ]
+            }
+          ]
+          EOF
+
+          cat > data/build/task/search_engine.json <<'EOF'
+          { "source": "FakerWebSearch", "domains_filter": [] }
+          EOF
+
+          cat > data/build/task/task.json <<'EOF'
+          {
+            "modality": "pointwise",
+            "allowed_tries": 10,
+            "time_assessment": 2,
+            "time_check_amount": 3,
+            "attributes": [
+              {"name":"id","name_pretty":false,"show":false,"annotate":false,"required":false},
+              {"name":"text","name_pretty":false,"show":true,"required":false,"annotate":false}
+            ],
+            "element_labels": {"main":"Element","main_short":"E"},
+            "annotator": false,
+            "countdown_time": false,
+            "countdown_behavior": false,
+            "additional_times": false,
+            "countdown_modality": false,
+            "countdown_attribute": false,
+            "countdown_attribute_values": [],
+            "countdown_position_values": [],
+            "logger": false,
+            "logger_option": {
+              "button":{"general":false,"click":false},
+              "mouse":{"general":false,"mouseMovements":false,"leftClicks":false,"rightClicks":false},
+              "keyboard":{"general":false,"shortcuts":false,"keys":false},
+              "textInput":{"general":false,"paste":false,"delete":false},
+              "clipboard":{"general":false,"copy":false,"cut":false},
+              "radio":{"general":false,"change":false},
+              "search-engine-body":{"general":false,"query":false,"result":false},
+              "various":{"general":false,"selection":false,"unload":false,"focus&blur":false,"scroll":false,"resize":false}
+            },
+            "server_endpoint": "",
+            "messages": ["You have already started this task without finishing it"]
+          }
+          EOF
+
+          cat > data/build/task/workers.json <<'EOF'
+          { "block": false, "blacklist": [], "whitelist": [], "blacklist_batches": [], "whitelist_batches": [] }
+          EOF
+
+          cat > data/build/config/admin.json <<'EOF'
+          []
+          EOF
+
       - name: Compute base href
         id: base
         shell: bash
@@ -128,7 +305,7 @@ jobs:
         shell: bash
         run: |
           ROOT="dist/${{ env.APP_NAME }}"
-          for p in "$ROOT/en-US" "$ROOT/browser/en-US" "$ROOT"; do
+          for p in "$ROOT/en-US" "$ROOT/browser/en-US" "$ROOT/browser" "$ROOT"; do
             if [ -d "$p" ]; then echo "pack_dir=$p" >> "$GITHUB_OUTPUT"; echo "Using: $p"; break; fi
           done
 
