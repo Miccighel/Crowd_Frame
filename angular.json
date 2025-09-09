@@ -78,11 +78,18 @@
                         ],
                         "tsConfig": "tsconfig.app.json",
                         "styles": [
-                            "src/styles.scss"
+                            "src/styles.scss",
+                            "node_modules/@kolkov/angular-editor/themes/default.scss"
                         ],
                         "scripts": [],
                         "assets": [
-                            "src/assets"
+                            "src/favicon.ico",
+                            "src/assets",
+                            {
+                                "glob": "**/*",
+                                "input": "node_modules/@kolkov/angular-editor/assets/icons",
+                                "output": "assets/ae-icons/"
+                            }
                         ],
                         "extractLicenses": false,
                         "sourceMap": true,

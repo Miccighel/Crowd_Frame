@@ -1,122 +1,121 @@
 /* |--- OUTCOME SECTION STYLES ---| */
 
 /* |--- General ---| */
-
 .outcome-section {
-  margin: 1%;
+    margin: 1%;
 }
 
 .outcome-section mat-card {
-  margin: 1% auto;
-  padding: 16px;
+    margin: 1% auto;
+    padding: 16px;
 }
 
 .outcome-section mat-card-title {
-  margin: 0 !important;
+    margin: 0 !important;
 }
 
 .outcome-section .main-title {
-  text-align: center;
-  text-transform: uppercase;
-  margin: 0 auto 0;
-  letter-spacing: 0.04em;  /* subtle readability boost */
-  padding-block: 6px;      /* give the colored pill some breathing room */
-  border-radius: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    margin: 0 auto 0;
+    letter-spacing: 0.04em;
+    padding-block: 6px;
+    border-radius: 6px;
 }
 
 .outcome-section .sub-title {
-  padding-top: 0 !important;
-  text-transform: uppercase;
-  font-size: 1.1em;
-  letter-spacing: 0.03em;
+    padding-top: 0 !important;
+    text-transform: uppercase;
+    font-size: 1.1em;
+    letter-spacing: 0.03em;
 }
 
 .outcome-section .description {
-  margin-top: 10px !important;
-  margin-bottom: 10px !important;
-  font-size: 1.1em;
-
-  /* |--- Token display (avoid overflow, easy copy) ---| */
-  h1 {
-    text-align: center;
-    display: inline-block;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-weight: 600;
-    font-size: clamp(1rem, 3vw, 1.75rem);
-    letter-spacing: 0.02em;
-    word-break: break-all;   /* long tokens won’t blow the layout */
-    overflow-wrap: anywhere;
-    user-select: all;        /* click-drag to copy easily */
-    background: rgba(0, 0, 0, 0.04);
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin: 6px 0;
-  }
-}
-
-/* |--- Targeted alignment (remove broad div centering) ---| */
-/* Removed:
-.outcome-section div {
-  text-align: center;
-  button {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
     font-size: 1.1em;
-    padding: 10px 30px;
-  }
-}
-*/
 
+    /* |--- Token display (avoid overflow, easy copy) ---| */
+    h1 {
+        text-align: center;
+        display: inline-block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-weight: 600;
+        font-size: clamp(1rem, 3vw, 1.75rem);
+        letter-spacing: 0.02em;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        user-select: all;
+        background: rgba(0, 0, 0, 0.04);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin: 6px 0;
+    }
+}
+
+/* |--- Targeted alignment ---| */
 .outcome-section .completion-div,
 .outcome-section .comment-box {
-  text-align: center;
+    text-align: center;
 }
 
 .outcome-section .completion-div .button-completion,
 .outcome-section .comment-box .comment-button {
-  font-size: 1.1em;
-  padding: 10px 30px;
+    font-size: 1.1em;
+    padding: 10px 30px;
 }
 
 /* |--- Comment area ---| */
-
 .outcome-section .comment-form {
-  margin-top: 16px;
+    margin-top: 16px;
 
-  mat-form-field {
-    width: 100%;
-  }
+    mat-form-field {
+        width: 100%;
+    }
 }
 
 .outcome-section .comment-button {
-  text-align: center;
+    text-align: center;
 }
 
 .outcome-section .comment-sent-label {
-  text-transform: uppercase;
-  padding: 0.5%;
-  margin-left: 8px;      /* consistent with button padding above */
-  font-weight: bold;
-  color: #66bb6a;
-  vertical-align: middle;
+    text-transform: uppercase;
+    padding: 0.5%;
+    margin-left: 8px;
+    font-weight: bold;
+    color: #66bb6a;
+    vertical-align: middle;
 }
 
 .outcome-section mat-error {
-  display: block;
-  text-align: left;      /* errors are easier to scan left-aligned */
+    display: block;
+    text-align: left;
 }
 
-/* |--- Title color pills (original colors retained) ---| */
+/* |--- Reset action row (mat-card-actions) ---| */
+.outcome-section .reset-actions {
+    display: flex;
+    justify-content: center; /* centers the button in the action row */
+    padding-top: 4px; /* consistent spacing from content */
+}
 
+.outcome-section .reset-actions button {
+    font-size: 1.1em;
+    padding: 10px 30px;
+}
+
+/* |--- Title color pills ---| */
 .yellow-title {
-  background-color: #ff8c00;
-  color: white;
+    background-color: #ff8c00;
+    color: white;
 }
 
 .green-title {
-  background-color: #66bb6a;
-  color: white;
+    background-color: #66bb6a;
+    color: white;
 }
 
 .red-title {
-  color: white;
-  background-color: #ef5350;
+    background-color: #ef5350;
+    color: white;
 }

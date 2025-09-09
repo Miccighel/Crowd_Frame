@@ -1,6 +1,10 @@
 <!-- ────────────────────────────────────────────────────────────
-     Re-usable template that prints a list of dimensions
-     (works for both initial and post-assessment forms)
+     Re-usable template that renders a batch of dimensions.
+     Works for both INITIAL and POST forms via 'assessmentForm' + 'controlSuffix'.
+     Notes:
+       - verifyUrlSelection(position) is now doc-aware (checks only dims applicable to CURRENT doc)
+       - Post-step gate is applied ONLY when postAssessment is true
+       - Uses helper subdocs(documentIndex) to safely read optional 'subdocuments' (returns [])
      ──────────────────────────────────────────────────────────── -->
 <ng-template
     #dimensionTemplate
@@ -12,6 +16,7 @@
     <form [formGroup]="assessmentForm">
         @for (dimension of dimensions; track dimension; let i = $index) {
             <div class="dimension">
+
                 <!-- ───────────────────────────── NON-PAIRWISE (POINTWISE) ───────────────────────────── -->
                 @if (!dimension.pairwise) {
 
@@ -19,7 +24,6 @@
                     @if (dimension.style.type == 'list') {
                         <div class="dimension dimension--pointwise">
 
-                            <!-- Search-engine widget (optional) -->
                             <app-search-engine
                                 [documentIndex]="documentIndex"
                                 [dimensionIndex]="dimension.index"
@@ -29,31 +33,26 @@
                                 (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
                             </app-search-engine>
 
-                            @if (verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)) {
+                            @if (verifyUrlSelection(position) && (!postAssessment || checkIfDimensionIsEnabledForPostAssessment(dimension.name))) {
 
-                                <!-- Optional instructions (POINTWISE = left aligned by modifier) -->
                                 @if (dimension.scale?.instructions; as ins) {
                                     @if (ins) {
                                         <app-instruction-list
-                                            [wrapperClass]="'evaluation-instructions'"
-                                            [bodyClass]="'evaluation-instructions-body'"
                                             [element]="{
-                                                  label:   (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.labelRepetition : ins.label,
-                                                  caption: (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.captionRepetition : ins.caption,
-                                                  text: ins.text
-                                                }">
+                                              label:   (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.labelRepetition : ins.label,
+                                              caption: (postAssessment && ins.labelRepetition && ins.captionRepetition) ? ins.captionRepetition : ins.caption,
+                                              text: ins.text
+                                            }">
                                         </app-instruction-list>
                                     }
                                 }
 
-                                <!-- Pretty name -->
                                 @if (dimension.name_pretty) {
                                     <div class="dimension-name">
                                         <h2>{{ utilsService.capitalize(dimension.name_pretty) }}</h2>
                                     </div>
                                 }
 
-                                <!-- Description + Example -->
                                 @if (dimension.description || dimension.example) {
                                     <div class="dimension-container dimension-description">
                                         <div class="dimension-content">
@@ -67,22 +66,17 @@
                                     </div>
                                 }
 
-                                <!-- ───────────── SCALE CONTROLS ───────────── -->
                                 @if (dimension.scale) {
                                     <div class="dimension-container dimension-scale">
                                         <div class="dimension-content">
 
-                                            <!-- ───── Vertical layout ───── -->
                                             @if (dimension.style.orientation == 'vertical') {
 
-                                                <!-- ─── Categorical ─── -->
+                                                <!-- Categorical (two branches kept) -->
                                                 @if (dimension.scale.type == 'categorical') {
 
-                                                    <!-- video special-case (secondary categorical disabled based on primary) -->
                                                     @if (isVideoTypeLabelCategorical(dimension)) {
-                                                        <mat-radio-group
-                                                            class="radio-button-group"
-                                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+                                                        <mat-radio-group class="radio-button-group" formControlName="{{ dimension.name + '_value' + controlSuffix }}">
                                                             @if (!dimension.scale.multipleSelection) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     @if (mapping.separator) {
@@ -104,9 +98,7 @@
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {
                                                                             <div>
-                                                                                <mat-checkbox
-                                                                                    formControlName="{{ k }}"
-                                                                                    (change)="handleCheckbox($event, dimension, k)">
+                                                                                <mat-checkbox formControlName="{{ k }}" (change)="handleCheckbox($event, dimension, k)">
                                                                                     {{ mapping.label }}
                                                                                 </mat-checkbox>
                                                                             </div>
@@ -119,16 +111,13 @@
                                                             }
                                                         </mat-radio-group>
 
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>This field is required</span></mat-error>
                                                         }
-
                                                     } @else {
-                                                        <mat-radio-group
-                                                            class="radio-button-group"
-                                                            formControlName="{{ dimension.name + '_value' + controlSuffix }}">
+                                                        <mat-radio-group class="radio-button-group" formControlName="{{ dimension.name + '_value' + controlSuffix }}">
                                                             @if (!dimension.scale.multipleSelection) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     @if (mapping.separator) {
@@ -150,9 +139,7 @@
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {
                                                                             <div>
-                                                                                <mat-checkbox
-                                                                                    formControlName="{{ k }}"
-                                                                                    (change)="handleCheckbox($event, dimension, k)">
+                                                                                <mat-checkbox formControlName="{{ k }}" (change)="handleCheckbox($event, dimension, k)">
                                                                                     {{ mapping.label }}
                                                                                 </mat-checkbox>
                                                                             </div>
@@ -165,18 +152,16 @@
                                                             }
                                                         </mat-radio-group>
 
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>This field is required</span></mat-error>
                                                         }
                                                     }
                                                 }
 
-                                                <!-- ─── Interval ─── -->
+                                                <!-- Interval -->
                                                 @if (dimension.scale.type == 'interval') {
-
-                                                    <!-- video timestamp slider -->
                                                     @if (isVideoTimestampInterval()) {
                                                         <div class="scale-interval">
                                                             <mat-slider
@@ -196,9 +181,9 @@
                                                                 <span>Value: {{ videoTimestampVisualization(assessmentForm.controls[dimension.name + '_value' + controlSuffix].value) }}</span>
                                                             }
 
-                                                            @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                            shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                            assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                            @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                            && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                            && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                                 <mat-error><br><span>This field is required</span></mat-error>
                                                             }
                                                         </div>
@@ -222,16 +207,16 @@
                                                                 <span>Value: {{ assessmentForm.controls[dimension.name + '_value' + controlSuffix].value }}</span>
                                                             }
 
-                                                            @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                            shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                            assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                            @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                            && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                            && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                                 <mat-error><span>This field is required</span></mat-error>
                                                             }
                                                         </div>
                                                     }
                                                 }
 
-                                                <!-- ─── Magnitude estimation ─── -->
+                                                <!-- Magnitude estimation -->
                                                 @if (dimension.scale.type == 'magnitude_estimation') {
                                                     <mat-form-field appearance="fill">
                                                         <mat-label>Value</mat-label>
@@ -240,31 +225,31 @@
                                                             formControlName="{{ dimension.name + '_value' + controlSuffix }}"
                                                             (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)"
                                                             class="magnitude_estimation">
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>This field is required</span></mat-error>
                                                         }
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'isNumber') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'isNumber')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>Value has to be a number (whole or decimal)</span></mat-error>
                                                         }
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberFormat') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberFormat')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>Numbers must use dot as decimal separator (e.g. 1,234.56)</span></mat-error>
                                                         }
-                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberGreaterThan') &&
-                                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'numberGreaterThan')
+                                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                             <mat-error><span>Value has to be greater than {{ dimension.scale.min }}</span></mat-error>
                                                         }
                                                     </mat-form-field>
                                                 }
                                             }
 
-                                            <!-- ───── Horizontal layout (categorical implemented) ───── -->
                                             @if (dimension.style.orientation == 'horizontal') {
                                                 @if (dimension.scale.type == 'categorical') {
                                                     <mat-radio-group formControlName="{{ dimension.name + '_value' + controlSuffix }}">
@@ -280,13 +265,12 @@
                                                             </mat-radio-button>
                                                         }
                                                     </mat-radio-group>
-                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                                    shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                                    assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                                    @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                                    && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                                    && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                                         <mat-error><span>This field is required</span></mat-error>
                                                     }
                                                 }
-
                                                 @if (dimension.scale.type == 'interval' || dimension.scale.type == 'magnitude_estimation') {
                                                     <p i18n>TO BE IMPLEMENTED</p>
                                                 }
@@ -295,7 +279,6 @@
                                     </div>
                                 }
 
-                                <!-- ───────────── Justification ───────────── -->
                                 @if (dimension.justification) {
                                     <app-justification-field
                                         [form]="assessmentForm"
@@ -314,6 +297,7 @@
                         </div>
                     }
 
+                    <!-- ───────────── MATRIX STYLE ───────────── -->
                     @if (dimension.style.type == 'matrix') {
                         <div class="dimension dimension--pointwise">
 
@@ -326,15 +310,13 @@
                                 (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
                             </app-search-engine>
 
-                            @if (verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)) {
+                            @if (verifyUrlSelection(position) && (!postAssessment || checkIfDimensionIsEnabledForPostAssessment(dimension.name))) {
 
                                 <div class="{{ (dimensions.length === 1) ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple' }}">
 
                                     @let ins = dimension.scale?.instructions;
                                     @if (ins) {
                                         <app-instruction-list
-                                            [wrapperClass]="'evaluation-instructions'"
-                                            [bodyClass]="'evaluation-instructions-body'"
                                             [element]="postAssessment
                                               ? { label: ins.labelRepetition || ins.label,
                                                   caption: ins.captionRepetition || ins.caption,
@@ -345,19 +327,19 @@
                                         </app-instruction-list>
                                     }
 
-
-                                    <!-- Header row: render once for the first dimension in this batch -->
-                                    @if (dimension.scale && dimension === dimensions[0]) {
-                                        <mat-radio-group
+                                    <!-- Header row once, from first dimension with scale.mapping -->
+                                    @let headerDim = getFirstMatrixDimensionWithScale(dimensions);
+                                    @if (dimension === headerDim) {
+                                        <div
                                             class="matrix-header matrix-grid"
-                                            [style.--cols]="dimension.scale.mapping.length"
+                                            [style.--cols]="headerDim.scale.mapping.length"
                                             [style.--col-name]="'180px'"
                                             [style.--col-desc]="'320px'">
 
                                             <div class="matrix-cell matrix-stub"></div>
                                             <div class="matrix-cell matrix-stub"></div>
 
-                                            @for (mapping of dimension.scale.mapping; track mapping) {
+                                            @for (mapping of headerDim.scale.mapping; track mapping) {
                                                 <div class="matrix-cell matrix-header-cell">
                                                     @if (mapping.label) {
                                                         <div class="mapping-label"><strong [innerHTML]="mapping.label"></strong></div>
@@ -367,26 +349,25 @@
                                                     }
                                                 </div>
                                             }
-                                        </mat-radio-group>
+                                        </div>
                                     }
 
-                                    <!-- NEW: Divider ABOVE the row if separator flag is set -->
+                                    <!-- Optional divider above row -->
                                     @if (dimension.style?.separator) {
                                         <div class="matrix-row-separator">
                                             <mat-divider></mat-divider>
                                         </div>
                                     }
 
-                                    <!-- Matrix row: [Name] [Description/Example] [one radio per mapping] -->
+                                    <!-- Matrix row uses HEADER columns; fill gaps with placeholders -->
                                     @if (dimension.scale) {
                                         <mat-radio-group
                                             class="matrix-row matrix-grid"
-                                            [style.--cols]="dimension.scale.mapping.length"
+                                            [style.--cols]="headerDim?.scale?.mapping?.length || 0"
                                             [style.--col-name]="'180px'"
                                             [style.--col-desc]="'320px'"
                                             formControlName="{{ dimension.name + '_value' + controlSuffix }}">
 
-                                            <!-- 1) Name -->
                                             <div class="matrix-cell matrix-name">
                                                 @if (dimension.name_pretty) {
                                                     <p><strong>{{ dimension.name_pretty }}</strong></p>
@@ -396,7 +377,6 @@
                                                 }
                                             </div>
 
-                                            <!-- 2) Description / Example -->
                                             <div class="matrix-cell matrix-desc">
                                                 @if (dimension.description) {
                                                     <div class="{{ dimension.example ? '' : 'description-sub' }}"><p>{{ dimension.description }}</p></div>
@@ -406,27 +386,33 @@
                                                 }
                                             </div>
 
-                                            <!-- 3..N) One radio per mapping -->
-                                            @for (mapping of dimension.scale.mapping; track mapping) {
+                                            @for (hdrMap of headerDim?.scale?.mapping; track hdrMap; let col = $index) {
+                                                @let rowMap = (dimension.scale?.mapping && dimension.scale.mapping.length > col) ? dimension.scale.mapping[col] : null;
+
                                                 <div class="matrix-cell matrix-value-control">
-                                                    <mat-radio-button
-                                                        class="radio-button"
-                                                        value="{{ mapping.value }}"
-                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
-                                                    </mat-radio-button>
+                                                    @if (rowMap) {
+                                                        <mat-radio-button
+                                                            class="radio-button matrix-radio"
+                                                            [value]="rowMap.value"
+                                                            [attr.aria-label]="rowMap.label || ('Option ' + col)"
+                                                            [disableRipple]="true"
+                                                            (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
+                                                        </mat-radio-button>
+                                                    } @else {
+                                                        <span class="matrix-placeholder" aria-hidden="true"></span>
+                                                    }
                                                 </div>
                                             }
                                         </mat-radio-group>
 
-                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required') &&
-                                        shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix) &&
-                                        assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
+                                        @if (utilsService.hasError(assessmentForm, dimension.name + '_value' + controlSuffix, 'required')
+                                        && shouldShowValidation(assessmentForm, dimension.name + '_value' + controlSuffix)
+                                        && assessmentForm.controls[dimension.name + '_value' + controlSuffix].enabled) {
                                             <mat-error><span i18n>This field is required</span></mat-error>
                                         }
                                     }
                                 </div>
 
-                                <!-- Optional justification under the matrix row -->
                                 @if (dimension.justification) {
                                     <app-justification-field
                                         [form]="assessmentForm"
@@ -444,10 +430,7 @@
                             }
                         </div>
                     }
-
-
                 }
-
                 <!-- ───────────────────────────── PAIRWISE ───────────────────────────── -->
                 @if (dimension.pairwise) {
 
@@ -455,6 +438,7 @@
                     @if (dimension.style.type == 'list') {
                         <div class="dimension">
 
+                            <!-- Unlock pairwise row only after required selections -->
                             @if (unlockNextDimension(documentIndex, dimension.index)) {
 
                                 <div class="dimension-name-center">
@@ -479,11 +463,9 @@
                                     </div>
                                 }
 
-                                <!-- Dimension scale instructions via shared component -->
+                                <!-- Pairwise instructions via shared component -->
                                 @if (dimension.scale?.instructions; as ins) {
-                                    <app-instruction-list
-                                        [element]="ins">
-                                    </app-instruction-list>
+                                    <app-instruction-list [element]="ins"></app-instruction-list>
                                 }
 
                                 <app-search-engine
@@ -504,8 +486,10 @@
 
                                             @if (dimension.style.orientation == 'vertical') {
 
+                                                <!-- Pairwise categorical -->
                                                 @if (dimension.scale.type == 'categorical') {
-                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                    <!-- Safe accessor: subdocs(documentIndex) returns [] when 'subdocuments' is missing -->
+                                                    @for (subdoc of getSubdocumentsHelper(documentIndex); track subdoc; let k = $index) {
                                                         <div class="dimension-split-inside dimension-box pairwise-col-surface">
                                                             <mat-radio-group
                                                                 class="radio-button-group"
@@ -531,8 +515,10 @@
                                                     }
                                                 }
 
+                                                <!-- Pairwise interval -->
                                                 @if (dimension.scale.type == 'interval') {
-                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                    <!-- Safe accessor: subdocs(documentIndex) returns [] when 'subdocuments' is missing -->
+                                                    @for (subdoc of getSubdocumentsHelper(documentIndex); track subdoc; let k = $index) {
                                                         <div class="dimension-split-inside dimension-box pairwise-col-surface">
                                                             <label class="pairwise-inline-label">
                                                                 <span i18n>Selected value:</span>
@@ -557,8 +543,10 @@
                                                     }
                                                 }
 
+                                                <!-- Pairwise magnitude estimation -->
                                                 @if (dimension.scale.type == 'magnitude_estimation') {
-                                                    @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                                    <!-- Safe accessor: subdocs(documentIndex) returns [] when 'subdocuments' is missing -->
+                                                    @for (subdoc of getSubdocumentsHelper(documentIndex); track subdoc; let k = $index) {
                                                         <div class="dimension-split-inside dimension-box pairwise-col-surface">
                                                             <mat-form-field appearance="fill" class="pairwise-magnitude-field">
                                                                 <mat-label><span i18n>Value</span></mat-label>
@@ -600,12 +588,14 @@
                                     </div>
                                 }
 
+                                <!-- Pairwise justification (per element) -->
                                 @if (dimension.justification) {
                                     <div class="dimension-content-split pairwise-columns">
                                         <div class="pairwise-column-title"><strong>Element A</strong></div>
                                         <div class="pairwise-column-title"><strong>Element B</strong></div>
 
-                                        @for (subdoc of task.documents[documentIndex].subdocuments; track subdoc; let k = $index) {
+                                        <!-- Safe accessor: subdocs(documentIndex) returns [] when 'subdocuments' is missing -->
+                                        @for (subdoc of getSubdocumentsHelper(documentIndex); track subdoc; let k = $index) {
                                             <div class="dimension-box pairwise-col-surface">
                                                 <app-justification-field
                                                     [form]="assessmentForm"
@@ -638,38 +628,30 @@
     </form>
 </ng-template>
 
-<!-- ─────────────────── INITIAL (non-post) RENDERING ─────────────────── -->
+<!-- INITIAL render -->
 @if (!postAssessment) {
     @for (pos of ['top', 'middle', 'bottom']; track pos) {
         @for (kind of ['list', 'matrix']; track kind) {
-            @if (assessmentForm && filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
+            @let dims = filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos));
+            @if (assessmentForm && dims.length > 0) {
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
-                    [ngTemplateOutletContext]="{
-            dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-            position: pos,
-            assessmentForm: assessmentForm,
-            controlSuffix: ''
-          }">
+                    [ngTemplateOutletContext]="{ dimensions: dims, position: pos, assessmentForm: assessmentForm, controlSuffix: '' }">
                 </ng-template>
             }
         }
     }
 }
 
-<!-- ─────────────────── POST-ASSESSMENT RENDERING ─────────────────── -->
+<!-- POST-ASSESSMENT render -->
 @if (postAssessment && followingAssessmentAllowed) {
     @for (pos of ['top', 'middle', 'bottom']; track pos) {
         @for (kind of ['list', 'matrix']; track kind) {
-            @if (assessmentFormAdditional && filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)).length > 0) {
+            @let dims = filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos));
+            @if (assessmentFormAdditional && dims.length > 0) {
                 <ng-template
                     [ngTemplateOutlet]="dimensionTemplate"
-                    [ngTemplateOutletContext]="{
-            dimensions: filterDimensionsAccordingToTaskType(task.filterDimensions(kind, pos)),
-            position: pos,
-            assessmentForm: assessmentFormAdditional,
-            controlSuffix: '_post_' + postAssessmentIndex
-          }">
+                    [ngTemplateOutletContext]="{ dimensions: dims, position: pos, assessmentForm: assessmentFormAdditional, controlSuffix: '_post_' + postAssessmentIndex }">
                 </ng-template>
             }
         }

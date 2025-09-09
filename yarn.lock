@@ -4634,7 +4634,7 @@ __metadata:
     crypto-es: "npm:^3.0.2"
     esbuild: "npm:^0.25.9"
     material-icons: "npm:^1.13.14"
-    ngx-color-picker: "npm:^20.1.1"
+    ngx-color-picker: "npm:^20"
     ngx-cookie-service: "npm:20.1.0"
     ngx-countdown: "npm:20.0.0"
     ngx-device-detector: "npm:^10.1.0"
@@ -6149,7 +6149,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:^20.1.1":
+"ngx-color-picker@npm:^20":
   version: 20.1.1
   resolution: "ngx-color-picker@npm:20.1.1"
   dependencies:

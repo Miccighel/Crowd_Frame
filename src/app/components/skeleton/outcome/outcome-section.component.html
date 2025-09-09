@@ -53,7 +53,6 @@
         <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
         <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="description">
-
             @switch (statusKey) {
 
                 @case ('IP_INFORMATION_MISSING') {
@@ -124,7 +123,7 @@
                     </p>
                 }
 
-                <!-- Mirror message for manual whitelist-on-current-batch (rare but consistent) -->
+                <!-- Mirror message for manual whitelist-on-current-batch -->
                 @case ('WORKER_WHITELIST_CURRENT') {
                     <p>
                         <span i18n>You have participated previously and we are recruiting only new workers. Please return the assignment on the original platform.</span>
@@ -236,9 +235,16 @@
             <mat-card-content class="description">
                 <p><span i18n>Click the button to reset your current submission. Your previous inputs will be preserved.</span></p>
             </mat-card-content>
-            <div>
-                <button mat-flat-button color="primary" (click)="performReset.emit(true)"><span i18n>Reset</span></button>
-            </div>
+
+            <!-- Centered action row -->
+            <mat-card-actions class="reset-actions">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    (click)="performReset.emit(true)">
+                    <span i18n>Reset</span>
+                </button>
+            </mat-card-actions>
         </mat-card>
     }
 

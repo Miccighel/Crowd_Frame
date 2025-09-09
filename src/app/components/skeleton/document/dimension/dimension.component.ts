@@ -85,14 +85,14 @@ export class DimensionComponent implements OnInit, OnChanges {
     /* ---------------------- helpers: disabled state ---------------------- */
     private isGlobalFormsDisabled(): boolean {
         return !!this.task?.countdownsExpired?.[this.documentIndex] &&
-               this.task?.settings?.countdown_behavior === 'disable_forms';
+            this.task?.settings?.countdown_behavior === 'disable_forms';
     }
 
     private toggleCtrlEnabled(form: UntypedFormGroup, controlName: string, enabled: boolean) {
         const c = form.get(controlName);
         if (!c) return;
-        if (enabled) c.enable({ emitEvent: false });
-        else c.disable({ emitEvent: false });
+        if (enabled) c.enable({emitEvent: false});
+        else c.disable({emitEvent: false});
     }
 
     /**
@@ -167,18 +167,18 @@ export class DimensionComponent implements OnInit, OnChanges {
                             const answers: any = {};
                             (dimension.scale as ScaleCategorical).mapping.forEach((_v, idx) => answers[idx] = false);
                             const listGroup = this.formBuilder.group(answers);
-                            if (globallyDisabled) listGroup.disable({ emitEvent: false });
+                            if (globallyDisabled) listGroup.disable({emitEvent: false});
                             controlsConfig[`${dimension.name}_list${controlSuffix}`] = listGroup;
 
                             controlsConfig[`${dimension.name}_value${controlSuffix}`] =
                                 new UntypedFormControl(
-                                    { value: answerValue, disabled: globallyDisabled },
+                                    {value: answerValue, disabled: globallyDisabled},
                                     [Validators.required]
                                 );
                         } else {
                             controlsConfig[`${dimension.name}_value${controlSuffix}`] =
                                 new UntypedFormControl(
-                                    { value: answerValue, disabled: globallyDisabled },
+                                    {value: answerValue, disabled: globallyDisabled},
                                     [Validators.required]
                                 );
                         }
@@ -188,7 +188,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                         if (answerValue === undefined) answerValue = null; // must choose explicitly
                         controlsConfig[`${dimension.name}_value${controlSuffix}`] =
                             new UntypedFormControl(
-                                { value: answerValue, disabled: globallyDisabled },
+                                {value: answerValue, disabled: globallyDisabled},
                                 [Validators.required]
                             );
                     }
@@ -196,7 +196,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                     if (dimension.scale.type === 'magnitude_estimation') {
                         controlsConfig[`${dimension.name}_value${controlSuffix}`] =
                             new UntypedFormControl(
-                                { value: answerValue, disabled: globallyDisabled },
+                                {value: answerValue, disabled: globallyDisabled},
                                 [this.utilsService.numberGreaterThanValidator(((dimension.scale as ScaleMagnitude).min))]
                             );
                     }
@@ -210,7 +210,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                     }
                     controlsConfig[`${dimension.name}_justification${controlSuffix}`] =
                         new UntypedFormControl(
-                            { value: answerJustification, disabled: globallyDisabled },
+                            {value: answerJustification, disabled: globallyDisabled},
                             [Validators.required, this.validateJustification.bind(this)]
                         );
                 }
@@ -225,10 +225,10 @@ export class DimensionComponent implements OnInit, OnChanges {
                             ?? '';
                     }
                     controlsConfig[`${dimension.name}_url${controlSuffix}`] =
-                        new UntypedFormControl({ value: urlPrev, disabled: globallyDisabled });
+                        new UntypedFormControl({value: urlPrev, disabled: globallyDisabled});
                 }
 
-            /* ───────────── PAIRWISE ───────────── */
+                /* ───────────── PAIRWISE ───────────── */
             } else {
                 const subdocs = (this.task.documents[this.documentIndex] as any)?.subdocuments || [];
                 for (let j = 0; j < subdocs.length; j++) {
@@ -242,7 +242,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                         if (dimension.scale.type === 'categorical') {
                             controlsConfig[`${dimension.name}_value_element_${j}`] =
                                 new UntypedFormControl(
-                                    { value: answerValue, disabled: globallyDisabled },
+                                    {value: answerValue, disabled: globallyDisabled},
                                     [Validators.required]
                                 );
                         }
@@ -251,7 +251,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                             if (answerValue === undefined) answerValue = null;
                             controlsConfig[`${dimension.name}_value_element_${j}`] =
                                 new UntypedFormControl(
-                                    { value: answerValue, disabled: globallyDisabled },
+                                    {value: answerValue, disabled: globallyDisabled},
                                     [Validators.required]
                                 );
                         }
@@ -259,7 +259,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                         if (dimension.scale.type === 'magnitude_estimation') {
                             controlsConfig[`${dimension.name}_value_element_${j}`] =
                                 new UntypedFormControl(
-                                    { value: answerValue, disabled: globallyDisabled },
+                                    {value: answerValue, disabled: globallyDisabled},
                                     [this.utilsService.numberGreaterThanValidator(((dimension.scale as ScaleMagnitude).min))]
                                 );
                         }
@@ -273,7 +273,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                         }
                         controlsConfig[`${dimension.name}_justification_element_${j}`] =
                             new UntypedFormControl(
-                                { value: answerJustification, disabled: globallyDisabled },
+                                {value: answerJustification, disabled: globallyDisabled},
                                 [Validators.required, this.validateJustification.bind(this)]
                             );
                     }
@@ -330,12 +330,12 @@ export class DimensionComponent implements OnInit, OnChanges {
             this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, this.postAssessmentIndex);
         if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
             if (this.assessmentForm) {
-                this.assessmentForm.disable({ emitEvent: false });
+                this.assessmentForm.disable({emitEvent: false});
                 const controlsConfig = this.initializeControls(`_post_${this.postAssessmentIndex}`);
                 this.assessmentFormAdditional = this.formBuilder.group(controlsConfig);
 
                 if (this.postAssessmentIndex <= this.task.retrieveIndexOfLastPostAssessmentStep()) {
-                    this.assessmentFormAdditional.disable({ emitEvent: false });
+                    this.assessmentFormAdditional.disable({emitEvent: false});
                 }
 
                 this.setupDynamicDisableSubscriptions(this.assessmentFormAdditional, `_post_${this.postAssessmentIndex}`);
@@ -358,7 +358,7 @@ export class DimensionComponent implements OnInit, OnChanges {
             const controlsConfig = this.initializeControls(controlSuffix);
 
             if (this.assessmentForm) {
-                this.assessmentForm.disable({ emitEvent: false });
+                this.assessmentForm.disable({emitEvent: false});
                 const currentForm = this.getCurrentAssessmentForm();
 
                 Object.entries(currentForm.controls)?.forEach(([controlName, _control]) => {
@@ -404,10 +404,10 @@ export class DimensionComponent implements OnInit, OnChanges {
     public markGroupAsSubmitted(form: UntypedFormGroup): void {
         this.submitted = true;
         form?.markAllAsTouched();
-        form?.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+        form?.updateValueAndValidity({onlySelf: false, emitEvent: false});
     }
 
-    /* #################### CATEGORICAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    /* #################### CATEGORICAL DIMENSION CONTROLS FOR VIDEO TASKS #################### */
     public detectCategoricalDimensionOnChange(eventData: { value?: any; target?: any; }) {
         if (this.task.settings.attributesMain.some(attribute => attribute.is_video) &&
             this.task.dimensions.some(dimension => dimension.scale.type == 'interval') &&
@@ -443,7 +443,15 @@ export class DimensionComponent implements OnInit, OnChanges {
         }
     }
 
-    /* #################### INTERVAL DIMENSION CONTROLLS FOR VIDEO TASKS #################### */
+    /* Returns the subdocuments array for the given document index. */
+    /* Defensive: the auto-generated Document may not declare 'subdocuments'. */
+    public getSubdocumentsHelper(idx: number): any[] {
+        const doc: any = this.task?.documents?.[idx];
+        return Array.isArray(doc?.subdocuments) ? doc.subdocuments : [];
+    }
+
+    /* #################### INTERVAL DIMENSION CONTROLS FOR VIDEO TASKS #################### */
+
     public isVideoTimestampInterval(): boolean {
         return this.task.settings.attributesMain.some(attribute => attribute.is_video) &&
             this.task.dimensions.some(dimension => dimension.scale.type == 'categorical');
@@ -477,26 +485,6 @@ export class DimensionComponent implements OnInit, OnChanges {
         return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === 'interval');
     }
 
-    /* Old helpers retained for compatibility (not used in template anymore) */
-    public sliderDisabled(): boolean {
-        const primary = this.getPrimaryCategoricalDimension();
-        if (primary?.scale instanceof ScaleCategorical) {
-            return this.assessmentForm.controls[(primary.name).concat('_value')].value !== primary.scale.mapping[1].value;
-        }
-        return false;
-    }
-
-    public categoricalDimensionDisabled(currentDimension: Dimension): boolean {
-        if (currentDimension.scale instanceof ScaleCategorical) {
-            const primary = this.getPrimaryCategoricalDimension();
-            if (primary?.scale instanceof ScaleCategorical) {
-                return this.assessmentForm.controls[(primary.name).concat('_value')].value !== primary.scale.mapping[1].value &&
-                    currentDimension.name != primary.name;
-            }
-        }
-        return false;
-    }
-
     /* #################### POST ASSESSMENT #################### */
     public getCurrentAssessmentForm() {
         if (this.postAssessment) {
@@ -521,8 +509,19 @@ export class DimensionComponent implements OnInit, OnChanges {
         return enabled;
     }
 
-    /* #################### MAIN/TRAINING FILTER #################### */
-    public filterDimensionsAccordingToTaskType(dimensions: Array<Dimension>) {
+    /**
+     * Returns only the dimensions valid for the CURRENT document's task type.
+     * Internally relies on:
+     *   task.checkCurrentTaskType(task.documents[documentIndex], dimension.task_type)
+     *
+     * Behavior:
+     *  - For MAIN documents:     keeps dimensions whose task_type is main or both.
+     *  - For TRAINING documents: keeps dimensions whose task_type is training or both.
+     *
+     * This is the step that ensures TRAINING dimensions render when the current
+     * document is a training doc (and likewise for main docs).
+     */
+    public filterDimensionsAccordingToTaskType(dimensions: Array<Dimension>): Array<Dimension> {
         const filtered: Array<Dimension> = [];
         for (const dimension of dimensions) {
             if (this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], dimension.task_type)) {
@@ -531,6 +530,18 @@ export class DimensionComponent implements OnInit, OnChanges {
         }
         return filtered;
     }
+
+    public getFirstMatrixDimensionWithScale(dims: Array<Dimension>): Dimension | null {
+        if (!Array.isArray(dims)) return null;
+        for (const d of dims) {
+            const scale: any = (d as any)?.scale;
+            if (scale && Array.isArray(scale.mapping) && scale.mapping.length > 0) {
+                return d;
+            }
+        }
+        return null;
+    }
+
 
     /* #################### JUSTIFICATION #################### */
     public validateJustification(control: UntypedFormControl) {
@@ -579,10 +590,25 @@ export class DimensionComponent implements OnInit, OnChanges {
         if (position == 'middle') positionsToCheck.push('top', 'middle');
         if (position == 'bottom') positionsToCheck.push('top', 'middle', 'bottom');
 
+        const currentDocument = this.task.documents[this.documentIndex];
+
         const dimensionsToCheck: Array<Dimension> = [];
         for (const dimension of this.task.dimensions) {
+            /* Consider only dimensions in scope (layout position) */
             if ((dimension as any).style && positionsToCheck.includes((dimension as any).style.position)) {
-                dimensionsToCheck.push(dimension);
+
+                /* Respect current document task type (main/training) */
+                if (!this.task.checkCurrentTaskType(currentDocument, (dimension as any).task_type)) continue;
+
+                /* URL requirement: url === true OR url.enable === true */
+                const urlConf: any = (dimension as any).url;
+                const requiresUrl =
+                    urlConf === true ||
+                    (urlConf && typeof urlConf === 'object' && urlConf.enable === true);
+
+                if (requiresUrl) {
+                    dimensionsToCheck.push(dimension);
+                }
             }
         }
 
@@ -591,15 +617,14 @@ export class DimensionComponent implements OnInit, OnChanges {
 
         let result = true;
         for (const dimension of dimensionsToCheck) {
-            if ((dimension as any).url) {
-                const keyBase = `${dimension.name}_url`;
-                const keyStep = `${dimension.name}_url${suffix}`;
-                const ctrl = currentAssessmentForm?.get(keyStep) ?? currentAssessmentForm?.get(keyBase);
-                if (!ctrl || !ctrl.value) result = false;
-            }
+            const keyBase = `${dimension.name}_url`;
+            const keyStep = `${dimension.name}_url${suffix}`;
+            const ctrl = currentAssessmentForm?.get(keyStep) ?? currentAssessmentForm?.get(keyBase);
+            if (!ctrl || !ctrl.value) result = false;
         }
         return result;
     }
+
 
     public storeSearchEngineUrl(urlFormGroup: UntypedFormGroup, dimensionIndex: number) {
         for (const [key, _] of Object.entries(urlFormGroup.controls)) {
@@ -658,10 +683,10 @@ export class DimensionComponent implements OnInit, OnChanges {
     public unlockNextDimension(documentIndex: number, dimensionIndex: number) {
         if (dimensionIndex == 0) {
             return this.task.documentsPairwiseSelection[documentIndex][0] == true ||
-                   this.task.documentsPairwiseSelection[documentIndex][1] == true;
+                this.task.documentsPairwiseSelection[documentIndex][1] == true;
         } else {
             return this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][0] == true &&
-                   this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][1] == true;
+                this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex - 1][1] == true;
         }
     }
 

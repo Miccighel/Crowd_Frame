@@ -644,6 +644,14 @@ export class Task {
         return times
     }
 
+    public timeSpentOk(): boolean {
+        const required = this.getTimesCheckAmount();
+        for (let i = 0; i < this.timestampsElapsed.length; i++) {
+            if (this.timestampsElapsed[i] < required[i]) return false;
+        }
+        return true;
+    }
+
     /* #################### DIMENSION HANDLING #################### */
 
     /* This function is used to sort each dimension that a worker have to assess according the position specified */
@@ -1089,7 +1097,9 @@ export class Task {
 
             // Visible only if document type matches one in the array
             return taskTypesList.some(
-                type => type.toLowerCase() === document.params['task_type'].toLowerCase()
+                type => {
+                    return type.toLowerCase() === document.params['task_type'].toLowerCase();
+                }
             );
         }
 
@@ -1263,100 +1273,73 @@ export class Task {
     }
 
     public buildTaskDocumentPayload(
-        elementData,
-        answers,
-        additionalAnswers = {},
-        countdown,
-        action
-    ) {
-        let data = {};
+        /* Element meta returned by getElementIndex(stepIndex) */
+        elementMeta: { elementType: string; elementIndex: number; overallIndex: number; elementLabel: string },
+        /* Values from the main (initial) assessment form */
+        answers: Record<string, any>,
+        /* Values from any additional/post-assessment forms (optional) */
+        additionalAnswers: Record<string, any> = {},
+        /* Remaining seconds on the document countdown, or null if not applicable */
+        countdown: number | null = null,
+        /* Action that produced this payload: "Next" | "Back" | "Finish" */
+        action: string = "Next",
+        /* Optional extras (used by Chat widget to attach telemetry) */
+        opts?: {
+            chatExtras?: {
+                dimensions_selected?: { data: any[]; amount: number };
+                queries?: { data: any[]; amount: number };
+                responses_retrieved?: { data: any[]; amount: number; groups?: number };
+                responses_selected?: { data: any[]; amount: number };
+            };
+        }
+    ): Record<string, any> {
+        /* Resolve overall index (safeguard if caller forgets to pass it) */
+        const overallIndex =
+            typeof elementMeta.overallIndex === "number"
+                ? elementMeta.overallIndex
+                : this.questionnaireAmount + elementMeta.elementIndex;
 
-        /* Info about the performed action ("Next", "Back", etc.) */
-        data["info"] = {
-            action: action,
-            access: this.elementsAccesses[elementData['overallIndex']],
-            try: this.tryCurrent,
-            index: elementData['elementIndex'],
-            sequence: this.sequenceNumber,
-            element: "document",
+        /* ---------- Core envelope (stable fields) ---------- */
+        const data: Record<string, any> = {
+            /* Info block: mirrors ACL/data sequencing and element identity */
+            info: {
+                action,                                /* "Next" | "Back" | "Finish" */
+                element: "document",                   /* constant discriminator */
+                index: elementMeta.elementIndex,       /* document index within documents[] */
+                sequence: this.sequenceNumber,         /* monotonic sequence for auditing */
+                try: this.tryCurrent,                  /* attempt number */
+                access: this.elementsAccesses?.[overallIndex] ?? 0 /* #times the element has been accessed */
+            },
+
+            /* Answers */
+            answers: answers ?? {},                  /* initial assessment answers */
+            additional_answers: additionalAnswers ?? {}, /* post-assessment answers (if any) */
+
+            /* Notes collected by annotators (if your flow uses them) */
+            notes: this.notes?.[elementMeta.elementIndex] ?? [],
+
+            /* Countdown snapshot (seconds left) if the feature is enabled */
+            countdown,
+
+            /* Timestamps: start/end pairs and total elapsed for this element */
+            timestamps_start: this.timestampsStart?.[overallIndex] ?? [],
+            timestamps_end: this.timestampsEnd?.[overallIndex] ?? [],
+            timestamps_elapsed: this.timestampsElapsed?.[overallIndex] ?? 0,
+
+            /* Redundant numeric access count (kept for backward compatibility) */
+            accesses: this.elementsAccesses?.[overallIndex] ?? 0
         };
 
-        /* Normalize worker answers by coercing magnitude-estimation values to numbers */
-        for (let [attribute, value] of Object.entries(answers)) {
-            const answerDimensionName = attribute.split("_")[0];
-            for (let dimension of this.dimensions) {
-                if (answerDimensionName == dimension.name) {
-                    answers[attribute] =
-                        dimension.scale && dimension.scale instanceof ScaleMagnitude
-                            ? +String(value).replace(/,/g, "")
-                            : value;
-                    break;
-                }
-            }
+        /* ---------- Optional chat telemetry (merged only if provided) ---------- */
+        if (opts?.chatExtras) {
+            const x = opts.chatExtras;
+            if (x.dimensions_selected) data["dimensions_selected"] = x.dimensions_selected;   /* { data, amount } */
+            if (x.queries) data["queries"] = x.queries;                                       /* { data, amount } */
+            if (x.responses_retrieved) data["responses_retrieved"] = x.responses_retrieved;   /* { data, amount, groups? } */
+            if (x.responses_selected) data["responses_selected"] = x.responses_selected;       /* { data, amount } */
         }
 
-        /* Merge additional answers (e.g., from other form controls) */
-        for (let [additionalAnswerName, value] of Object.entries(additionalAnswers)) {
-            answers[additionalAnswerName] = value;
-        }
-
-        /* Persist pairwise selection into answers so history can be restored
-           (derive count from documentsPairwiseSelection, never from doc.subdocuments) */
-        const docIdx = elementData['elementIndex'];
-        const selectionArr = this.documentsPairwiseSelection?.[docIdx];
-
-        if (Array.isArray(selectionArr) && selectionArr.length > 0) {
-            const subdocCount = selectionArr.length;
-            let selectedIndex = -1;
-
-            for (let j = 0; j < subdocCount; j++) {
-                const key = `element_${j}_selected`;
-                const isSelected = !!selectionArr[j];
-                answers[key] = isSelected;
-                if (isSelected && selectedIndex === -1) {
-                    selectedIndex = j;
-                }
-            }
-
-            answers['pairwise_selected_index'] = selectedIndex;
-        }
-
-        /* Store worker answers for this document */
-        data["answers"] = answers;
-
-        /* Notes/annotations (empty if no annotator enabled) */
-        data["notes"] = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
-
-        /* Worker’s dimensions selected values for this document */
-        data["dimensions_selected"] = this.dimensionsSelectedValues[elementData['elementIndex']];
-
-        /* Worker’s search engine queries for this document */
-        data["queries"] = this.searchEngineQueries[elementData['elementIndex']];
-
-        /* Start, end and elapsed timestamps for this document */
-        data["timestamps_start"] = this.timestampsStart[elementData['overallIndex']];
-        data["timestamps_end"] = this.timestampsEnd[elementData['overallIndex']];
-        data["timestamps_elapsed"] = this.timestampsElapsed[elementData['overallIndex']];
-
-        /* Countdown data (start, left, status, expiration, overtime) */
-        data["countdowns_times_start"] = this.settings.countdownTime >= 0 ? this.documentsStartCountdownTime[elementData['elementIndex']] : [];
-        data["countdowns_times_left"] = this.settings.countdownTime >= 0 ? countdown : [];
-        data["countdowns_started"] = this.settings.countdownTime >= 0 ? this.countdownsStarted[elementData['elementIndex']] : [];
-        data["countdowns_expired"] = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
-
-        const countdown_expired_timestamp = this.settings.countdownTime >= 0 ? this.countdownExpiredTimestamp[elementData['elementIndex']] : [];
-        const overtime = this.settings.countdownTime >= 0 ? this.overtime[elementData['elementIndex']] : [];
-
-        data['countdown_expired_timestamp'] = countdown_expired_timestamp;
-        data['overtime'] = overtime;
-
-        /* Number of accesses to the current document */
-        data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
-
-        /* Search engine responses (retrieved + selected) */
-        data["responses_retrieved"] = this.searchEngineRetrievedResponses[elementData['elementIndex']];
-        data["responses_selected"] = this.searchEngineSelectedResponses[elementData['elementIndex']];
-
+        /* Return a plain JSON-serialisable object ready for persistence */
         return data;
     }
 

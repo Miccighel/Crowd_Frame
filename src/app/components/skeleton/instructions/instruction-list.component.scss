@@ -1,124 +1,273 @@
-/* |--- INSTRUCTION LIST (shared) --| */
+/* ======================================================================
+   Instruction List – Modes: .styled | .legacy
+   - Legacy colors inherit from parent (no gray tint)
+   - Pill visuals unchanged; item index uses pill-like badge in styled mode
+   ====================================================================== */
 
+:host {
+    display: block;
+}
+
+/* Root */
 .instruction-list {
-  font-family: inherit;
-  color: #222;
+    font-family: inherit;
+    margin-bottom: 1.2rem;
 }
 
-/* Element header: centered by default; slightly larger */
+/* ─────────────────────────────────────────────────────────────
+   Header (shared)
+   ───────────────────────────────────────────────────────────── */
 .instruction-element-header {
-  font-size: 1.2em;            /* ↑ a bit bigger */
-  font-weight: inherit;        /* not bold unless parent says so */
-  color: #2d3a4b;
-
-  display: flex;
-  align-items: center;         /* vertical centering */
-  justify-content: center;     /* centered by default */
-  gap: .7rem;
-  margin: 0 0 6px 0;           /* match evaluation block spacing */
-  flex-wrap: wrap;
+    font-size: inherit; /* keep size from context */
+    font-weight: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centered by default */
+    gap: .7rem;
+    margin: 0 0 .75rem 0; /* a bit more breathing room */
+    flex-wrap: wrap;
 }
 
-/* If a pill is present → left align and bump size a touch more */
-.instruction-element-header:has(.element-label-pill),
 .instruction-element-header.has-pill {
-  justify-content: flex-start; /* left align */
-  text-align: left;
-  font-size: 1.35em;           /* ↑ a bit bigger than default */
-  gap: .8rem;
+    justify-content: flex-start;
+    text-align: left;
+    font-size: inherit; /* do not enlarge title */
+    gap: .8rem;
 }
 
-/* Pill: scales with header size; not bold; slightly larger */
+/* Pill (element + item alias) */
 .element-label-pill {
-  --pill-bg: #e8efff;
-  --pill-fg: #244fbe;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 2em;              /* ↑ from ~1.85em */
-  height: 2em;                 /* ↑ from ~1.85em */
-  padding: 0 .7em;             /* a bit more horizontal room */
-  border-radius: 999px;
-
-  background: var(--pill-bg);
-  color: var(--pill-fg);
-
-  font-size: 1.05em;           /* pill text slightly larger */
-  line-height: 1;
-  text-align: center;
+    --pill-bg: #e8efff;
+    --pill-fg: #244fbe;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2em;
+    height: 2em;
+    padding: 0 .7em;
+    border-radius: 999px;
+    background: var(--pill-bg);
+    color: var(--pill-fg);
+    font-size: 1.12em; /* slightly larger text inside pill */
+    line-height: 1;
+    text-align: center;
 }
 
-/* Caption next to pill (not bold) */
-.element-caption {
-  color: #2d3a4b;
+.instruction-label-pill {
+    @extend .element-label-pill;
 }
 
-/* Optional element text under the header */
+/* Element body text (shared) */
 .element-text {
-  line-height: 1.6;
-  font-size: 1.15rem;           /* ↑ from ~1.0625rem */
-  color: #333;
-  margin: 0 0 0.9rem;
-  text-align: justify;
+    line-height: 1.6;
+    font-size: 1.05rem;
+    margin: 0 0 0.9rem;
+    text-align: justify;
 }
 
-/* Individual instruction blocks */
-.instruction {
-  margin: 0 0 1rem;
+/* ======================================================================
+   STYLED BRANCH  (cards + numeric badge with pill shape)
+   ====================================================================== */
+.instruction-list.styled {
+    --inst-card-bg: #fafbff;
+    --inst-card-bd: rgba(0, 0, 0, .06);
+    --inst-num-bg: #e8efff; /* match element pill */
+    --inst-num-fg: #244fbe; /* match element pill */
+    --inst-num-size: 1.6rem;
+
+    .instruction-items {
+        counter-reset: inst;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .instruction-item {
+        counter-increment: inst;
+        position: relative;
+        background: var(--inst-card-bg);
+        border: 1px solid var(--inst-card-bd);
+        border-radius: 12px;
+        padding: .7rem .85rem .75rem 3.1rem; /* reduced padding */
+        min-block-size: 2.9rem;
+        display: grid;
+        align-items: center; /* vertical centering for short items */
+    }
+
+    /* Index badge: pill shape, same vibe as element pill */
+    .instruction-item::before {
+        content: counter(inst);
+        position: absolute;
+        inset-inline-start: .6rem;
+        inset-block-start: 50%;
+        transform: translateY(-50%);
+        min-inline-size: var(--inst-num-size);
+        inline-size: auto; /* allow pill to grow if 2+ digits */
+        padding-inline: .45rem;
+        block-size: var(--inst-num-size);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .95rem;
+        background: var(--inst-num-bg);
+        color: var(--inst-num-fg);
+        line-height: 1;
+    }
+
+    .instruction-row {
+        display: grid;
+        align-content: center;
+        gap: .35rem;
+        min-block-size: 2.1rem; /* avoids collapsing when only caption */
+        margin-left: 0.75rem; /* space after the badge */
+    }
+
+    .instruction-caption {
+        margin: 0;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        color: inherit; /* inherit from parent theme */
+    }
+
+    .instruction-caption.has-pill {
+        justify-content: flex-start;
+    }
+
+    .instruction-text {
+        line-height: 1.6;
+        font-size: 1.05rem;
+        color: inherit; /* inherit from parent theme */
+        margin: 0; /* no extra margin inside card */
+        text-align: justify;
+    }
+
+    .instruction-text ul,
+    .instruction-text ol {
+        margin: .3rem 0 .3rem 1.1rem;
+        padding-left: 1rem;
+    }
+
+    .instruction-text li {
+        line-height: 1.7;
+        margin: .15rem 0;
+    }
+
+    .instruction-text p,
+    .instruction-text span {
+        margin: 0 0 .7rem 0;
+    }
+
+    .instruction-item:hover {
+        border-color: rgba(0, 0, 0, .14);
+    }
+
+    @media (max-width: 600px) {
+        .instruction-item {
+            padding: .65rem .75rem .7rem 2.8rem;
+            align-items: start;
+        }
+        .instruction-item::before {
+            inset-inline-start: .55rem;
+            inset-block-start: .7rem;
+            transform: none;
+            min-inline-size: 1.5rem;
+            block-size: 1.5rem;
+            padding-inline: .4rem;
+            font-size: .9rem;
+        }
+        .instruction-text {
+            text-align: left;
+        }
+    }
 }
 
-.instruction-caption {
-  text-align: center;
-  font-weight: 500;            /* mild emphasis only */
-  color: #2d3a4b;
-  margin: 0 0 0.45rem;
-  letter-spacing: 0.01em;
+/* ======================================================================
+   LEGACY BRANCH  (classic block layout; colors inherit)
+   ====================================================================== */
+.instruction-list.legacy {
+    > ul.instruction-legacy {
+        list-style: none;
+        margin: 0;
+        padding-left: 0;
+    }
+
+    .instruction {
+        margin: 0 0 1rem;
+    }
+
+    /* Use inherited color so it doesn't look grayish under themes */
+    .instruction-caption {
+        font-weight: 600; /* a touch bolder for clarity */
+        line-height: 1.35;
+        margin: 0 0 .5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* centered by default */
+        gap: .55rem;
+        flex-wrap: wrap;
+        color: inherit; /* explicit inherit */
+        font-size: 1.5rem;
+    }
+
+    .instruction-caption.has-pill {
+        justify-content: flex-start; /* left-align when a pill exists */
+        text-align: left;
+    }
+
+    .instruction-text {
+        color: inherit;
+        line-height: 1.6;
+        font-size: 1.05rem;
+        margin: 0 0 .9rem;
+        text-align: justify;
+    }
+
+    .instruction-text ul,
+    .instruction-text ol {
+        margin: 6px 0 6px 18px;
+        padding-left: 18px;
+    }
+
+    .instruction-text li {
+        line-height: 1.85;
+        margin: 4px 0;
+    }
+
+    .instructions-quote {
+        margin: 1.2rem 0;
+        border-left: 7px #d1d5db solid;
+        background: #f6f7fa;
+        padding: 0.85rem 1.05rem;
+        color: inherit;
+        font-style: italic;
+        box-shadow: none;
+    }
 }
 
-.instruction-text,
-.instruction-list p,
-.instruction-list span {
-  line-height: 1.6;
-  font-size: 1.15rem;           /* ↑ keep body readable */
-  color: #333;
-  margin: 0 0 0.9rem;
-  text-align: justify;
-}
-
-/* List support inside instruction HTML */
-.instruction-list ul,
-.instruction-list ol {
-  margin: 6px 0 6px 18px;
-  padding-left: 18px;
-}
-
-.instruction-list li {
-  line-height: 1.85;
-  margin: 4px 0;
-}
-
-/* Optional quote block used within instructions */
-.instructions-quote {
-  margin: 1.2rem 0;
-  border-left: 7px #d1d5db solid;
-  background: #f6f7fa;
-  padding: 0.85rem 1.05rem;
-  color: #4a5568;
-  font-style: italic;
-  box-shadow: none;
-}
-
-/* Context helper: keep default evaluation layout spacing */
-.evaluation-instructions .instruction-element-header {
-  margin: 0 0 6px 0;
-}
-
-/* Responsive */
+/* Responsive tweak */
 @media (max-width: 600px) {
-  .instruction-element-header { font-size: 1.15em; gap: .6rem; }
-  .instruction-element-header:has(.element-label-pill),
-  .instruction-element-header.has-pill { font-size: 1.25em; }
-  .element-label-pill { min-width: 1.9em; height: 1.9em; padding: 0 .6em; }
+    .instruction-list.legacy .instruction-caption {
+        font-size: 1.08rem; /* scale down slightly on small screens */
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive (shared header)
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .instruction-element-header {
+        gap: .6rem;
+    }
+    .element-label-pill {
+        min-width: 1.9em;
+        height: 1.9em;
+        padding: 0 .6em;
+    }
 }

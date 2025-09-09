@@ -1,29 +1,77 @@
-<div class="instruction-list" [ngClass]="wrapperClass">
-
-  @if (element?.label || element?.caption) {
-    <h2 class="instruction-element-header">
-      @if (element?.label) {
-        <span class="element-label-pill">{{ element.label }}</span>
-      }
-      @if (element?.caption) {
-        <span class="element-caption">{{ element.caption }}</span>
-      }
-    </h2>
-  }
-  @if (element?.text) {
-    <p class="element-text" [ngClass]="bodyClass" [innerHTML]="element.text"></p>
-  }
-
-  @if (!visibleInstructions?.length && !hasElementHeader) {
-    <p i18n>No instructions available.</p>
-  } @else if (visibleInstructions?.length) {
-    @for (instruction of visibleInstructions; track $index; let i = $index) {
-      <div class="instruction">
-        @if (instruction.caption) {
-          <h3 class="instruction-caption">{{ instruction.caption }}</h3>
-        }
-        <p class="instruction-text" [innerHTML]="instruction.text"></p>
-      </div>
+<!-- Root wrapper; CSS flags reflect the resolved 'mode' getter -->
+<div
+    class="instruction-list"
+    [ngClass]="wrapperClass"
+    [class.styled]="mode === 'styled'"
+    [class.legacy]="mode === 'legacy'"
+>
+    <!-- Optional header (label pill + caption) -->
+    @if (element?.label || element?.caption) {
+        <h2 class="instruction-element-header" [class.has-pill]="!!element?.label">
+            @if (element?.label) {
+                <span class="element-label-pill">{{ element.label }}</span>
+            }
+            @if (element?.caption) {
+                <span class="element-caption">{{ element.caption }}</span>
+            }
+        </h2>
     }
-  }
+
+    <!-- Optional header body text (HTML is expected to be sanitized upstream) -->
+    @if (element?.text) {
+        <p class="element-text" [ngClass]="bodyClass" [innerHTML]="element.text"></p>
+    }
+
+    <!-- Empty state when no header and no items -->
+    @if (!visibleInstructions?.length && !hasElementHeader) {
+        <p i18n>No instructions available.</p>
+    } @else if (visibleInstructions?.length) {
+        <!-- STYLED (cards + numbering) -->
+        @if (mode === 'styled') {
+            <ol class="instruction-items" role="list">
+                @for (instruction of visibleInstructions; track $index) {
+                    <li class="instruction-item">
+                        <div class="instruction-row">
+                            @if (instruction.label || instruction.caption) {
+                                <h3 class="instruction-caption" [class.has-pill]="!!instruction?.label">
+                                    @if (instruction.label) {
+                                        <span class="instruction-label-pill">{{ instruction.label }}</span>
+                                    }
+                                    @if (instruction.caption) {
+                                        <span class="element-caption">{{ instruction.caption }}</span>
+                                    }
+                                </h3>
+                            }
+                            @if (instruction.text) {
+                                <!-- HTML is expected to be sanitized upstream -->
+                                <div class="instruction-text" [innerHTML]="instruction.text"></div>
+                            }
+                        </div>
+                    </li>
+                }
+            </ol>
+        } @else {
+            <!-- LEGACY (classic block layout) -->
+            <ul role="list" class="instruction-legacy">
+                @for (instruction of visibleInstructions; track $index) {
+                    <li class="instruction">
+                        @if (instruction.label || instruction.caption) {
+                            <h3 class="instruction-caption" [class.has-pill]="!!instruction?.label">
+                                @if (instruction.label) {
+                                    <span class="instruction-label-pill">{{ instruction.label }}</span>
+                                }
+                                @if (instruction.caption) {
+                                    <span class="element-caption">{{ instruction.caption }}</span>
+                                }
+                            </h3>
+                        }
+                        @if (instruction.text) {
+                            <!-- HTML is expected to be sanitized upstream -->
+                            <div class="instruction-text" [innerHTML]="instruction.text"></div>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    }
 </div>

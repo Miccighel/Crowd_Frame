@@ -62,7 +62,9 @@
             <app-instruction-list
                 [element]="task.instructionsEvaluation?.element"
                 [instructions]="task.instructionsEvaluation?.instructions"
-                [currentTaskType]="document.params['task_type']">
+                [instructionsMode]="'styled'"
+                [currentTaskType]="document.params['task_type']"
+            >
             </app-instruction-list>
 
 

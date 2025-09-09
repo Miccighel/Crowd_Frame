@@ -1,48 +1,67 @@
 {
-  "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
+    /* =============================================================================
+     * tsconfig.json — TypeScript configuration for the Angular application
+     * - Uses modern ESM output and esbuild-compatible module resolution.
+     * - Comments use /* ... *\/ JSONC style.
+     * ============================================================================= */
 
-  "compilerOptions": {
-    /* ========= PATHS & OUTPUT ========= */
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
+    "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
+    "compilerOptions": {
+        /* ========= PATHS & OUTPUT ========= */
+        "baseUrl": "./",
+        "outDir": "./dist/out-tsc",
+        /* ========= MODULE & TARGET ========= */
+        "module": "esnext",
+        /* ESM output for modern bundlers */
+        "moduleResolution": "bundler",
+        /* Resolution mode aligned with esbuild/Angular 17+ */
+        "target": "ES2022",
+        /* Baseline supported by Angular */
 
-    /* ========= MODULE & TARGET ========= */
-    "moduleResolution": "bundler", // modern Angular 18+ with esbuild
-    "module": "esnext",
-    "target": "ES2022",
+        /* ========= LANGUAGE / DECORATORS ========= */
+        "experimentalDecorators": true,
+        /* Required for Angular decorators */
+        "useDefineForClassFields": false,
+        /* Kept false until migration to TS 5 semantics */
+        "importHelpers": true,
+        /* Emits helper calls via tslib */
+        "resolveJsonModule": true,
+        /* Enables importing .json modules */
 
-    /* ========= TYPESCRIPT/ANGULAR FEATURES ========= */
-    "importHelpers": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false, // keep false until migration
+        /* ========= INTEROP ========= */
+        "esModuleInterop": true,
+        /* Enables default-import interop with CJS */
 
-    /* ========= INTEROP ========= */
-    "esModuleInterop": true,
+        /* ========= DIAGNOSTICS & SAFETY ========= */
+        "sourceMap": true,
+        /* Enabled for development; disabled in prod builds */
+        "declaration": false,
+        /* No .d.ts emission for the app */
+        "skipLibCheck": true,
+        /* Skips type checking of .d.ts for faster builds */
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noImplicitOverride": true,
+        "noImplicitAny": false,
+        /* Relaxed for now; can be tightened later */
+        "noPropertyAccessFromIndexSignature": true,
+        "noUnusedLocals": true,
+        /* May be noisy in large refactors */
+        "noUnusedParameters": true,
+        /* May be noisy in large refactors */
 
-    /* ========= DIAGNOSTICS & SAFETY ========= */
-    "sourceMap": true,
-    "declaration": false,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-      "noImplicitOverride": true,
-      "noImplicitAny": false,
-      "noPropertyAccessFromIndexSignature": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      /* ========= STANDARD LIBS ========= */
-      "resolveJsonModule": true,
-      // 👇 Important: DOM.Iterable ensures NodeList, DataTransferItemList, HTMLCollection etc
-      // are seen as iterable, fixing "[Symbol.iterator]" errors in templates
-      "lib": [
-          "ES2022",
-          "DOM",
-          "DOM.Iterable"
-      ]
-  },
+        /* ========= STANDARD LIBS ========= */
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+            /* Provides iterable types for NodeList/HTMLCollection */
+        ]
+    },
     "angularCompilerOptions": {
         "strictTemplates": false,
-        // can toggle to true later
+        /* Can be enabled after template cleanup */
         "strictInjectionParameters": true,
         "strictInputAccessModifiers": true
     }

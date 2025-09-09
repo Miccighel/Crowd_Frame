@@ -7,6 +7,7 @@
             <mat-card-subtitle><span i18n>Sixth, define all Task Settings here</span></mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
+
         <mat-card-content>
 
             <!-- Modality -->
@@ -16,6 +17,7 @@
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Modality</span></mat-label>
                             <mat-select matInput formControlName="modality" (selectionChange)="emitModality($event)">
+                                <!-- track by item instance (safe) -->
                                 @for (modalityType of modalityTypes; track modalityType) {
                                     <mat-option [value]="modalityType.value">
                                         {{ modalityType.viewValue }}
@@ -24,7 +26,6 @@
                             </mat-select>
 
                             <app-error-message [formField]="formStep.get('modality')"></app-error-message>
-
                         </mat-form-field>
                     </td>
                 </tr>
@@ -38,19 +39,15 @@
                     <td class="p-0 pr-16px">
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Allowed Tries</span></mat-label>
-                            <input matInput type="number" min="0" formControlName="allowed_tries">
-
+                            <input matInput type="number" min="0" formControlName="allowed_tries"/>
                             <app-error-message [formField]="formStep.get('allowed_tries')"></app-error-message>
-
                         </mat-form-field>
                     </td>
                     <td class="p-0">
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Time Check Amount</span></mat-label>
-                            <input matInput type="number" min="0" formControlName="time_check_amount">
-
+                            <input matInput type="number" min="0" formControlName="time_check_amount"/>
                             <app-error-message [formField]="formStep.get('time_check_amount')"></app-error-message>
-
                         </mat-form-field>
                     </td>
                 </tr>
@@ -58,15 +55,14 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
+            <!-- Time Assessment -->
             <table class="width-100 mt-8px">
                 <tr>
                     <td class="p-0">
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Time Assessment</span></mat-label>
-                            <input matInput type="number" min="0" formControlName="time_assessment">
-
+                            <input matInput type="number" min="0" formControlName="time_assessment"/>
                             <app-error-message [formField]="formStep.get('time_assessment')"></app-error-message>
-
                         </mat-form-field>
                     </td>
                 </tr>
@@ -82,7 +78,7 @@
             @if (formStep.get('logger').value) {
                 <mat-form-field matLine class="width-100" appearance="fill">
                     <mat-label><span i18n>Logging server URL</span></mat-label>
-                    <input matInput type="text" formControlName="server_endpoint" (blur)="updateServerEndpoint()">
+                    <input matInput type="text" formControlName="server_endpoint" (blur)="updateServerEndpoint()"/>
                     <app-error-message [formField]="formStep.get('server_endpoint')"></app-error-message>
                 </mat-form-field>
             }
@@ -90,7 +86,8 @@
             @if (formStep.get('logger').value) {
                 <div>
                     <table class="width-100" style="border-collapse: collapse">
-                        @for (item of loggerOptionValue  | keyvalue; track item) {
+                        <!-- keyvalue pipe: track the emitted key/value pair object -->
+                        @for (item of loggerOptionValue | keyvalue; track item) {
                             <tr style="border-bottom: thin solid lightgray">
                                 <th>
                                     <mat-checkbox color="primary" [checked]="loggerOptionValue[item.key]['general']"
@@ -98,10 +95,12 @@
                                         {{ item.key.toUpperCase() }} <span i18n>events</span>
                                     </mat-checkbox>
                                 </th>
+
                                 @for (prop of loggerOptionValue[item.key] | keyvalue; track prop) {
                                     @if (prop.key != 'general') {
                                         <td>
-                                            <mat-checkbox color="primary" [checked]="loggerOptionValue[item.key][prop.key]"
+                                            <mat-checkbox color="primary"
+                                                          [checked]="loggerOptionValue[item.key][prop.key]"
                                                           [disabled]="!loggerOptionValue[item.key]['general']"
                                                           (change)="updateLoggerOption(item.key.toString(), prop.key.toString())">
                                                 {{ prop.key.toUpperCase() }}
@@ -123,10 +122,14 @@
                 <table class="width-100 mt-16px">
                     <tr>
                         <td>
-                            <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="docsFile = $event" (readEnd)="updateDocsFile()"
+                            <button mat-flat-button color="primary" class="indent"
+                                    ngxFilePicker [readMode]="readMode"
+                                    (filePick)="docsFile = $event"
+                                    (readEnd)="updateDocsFile()"
                                     accept="application/json">
                                 <span i18n>Select documents file</span>
                             </button>
+
                             @if (!this.docsFileName) {
                                 <code><span i18n>your_file.json</span></code>
                             }
@@ -134,11 +137,15 @@
                                 <code><span i18n>invalid file</span></code>
                             }
                             @if (this.docsDetected > 0) {
-                                <code><span i18n>Filename: </span>{{ this.docsFileName }}<span i18n>, Documents detected: </span>{{ this.docsDetected }}<span
-                                    i18n>, Filesize: </span>{{ this.docsSize }} Kb</code>
+                                <code>
+                                    <span i18n>Filename: </span>{{ this.docsFileName }}
+                                    <span i18n>, Documents detected: </span>{{ this.docsDetected }}
+                                    <span i18n>, Filesize: </span>{{ this.docsSize }} Kb
+                                </code>
                             }
                         </td>
                     </tr>
+
                     @if (this.docsDetected <= 0) {
                         <tr>
                             <td>
@@ -149,53 +156,60 @@
                         </tr>
                     }
                 </table>
+
                 @if (this.docsDetected > 0) {
                     <div class="mt-8px mb-16px indent" formGroupName="documents">
+
+                        <!-- Minimum repetitions -->
                         <table class="width-100 mt-16px">
-                            @if (this.docsDetected > 0) {
-                                <tr>
-                                    <td>
-                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="this.documentsOptions().get('min_docs_repetitions').valid" appearance="fill">
-                                            <mat-label><span i18n>Minimum documents repetitions in hits</span></mat-label>
-                                            <input matInput type="number" min="1" formControlName="min_docs_repetitions" required placeholder="1">
-                                        </mat-form-field>
-                                    </td>
-                                </tr>
-                            }
+                            <tr>
+                                <td>
+                                    <mat-form-field matLine class="width-100"
+                                                    [hideRequiredMarker]="this.documentsOptions().get('min_docs_repetitions').valid"
+                                                    appearance="fill">
+                                        <mat-label><span i18n>Minimum documents repetitions in hits</span></mat-label>
+                                        <input matInput type="number" min="1" formControlName="min_docs_repetitions" required placeholder="1"/>
+                                    </mat-form-field>
+                                </td>
+                            </tr>
                         </table>
-                        <div class="hit-attributes mt-8px mb-16px indent">
-                            <mat-divider [inset]="true"></mat-divider>
-                            @for (value of docCategories().controls; track value; let valueIndex = $index) {
-                                <div formArrayName="doc_categories">
+
+                        <!-- Doc categories (FormArray) -->
+                        <div class="hit-attributes mt-8px mb-16px indent" formArrayName="doc_categories">
+                            <!-- NOTE: track by control instance to avoid NG0955 -->
+                            @for (ctrl of docCategories().controls; track ctrl; let valueIndex = $index) {
+                                <div [formGroupName]="valueIndex">
                                     <table class="width-100">
                                         <tr>
-                                            <td class="p-0 width-20 pr-16px" [formGroupName]="valueIndex">
-                                                <h3>{{ this.docCategory(valueIndex).get('name_pretty').value }}</h3>
+                                            <td class="p-0 width-20 pr-16px">
+                                                <h3>{{ ctrl.get('name_pretty')?.value }}</h3>
                                             </td>
-                                            <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
-                                                <span><span i18n>Number of values: </span>{{ this.docCategory(valueIndex).get('values_number').value }}</span>
+
+                                            <td class="p-0 width-20 pr-16px center">
+                                                <span><span i18n>Number of values: </span>{{ ctrl.get('values_number')?.value }}</span>
                                             </td>
-                                            <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
+
+                                            <td class="p-0 width-20 pr-16px center">
                         <span>
-                          <pre>{{ this.getCategoryReport(this.docCategory(valueIndex).get('name').value) }}</pre>
+                          <pre>{{ this.getCategoryReport(ctrl.get('name')?.value) }}</pre>
                         </span>
                                             </td>
-                                            <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
-                                                @if (this.docCategory(valueIndex).get('balanced').value) {
+
+                                            <td class="p-0 width-20 pr-16px center">
+                                                @if (ctrl.get('balanced')?.value) {
                                                     <mat-checkbox color="primary" formControlName="selected" (change)="updateDocCategory(valueIndex)">
                                                         <span i18n>Use as category</span>
                                                     </mat-checkbox>
                                                 }
-                                                @if (!this.docCategory(valueIndex).get('balanced').value) {
-                                                    <span class="highlight-orange">
-                            <span i18n>Unbalanced attribute</span>
-                          </span>
+                                                @if (!ctrl.get('balanced')?.value) {
+                                                    <span class="highlight-orange"><span i18n>Unbalanced attribute</span></span>
                                                 }
                                             </td>
-                                            <td class="p-0 center" [formGroupName]="valueIndex">
+
+                                            <td class="p-0 center">
                                                 <mat-form-field class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Worker assignments</span></mat-label>
-                                                    <input matInput type="number" placeholder="0" formControlName="worker_assignment" min="1">
+                                                    <input matInput type="number" placeholder="0" formControlName="worker_assignment" min="1"/>
                                                 </mat-form-field>
                                             </td>
                                         </tr>
@@ -203,84 +217,99 @@
                                     <mat-divider [inset]="true"></mat-divider>
                                 </div>
                             }
-                            <div class="mt-16px">
-                                <table class="width-100">
-                                    <tr>
-                                        <td class="p-0 pr-16px">
-                                            <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.checkCategoriesSelection()" [disabled]="this.hitDimension != 0">
-                                                <span i18n>Check selection</span>
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.resetCategorySelection()" [disabled]="this.hitDimension == 0">
-                                                <span i18n>Reset selection</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            @if (this.hitDimension == -1) {
-                                                <mat-error class="mb-8px indent">
-                                                    <span i18n>Error in the worker assignment typed values. Please, review your selection.</span>
-                                                </mat-error>
-                                            }
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
                         </div>
-                        <!-- Worker number form -->
-                        <table class="width-100 mt-16px">
-                            @if (this.docsDetected > 0) {
+
+                        <!-- Category selection actions -->
+                        <div class="mt-16px">
+                            <table class="width-100">
                                 <tr>
-                                    <td>
-                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="this.documentsOptions().get('workers_number').valid" appearance="fill">
-                                            <mat-label><span i18n>Workers number</span></mat-label>
-                                            <input matInput type="number" min="1" formControlName="workers_number" required placeholder="1">
-                                        </mat-form-field>
-                                    </td>
-                                </tr>
-                            }
-                        </table>
-                        <!-- Send request button -->
-                        <table class="width-100 mt-16px">
-                            @if (this.docsDetected > 0) {
-                                <tr>
-                                    <td>
-                                        <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hitDimension<= 0 || !this.solverStatus">
-                                            <span i18n>Send request to the solver</span>
+                                    <td class="p-0 pr-16px">
+                                        <button mat-flat-button color="primary" class="mb-16px indent"
+                                                (click)="this.checkCategoriesSelection()"
+                                                [disabled]="this.hitDimension != 0">
+                                            <span i18n>Check selection</span>
                                         </button>
                                     </td>
-                                    @if (!this.solverStatus) {
-                                        <td>
-                                            <mat-error><span i18n>Solver is offline</span></mat-error>
-                                        </td>
-                                    }
                                     <td>
-                                        @if (this.solutionStatus != '') {
-                                            <h3 class="mb-8px indent">
-                                                {{ this.solutionStatus }}
-                                            </h3>
+                                        <button mat-flat-button color="primary" class="mb-16px indent"
+                                                (click)="this.resetCategorySelection()"
+                                                [disabled]="this.hitDimension == 0">
+                                            <span i18n>Reset selection</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @if (this.hitDimension == -1) {
+                                            <mat-error class="mb-8px indent">
+                                                <span i18n>Error in the worker assignment typed values. Please, review your selection.</span>
+                                            </mat-error>
                                         }
                                     </td>
                                 </tr>
-                            }
+                            </table>
+                        </div>
+
+                        <!-- Worker number form -->
+                        <table class="width-100 mt-16px">
+                            <tr>
+                                <td>
+                                    <mat-form-field matLine class="width-100"
+                                                    [hideRequiredMarker]="this.documentsOptions().get('workers_number').valid"
+                                                    appearance="fill">
+                                        <mat-label><span i18n>Workers number</span></mat-label>
+                                        <input matInput type="number" min="1" formControlName="workers_number" required placeholder="1"/>
+                                    </mat-form-field>
+                                </td>
+                            </tr>
                         </table>
+
+                        <!-- Send request button -->
+                        <table class="width-100 mt-16px">
+                            <tr>
+                                <td>
+                                    <button mat-flat-button color="primary" class="indent"
+                                            (click)="sendRequestToHitSolver()"
+                                            [disabled]="this.hitDimension <= 0 || !this.solverStatus">
+                                        <span i18n>Send request to the solver</span>
+                                    </button>
+                                </td>
+
+                                @if (!this.solverStatus) {
+                                    <td>
+                                        <mat-error><span i18n>Solver is offline</span></mat-error>
+                                    </td>
+                                }
+
+                                <td>
+                                    @if (this.solutionStatus != '') {
+                                        <h3 class="mb-8px indent">
+                                            {{ this.solutionStatus }}
+                                        </h3>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+
                     </div>
                 }
             }
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <!-- Hits file-->
+            <!-- Hits file -->
             <h3 class="lighter"><span i18n>Hits & Attributes</span></h3>
             <table class="width-100 mt-16px">
                 <tr>
                     <td>
-                        <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()"
+                        <button mat-flat-button color="primary" class="indent"
+                                ngxFilePicker [readMode]="readMode"
+                                (filePick)="hitsFile = $event"
+                                (readEnd)="updateHitsFile()"
                                 accept="application/json">
                             <span i18n>Select Hits File</span>
                         </button>
+
                         @if (!this.hitsFileName) {
                             <code i18n>your_file.json</code>
                         }
@@ -291,11 +320,12 @@
                             <code>
                                 <span i18n>Filename: </span>{{ this.hitsFileName }},
                                 <span i18n>Hits detected: </span>{{ this.hitsDetected }},
-                                <span i18n>Filesize: </span>{{ this.hitsSize }} Kbz
+                                <span i18n>Filesize: </span>{{ this.hitsSize }} Kb
                             </code>
                         }
                     </td>
                 </tr>
+
                 @if (this.hitsDetected <= 0) {
                     <tr>
                         <td>
@@ -307,37 +337,42 @@
                 }
             </table>
 
-            <div class="hit-attributes mt-8px mb-16px indent">
-                @for (value of hitAttributes().controls; track value; let valueIndex = $index) {
-                    <div formArrayName="attributes" class="p-5px">
-                        <div>
-                            <ng-container [formGroupName]="valueIndex">
-                                <h3>{{ this.hitsAttributes[valueIndex] }}</h3>
-                                <mat-form-field class="width-100" appearance="fill">
-                                    <input matInput type="text" placeholder="name_pretty" formControlName="name_pretty">
-                                </mat-form-field>
-                                <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
-                                    <span i18n>Show</span>
-                                </mat-checkbox>
-                                <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
-                                    <span i18n>Enable Annotations</span>
-                                </mat-checkbox>
-                                <mat-checkbox color="primary" formControlName="required">
-                                    <span i18n>Required</span>
-                                </mat-checkbox>
-                            </ng-container>
-                        </div>
+            <!-- Hit attributes (FormArray) -->
+            <div class="hit-attributes mt-8px mb-16px indent" formArrayName="attributes">
+                <!-- track by control instance (stable) -->
+                @for (grp of hitAttributes().controls; track grp; let valueIndex = $index) {
+                    <div class="p-5px" [formGroupName]="valueIndex">
+                        <h3>{{ this.hitsAttributes[valueIndex] }}</h3>
+
+                        <mat-form-field class="width-100" appearance="fill">
+                            <input matInput type="text" placeholder="name_pretty" formControlName="name_pretty"/>
+                        </mat-form-field>
+
+                        <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
+                            <span i18n>Show</span>
+                        </mat-checkbox>
+
+                        <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
+                            <span i18n>Enable Annotations</span>
+                        </mat-checkbox>
+
+                        <mat-checkbox color="primary" formControlName="required">
+                            <span i18n>Required</span>
+                        </mat-checkbox>
                     </div>
                 }
             </div>
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <!-- Annotator: Type -->
-            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator()">
+            <!-- Annotator: Toggle -->
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px"
+                              formControlName="setAnnotator"
+                              (change)="resetAnnotator()">
                 <span i18n>Annotator</span>
             </mat-slide-toggle>
 
+            <!-- Annotator: Type -->
             @if (formStep.get('setAnnotator').value) {
                 <div formGroupName="annotator">
                     <table class="width-100">
@@ -352,7 +387,7 @@
                                             </mat-option>
                                         }
                                     </mat-select>
-                                    <app-error-message [formField]="formStep.get('annotator').get('type')"></app-error-message>
+                                    <app-error-message [formField]="formStep.get('annotator')?.get('type')"></app-error-message>
                                 </mat-form-field>
                             </td>
                         </tr>
@@ -360,66 +395,80 @@
                 </div>
             }
 
-            <!-- Mapping -->
-            @if (annotator().get('type').value == 'options') {
+            <!-- Annotator options mapping (FormArray) -->
+            @if (annotator().get('type')?.value == 'options') {
                 <div formGroupName="annotator">
                     <button mat-flat-button color="primary" class="mb-16px indent" (click)="addOptionValue()">
                         <span i18n>Add Option</span>
                     </button>
-                    @for (value of annotatorOptionValues().controls; track value; let valueIndex = $index) {
-                        <div formArrayName="values">
-                            <table class="width-100">
-                                <tr>
-                                    <td class="p-0 pr-16px" [formGroupName]="valueIndex">
-                                        <mat-form-field class="width-100" matLine appearance="fill">
-                                            <mat-label><span i18n>Label</span></mat-label>
-                                            <input matInput type="text" formControlName="label">
-                                            <app-error-message [formField]="formStep.get('annotator').get('values').get(valueIndex.toString()).get('label')"></app-error-message>
-                                        </mat-form-field>
-                                    </td>
-                                    <td class="p-0 pr-16px" [formGroupName]="valueIndex">
-                                        <mat-form-field class="width-100" matLine appearance="fill">
-                                            <mat-label>HTML Color (#123456)</mat-label>
-                                            <input matInput formControlName="color" [(colorPicker)]="this.annotatorOptionColors[valueIndex]"
-                                                   (colorPickerChange)="updateOptionColor($event, valueIndex)">
-                                            <app-error-message [formField]="formStep.get('annotator').get('values').get(valueIndex.toString()).get('color')"></app-error-message>
-                                        </mat-form-field>
-                                    </td>
-                                    <td class="p-0 center">
-                                        <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)"
-                                                [disabled]="valueIndex === 0 && annotatorOptionValues().controls.length == 1">
-                                            <span i18n>Remove Option</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    }
+
+                    <div formArrayName="values">
+                        <!-- track by control instance -->
+                        @for (ctrl of annotatorOptionValues().controls; track ctrl; let valueIndex = $index) {
+                            <div class="width-100" [formGroupName]="valueIndex">
+                                <table class="width-100">
+                                    <tr>
+                                        <td class="p-0 pr-16px">
+                                            <mat-form-field class="width-100" matLine appearance="fill">
+                                                <mat-label><span i18n>Label</span></mat-label>
+                                                <input matInput type="text" formControlName="label"/>
+                                                <app-error-message
+                                                    [formField]="formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('label')">
+                                                </app-error-message>
+                                            </mat-form-field>
+                                        </td>
+
+                                        <td class="p-0 pr-16px">
+                                            <mat-form-field class="width-100" matLine appearance="fill">
+                                                <mat-label>HTML Color (#123456)</mat-label>
+                                                <input matInput formControlName="color"
+                                                       [(colorPicker)]="this.annotatorOptionColors[valueIndex]"
+                                                       (colorPickerChange)="updateOptionColor($event, valueIndex)"/>
+                                                <app-error-message
+                                                    [formField]="formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('color')">
+                                                </app-error-message>
+                                            </mat-form-field>
+                                        </td>
+
+                                        <td class="p-0 center">
+                                            <button mat-flat-button color="primary" class="mb-16px"
+                                                    (click)="removeAnnotatorOptionValue(valueIndex)"
+                                                    [disabled]="valueIndex === 0 && annotatorOptionValues().controls.length == 1">
+                                                <span i18n>Remove Option</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
 
             <mat-divider [inset]="true"></mat-divider>
 
             <!-- Countdown Time -->
-            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setCountdownTime" (change)="resetCountdown()">
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px"
+                              formControlName="setCountdownTime"
+                              (change)="resetCountdown()">
                 <span i18n>Countdown</span>
             </mat-slide-toggle>
 
-            @if (this.formStep.get('setCountdownTime').value) {
+            @if (this.formStep.get('setCountdownTime')?.value) {
                 <mat-form-field matLine class="width-100" appearance="fill">
                     <mat-label><span i18n>Time</span></mat-label>
-                    <input matInput type="number" min="0" formControlName="countdown_time">
+                    <input matInput type="number" min="0" formControlName="countdown_time"/>
                     <app-error-message [formField]="formStep.get('countdown_time')"></app-error-message>
                 </mat-form-field>
             }
 
-            @if (this.formStep.get('setCountdownTime').value) {
+            @if (this.formStep.get('setCountdownTime')?.value) {
                 <mat-form-field class="width-100" appearance="fill">
                     <mat-label><span i18n>Behavior</span></mat-label>
                     <mat-select matInput formControlName="countdown_behavior" required>
-                        @for (countdownBehavior of countdownBehavior; track countdownBehavior) {
-                            <mat-option [value]="countdownBehavior.value">
-                                {{ countdownBehavior.viewValue }}
+                        @for (cb of countdownBehavior; track cb) {
+                            <mat-option [value]="cb.value">
+                                {{ cb.viewValue }}
                             </mat-option>
                         }
                     </mat-select>
@@ -427,20 +476,22 @@
                 </mat-form-field>
             }
 
-
-            @if (this.formStep.get('setCountdownTime').value) {
-                <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()">
+            @if (this.formStep.get('setCountdownTime')?.value) {
+                <mat-slide-toggle color="primary" class="mb-16px"
+                                  formControlName="setAdditionalTimes"
+                                  (change)="resetAdditionalTimes()">
                     <span i18n>Additional Times</span>
                 </mat-slide-toggle>
             }
 
-            @if (this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value) {
+            @if (this.formStep.get('setCountdownTime')?.value && this.formStep.get('setAdditionalTimes')?.value) {
                 <mat-form-field class="width-100" appearance="fill">
                     <mat-label><span i18n>Modality</span></mat-label>
-                    <mat-select matInput formControlName="countdown_modality" (selectionChange)="updateCountdownModality()" required>
-                        @for (additionalTimeModality of additionalTimeModalities; track additionalTimeModality) {
-                            <mat-option [value]="additionalTimeModality.value">
-                                {{ additionalTimeModality.viewValue }}
+                    <mat-select matInput formControlName="countdown_modality"
+                                (selectionChange)="updateCountdownModality()" required>
+                        @for (atm of additionalTimeModalities; track atm) {
+                            <mat-option [value]="atm.value">
+                                {{ atm.viewValue }}
                             </mat-option>
                         }
                     </mat-select>
@@ -448,11 +499,15 @@
                 </mat-form-field>
             }
 
-            @if (this.formStep.get('countdown_modality').value == 'attribute' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value) {
-                <mat-form-field class="width-100" appearance="fill"
-                >
+            @if (this.formStep.get('countdown_modality')?.value == 'attribute'
+            && this.formStep.get('setCountdownTime')?.value
+            && this.formStep.get('setAdditionalTimes')?.value) {
+
+                <mat-form-field class="width-100" appearance="fill">
                     <mat-label><span i18n>Attribute</span></mat-label>
-                    <mat-select matInput formControlName="countdown_attribute" (selectionChange)="updateCountdownAttribute()" required>
+                    <mat-select matInput formControlName="countdown_attribute"
+                                (selectionChange)="updateCountdownAttribute()" required>
+                        <!-- hitsAttributes is a string[]; track by primitive value -->
                         @for (attribute of hitsAttributes; track attribute) {
                             <mat-option [value]="attribute">
                                 {{ attribute }}
@@ -461,30 +516,32 @@
                     </mat-select>
                     <app-error-message [formField]="formStep.get('countdown_attribute')"></app-error-message>
                 </mat-form-field>
-            }
 
-            @if (this.formStep.get('countdown_modality').value == 'attribute' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value && this.hitsAttributesValues) {
-                <div formArrayName="countdown_attribute_values"
-                >
-                    @for (countdownAttributeControl of this.countdownAttributeValues().controls; track countdownAttributeControl; let countdownAttributeIndex = $index) {
-                        <mat-form-field matLine appearance="fill" class="indent p-2px"
-                                        [formGroupName]="countdownAttributeIndex">
-                            <mat-label>{{ this.hitsAttributesValues[(this.formStep.get('countdown_attribute').value)][countdownAttributeIndex] }}</mat-label>
-                            <input matInput type="number" formControlName="time" min="0">
-                            <app-error-message [formField]="this.formStep.get('countdown_attribute_values').get(countdownAttributeIndex.toString()).get('time')"></app-error-message>
+                <!-- Countdown attribute values (FormArray) -->
+                <div formArrayName="countdown_attribute_values">
+                    <!-- track by control instance -->
+                    @for (control of this.countdownAttributeValues().controls; track control; let i = $index) {
+                        <mat-form-field matLine appearance="fill" class="indent p-2px" [formGroupName]="i">
+                            <mat-label>{{ this.hitsAttributesValues[this.formStep.get('countdown_attribute')?.value][i] }}</mat-label>
+                            <input matInput type="number" formControlName="time" min="0"/>
+                            <app-error-message [formField]="this.formStep.get('countdown_attribute_values')?.get(i.toString())?.get('time')"></app-error-message>
                         </mat-form-field>
                     }
                 </div>
             }
 
-            @if (this.formStep.get('countdown_modality').value == 'position' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value) {
-                <div formArrayName="countdown_position_values"
-                >
-                    @for (countdownPositionControl of this.countdownPositionValues().controls; track countdownPositionControl; let countdownPositionIndex = $index) {
-                        <mat-form-field matLine class="indent p-2px" [formGroupName]="countdownPositionIndex">
-                            <mat-label>Position {{ countdownPositionIndex }}</mat-label>
-                            <input matInput type="number" formControlName="time" min="0">
-                            <app-error-message [formField]="this.formStep.get('countdown_position_values').get(countdownPositionIndex.toString()).get('time')"></app-error-message>
+            @if (this.formStep.get('countdown_modality')?.value == 'position'
+            && this.formStep.get('setCountdownTime')?.value
+            && this.formStep.get('setAdditionalTimes')?.value) {
+
+                <!-- Countdown position values (FormArray) -->
+                <div formArrayName="countdown_position_values">
+                    <!-- track by control instance -->
+                    @for (control of this.countdownPositionValues().controls; track control; let i = $index) {
+                        <mat-form-field matLine class="indent p-2px" [formGroupName]="i">
+                            <mat-label>Position {{ i }}</mat-label>
+                            <input matInput type="number" formControlName="time" min="0"/>
+                            <app-error-message [formField]="this.formStep.get('countdown_position_values')?.get(i.toString())?.get('time')"></app-error-message>
                         </mat-form-field>
                     }
                 </div>
@@ -492,20 +549,24 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <!-- Messages -->
+            <!-- Messages (FormArray) -->
             <div formArrayName="messages">
                 <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMessage()">
                     <span i18n>Add Message</span>
                 </button>
-                @for (msg of messages().controls; track msg; let messageIndex = $index) {
+
+                <!-- track by control instance (no duplicate keys) -->
+                @for (msgCtrl of messages().controls; track msgCtrl; let messageIndex = $index) {
                     <div [formGroupName]="messageIndex">
                         <table class="width-100">
                             <tr>
                                 <td class="p-0 pr-16px">
-                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
+                                    <mat-form-field matLine class="width-100"
+                                                    [hideRequiredMarker]="msgCtrl.get('message')?.valid"
+                                                    appearance="fill">
                                         <mat-label><span i18n>Message</span></mat-label>
-                                        <input matInput type="text" formControlName="message">
-                                        <app-error-message [formField]="msg.get('message')"></app-error-message>
+                                        <input matInput type="text" formControlName="message"/>
+                                        <app-error-message [formField]="msgCtrl.get('message')"></app-error-message>
                                     </mat-form-field>
                                 </td>
                                 <td class="p-0 center">
@@ -527,6 +588,5 @@
             <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
             <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
         </mat-card-actions>
-
     </mat-card>
 </form>

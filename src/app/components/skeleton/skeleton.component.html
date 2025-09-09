@@ -29,7 +29,11 @@
 
                 @if (this.sectionService.checkCompleted && this.task.instructionsGeneral) {
                     <mat-card-content>
-                        <app-instruction-list [instructions]="this.task.instructionsGeneral"></app-instruction-list>
+                        <app-instruction-list
+                            [instructions]="this.task.instructionsGeneral"
+                            [styleInstructions]="false"
+                            [instructionsMode]="'legacy'"
+                        ></app-instruction-list>
                     </mat-card-content>
                 }
 
@@ -53,7 +57,8 @@
     && this.task.settings.modality !== 'conversational') {
         <app-instructions
             [task]="this.task"
-            [worker]="this.worker">
+            [worker]="this.worker"
+        >
         </app-instructions>
     }
 

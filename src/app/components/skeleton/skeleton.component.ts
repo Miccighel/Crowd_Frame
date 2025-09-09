@@ -131,12 +131,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
 
         /* Stop the global overlay only now: UI is actually present */
-        if (!this.overlayStopped) {
-            requestAnimationFrame(() => {
-                this.ngx.stopLoader('global'); // single place to hide the global overlay when UI is visible
-                this.overlayStopped = true;
-            });
-        }
+        this.stopGlobalOnNextPaint();
     }
 
     /* Expose a readonly getter elsewhere in the class if you still use `this.stepper` */
@@ -166,12 +161,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this._outcomeSection = cmp;
 
         /* If we show Outcome directly (task completed/already done), ensure overlay is stopped */
-        if (!this.overlayStopped) {
-            requestAnimationFrame(() => {
-                this.ngx.stopLoader('global');
-                this.overlayStopped = true;
-            });
-        }
+        this.stopGlobalOnNextPaint();
     }
 
     get outcomeSection(): OutcomeSectionComponent | undefined {
@@ -305,22 +295,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return null;
     }
 
-    /* ------------------------------------------------------
-       Centralized ACL writes.
-       Reduces duplication and missed-field risk; semantics unchanged.
-       ------------------------------------------------------ */
-
-    /* Persist current worker ACL row. Optional status/extra fields are stamped before write. */
-    private async writeWorkerAcl(statusCode?: StatusCodes, extra?: Record<string, any>) {
-        if (statusCode !== undefined && statusCode !== null) {
-            this.worker.setParameter("status_code", statusCode);
-        }
-        if (extra) {
-            Object.entries(extra).forEach(([k, v]) => this.worker.setParameter(k, String(v)));
-        }
-        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
-    }
-
     /* Persist a unit-level ACL row (HIT slot). Optional status and timestamp flags. */
     private async writeUnitAcl(entry: any, opts?: { statusCode?: StatusCodes, updateArrivalTime?: boolean, updateRemovalTime?: boolean }) {
         if (opts?.statusCode !== undefined && opts?.statusCode !== null) {
@@ -347,20 +321,28 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let hitAssigned = false;
         const env = this.configService.environment;
 
+        /* Retrieve existing ACL records by IP (if any). */
         const aclByIp = await this.dynamoDBService.getACLRecordIpAddress(env, this.worker.getIP());
         const aclItems: any[] = aclByIp?.Items ?? [];
 
+        /* Track whether we generated a worker id locally. */
         let workerIdGenerated = String(false);
         const workerIdentifierProvided = this.worker.identifier;
 
         if (aclItems.length <= 0) {
-            /* New worker path (fields preserved). */
+            /* -------------------------
+               NEW WORKER INITIALIZATION
+               ------------------------- */
+
+            /* Ensure we have a worker identifier. */
             if (this.worker.identifier == null) {
                 const generatedId = this.utilsService.randomIdentifier(14).toUpperCase();
                 this.worker.setParameter("identifier", generatedId);
                 this.worker.identifier = generatedId;
                 workerIdGenerated = String(true);
             }
+
+            /* Persist batch/task metadata. */
             this.worker.setParameter("task_name", env.taskName);
             this.worker.setParameter("batch_name", env.batchName);
             if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");
@@ -373,16 +355,18 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.worker.setParameter("try_current", String(this.task.tryCurrent));
             this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
 
+            /* Arrival/expiration timestamps for assessment window. */
             const timeArrival = new Date();
             const timeExpiration = new Date(timeArrival.getTime() + this.task.settings.time_assessment * 60 * 60 * 1000);
             this.worker.setParameter("time_arrival", timeArrival.toUTCString());
             this.worker.setParameter("time_expiration", timeExpiration.toUTCString());
 
+            /* Look up most recent expiration across active entries. */
             const nearestExpiration = await this.retrieveMostRecentExpirationDate();
             this.worker.setParameter("time_expiration_nearest", nearestExpiration ?? timeExpiration.toUTCString());
             this.worker.setParameter("time_expired", String(false));
 
-            /* IP / UA (normalized IP to prevent shape errors). */
+            /* Persist network/user agent hints. */
             const ipStr = this.getNormalizedWorkerIp();
             this.worker.setParameter("ip_address", ipStr ?? String(false));
             const rawIp = this.worker?.getIP?.();
@@ -392,21 +376,29 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
 
         } else {
-            /* Returning worker path (checks preserved). */
+            /* -----------------------------
+               RETURNING/EXISTING WORKER FLOW
+               ----------------------------- */
+
             const aclEntry = aclItems[0];
 
+            /* Keep try counters in sync with stored ACL state. */
             this.task.settings.allowed_tries = aclEntry["try_left"];
             this.task.tryCurrent = aclEntry["try_current"];
 
+            /* Refresh nearest expiration across active unpaid entries. */
             const nearestExpiration = await this.retrieveMostRecentExpirationDate();
             this.worker.setParameter("time_expiration_nearest", nearestExpiration ?? String(false));
 
             if (/true/i.test(aclEntry["paid"]) == true) {
+                /* Already paid worker → mark as completed and write status. */
                 this.sectionService.taskAlreadyCompleted = true;
                 Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
                 this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
-                await this.writeWorkerAcl(StatusCodes.TASK_ALREADY_COMPLETED);
+                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_ALREADY_COMPLETED);
+
             } else {
+                /* Not paid yet → check validity window and progress state. */
                 Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
 
                 const timeArrivalMs = Date.parse(aclEntry["time_arrival"] ?? "");
@@ -421,32 +413,46 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false);
 
                 if (expiredTime || exhaustedTries || notInProgress) {
-                    /* As of today, such a worker is not allowed to perform the task */
+                    /* This worker cannot proceed now; compute final status and persist. */
                     if (expiredTime) this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
                     if (notInProgress && parseInt(aclEntry["try_left"]) < 1) this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
+
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("time_removal", new Date().toUTCString());
                     this.sectionService.taskFailed = true;
                     this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
-                    await this.dynamoDBService.insertACLRecordWorkerID(env, this.worker);
+
+                    const finalStatus =
+                        expiredTime
+                            ? StatusCodes.TASK_TIME_EXPIRED
+                            : (notInProgress && parseInt(aclEntry["try_left"]) < 1)
+                                ? StatusCodes.TASK_FAILED_NO_TRIES
+                                : StatusCodes.WORKER_RETURNING_BLOCK;
+
+                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, finalStatus);
+
                 } else {
+                    /* Valid, in-progress slot retained by this worker. */
                     Object.entries(aclEntry).forEach(([k, v]) => this.worker.setParameter(k, v));
                     this.worker.identifier = this.worker.getParameter("identifier");
                     this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
                     this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
                     this.worker.setParameter('identifiers_provided', this.worker.storeIdentifiersProvided(workerIdentifierProvided, aclEntry['identifiers_provided']));
-                    await this.dynamoDBService.insertACLRecordWorkerID(env, this.worker);
+                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
                     hitAssigned = true;
                 }
             }
         }
 
+        /* --------------------------------------
+           Continue only if we’re not already done
+           -------------------------------------- */
         if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
 
-            /* Worker settings are loaded once. */
+            /* Load per-batch worker settings from S3. */
             this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(env));
 
-            /* Logging service is initialized only if enabled. */
+            /* Init logger only if enabled. */
             if (this.task.settings.logger_enable)
                 this.initializeLogger(
                     this.worker.identifier,
@@ -459,6 +465,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             else
                 this.actionLogger = null;
 
+            /* Run allowlist/denylist checks, then assign a HIT if needed. */
             this.performWorkerStatusCheck().then(async (taskAllowed) => {
                 this.sectionService.taskAllowed = taskAllowed;
 
@@ -466,15 +473,14 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
                 if (taskAllowed) {
                     if (!hitAssigned) {
-                        /* Task HITs are fetched from S3. */
+                        /* Try to claim an unassigned HIT first. */
                         const hits = await this.S3Service.downloadHits(env);
 
-                        /* If there is no record linked to the worker, an available HIT can be assigned. */
                         if ((aclItems?.length ?? 0) <= 0) {
                             for (const hit of hits) {
                                 hitCompletedOrInProgress[hit['unit_id']] = false;
 
-                                /* Best-effort claim without changing table keys. */
+                                /* Minimal claim entry bound to this worker. */
                                 const ipStr = this.getNormalizedWorkerIp();
                                 const unitEntry: any = {
                                     unit_id: hit.unit_id,
@@ -489,17 +495,17 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
                                 const {claimed} = await this.dynamoDBService.claimUnitIfUnassigned(env, unitEntry);
                                 if (claimed) {
+                                    /* Store unit metadata on worker and write status. */
                                     this.worker.setParameter("unit_id", hit["unit_id"]);
                                     this.worker.setParameter("token_input", hit["token_input"]);
                                     this.worker.setParameter("token_output", hit["token_output"]);
-                                    await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED);
+                                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
                                     hitAssigned = true;
                                     break;
                                 }
                             }
 
-                            /* If still unassigned, recovery is attempted:
-                               - Free slots created by expired/abandoned entries are reused. */
+                            /* Try to recover a slot from expired/abandoned entries. */
                             if (!hitAssigned) {
                                 let wholeEntries = await this.retrieveAllACLEntries();
 
@@ -510,7 +516,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                             hitCompletedOrInProgress[aclEntry["unit_id"]] = true;
                                         }
 
-                                        /* Free a slot if time elapsed or tries nearly exhausted. */
+                                        /* A slot can be recovered if it elapsed or tries are almost gone. */
                                         const timeArrival = Date.parse(aclEntry["time_arrival"] ?? "");
                                         const hoursElapsed = Math.abs(Date.now() - (Number.isFinite(timeArrival) ? timeArrival : Date.now())) / 36e5;
 
@@ -518,24 +524,25 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                             (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1)) {
                                             hitAssigned = true;
 
-                                            /* Abandoned/returned worker entry is updated. */
+                                            /* Close the abandoned entry. */
                                             aclEntry["time_expired"] = String(true);
                                             aclEntry["in_progress"] = String(false);
                                             await this.writeUnitAcl(aclEntry, {updateRemovalTime: true});
 
-                                            /* Slot is assigned to current worker. */
+                                            /* Assign slot to current worker. */
                                             this.worker.setParameter("token_input", aclEntry["token_input"]);
                                             this.worker.setParameter("token_output", aclEntry["token_output"]);
                                             this.worker.setParameter("unit_id", aclEntry["unit_id"]);
                                             this.worker.setParameter("time_arrival", new Date().toUTCString());
-                                            await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED);
+
+                                            await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
                                         }
                                     }
 
                                     if (hitAssigned) break;
                                 }
 
-                                /* Inconsistency sweep: recent released units with no active holder. */
+                                /* Sweep for inconsistent units (recently released with no active holder). */
                                 if (!hitAssigned) {
                                     const inconsistentUnits: string[] = [];
                                     for (const [unitId, status] of Object.entries(hitCompletedOrInProgress)) {
@@ -560,7 +567,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                                 this.worker.setParameter("token_output", mostRecentAclEntry["token_output"]);
                                                 this.worker.setParameter("unit_id", mostRecentAclEntry["unit_id"]);
                                                 this.worker.setParameter("time_arrival", new Date().toUTCString());
-                                                await this.writeWorkerAcl(StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
+
+                                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
                                             }
                                             if (hitAssigned) break;
                                         }
@@ -569,7 +577,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             }
                         }
 
-                        /* If assignment still failed, the global status is persisted to ACL. */
+                        /* If we still couldn't assign, persist the overall condition. */
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
                             for (const hit of hits) {
@@ -577,26 +585,32 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                     hitsStillToComplete = true;
                             }
                             if (hitsStillToComplete)
-                                await this.writeWorkerAcl(StatusCodes.TASK_OVERBOOKING);
+                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_OVERBOOKING);
                             else
-                                await this.writeWorkerAcl(StatusCodes.TASK_COMPLETED_BY_OTHERS);
+                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
                     }
 
-                    /* Persist previously collected worker data and set up the task. */
+                    /* Load existing data records, configure task, then unlock UI. */
                     this.task.storeDataRecords(await this.retrieveDataRecords());
                     await this.performTaskSetup();
                     this.unlockTask(hitAssigned);
+
                 } else {
-                    /* A status check failed; task is kept locked. */
+                    /* Not allowed to run → show the appropriate branch and stop overlay. */
                     this.unlockTask(false);
                 }
             });
+
         } else {
+            /* Task already completed/failed earlier → just unlock to show outcome. */
             this.unlockTask(false);
         }
+
+        /* Ensure change detection picks up the new branch. */
         this.changeDetector.markForCheck();
     }
+
 
     /* ------------------------------------------------------
        Scan all ACL entries (paged) and return them ordered
@@ -816,8 +830,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* ------------------------------------------------------
        Unlock the task based on the status check outcome.
-       Stop the global overlay **only** here when no UI will render.
-       Otherwise, let the stepper / outcome setters stop it when mounted.
+       Stop the global overlay **after paint** from here as a catch-all.
+       Stepper/outcome setters will also call it, but it’s idempotent.
        ------------------------------------------------------ */
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
@@ -827,12 +841,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.changeDetector.markForCheck();
         this.changeDetector.detectChanges?.();
 
-        /* If the user is NOT allowed (or no stepper/outcome will appear),
-           stop the loader here as a fallback to avoid leaving it running. */
-        if (!taskAllowed && !this.overlayStopped) {
-            this.ngx.stopLoader('global');
-            this.overlayStopped = true;
-        }
+        // Always schedule a stop after paint; safe & idempotent
+        this.stopGlobalOnNextPaint();
     }
 
     /*
@@ -889,10 +899,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let currentHit = hits.find(h => h.unit_id === unitId);
 
         if (!currentHit) {
-            /* Defensive guard: assignment became stale or corrupted. */
+            /* Defensive guard: assignment became stale or corrupted.
+            -> Show Outcome immediately (failed state), no snackbar. */
             this.sectionService.taskFailed = true;
-            this.sectionService.taskCompleted = false;
-            this.showSnackbar("The assigned unit is no longer available. Please reload the task.", "Dismiss", 8000);
+            this.sectionService.taskSuccessful = false;
+            this.sectionService.taskCompleted = true;
+
+            /* Force a render so Outcome mounts (and the overlay stops via outcomeSectionSetter) */
+            this.changeDetector.markForCheck();
+            this.changeDetector.detectChanges();
+
             return;
         }
 
@@ -963,56 +979,45 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         /*
          * This section performs the necessary checks to ensure the quality of the worker's output.
          * Three checks are conducted:
-         * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of every form contains valid values.
-         * 2) GOLD QUESTION CHECK: Implements a custom check on gold elements retrieved using their IDs. An element is considered gold if its ID contains the word "GOLD-".
-         * 3) TIME SPENT CHECK: Verifies if the time spent by the worker on each document and questionnaire exceeds <timeCheckAmount> seconds, using the <timestampsElapsed> array.
-         * If each check is successful, the task can conclude. If the worker has remaining attempts, the task is reset.
+         * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS)
+         * 2) GOLD QUESTION CHECK
+         * 3) TIME SPENT CHECK
          */
 
-        let globalValidityCheck: boolean;
-        let timeSpentCheck: boolean;
-        let timeCheckAmount = this.task.getTimesCheckAmount();
-
         /* 1) GLOBAL VALIDITY CHECK performed here */
-        globalValidityCheck = this.performGlobalValidityCheck();
+        const globalValidityCheck = this.performGlobalValidityCheck();
 
         /* 2) GOLD ELEMENTS CHECK performed here */
-        let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
+        const goldConfiguration = this.task.generateGoldConfiguration(
+            this.task.goldDocuments,
+            this.task.goldDimensions,
+            this.documentsForm,
+            this.task.notes
+        );
+        const goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
 
-        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
+        /* 3) TIME SPENT CHECK performed here (centralized in Task) */
+        const timeSpentCheck = this.task.timeSpentOk();
 
-        /* 3) TIME SPENT CHECK performed here */
-        timeSpentCheck = true;
-
-        for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
-            if (this.task.timestampsElapsed[i] < timeCheckAmount[i]) {
-                timeSpentCheck = false;
-                break;
-            }
-        }
-
-        let qualityCheckData = {
-            globalOutcome: null,
+        const qualityCheckData = {
+            globalOutcome: null as boolean | null,
             globalFormValidity: globalValidityCheck,
             timeSpentCheck: timeSpentCheck,
             goldChecks: goldChecks,
             goldConfiguration: goldConfiguration,
         };
 
-        let checksOutcome = [];
-        let checker = (array) => array.every(Boolean);
+        const checker = (arr: boolean[]) => arr.every(Boolean);
+        qualityCheckData.globalOutcome = checker([
+            qualityCheckData.globalFormValidity,
+            qualityCheckData.timeSpentCheck,
+            checker(qualityCheckData.goldChecks),
+        ]);
 
-        checksOutcome.push(qualityCheckData["globalFormValidity"]);
-        checksOutcome.push(qualityCheckData["timeSpentCheck"]);
-        checksOutcome.push(checker(qualityCheckData["goldChecks"]));
-
-        qualityCheckData["globalOutcome"] = checker(checksOutcome);
-
-        /* If each check is true, the task is successful; otherwise, the task fails (but is not terminated if there are more attempts available). */
+        /* If each check is true, the task is successful; otherwise, the task fails. */
         return qualityCheckData;
-
     }
+
 
     public performGlobalValidityCheck() {
         /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
@@ -1327,11 +1332,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
      */
     public async produceData(action: string, completedElement) {
-
+        /* Resolve the current step; if finishing, jump to the last element. */
         let currentElement = this.stepper!.selectedIndex;
         if (action == "Finish")
             currentElement = this.task.getElementsNumber() - 1;
 
+        /* Compute base/overall indices and types. */
         let completedElementBaseIndex = completedElement;
         let currentElementBaseIndex = currentElement;
         let completedElementData = this.task.getElementIndex(completedElement);
@@ -1339,12 +1345,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let completedElementType = completedElementData["elementType"];
         let completedElementIndex = completedElementData["elementIndex"];
 
+        /* Track accesses per element. */
         this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
+        /* Update timestamps and countdowns if configured. */
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
         if (this.task.hasCountdown()) {
             this.handleCountdowns(currentElementData, completedElementData, action);
         }
+
+        /* Annotator hook for options-type annotator on documents. */
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
                 if (completedElementType == "S")
@@ -1354,73 +1364,109 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         let qualityChecks = null;
 
+        /* Finish branch: run quality checks, set outcome flags, and persist ACL status. */
         if (action == "Finish") {
-            qualityChecks = this.performQualityChecks();
-            if (qualityChecks["globalOutcome"]) {
-                this.sectionService.taskSuccessful = true;
-                this.sectionService.taskFailed = false;
-            } else {
-                this.sectionService.taskSuccessful = false;
-                this.sectionService.taskFailed = true;
-            }
-            /* Lastly, the ACL is updated. */
-            if (!(this.worker.identifier == null)) {
-                this.worker.setParameter("time_completion", new Date().toUTCString());
-                if (this.sectionService.taskSuccessful) {
-                    this.worker.setParameter("in_progress", String(false));
-                    this.worker.setParameter("paid", String(true));
-                    this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
+            await this.withGlobalOverlay(async () => {
+                /* Perform all quality checks (global validity + gold + time). */
+                qualityChecks = this.performQualityChecks();
+
+                /* Set outcome flags according to checks */
+                if (qualityChecks["globalOutcome"]) {
+                    this.sectionService.taskSuccessful = true;
+                    this.sectionService.taskFailed = false;
                 } else {
-                    const triesLeft = this.task.settings.allowed_tries - this.task.tryCurrent;
-                    this.worker.setParameter("try_left", String(triesLeft));
-                    this.worker.setParameter("try_current", String(this.task.tryCurrent));
-                    this.worker.setParameter("in_progress", String(true));
-                    this.worker.setParameter("paid", String(false));
-                    this.worker.setParameter("status_code", this.task.settings.allowed_tries - this.task.tryCurrent > 0 ? StatusCodes.TASK_FAILED_WITH_TRIES : StatusCodes.TASK_FAILED_NO_TRIES);
-                    this.worker.setParameter('position_current', String(this.computeJumpIndex()));
+                    this.sectionService.taskSuccessful = false;
+                    this.sectionService.taskFailed = true;
                 }
-                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
-            }
+
+                /* Update ACL row with final status (typed StatusCodes). */
+                if (!(this.worker.identifier == null)) {
+                    this.worker.setParameter("time_completion", new Date().toUTCString());
+
+                    if (this.sectionService.taskSuccessful) {
+                        /* Success → mark paid and not in progress. */
+                        this.worker.setParameter("in_progress", String(false));
+                        this.worker.setParameter("paid", String(true));
+                    } else {
+                        /* Failure → increment try counters and compute jump index. */
+                        const triesLeft = this.task.settings.allowed_tries - this.task.tryCurrent;
+                        this.worker.setParameter("try_left", String(triesLeft));
+                        this.worker.setParameter("try_current", String(this.task.tryCurrent));
+                        this.worker.setParameter("in_progress", String(true));
+                        this.worker.setParameter("paid", String(false));
+                        this.worker.setParameter('position_current', String(this.computeJumpIndex()));
+                    }
+
+                    /* Single, typed write based on outcome and remaining tries. */
+                    const status = this.sectionService.taskSuccessful
+                        ? StatusCodes.TASK_SUCCESSFUL
+                        : (this.task.settings.allowed_tries - this.task.tryCurrent > 0
+                            ? StatusCodes.TASK_FAILED_WITH_TRIES
+                            : StatusCodes.TASK_FAILED_NO_TRIES);
+
+                    await this.dynamoDBService.updateWorkerAcl(
+                        this.configService.environment,
+                        this.worker,
+                        status
+                    );
+                }
+            });
         }
 
+        /* Persist questionnaire/document data records and position whenever applicable. */
         if (!(this.worker.identifier == null)) {
             if (completedElementType == "Q") {
-                let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementData, this.questionnairesForm[completedElementIndex].value, action);
+                /* Questionnaire payload. */
+                let questionnairePayload = this.task.buildTaskQuestionnairePayload(
+                    completedElementData,
+                    this.questionnairesForm[completedElementIndex].value,
+                    action
+                );
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);
                 this.storePositionCurrent(String(currentElement));
             }
 
             if (completedElementType == "S") {
+                /* Document payload (with optional countdown + post forms). */
                 let countdown = null;
                 if (this.task.settings.countdownTime >= 0)
                     countdown = Math?.round(Number(this.documentComponent?.get(completedElementIndex).countdown.i.value) / 1000);
+
                 let additionalAnswers = {};
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
                     Object.keys(assessmentFormAdditional.controls)?.forEach(controlName => {
                         additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value;
                     });
                 }
-                let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, additionalAnswers, countdown, action);
+
+                let documentPayload = this.task.buildTaskDocumentPayload(
+                    completedElementData,
+                    this.documentsForm[completedElementIndex].value,
+                    additionalAnswers,
+                    countdown,
+                    action
+                );
+
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
                 this.storePositionCurrent(String(currentElement));
-
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
+                /* Persist the overall quality checks at the very end. */
                 const qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
                 this.storePositionCurrent(String(currentElement));
             }
         }
 
+        /* Toggle completion flags and re-render Outcome on finish. */
         if (action == "Finish") {
             this.sectionService.taskCompleted = true;
-
-            /* >>> important under OnPush to mount Outcome and unmount the stepper */
-            this.changeDetector.markForCheck();     // <-- added
-            this.changeDetector.detectChanges();    // existing
+            this.changeDetector.markForCheck();
+            this.changeDetector.detectChanges();
         }
     }
+
 
     public computeTimestamps(
         currentElement: number,
@@ -1499,6 +1545,47 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.snackBar.open(message, action, {
             duration: duration,
         });
+    }
+
+    /* ------------------------------------------------------
+       Global loader stop (idempotent).
+       - Double rAF: stop after layout & paint of the new branch.
+       - Drain a few times in case upstream incremented multiple times.
+       ------------------------------------------------------ */
+    private stopGlobalOnNextPaint(): void {
+        if (this.overlayStopped) return;
+        const stop = () => {
+            for (let i = 0; i < 3; i++) {
+                try {
+                    this.ngx.stopLoader('global');
+                } catch {
+                    break;
+                }
+            }
+            this.overlayStopped = true;
+        };
+        requestAnimationFrame(() => requestAnimationFrame(stop));
+    }
+
+    /** Runs async work under the global overlay. Always stops it (finally). */
+    private async withGlobalOverlay<T>(work: () => Promise<T>): Promise<T> {
+        /* Start overlay (named instance kept consistent with other calls) */
+        try {
+            this.ngx.startLoader('global');
+        } catch {
+            this.ngx.start?.();
+        }
+
+        try {
+            return await work();
+        } finally {
+            /* Always stop, even if the task throws */
+            try {
+                this.ngx.stopLoader('global');
+            } catch {
+                this.ngx.stop?.();
+            }
+        }
     }
 
 }

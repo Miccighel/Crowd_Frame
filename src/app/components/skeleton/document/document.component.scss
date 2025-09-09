@@ -107,50 +107,12 @@ p {
     padding-top: 16px;
 }
 
-/* |---  EVALUATION INSTRUCTIONS ---| */
-
-.evaluation-instructions-block {
-    margin: 1.5em 0;
-    padding: 1.25em 2em 1em 2em;
-    background: #f6f7fb;
-    border-radius: 12px;
-    border: 1px solid #e0e3ed;
-    box-shadow: 0 1px 3px rgba(60,70,100,0.07);
-
-    h2 {
-        margin-top: 1.1em;
-        margin-bottom: 0.4em;
-        font-size: 1.20em;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        line-height: 1.3;
-    }
-    h2:first-child {
-        margin-top: 0;
-    }
-
-    > div, > ng-container, > section {
-        margin-bottom: 0.85em;
-    }
-
-    p {
-        margin-top: 0.15em;
-        margin-bottom: 0.65em;
-        font-size: 1.1em;
-        line-height: 1.65;
-    }
-}
-
-.evaluation-instructions-block > div > div {
-    margin-bottom: 0.45em; /* space between instructions */
-}
-
 /* |--- task-check-fail-section ---| */
 
 .task-check-fail-section mat-card {
     margin: 1% auto;
 }
-  
+
 .task-check-fail-section .main-title {
     text-align: center;
     text-transform: uppercase;
@@ -158,22 +120,22 @@ p {
     display: flex;
     height: 30px;
 }
-  
+
 .task-check-fail-section .sub-title {
     text-transform: uppercase;
     font-size: 1.1em;
 }
-  
+
 .task-check-fail-section .description {
     margin-top: 10px !important;
     margin-bottom: 10px !important;
     font-size: 1.1em;
-  
+
     h1 {
       text-align: center;
     }
 }
-  
+
 .task-check-fail-section div {
     text-align: center;
     button {
@@ -181,7 +143,7 @@ p {
       padding: 10px 30px;
     }
 }
-  
+
 .red-title {
     width: 10px;
     height: 100%;
@@ -229,7 +191,7 @@ p {
 .time-left {
     font-size: 30px;
 }
-  
+
 .time-remaining{
     color: rgb(95, 95, 95);
 }

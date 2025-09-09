@@ -1,46 +1,51 @@
-@if (dimension.url) {
+<!-- Search engine block: enabled when
+     - dimension.url is boolean true, OR
+     - dimension.url is an object whose 'enable' is not false (missing = enabled)
+-->
+@if (dimension?.['url'] && (typeof dimension?.['url'] === 'boolean'
+    ? dimension?.['url']
+    : (dimension?.['url']?.['enable'] !== false))) {
+
     <div class="search-engine">
-        @if (dimension.url.enable) {
-            @if (dimension.url.instructions) {
-                <div class="evaluation-instructions">
-                    <h2>{{ dimension.url.instructions.label }} - {{ dimension.url.instructions.caption }}</h2>
-                    <div><p>{{ dimension.url.instructions.text }}</p></div>
-                </div>
-            }
 
-            <form [formGroup]="searchEngineForm">
-                <!-- Dimension search engine interface markup -->
-                <div>
-                    <div>
-                        <app-search-engine-body
-                            id="app-search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
-                            (resultEmitter)="handleSearchEngineRetrievedResponse($event, task.documents[documentIndex], dimension)"
-                            (queryEmitter)="task.storeSearchEngineUserQuery($event, task.documents[documentIndex], dimension)"
-                            (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, task.documents[documentIndex], dimension)"
-                            (visitedRowEmitter)="handleSearchEngineVisitedResponse($event, task.documents[documentIndex], dimension)"
-                            [worker]="worker"
-                            [resultsRetrievedForms]="resultsRetrievedForms"
-                            [dimension]="dimension"
-                            [documentIndex]="documentIndex">
-                        </app-search-engine-body>
-
-                        <!-- Dimension search engine URL field (hidden/utility) -->
-                        <mat-form-field class="url-field">
-                            <input matInput type="text" [formControlName]="dimension.name + '_url'">
-                            <button mat-icon-button matPrefix>
-                                <mat-icon>arrow_right_alt</mat-icon>
-                            </button>
-
-                            <!-- Only semantic validation remains (no 'required' error here) -->
-                            @if (utilsService.hasError(searchEngineForm, dimension.name + '_url', 'invalidSearchEngineUrl')) {
-                                <mat-error>
-                                    <span i18n>Please select (or copy & paste) one of the URLs shown above.</span>
-                                </mat-error>
-                            }
-                        </mat-form-field>
-                    </div>
-                </div>
-            </form>
+        @if (dimension.url?.instructions; as ins) {
+            <app-instruction-list
+                [element]="ins">
+            </app-instruction-list>
         }
+
+        <form [formGroup]="searchEngineForm">
+            <!-- Dimension search engine interface markup -->
+            <div>
+                <div>
+                    <app-search-engine-body
+                        id="app-search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
+                        (resultEmitter)="handleSearchEngineRetrievedResponse($event, task.documents[documentIndex], dimension)"
+                        (queryEmitter)="task.storeSearchEngineUserQuery($event, task.documents[documentIndex], dimension)"
+                        (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, task.documents[documentIndex], dimension)"
+                        (visitedRowEmitter)="handleSearchEngineVisitedResponse($event, task.documents[documentIndex], dimension)"
+                        [worker]="worker"
+                        [resultsRetrievedForms]="resultsRetrievedForms"
+                        [dimension]="dimension"
+                        [documentIndex]="documentIndex">
+                    </app-search-engine-body>
+
+                    <!-- Dimension search engine URL field (hidden/utility).
+                         Only semantic validation here; 'required' is enforced by outer gating. -->
+                    <mat-form-field class="url-field">
+                        <input matInput type="text" [formControlName]="dimension.name + '_url'">
+                        <button mat-icon-button matPrefix>
+                            <mat-icon>arrow_right_alt</mat-icon>
+                        </button>
+
+                        @if (utilsService.hasError(searchEngineForm, dimension.name + '_url', 'invalidSearchEngineUrl')) {
+                            <mat-error>
+                                <span i18n>Please select (or copy & paste) one of the URLs shown above.</span>
+                            </mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+            </div>
+        </form>
     </div>
 }

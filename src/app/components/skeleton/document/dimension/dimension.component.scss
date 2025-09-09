@@ -1,18 +1,14 @@
 /* ======================================================================
    DIMENSION COMPONENT STYLES (integrated, grid-aligned matrix)
    ----------------------------------------------------------------------
-   - Keep Material typography (no custom font-sizes).
    - Matrix: rows = dimensions, columns = mappings; first TWO columns fixed.
-   - Pointwise instructions left-aligned via .dimension--pointwise.
-   - Validation messages stable (no layout jumps).
-   - NEW: matrix row divider when dimension.style.separator is true.
    ====================================================================== */
 
 /* ─────────────────────────────────────────────────────────────
    Base dimension block
    ───────────────────────────────────────────────────────────── */
 .dimension {
-    margin-bottom: 12px;
+    margin-top: 1.4em;
 
     h2 {
         font-weight: normal;
@@ -98,6 +94,7 @@
     margin-bottom: 12px;
 }
 
+/* optional hook for label spans inside radios */
 .mapping-label {
 }
 
@@ -117,19 +114,16 @@
    MATRIX — grid-aligned, 2 fixed text columns + N mapping columns
    ----------------------------------------------------------------
    Template sets:
-     --cols     = number of mapping columns
+     --cols     = number of mapping columns (from headerDim)
      --col-name = width of name column (e.g., 180px)
      --col-desc = width of description column (e.g., 320px)
    ---------------------------------------------------------------- */
-.dimension-matrix {
-    overflow-x: auto; /* allow scroll if many mappings */
-}
 
 .dimension-matrix-single {
     border: 2px solid lightgray;
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 2em;
+    margin-bottom: 10em;
 }
 
 .dimension-matrix-multiple,
@@ -205,7 +199,38 @@
 }
 
 /* Mapping cells: radios centered by parent .matrix-cell */
-.matrix-value-control .mat-radio-button {
+.matrix-value-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Remove MDC label spacing (even when label is empty) */
+.matrix-value-control .mat-mdc-radio-button .mdc-form-field {
+    gap: 0;
+}
+
+.matrix-value-control .mat-mdc-radio-button .mdc-form-field > label {
+    margin: 0 !important;
+    padding: 0;
+    width: 0;
+    overflow: hidden; /* keep DOM for a11y, but no layout */
+}
+
+/* Ensure the radio itself doesn't introduce margins */
+.matrix-value-control .mat-mdc-radio-button {
+    margin: 0;
+}
+
+.matrix-value-control .mat-mdc-radio-button .mdc-radio {
+    margin: 0 auto;
+}
+
+/* Placeholder to keep grid width when a row has fewer options */
+.matrix-placeholder {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
 }
 
 /* Row divider that spans the whole grid (added when style.separator = true) */
@@ -216,11 +241,6 @@
 
 .matrix-row-separator mat-divider {
     width: 100%;
-}
-
-/* Optional subtle background for separated rows (legacy helper) */
-.dimension-matrix .dimension-separate {
-    background-color: #f8f8f8;
 }
 
 /* Normalize paragraph spacing inside matrix cells */
@@ -313,56 +333,6 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Instructions block — centered by default
-   ───────────────────────────────────────────────────────────── */
-.evaluation-instructions {
-    margin: 8px 0 12px 0;
-    text-align: center;
-
-    h2 {
-        margin: 0 0 6px 0;
-        font-weight: 500;
-        text-align: inherit; /* inherit center; overridden in pointwise */
-    }
-}
-
-/* Readable body; keep Material typography sizes */
-.evaluation-instructions-body {
-    max-width: 720px;
-    margin: 0 auto;
-    text-align: left;
-
-    p {
-        margin: 6px 0;
-    }
-
-    ul, ol {
-        margin: 6px 0 6px 18px;
-        padding-left: 18px;
-    }
-
-    li {
-        margin: 3px 0;
-    }
-
-    strong {
-        font-weight: 600;
-    }
-}
-
-/* Legacy helper kept */
-.instructions h2 {
-    font-weight: normal;
-}
-
-/* Center dimension titles and instruction headings by default */
-.dimension .dimension-name h2,
-.dimension .evaluation-instructions h2,
-.dimension .dimension-name-center h2 {
-    text-align: center;
-}
-
-/* ─────────────────────────────────────────────────────────────
    Pointwise (non-pairwise) overrides — left-aligned instructions
    ───────────────────────────────────────────────────────────── */
 .dimension.dimension--pointwise .evaluation-instructions {
@@ -389,7 +359,6 @@
 .dimension mat-error {
     display: block;
     margin: 6px 0 0;
-    /* rely on Material tokens for color/size */
 }
 
 .dimension .radio-button-group + mat-error,
@@ -405,6 +374,26 @@
 .dimension mat-error br + span {
     margin-top: 0;
     display: inline-block;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Categorical radios — slightly larger labels (scoped)
+   ---------------------------------------------------------------- */
+.dimension .radio-button-group .mat-mdc-radio-button .mdc-label,
+.dimension .radio-button-group .mapping-label,
+.dimension .matrix-row .mat-mdc-radio-button .mdc-label {
+    font-size: 1.06rem; /* ~+6% bump */
+    line-height: 1.35; /* better multi-line wrapping */
+}
+
+/* Mobile: keep the bump but a touch tighter for space */
+@media (max-width: 599px) {
+    .dimension .radio-button-group .mat-mdc-radio-button .mdc-label,
+    .dimension .radio-button-group .mapping-label,
+    .dimension .matrix-row .mat-mdc-radio-button .mdc-label {
+        font-size: 1.04rem;
+        line-height: 1.32;
+    }
 }
 
 /* ─────────────────────────────────────────────────────────────

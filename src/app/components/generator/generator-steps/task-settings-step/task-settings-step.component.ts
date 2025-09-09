@@ -10,7 +10,7 @@ import {HitsSolverService} from "../../../../services/hitsSolver.service";
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 /* Models */
 import {Hit} from "../../../../models/skeleton/hit";
-import {AttributeMain, DocumentCategory, TaskSettings,} from "../../../../models/skeleton/taskSettings";
+import {AttributeMain, DocumentCategory, TaskSettings} from "../../../../models/skeleton/taskSettings";
 import {S3Service} from "../../../../services/aws/s3.service";
 
 interface AnnotatorType {
@@ -30,7 +30,6 @@ interface ModalityType {
     standalone: false
 })
 export class TaskSettingsStepComponent implements OnInit {
-
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
@@ -43,49 +42,54 @@ export class TaskSettingsStepComponent implements OnInit {
     utilsService: UtilsService;
 
     /* STEP #6 - Task Settings */
-
     dataStored: TaskSettings;
     formStep: UntypedFormGroup;
 
     annotatorTypes: AnnotatorType[] = [
         {value: "options", viewValue: "Options"},
-        {value: "laws", viewValue: "Laws"},
+        {value: "laws", viewValue: "Laws"}
     ];
     modalityTypes: ModalityType[] = [
         {value: "pointwise", viewValue: "Pointwise"},
-        {value: "pairwise", viewValue: "Pairwise"},
+        {value: "pairwise", viewValue: "Pairwise"}
     ];
     countdownBehavior: ModalityType[] = [
         {value: "disable_form", viewValue: "Disable Forms"},
-        {value: "hide_attributes", viewValue: "Hide Attributes"},
+        {value: "hide_attributes", viewValue: "Hide Attributes"}
     ];
     additionalTimeModalities: ModalityType[] = [
         {value: "attribute", viewValue: "Attribute"},
-        {value: "position", viewValue: "Position"},
+        {value: "position", viewValue: "Position"}
     ];
 
     batchesTree: Array<JSON>;
     batchesTreeInitialization: boolean;
-    annotatorOptionColors: Array<string>;
+    annotatorOptionColors: string[];
+
     /* Variables to handle hits file upload */
     hitsFile: ReadFile;
     hitsFileName: string;
-    hitsParsed: Array<Hit>;
+    hitsParsed: Hit[];
     hitsParsedString: string;
-    hitsAttributes: Array<string>;
-    hitsAttributesValues: Object;
+
+    /* SAFER typings (fixed) */
+    hitsAttributes: string[] = [];
+    hitsAttributesValues: Record<string, any[]> = {};
     hitsPositions: number;
     hitsSize: number;
     hitsDetected: number;
     readMode: ReadMode;
 
-    /* Variables to handle docs file upoload */
+    /* Variables to handle docs file upload */
     docsFile: ReadFile;
     docsFileName: string;
     docsParsed: Array<JSON>;
     docsParsedString: string;
-    docsCategories: Array<string>;
-    docsCategoriesValues: Object;
+
+    /* SAFER typings (fixed) */
+    docsCategories: string[] = [];
+    docsCategoriesValues: Record<string, any[]> = {};
+
     docsSize: number;
     docsDetected: number;
     identificationAttribute: string;
@@ -98,6 +102,9 @@ export class TaskSettingsStepComponent implements OnInit {
 
     @Output() formEmitter: EventEmitter<UntypedFormGroup>;
     @Output() modalityEmitter: EventEmitter<string>;
+
+    /* trackBy for stable indices inside FormArray loops (prevents path glitches during CD) */
+    trackByIndex = (i: number) => i;
 
     constructor(
         localStorageService: LocalStorageService,
@@ -115,16 +122,27 @@ export class TaskSettingsStepComponent implements OnInit {
         this.ngxService = ngxService;
         this.HitsSolverService = HitsSolverService;
         this.solverStatus = false;
-        if (this.configService.environment.hit_solver_endpoint != "None")
-            this.initHitSolver();
+        if (this.configService.environment.hit_solver_endpoint != "None") this.initHitSolver();
         this.utilsService = utilsService;
         this.initializeControls();
     }
 
+    /* ───────────────────────── Helpers (new) ───────────────────────── */
+
+    /** Ensure a key exists as an array in a record and return it */
+    private ensureArrayBucket<T>(map: Record<string, T[]>, key: string): T[] {
+        return (map[key] ??= []);
+    }
+
+    /** Push into array if not already present (strict equality) */
+    private pushUnique<T>(arr: T[], value: T): void {
+        if (!arr.includes(value)) arr.push(value);
+    }
+
+    /* ───────────────────────── Solver init ───────────────────────── */
+
     initHitSolver() {
-        this.HitsSolverService.getSolverConfiguration(
-            this.configService
-        ).subscribe(
+        this.HitsSolverService.getSolverConfiguration(this.configService).subscribe(
             (response) => {
                 this.HitsSolverService.setRunners(response);
                 this.solverStatus = true;
@@ -142,9 +160,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     checkSolverStatus() {
-        this.HitsSolverService.getSolverConfiguration(
-            this.configService
-        ).subscribe(
+        this.HitsSolverService.getSolverConfiguration(this.configService).subscribe(
             (response) => {
                 this.HitsSolverService.setRunners(response);
                 this.solverStatus = true;
@@ -163,7 +179,10 @@ export class TaskSettingsStepComponent implements OnInit {
         );
     }
 
+    /* ───────────────────────── Forms bootstrap ───────────────────────── */
+
     public initializeControls() {
+        /* Build a minimal, valid scaffold to avoid null parent errors in the template */
         this.dataStored = new TaskSettings();
         this.formStep = this._formBuilder.group({
             modality: "",
@@ -173,13 +192,13 @@ export class TaskSettingsStepComponent implements OnInit {
             documents: this._formBuilder.group({
                 min_docs_repetitions: 1,
                 doc_categories: this._formBuilder.array([]),
-                workers_number: "",
+                workers_number: ""
             }),
             attributes: this._formBuilder.array([]),
             setAnnotator: false,
             annotator: this._formBuilder.group({
                 type: "",
-                values: this._formBuilder.array([]),
+                values: this._formBuilder.array([])
             }),
             setCountdownTime: "",
             countdown_time: "",
@@ -192,7 +211,7 @@ export class TaskSettingsStepComponent implements OnInit {
             messages: this._formBuilder.array([]),
             logger: false,
             logger_option: false,
-            server_endpoint: "",
+            server_endpoint: ""
         });
         this.hitDimension = 0;
         this.errorMessage = "";
@@ -203,135 +222,165 @@ export class TaskSettingsStepComponent implements OnInit {
         this.modalityEmitter = new EventEmitter<string>();
     }
 
+    /* ───────────────────────── Getters used in template (stable paths) ───────────────────────── */
+
+    /* These getters provide a single source of truth for parent groups/arrays used in loops */
+    get documentsFG(): UntypedFormGroup {
+        return this.formStep.get("documents") as UntypedFormGroup;
+    }
+
+    get docCategoriesFA(): UntypedFormArray {
+        return this.documentsFG.get("doc_categories") as UntypedFormArray;
+    }
+
+    get attributesFA(): UntypedFormArray {
+        return this.formStep.get("attributes") as UntypedFormArray;
+    }
+
+    get annotatorFG(): UntypedFormGroup {
+        return this.formStep.get("annotator") as UntypedFormGroup;
+    }
+
+    get annotatorValuesFA(): UntypedFormArray {
+        return this.annotatorFG.get("values") as UntypedFormArray;
+    }
+
+    get countdownAttrValuesFA(): UntypedFormArray {
+        return this.formStep.get("countdown_attribute_values") as UntypedFormArray;
+    }
+
+    get countdownPosValuesFA(): UntypedFormArray {
+        return this.formStep.get("countdown_position_values") as UntypedFormArray;
+    }
+
+    get messagesFA(): UntypedFormArray {
+        return this.formStep.get("messages") as UntypedFormArray;
+    }
+
+    /* Keep original helpers for backwards compatibility in TS (template now prefers getters) */
+    hitAttributes() {
+        return this.attributesFA;
+    }
+
+    documentsOptions(): UntypedFormGroup {
+        return this.documentsFG;
+    }
+
+    docCategories(): UntypedFormArray {
+        return this.docCategoriesFA;
+    }
+
+    docCategory(valueIndex: number) {
+        return this.docCategoriesFA?.at(valueIndex);
+    }
+
+    annotator() {
+        return this.annotatorFG;
+    }
+
+    annotatorOptionValues(): UntypedFormArray {
+        return this.annotatorValuesFA;
+    }
+
+    countdownAttributeValues() {
+        return this.countdownAttrValuesFA;
+    }
+
+    countdownPositionValues() {
+        return this.countdownPosValuesFA;
+    }
+
+    messages() {
+        return this.messagesFA;
+    }
+
+    /* ───────────────────────── Lifecycle ───────────────────────── */
+
     public async ngOnInit() {
-        let serializedTaskSettings =
-            this.localStorageService.getItem("task-settings");
+        /* Load dataStored either from local storage or S3 */
+        let serializedTaskSettings = this.localStorageService.getItem("task-settings");
         if (serializedTaskSettings) {
-            this.dataStored = new TaskSettings(
-                JSON.parse(serializedTaskSettings)
-            );
+            this.dataStored = new TaskSettings(JSON.parse(serializedTaskSettings));
         } else {
             this.initializeControls();
-            let rawTaskSettings = await this.S3Service.downloadTaskSettings(
-                this.configService.environment
-            );
+            let rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment);
             this.dataStored = new TaskSettings(rawTaskSettings);
-            this.localStorageService.setItem(
-                `task-settings`,
-                JSON.stringify(rawTaskSettings)
-            );
+            this.localStorageService.setItem(`task-settings`, JSON.stringify(rawTaskSettings));
         }
+
+        /* Seed annotator colors if present */
         this.annotatorOptionColors = ["#FFFF7B"];
         if (this.dataStored.annotator) {
             if (this.dataStored.annotator.type == "options") {
                 if (this.dataStored.annotator.values.length > 0) {
                     this.annotatorOptionColors = [];
-                    this.dataStored.annotator.values.forEach(
-                        (optionValue, _optionValueIndex) => {
-                            this.annotatorOptionColors.push(
-                                optionValue["color"]
-                            );
-                        }
-                    );
+                    this.dataStored.annotator.values.forEach((optionValue, _optionValueIndex) => {
+                        this.annotatorOptionColors.push(optionValue["color"]);
+                    });
                 }
             }
         }
+
+        /* Recreate the form with validators and arrays in place */
         this.formStep = this._formBuilder.group({
-            modality: [
-                this.dataStored
-                    ? this.dataStored.modality
-                        ? this.dataStored.modality
-                        : ""
-                    : "",
-                [Validators.required],
-            ],
+            modality: [this.dataStored ? (this.dataStored.modality ? this.dataStored.modality : "") : "", [Validators.required]],
             allowed_tries: [
-                this.dataStored
-                    ? this.dataStored.allowed_tries
-                        ? this.dataStored.allowed_tries
-                        : ""
-                    : "",
-                [Validators.required],
+                this.dataStored ? (this.dataStored.allowed_tries ? this.dataStored.allowed_tries : "") : "",
+                [Validators.required]
             ],
             time_check_amount: [
-                this.dataStored
-                    ? this.dataStored.time_check_amount
-                        ? this.dataStored.time_check_amount
-                        : ""
-                    : "",
-                [Validators.required],
+                this.dataStored ? (this.dataStored.time_check_amount ? this.dataStored.time_check_amount : "") : "",
+                [Validators.required]
             ],
             time_assessment: [
-                this.dataStored
-                    ? this.dataStored.time_assessment
-                        ? this.dataStored.time_assessment
-                        : ""
-                    : "",
-                [Validators.required],
+                this.dataStored ? (this.dataStored.time_assessment ? this.dataStored.time_assessment : "") : "",
+                [Validators.required]
             ],
             documents: this._formBuilder.group({
                 min_docs_repetitions: 1,
                 doc_categories: this._formBuilder.array([]),
-                workers_number: "",
+                workers_number: ""
             }),
             attributes: this._formBuilder.array([]),
             setAnnotator: !!this.dataStored.annotator,
             annotator: this._formBuilder.group({
-                type: this.dataStored.annotator
-                    ? this.dataStored.annotator.type
-                        ? this.dataStored.annotator.type
-                        : ""
-                    : "",
-                values: this._formBuilder.array([]),
+                type: this.dataStored.annotator ? (this.dataStored.annotator.type ? this.dataStored.annotator.type : "") : "",
+                values: this._formBuilder.array([])
             }),
             setCountdownTime: this.dataStored.countdownTime >= 0 ? true : "",
-            countdown_time:
-                this.dataStored.countdownTime >= 0
-                    ? this.dataStored.countdownTime
-                    : "",
-            countdown_behavior: this.dataStored.countdown_behavior
-                ? this.dataStored.countdown_behavior
-                : "",
+            countdown_time: this.dataStored.countdownTime >= 0 ? this.dataStored.countdownTime : "",
+            countdown_behavior: this.dataStored.countdown_behavior ? this.dataStored.countdown_behavior : "",
             setAdditionalTimes: this.dataStored.countdown_modality ? true : "",
             countdown_modality: this.dataStored.countdown_modality
                 ? this.dataStored.countdown_modality
-                    ? this.dataStored.countdown_modality
-                    : ""
                 : "",
-            countdown_attribute: this.dataStored.countdown_attribute
-                ? this.dataStored.countdown_attribute
-                    ? this.dataStored.countdown_attribute
-                    : ""
-                : "",
+            countdown_attribute: this.dataStored.countdown_attribute ? this.dataStored.countdown_attribute : "",
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: !!this.dataStored.logger_enable,
             logger_option: this.dataStored.logger_options,
-            server_endpoint: this.dataStored.logger_server_endpoint
-                ? this.dataStored.logger_server_endpoint
-                    ? this.dataStored.logger_server_endpoint
-                    : ""
-                : "",
+            server_endpoint: this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint : ""
         });
-        if (this.dataStored.modality)
-            this.emitModality(this.dataStored.modality);
+
+        /* Emit modality if present */
+        if (this.dataStored.modality) this.emitModality(this.dataStored.modality);
+
+        /* Restore messages */
         if (this.dataStored.messages)
             if (this.dataStored.messages.length > 0)
-                this.dataStored.messages.forEach((message, _messageIndex) =>
-                    this.addMessage(message)
-                );
+                this.dataStored.messages.forEach((message, _messageIndex) => this.addMessage(message));
+
+        /* Restore annotator options */
         if (this.dataStored.annotator)
             if (this.dataStored.annotator.type == "options")
-                this.dataStored.annotator.values.forEach(
-                    (optionValue, _optionValueIndex) =>
-                        this.addOptionValue(optionValue)
-                );
+                this.dataStored.annotator.values.forEach((optionValue, _optionValueIndex) => this.addOptionValue(optionValue));
+
+        /* Restore additional times */
         if (this.dataStored.countdownTime >= 0) {
             if (this.dataStored.countdown_modality == "attribute") {
                 if (this.dataStored.countdown_attribute_values) {
-                    for (let countdownAttribute of this.dataStored
-                        .countdown_attribute_values) {
+                    for (let countdownAttribute of this.dataStored.countdown_attribute_values) {
                         this.updateCountdownAttribute(countdownAttribute);
                     }
                 }
@@ -340,44 +389,56 @@ export class TaskSettingsStepComponent implements OnInit {
         if (this.dataStored.countdownTime >= 0) {
             if (this.dataStored.countdown_modality == "position") {
                 if (this.dataStored.countdown_position_values) {
-                    for (let countdownPosition of this.dataStored
-                        .countdown_position_values) {
+                    for (let countdownPosition of this.dataStored.countdown_position_values) {
                         this.updateCountdownPosition(countdownPosition);
                     }
                 }
             }
         }
+
+        /* Load hits (populates attributes form array safely) */
         await this.loadHits();
+
+        /* Persist every change */
         this.formStep.valueChanges.subscribe((_form) => {
             this.serializeConfiguration();
         });
         this.serializeConfiguration();
+
+        /* Pass form to parent */
         this.formEmitter.emit(this.formStep);
     }
 
+    /* ───────────────────────── Hits load (hardened) ───────────────────────── */
+
     async loadHits() {
-        let hits = JSON.parse(this.localStorageService.getItem("hits"));
-        if (hits) {
-            this.updateHitsFile(hits);
-            this.localStorageService.setItem(`hits`, JSON.stringify(hits));
-        } else {
-            let hits = [];
-            try {
-                hits = await this.S3Service.downloadHits(
-                    this.configService.environment
-                );
-            } catch (exception) {
-            }
-            this.localStorageService.setItem(`hits`, JSON.stringify(hits));
-            this.updateHitsFile(hits);
+        let hits: Hit[] | undefined;
+        try {
+            const raw = this.localStorageService.getItem("hits");
+            hits = raw ? JSON.parse(raw) : undefined;
+        } catch {
+            // ignore
         }
+
+        if (!Array.isArray(hits)) {
+            try {
+                hits = await this.S3Service.downloadHits(this.configService.environment);
+            } catch {
+                hits = [];
+            }
+        }
+
+        this.localStorageService.setItem(`hits`, JSON.stringify(hits));
+        this.updateHitsFile(hits);
     }
 
-    emitModality(data) {
-        this.modalityEmitter.emit(data["value"]);
+    emitModality(data: any) {
+        /* If the select emits just the string value, support both shapes */
+        const value = typeof data === "string" ? data : data?.value;
+        this.modalityEmitter.emit(value);
     }
 
-    async loadHitsFromResponse(hits) {
+    async loadHitsFromResponse(hits: Hit[]) {
         this.localStorageService.setItem(`hits`, JSON.stringify(hits));
         this.updateHitsFile(hits);
     }
@@ -392,174 +453,145 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     updateLoggerOption(el: string, action: string) {
-        let truthValue =
-            this.formStep?.get("logger_option").value[el][action] != true;
+        const current = this.formStep?.get("logger_option").value ?? {};
+        const truthValue = current[el]?.[action] != true;
         if (action == "general") {
-            for (let key in this.formStep?.get("logger_option").value[el]) {
-                let value = this.formStep?.get("logger_option").value;
-                value[el][key] = truthValue;
-                this.formStep?.get("logger_option")?.setValue(value);
+            for (let key in current[el]) {
+                current[el][key] = truthValue;
             }
+            this.formStep?.get("logger_option")?.setValue(current);
         } else {
-            let value = this.formStep?.get("logger_option").value;
-            value[el][action] = truthValue;
-            this.formStep?.get("logger_option")?.setValue(value);
+            current[el][action] = truthValue;
+            this.formStep?.get("logger_option")?.setValue(current);
         }
     }
 
     get loggerOptionValue(): { [key: string]: { [key: string]: boolean } } {
-        return this.formStep.get('logger_option')?.value ?? {};
+        return this.formStep.get("logger_option")?.value ?? {};
     }
 
     updateServerEndpoint() {
         return this.formStep?.get("server_endpoint").value;
     }
 
-    updateHitsFile(hits = null) {
-        this.hitsParsed = hits
-            ? hits
-            : (JSON.parse(this.hitsFile.content) as Array<Hit>);
+    /* ───────────────────────── updateHitsFile (fixed) ───────────────────────── */
+
+    updateHitsFile(hits: Hit[] | null = null) {
+        this.hitsParsed = hits ?? (JSON.parse(this.hitsFile.content) as Hit[]);
         this.hitsParsedString = JSON.stringify(this.hitsParsed);
+
         if (!hits) {
-            this.localStorageService.setItem(
-                `hits`,
-                JSON.stringify(this.hitsParsed)
-            );
+            this.localStorageService.setItem(`hits`, this.hitsParsedString);
         }
-        if (this.hitsParsed.length > 0) {
-            this.hitsDetected =
-                "documents" in this.hitsParsed[0] &&
-                "token_input" in this.hitsParsed[0] &&
-                "token_output" in this.hitsParsed[0] &&
-                "unit_id" in this.hitsParsed[0]
-                    ? this.hitsParsed.length
-                    : 0;
+
+        if (this.hitsParsed?.length > 0) {
+            const h0: any = this.hitsParsed[0] ?? {};
+            const valid =
+                Array.isArray(h0.documents) &&
+                "token_input" in h0 &&
+                "token_output" in h0 &&
+                "unit_id" in h0;
+            this.hitsDetected = valid ? this.hitsParsed.length : 0;
         } else {
             this.hitsDetected = 0;
         }
+
+        /* Reset attributes model */
         this.hitsAttributes = [];
         this.hitsAttributesValues = {};
+        this.hitsPositions = 0;
 
         if (this.hitsDetected > 0) {
-            let hits = JSON.parse(JSON.stringify(this.hitsParsed));
-            let document = hits[0]["documents"][0];
-            this.hitsPositions = hits[0]["documents"].length;
-            if (this.hitsPositions > 0) {
-                if ("statements" in document) {
-                    for (let attribute in document["statements"][0]) {
-                        if (!(attribute in this.hitsAttributes)) {
-                            this.hitsAttributes.push(attribute);
-                            this.hitsAttributesValues[attribute] = [];
-                        }
-                    }
-                } else {
-                    for (let attribute in document) {
-                        if (!(attribute in this.hitsAttributes)) {
-                            this.hitsAttributes.push(attribute);
-                            this.hitsAttributesValues[attribute] = [];
-                        }
-                    }
-                }
-            }
+            const copy = JSON.parse(JSON.stringify(this.hitsParsed)) as any[];
 
-            for (let hit of hits) {
-                for (let document of hit["documents"]) {
-                    if ("statements" in document) {
-                        Object.entries(document["statements"][0]).forEach(
-                            ([attribute, value]) => {
-                                if (
-                                    !this.hitsAttributesValues[
-                                        attribute
-                                        ].includes(value)
-                                )
-                                    this.hitsAttributesValues[attribute].push(
-                                        value
-                                    );
-                            }
-                        );
-                    } else {
-                        Object.entries(document).forEach(
-                            ([attribute, value]) => {
-                                if (!this.hitsAttributesValues[attribute].includes(value))
-                                    this.hitsAttributesValues[attribute].push(value);
-                            }
-                        );
+            const firstDocs: any[] = Array.isArray(copy[0]?.documents) ? copy[0].documents : [];
+            this.hitsPositions = firstDocs.length;
+
+            /* Walk every document of every hit, discover attributes + distinct values safely */
+            for (const hit of copy) {
+                const docs: any[] = Array.isArray(hit?.documents) ? hit.documents : [];
+                for (const doc of docs) {
+                    if (Array.isArray(doc?.statements) && doc.statements[0] && typeof doc.statements[0] === "object") {
+                        for (const [attr, val] of Object.entries(doc.statements[0])) {
+                            if (!this.hitsAttributes.includes(attr)) this.hitsAttributes.push(attr);
+                            const bucket = this.ensureArrayBucket(this.hitsAttributesValues, attr);
+                            this.pushUnique(bucket, val as any);
+                        }
+                    } else if (doc && typeof doc === "object") {
+                        for (const [attr, val] of Object.entries(doc)) {
+                            if (!this.hitsAttributes.includes(attr)) this.hitsAttributes.push(attr);
+                            const bucket = this.ensureArrayBucket(this.hitsAttributesValues, attr);
+                            this.pushUnique(bucket, val as any);
+                        }
                     }
                 }
             }
         }
-        this.hitAttributes().clear({emitEvent: true});
-        for (let attributeIndex in this.hitsAttributes) {
-            if (attributeIndex in this.dataStored.attributesMain) {
-                this.addHitAttribute(
-                    this.hitsAttributes[attributeIndex],
-                    this.dataStored.attributesMain[attributeIndex]
-                );
-            } else {
-                this.addHitAttribute(this.hitsAttributes[attributeIndex]);
-            }
+
+        /* Rebuild form array for attributes with stable parent path */
+        this.attributesFA.clear({emitEvent: true});
+        for (let i = 0; i < this.hitsAttributes.length; i++) {
+            const existing = this.dataStored?.attributesMain?.[i];
+            this.addHitAttribute(this.hitsAttributes[i], existing ?? null);
         }
+
+        /* File meta */
         if (this.hitsFile) {
             this.hitsSize = Math.round(this.hitsFile.size / 1024);
             this.hitsFileName = this.hitsFile.name;
         } else {
-            this.hitsSize = new TextEncoder().encode(
-                this.hitsParsed.toString()
-            ).length;
+            this.hitsSize = Math.round((this.hitsParsedString?.length ?? 0) / 1024);
             this.hitsFileName = "hits.json";
         }
     }
 
-    updateDocsFile(docs = null) {
-        this.docsParsed = docs
-            ? docs
-            : (JSON.parse(this.docsFile.content) as Array<JSON>);
+    /* ───────────────────────── Docs parsing (minor guards) ───────────────────────── */
+
+    updateDocsFile(docs: any[] | null = null) {
+        this.docsParsed = docs ? docs : (JSON.parse(this.docsFile.content) as Array<JSON>);
         this.docsParsedString = JSON.stringify(this.docsParsed);
-        let condition = this.existsIdentificationAttribute(docs);
+        let condition = this.existsIdentificationAttribute(docs ?? undefined);
         if (this.docsParsed.length > 0 && condition) {
             this.docsDetected = this.docsParsed.length;
         } else {
             this.docsDetected = 0;
             if (this.docsParsed.length < 0) {
-                this.errorMessage =
-                    "This JSON file does not contain any valid document. Please, review your selection.";
+                this.errorMessage = "This JSON file does not contain any valid document. Please, review your selection.";
             } else if (!condition) {
                 this.errorMessage =
                     "There's no attribute that can be used as a unique identificator on the solver. Please, review your selection";
             }
         }
 
+        /* Clear & repopulate categories safely */
         this.resetCategorySelection();
-        this.docCategories().clear({emitEvent: true});
+        this.docCategoriesFA.clear({emitEvent: true});
 
         this.docsCategories = [];
         this.docsCategoriesValues = {};
 
         if (this.docsDetected > 0) {
-            let docs = JSON.parse(JSON.stringify(this.docsParsed));
-            let doc_sample = docs[0];
+            const docsCopy = JSON.parse(JSON.stringify(this.docsParsed)) as any[];
+            const doc_sample = docsCopy[0] ?? {};
 
             for (let attribute in doc_sample) {
-                if (!(attribute in this.docsCategories)) {
+                if (!this.docsCategories.includes(attribute)) {
                     this.docsCategories.push(attribute);
                     this.docsCategoriesValues[attribute] = [];
                 }
             }
 
-            for (let doc of docs) {
+            for (let doc of docsCopy) {
                 Object.entries(doc).forEach(([attribute, value]) => {
                     if (this.docsCategories.includes(attribute)) {
-                        if (
-                            !this.docsCategoriesValues[attribute].includes(
-                                value
-                            )
-                        )
-                            this.docsCategoriesValues[attribute].push(value);
+                        const bucket = this.ensureArrayBucket(this.docsCategoriesValues, attribute);
+                        this.pushUnique(bucket, value as any);
                     }
                 });
             }
 
-            this.documentsOptions()?.get("min_docs_repetitions")
+            this.documentsFG
+                ?.get("min_docs_repetitions")
                 .valueChanges?.subscribe((data) => {
                 if (data != null) this.updateWorkerNumber(data);
             });
@@ -567,31 +599,23 @@ export class TaskSettingsStepComponent implements OnInit {
             let VALUES_LIMIT = 6;
 
             this.docsCategories.forEach((category) => {
-                // The interface shows only the attributes which number of values that doesn't exceed the VALUES_LIMIT
-                if (
-                    this.docsCategoriesValues[category].length <= VALUES_LIMIT
-                ) {
+                if ((this.docsCategoriesValues[category] ?? []).length <= VALUES_LIMIT) {
                     this.addDocCategory(
                         category,
-                        new DocumentCategory(
-                            category,
-                            this.docsCategoriesValues[category].length,
-                            0
-                        ),
+                        new DocumentCategory(category, (this.docsCategoriesValues[category] ?? []).length, 0),
                         this.categoryIsBalanced(category)
                     );
                 }
             });
-            for (let category of this.docCategories().controls) {
-                if (!this?.categoryIsBalanced(category?.get("name").value))
-                    category?.get("selected")?.disable();
+
+            for (let category of this.docCategoriesFA.controls) {
+                if (!this?.categoryIsBalanced(category?.get("name").value)) category?.get("selected")?.disable();
             }
             this.resetWorkerAssignment();
 
-            if (this.docCategories().length == 0) {
+            if (this.docCategoriesFA.length == 0) {
                 this.docsDetected = 0;
-                this.errorMessage =
-                    "There's no category with a balanced number of documents.";
+                this.errorMessage = "There's no category with a balanced number of documents.";
             }
         }
 
@@ -599,33 +623,27 @@ export class TaskSettingsStepComponent implements OnInit {
             this.docsSize = Math.round(this.docsFile.size / 1024);
             this.docsFileName = this.docsFile.name;
         } else {
-            this.docsSize = new TextEncoder().encode(
-                this.docsParsed.toString()
-            ).length;
+            this.docsSize = Math.round((this.docsParsedString?.length ?? 0) / 1024);
             this.docsFileName = "docs.json";
         }
         this.solutionStatus = "";
     }
 
-    hitAttributes() {
-        return this.formStep?.get("attributes") as UntypedFormArray;
-    }
-
     addHitAttribute(name: string, attribute: AttributeMain = null) {
-        this.hitAttributes()?.push(
+        this.attributesFA?.push(
             this._formBuilder?.group({
                 name: attribute ? attribute.name : name,
-                name_pretty: attribute ? attribute.name_pretty ? attribute.name_pretty : "" : "",
+                name_pretty: attribute ? (attribute.name_pretty ? attribute.name_pretty : "") : "",
                 show: attribute ? attribute.show : true,
-                annotate: attribute ? this.formStep?.get("setAnnotator").value ? attribute.annotate : false : false,
-                required: attribute ? this.formStep?.get("setAnnotator").value ? attribute.required : false : false,
+                annotate: attribute ? (this.formStep?.get("setAnnotator").value ? attribute.annotate : false) : false,
+                required: attribute ? (this.formStep?.get("setAnnotator").value ? attribute.required : false) : false
             })
         );
         this.resetHitAttributes();
     }
 
     resetHitAttributes() {
-        for (let attribute of this.hitAttributes().controls) {
+        for (let attribute of this.attributesFA.controls) {
             if (this.formStep?.get("setAnnotator").value == false) {
                 attribute?.get("annotate")?.disable();
                 attribute?.get("annotate")?.setValue(false);
@@ -638,8 +656,8 @@ export class TaskSettingsStepComponent implements OnInit {
         }
     }
 
-    updateHitAttribute(attributeIndex) {
-        let attribute = this.hitAttributes()?.at(attributeIndex);
+    updateHitAttribute(attributeIndex: number) {
+        let attribute = this.attributesFA?.at(attributeIndex);
         if (attribute?.get("show").value == true) {
             attribute?.get("annotate")?.enable();
             attribute?.get("required")?.enable();
@@ -658,109 +676,69 @@ export class TaskSettingsStepComponent implements OnInit {
         this.resetHitAttributes();
     }
 
-    documentsOptions(): UntypedFormGroup {
-        return this.formStep?.get("documents") as UntypedFormGroup;
-    }
+    /* (fixed) Guard empty docs */
+    existsIdentificationAttribute(docs?: any[]): boolean {
+        const docsParsed: any[] = docs ?? (JSON.parse(this.docsFile.content) as any[]);
+        if (!Array.isArray(docsParsed) || docsParsed.length === 0) return false;
 
-    docCategories(): UntypedFormArray {
-        return this.documentsOptions()?.get(
-            "doc_categories"
-        ) as UntypedFormArray;
-    }
+        const first = docsParsed[0] ?? {};
+        const attributes = Object.keys(first);
+        const attributeValues: Record<string, any[]> = {};
+        for (const a of attributes) attributeValues[a] = [];
 
-    docCategory(valueIndex) {
-        return this.docCategories()?.at(valueIndex);
-    }
-
-    existsIdentificationAttribute(docs) {
-        let docsParsed = docs
-            ? docs
-            : (JSON.parse(this.docsFile.content) as Array<JSON>);
-        let attributes = [];
-        let attributeValues = {};
-        for (let attribute in docsParsed[0]) {
-            attributes.push(attribute);
-            attributeValues[attribute] = [];
-        }
-        for (let doc of docsParsed) {
-            for (let attr of attributes) {
-                if (!attributeValues[attr].includes(doc[attr]))
-                    attributeValues[attr].push(doc[attr]);
+        for (const doc of docsParsed) {
+            for (const a of attributes) {
+                const bucket = attributeValues[a];
+                if (!bucket.includes(doc[a])) bucket.push(doc[a]);
             }
         }
-        for (let attr of attributes) {
-            if (attributeValues[attr].length == docsParsed.length) {
-                this.identificationAttribute = attr;
+
+        for (const a of attributes) {
+            if (attributeValues[a].length === docsParsed.length) {
+                this.identificationAttribute = a;
                 return true;
             }
         }
         return false;
     }
 
-    getCategoryReport(category) {
+    getCategoryReport(category: string) {
         let report = "";
         let MAX_VALUE_LENGTH = 12;
-        this.docsCategoriesValues[category].forEach((element) => {
-            let docs = [];
-            for (let doc of this.docsParsed) {
+        (this.docsCategoriesValues[category] ?? []).forEach((element) => {
+            let docs: any[] = [];
+            for (let doc of this.docsParsed ?? []) {
                 if (doc[category] == element) docs.push(doc);
             }
-            let el = element
-                ? element.length > 0
-                    ? element.length > MAX_VALUE_LENGTH
-                        ? element.substring(0, MAX_VALUE_LENGTH) + ".."
-                        : element
-                    : "NO VALUE"
+            const el = element
+                ? (element.length > 0 ? (element.length > MAX_VALUE_LENGTH ? element.substring(0, MAX_VALUE_LENGTH) + ".." : element) : "NO VALUE")
                 : "NO VALUE";
-            report +=
-                report == ""
-                    ? `${el}: ${docs.length} documents`
-                    : `\n ${el}: ${docs.length} documents`;
+            report += report == "" ? `${el}: ${docs.length} documents` : `\n ${el}: ${docs.length} documents`;
         });
         return report;
     }
 
-    addDocCategory(
-        name: string,
-        category = null as DocumentCategory,
-        balanced: boolean
-    ) {
-        this.docCategories().push(
+    addDocCategory(name: string, category: DocumentCategory = null, balanced: boolean) {
+        this.docCategoriesFA.push(
             this._formBuilder.group({
                 name: name,
-                name_pretty: category
-                    ? category.name_pretty
-                        ? category.name_pretty
-                        : name
-                    : name,
-                values_number: category
-                    ? category.values_number
-                        ? category.values_number
-                        : 0
-                    : 0,
-                selected: category
-                    ? category.selected
-                        ? category.selected
-                        : false
-                    : false,
-                worker_assignment: category
-                    ? category.worker_assignment
-                        ? category.worker_assignment
-                        : 0
-                    : 0,
-                balanced: balanced,
+                name_pretty: category ? (category.name_pretty ? category.name_pretty : name) : name,
+                values_number: category ? (category.values_number ? category.values_number : 0) : 0,
+                selected: category ? (category.selected ? category.selected : false) : false,
+                worker_assignment: category ? (category.worker_assignment ? category.worker_assignment : 0) : 0,
+                balanced: balanced
             })
         );
     }
 
     resetWorkerAssignment() {
-        for (let category of this.docCategories().controls) {
+        for (let category of this.docCategoriesFA.controls) {
             category?.get("worker_assignment")?.disable();
         }
     }
 
-    updateDocCategory(categoryIndex) {
-        let category = this.docCategories()?.at(categoryIndex);
+    updateDocCategory(categoryIndex: number) {
+        let category = this.docCategoriesFA?.at(categoryIndex);
         if (category?.get("selected").value == true) {
             category?.get("worker_assignment")?.enable();
             category?.get("worker_assignment")?.setValue(1);
@@ -770,62 +748,48 @@ export class TaskSettingsStepComponent implements OnInit {
         }
     }
 
-    categoryIsBalanced(category) {
-        let documents_number = [];
-        this.docsCategoriesValues[category].forEach((element) => {
-            let docs = [];
-            for (let doc of this.docsParsed) {
-                if (doc[category] == element) docs.push(doc);
-            }
-            documents_number.push(docs.length);
-        });
-        return documents_number.every((el, _index, arr) => el == arr[0]);
+    /* (fixed) Safe + defensive */
+    categoryIsBalanced(category: string): boolean {
+        const values = this.docsCategoriesValues?.[category] ?? [];
+        if (!values.length || !Array.isArray(this.docsParsed)) return false;
+
+        const counts: number[] = [];
+        for (const v of values) {
+            let n = 0;
+            for (const doc of this.docsParsed) if ((doc as any)?.[category] === v) n++;
+            counts.push(n);
+        }
+        return counts.length > 0 && counts.every((el) => el === counts[0]);
     }
 
     checkCategoriesSelection() {
         // This array stores the number of documents to be judged for each selected category
-        let hitDimensions = [];
-        for (let category of this.docCategories().controls) {
+        let hitDimensions: number[] = [];
+        for (let category of this.docCategoriesFA.controls) {
             if (category?.get("selected").value == true) {
                 let name = category?.get("name").value;
-                let worker_assignment = Math?.round(
-                    category?.get("worker_assignment").value
-                );
-                let values = this.docsCategoriesValues[name].length;
+                let worker_assignment = Math?.round(category?.get("worker_assignment").value);
+                let values = (this.docsCategoriesValues[name] ?? []).length;
                 hitDimensions.push(worker_assignment * values);
             }
         }
         if (hitDimensions.length == 0) {
-            // Requester has chosen 0 categories from the list and has clicked the 'CHECK SELECTION' button
             this.hitDimension = 0;
         }
         if (hitDimensions.length > 0) {
-            // Requester has chosen at least 1 one categories from the list
-            if (
-                hitDimensions.every((val, _i, arr) => val == arr[0]) &&
-                hitDimensions[0] > 0
-            ) {
-                // All the values in the hitDimensions array are equals
+            if (hitDimensions.every((val, _i, arr) => val == arr[0]) && hitDimensions[0] > 0) {
                 this.hitDimension = hitDimensions[0];
-                for (let category of this.docCategories().controls) {
+                for (let category of this.docCategoriesFA.controls) {
                     category?.get("selected")?.disable();
                     category?.get("worker_assignment")?.disable();
                 }
-                let min_docs_rep = this.documentsOptions()?.get(
-                    "min_docs_repetitions"
-                ).value;
-                let min_workers_number = Math.ceil(
-                    (this.docsDetected * min_docs_rep) / this.hitDimension
-                );
+                let min_docs_rep = this.documentsFG?.get("min_docs_repetitions").value;
+                let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hitDimension);
 
-                let workers_number =
-                    this.documentsOptions()?.get("workers_number");
+                let workers_number = this.documentsFG?.get("workers_number");
                 workers_number.setValue(min_workers_number);
-                workers_number.addValidators(
-                    Validators.min(min_workers_number)
-                );
+                workers_number.addValidators(Validators.min(min_workers_number));
             } else {
-                // There's at least one value that differs from the other in the hitDimensions array
                 this.hitDimension = -1;
             }
         }
@@ -834,38 +798,33 @@ export class TaskSettingsStepComponent implements OnInit {
     resetCategorySelection() {
         this.hitDimension = 0;
         this.resetWorkerAssignment();
-        this.documentsOptions()?.get("min_docs_repetitions")?.setValue(1);
-        this.documentsOptions()?.get("workers_number")?.setValue("");
-        for (let category of this.docCategories().controls) {
-            if (this?.categoryIsBalanced(category?.get("name").value))
-                category?.get("selected")?.enable();
+        this.documentsFG?.get("min_docs_repetitions")?.setValue(1);
+        this.documentsFG?.get("workers_number")?.setValue("");
+        for (let category of this.docCategoriesFA.controls) {
+            if (this?.categoryIsBalanced(category?.get("name").value)) category?.get("selected")?.enable();
             category?.get("selected")?.setValue(false);
             category?.get("worker_assignment")?.setValue(0);
         }
-        let workers_number = this.documentsOptions()?.get("workers_number");
+        let workers_number = this.documentsFG?.get("workers_number");
         workers_number.clearValidators();
         workers_number.addValidators(Validators.min(1));
         this.solutionStatus = "";
     }
 
-    updateWorkerNumber(min_docs_rep) {
+    updateWorkerNumber(min_docs_rep: number) {
         if (this.hitDimension > 0) {
-            let min_workers_number = Math.ceil(
-                (this.docsDetected * min_docs_rep) / this.hitDimension
-            );
-            let workers_number = this.documentsOptions()?.get("workers_number");
+            let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hitDimension);
+            let workers_number = this.documentsFG?.get("workers_number");
             workers_number.setValue(min_workers_number);
             workers_number.addValidators(Validators.min(min_workers_number));
         }
     }
 
     sendRequestToHitSolver() {
-        let min_docs_rep = this.documentsOptions()?.get(
-            "min_docs_repetitions"
-        ).value;
-        let selectedCategories = [];
-        let selectedWorkerAssignment = [];
-        for (let category of this.docCategories().controls) {
+        let min_docs_rep = this.documentsFG?.get("min_docs_repetitions").value;
+        let selectedCategories: string[] = [];
+        let selectedWorkerAssignment: Record<string, number> = {};
+        for (let category of this.docCategoriesFA.controls) {
             if (category?.get("selected").value == true) {
                 let name = category?.get("name").value;
                 let worker_assignment = category?.get("worker_assignment").value;
@@ -873,18 +832,16 @@ export class TaskSettingsStepComponent implements OnInit {
                 selectedWorkerAssignment[name] = worker_assignment;
             }
         }
-        let workers_number =
-            this.documentsOptions()?.get("workers_number").value;
+        let workers_number = this.documentsFG?.get("workers_number").value;
         let req = this.HitsSolverService.createRequest(
             this.docsParsed,
             this.identificationAttribute,
             min_docs_rep,
             0,
             selectedCategories,
-            selectedWorkerAssignment,
+            selectedWorkerAssignment as any,
             workers_number
         );
-
 
         this.ngxService.startBackground();
         this.HitsSolverService.submitRequest(req).subscribe(
@@ -893,59 +850,36 @@ export class TaskSettingsStepComponent implements OnInit {
                 let task_id = response.task_id;
                 let url = response.url;
 
-                /* This function check */
-                this.checkHitStatus(url, task_id, this.docsParsed, 2000);
+                /* This function checks until finished; UI shows loader */
+                this.checkHitStatus(url, task_id, this.docsParsed as any, 2000);
             },
             (_error) => {
-                this.solutionStatus =
-                    "Error on the solver. Please check if the solver is online.";
+                this.solutionStatus = "Error on the solver. Please check if the solver is online.";
                 this.ngxService.stopBackground();
             }
         );
     }
 
     /**
-     * This function uses the HitSolver service to check if the solution for the request is ready.
-     * If the solution isn't ready the function waits for the timeout and then send a new request
-     * to the HitSolver. This process continues until a solution is available.
-     * When a solution is available, then, a new array of hit is created in the format of the
-     * framework.
-     * @param url
-     * @param task_id
-     * @param docs
-     * @param timeout
+     * Poll solver until finished; then build new hits and load them.
      */
-    public checkHitStatus(
-        url: string,
-        task_id: string,
-        docs: Array<JSON>,
-        timeout: number
-    ) {
-        this.HitsSolverService.checkSolutionStatus(url).subscribe(
-            (response) => {
-                if (response["finished"] == false) {
-                    /* Wait to repull the solution from the solver */
-                    setTimeout(() => {
-                        this.checkHitStatus(url, task_id, docs, timeout);
-                    }, timeout);
-                } else {
-                    this.HitsSolverService.getSolution(task_id).subscribe(
-                        (response) => {
-                            let receivedHit = this.HitsSolverService.createHits(
-                                response,
-                                docs,
-                                this.identificationAttribute
-                            );
-                            this.loadHitsFromResponse(receivedHit);
+    public checkHitStatus(url: string, task_id: string, docs: Array<JSON>, timeout: number) {
+        this.HitsSolverService.checkSolutionStatus(url).subscribe((response) => {
+            if (response["finished"] == false) {
+                /* Wait to repull the solution from the solver */
+                setTimeout(() => {
+                    this.checkHitStatus(url, task_id, docs, timeout);
+                }, timeout);
+            } else {
+                this.HitsSolverService.getSolution(task_id).subscribe((solution) => {
+                    let receivedHit = this.HitsSolverService.createHits(solution, docs, this.identificationAttribute);
+                    this.loadHitsFromResponse(receivedHit);
 
-                            this.ngxService.stopBackground();
-                            this.solutionStatus =
-                                "Solution from the solver has been received";
-                        }
-                    );
-                }
+                    this.ngxService.stopBackground();
+                    this.solutionStatus = "Solution from the solver has been received";
+                });
             }
-        );
+        });
     }
 
     resetCountdown() {
@@ -957,10 +891,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.formStep?.get("countdown_behavior")?.clearValidators();
             this.formStep?.get("countdown_behavior")?.updateValueAndValidity();
         } else {
-            this.formStep?.get("countdown_time")?.setValidators([
-                Validators.required,
-                this.utilsService.positiveOrZeroNumber.bind(this),
-            ]);
+            this.formStep?.get("countdown_time")?.setValidators([Validators.required, this.utilsService.positiveOrZeroNumber.bind(this)]);
             this.formStep?.get("countdown_time")?.updateValueAndValidity();
             this.formStep?.get("countdown_behavior")?.setValidators([Validators.required]);
             this.formStep?.get("countdown_behavior")?.updateValueAndValidity();
@@ -976,169 +907,129 @@ export class TaskSettingsStepComponent implements OnInit {
             this.formStep?.get("countdown_attribute")?.setValue("");
             this.formStep?.get("countdown_attribute")?.clearValidators();
             this.formStep?.get("countdown_attribute")?.updateValueAndValidity();
-            this.countdownAttributeValues().clear();
-            this.countdownAttributeValues().updateValueAndValidity();
-            this.countdownPositionValues().clear();
-            this.countdownPositionValues().updateValueAndValidity();
+            this.countdownAttrValuesFA.clear();
+            this.countdownAttrValuesFA.updateValueAndValidity();
+            this.countdownPosValuesFA.clear();
+            this.countdownPosValuesFA.updateValueAndValidity();
         } else {
             this.formStep?.get("countdown_modality")?.setValidators([Validators.required]);
-            if (this.formStep?.get("countdown_modality").value == "attribute")
-                this.formStep?.get("countdown_attribute")?.setValidators([Validators.required]);
+            if (this.formStep?.get("countdown_modality").value == "attribute") this.formStep?.get("countdown_attribute")?.setValidators([Validators.required]);
         }
-    }
-
-    countdownAttributeValues() {
-        return this.formStep?.get(
-            "countdown_attribute_values"
-        ) as UntypedFormArray;
     }
 
     updateCountdownModality() {
         if (this.formStep?.get("countdown_modality").value == "attribute") {
-            this.countdownPositionValues().clear();
+            this.countdownPosValuesFA.clear();
         } else {
             this.formStep?.get("countdown_attribute")?.setValue(false);
             this.formStep?.get("countdown_attribute")?.clearValidators();
-            this.countdownAttributeValues().clear();
-            this.countdownAttributeValues().updateValueAndValidity();
+            this.countdownAttrValuesFA.clear();
+            this.countdownAttrValuesFA.updateValueAndValidity();
             this.updateCountdownPosition();
         }
     }
 
-    updateCountdownAttribute(countdownAttribute = null) {
+    updateCountdownAttribute(countdownAttribute: any = null) {
         if (countdownAttribute) {
             let control = this._formBuilder.group({
                 name: countdownAttribute["name"],
-                time: countdownAttribute["time"],
+                time: countdownAttribute["time"]
             });
-            this.countdownAttributeValues().push(control);
+            this.countdownAttrValuesFA.push(control);
         } else {
-            this.countdownAttributeValues().clear();
-            let chosenAttribute = this.formStep?.get(
-                "countdown_attribute"
-            ).value;
-            let values = this.hitsAttributesValues[chosenAttribute];
+            this.countdownAttrValuesFA.clear();
+            let chosenAttribute = this.formStep?.get("countdown_attribute").value;
+            const values = this.hitsAttributesValues[chosenAttribute] ?? [];
             for (let value of values) {
                 let control = this._formBuilder.group({
                     name: value,
-                    time: "",
+                    time: ""
                 });
-                this.countdownAttributeValues().push(control);
+                this.countdownAttrValuesFA.push(control);
             }
         }
     }
 
-    countdownPositionValues() {
-        return this.formStep?.get(
-            "countdown_position_values"
-        ) as UntypedFormArray;
-    }
-
-    updateCountdownPosition(countdownPosition = null) {
+    updateCountdownPosition(countdownPosition: any = null) {
         if (countdownPosition) {
             let control = this._formBuilder.group({
                 position: countdownPosition["name"],
-                time: countdownPosition["time"],
+                time: countdownPosition["time"]
             });
-            this.countdownPositionValues().push(control);
+            this.countdownPosValuesFA.push(control);
         } else {
-            this.countdownPositionValues().clear();
-            for (let index = 0; index < this.hitsPositions; index++) {
+            this.countdownPosValuesFA.clear();
+            for (let index = 0; index < (this.hitsPositions ?? 0); index++) {
                 let control = this._formBuilder.group({
                     position: index,
-                    time: "",
+                    time: ""
                 });
-                this.countdownPositionValues().push(control);
+                this.countdownPosValuesFA.push(control);
             }
         }
     }
 
-    annotator() {
-        return this.formStep?.get("annotator") as UntypedFormGroup;
-    }
-
     setAnnotatorType() {
-        if (
-            this.annotator()?.get("type").value == "options" &&
-            this.annotatorOptionValues().length == 0
-        ) {
-            this.annotatorOptionValues().push(
+        if (this.annotatorFG?.get("type").value == "options" && this.annotatorValuesFA.length == 0) {
+            this.annotatorValuesFA.push(
                 this._formBuilder.group({
                     label: ["", [Validators.required]],
-                    color: ["", [Validators.required]],
+                    color: ["", [Validators.required]]
                 })
             );
         }
     }
 
     resetAnnotator() {
-        for (let attributeControl of this.hitAttributes().controls) {
+        for (let attributeControl of this.attributesFA.controls) {
             attributeControl?.get("annotate")?.setValue(false);
         }
         if (this.formStep?.get("setAnnotator").value == false) {
-            this.annotator()?.get("type")?.setValue("");
-            this.annotator()?.get("type")?.clearValidators();
-            this.annotator()?.get("type")?.clearAsyncValidators();
-            for (
-                let index = 0;
-                index < this.annotatorOptionValues().controls.length;
-                index++
-            ) {
+            this.annotatorFG?.get("type")?.setValue("");
+            this.annotatorFG?.get("type")?.clearValidators();
+            this.annotatorFG?.get("type")?.clearAsyncValidators();
+            for (let index = 0; index < this.annotatorValuesFA.controls.length; index++) {
                 this.removeAnnotatorOptionValue(index);
             }
         } else {
-            this.annotator()?.get("type")?.setValidators([Validators.required]);
+            this.annotatorFG?.get("type")?.setValidators([Validators.required]);
             this.setAnnotatorType();
         }
-        this.annotator()?.get("type")?.updateValueAndValidity();
+        this.annotatorFG?.get("type")?.updateValueAndValidity();
         this.resetHitAttributes();
     }
 
-    /* SUB ELEMENT: Annotator */
-    annotatorOptionValues(): UntypedFormArray {
-        return this.formStep?.get("annotator")?.get("values") as UntypedFormArray;
-    }
-
-    addOptionValue(option = null as Object) {
-        this.annotatorOptionValues().push(
+    addOptionValue(option: any = null) {
+        this.annotatorValuesFA.push(
             this._formBuilder.group({
-                label: [
-                    option ? (option["label"] ? option["label"] : "") : "",
-                    [Validators.required],
-                ],
-                color: [
-                    option ? (option["color"] ? option["color"] : "") : "",
-                    [Validators.required],
-                ],
+                label: [option ? (option["label"] ? option["label"] : "") : "", [Validators.required]],
+                color: [option ? (option["color"] ? option["color"] : "") : "", [Validators.required]]
             })
         );
         if (!option) {
+            if (!this.annotatorOptionColors) this.annotatorOptionColors = [];
             this.annotatorOptionColors.push("");
         }
     }
 
-    updateOptionColor(color, optionIndex) {
+    updateOptionColor(color: string, optionIndex: number) {
         this.annotatorOptionColors[optionIndex] = color;
     }
 
-    removeAnnotatorOptionValue(valueIndex) {
-        this.annotatorOptionValues().removeAt(valueIndex);
+    removeAnnotatorOptionValue(valueIndex: number) {
+        this.annotatorValuesFA.removeAt(valueIndex);
     }
 
-    messages(): UntypedFormArray {
-        return this.formStep?.get("messages") as UntypedFormArray;
-    }
-
-    addMessage(message = null) {
-        this.messages().push(
+    addMessage(message: string = null) {
+        this.messagesFA.push(
             this._formBuilder.group({
-                message: [message ? message : "", [Validators.required]],
+                message: [message ? message : "", [Validators.required]]
             })
         );
     }
 
     removeMessage(messageIndex: number) {
-        this.messages().removeAt(messageIndex);
+        this.messagesFA.removeAt(messageIndex);
     }
 
     /* JSON Output */
@@ -1153,7 +1044,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false;
         delete taskSettingsJSON.setAnnotator;
 
-        if (taskSettingsJSON.annotator.type == "options") {
+        if (taskSettingsJSON.annotator?.type == "options") {
             taskSettingsJSON.annotator.values.forEach((option, index) => {
                 option["color"] = this.annotatorOptionColors[index];
             });
@@ -1175,8 +1066,7 @@ export class TaskSettingsStepComponent implements OnInit {
             taskSettingsJSON.countdown_attribute_values = [];
             taskSettingsJSON.countdown_position_values = [];
         } else {
-            taskSettingsJSON.additional_times =
-                taskSettingsJSON.setAdditionalTimes;
+            taskSettingsJSON.additional_times = taskSettingsJSON.setAdditionalTimes;
         }
         delete taskSettingsJSON.setCountdownTime;
         delete taskSettingsJSON.setAdditionalTimes;
@@ -1203,16 +1093,12 @@ export class TaskSettingsStepComponent implements OnInit {
         if (taskSettingsJSON.messages.length == 0) {
             delete taskSettingsJSON.messages;
         } else {
-            let messages = [];
-            for (let messageIndex in taskSettingsJSON.messages)
-                messages.push(taskSettingsJSON.messages[messageIndex].message);
+            let messages: string[] = [];
+            for (let messageIndex in taskSettingsJSON.messages) messages.push(taskSettingsJSON.messages[messageIndex].message);
             taskSettingsJSON.messages = messages;
         }
 
-        this.localStorageService.setItem(
-            `task-settings`,
-            JSON.stringify(taskSettingsJSON)
-        );
+        this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON));
         this.configurationSerialized = JSON.stringify(taskSettingsJSON);
     }
 }

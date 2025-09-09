@@ -1,0 +1,110 @@
+[
+	{
+		"name": "Demographic_1",
+		"index": 0,
+		"type": "standard",
+		"position": "start",
+		"questions": [
+			{
+				"index": 0,
+				"name": "age",
+				"text": "What is your age range?",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"0-18",
+					"19-25",
+					"26-35",
+					"36-50",
+					"51-80",
+					"81+"
+				]
+			},
+			{
+				"index": 1,
+				"name": "school",
+				"text": "What is the highest level of school you have completed or the highest degree you have received?",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"High school incomplete or less",
+					"High school graduate or GED (includes technical/vocational training that doesn’t towards college credit)",
+					"Some college (some community college, associate’s degree)",
+					"Four year college degree/bachelor’s degree",
+					"Some postgraduate or professional schooling, no postgraduate degree",
+					"Postgraduate or professional degree, including master’s, doctorate, medical or law degree"
+				]
+			},
+			{
+				"index": 2,
+				"name": "taxes",
+				"text": "Last year what was your total family income from all sources, before taxes?",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"Less than 10,000$",
+					"10,000$ to less than 20,000$",
+					"20,000$ to less than 30,000$",
+					"30,000$ to less than 40,000$",
+					"40,000$ to less than 50,000$",
+					"50,000$ to less than 75,000$",
+					"75,000$ to less than 100,000$",
+					"100,000$ to less than 150,000$",
+					"150,000$ or more"
+				]
+			},
+			{
+				"index": 3,
+				"name": "political_views",
+				"text": "In general, would you describe your political views as",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"Very conservative",
+					"Conservative",
+					"Moderate",
+					"Liberal",
+					"Very liberal",
+					"I would rather not answer"
+				]
+			},
+			{
+				"index": 4,
+				"name": "consideration",
+				"text": "In politics today, do you consider yourself a",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"Republican",
+					"Democrat",
+					"Independent",
+					"Something else"
+				]
+			},
+			{
+				"index": 5,
+				"name": "southern_border",
+				"text": "Should the U.S. Government build a wall along the southern border?",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"Agree",
+					"Disagree",
+					"No opinion either way"
+				]
+			},
+			{
+				"index": 6,
+				"name": "environment",
+				"text": "Should the U.S. Government adopt better policies to prevent climate change?",
+				"type": "mcq",
+				"required": true,
+				"answers": [
+					"Agree",
+					"Disagree",
+					"No opinion either way"
+				]
+			}
+		]
+	}
+]

@@ -1,62 +1,62 @@
 <form [formGroup]="formStep">
-  <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-    <mat-card-header>
-      <mat-card-title><span i18n>Step #3: General Instructions</span></mat-card-title>
-      <mat-card-subtitle><span i18n>Third, define all the general instructions here</span></mat-card-subtitle>
-    </mat-card-header>
-    <mat-divider></mat-divider>
-    <mat-card-content>
+    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title><span i18n>Step #3: General Instructions</span></mat-card-title>
+            <mat-card-subtitle><span i18n>Third, define all the general instructions here</span></mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
 
-      <div formArrayName="instructions">
+            <div formArrayName="instructions">
 
-        @for (instruction of instructions().controls; track instruction; let instructionIndex = $index) {
-          <div [formGroupName]="instructionIndex">
-            <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
-              <mat-card-header>
-                <mat-card-title class="lighter"><span i18n>Instruction</span> {{instructionIndex + 1}}</mat-card-title>
-              </mat-card-header>
-              <mat-divider></mat-divider>
-              <mat-card-content>
-                <!-- Caption -->
-                <table class="width-100 mt-8px">
-                  <tr>
-                    <td class="p-0">
-                      <mat-form-field matLine class="width-100" appearance="fill">
-                        <mat-label><span i18n>Caption</span></mat-label>
-                        <input matInput type="text" formControlName="caption">
-                      </mat-form-field>
-                    </td>
-                  </tr>
-                </table>
-                <div>
-                  <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
-                  <app-error-message [formField]="instruction.get('text')"></app-error-message>
-                </div>
-              </mat-card-content>
-              <mat-divider></mat-divider>
-              <mat-card-actions class="right">
-                <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
-                  <span i18n>Remove Instruction</span>
-                </button>
-              </mat-card-actions>
-            </mat-card>
-          </div>
-        }
+                @for (instruction of instructions().controls; track instruction; let instructionIndex = $index) {
+                    <div [formGroupName]="instructionIndex">
+                        <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
+                            <mat-card-header>
+                                <mat-card-title class="lighter"><span i18n>Instruction</span> {{ instructionIndex + 1 }}</mat-card-title>
+                            </mat-card-header>
+                            <mat-divider></mat-divider>
+                            <mat-card-content>
+                                <!-- Caption -->
+                                <table class="width-100 mt-8px">
+                                    <tr>
+                                        <td class="p-0">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
+                                                <mat-label><span i18n>Caption</span></mat-label>
+                                                <input matInput type="text" formControlName="caption">
+                                            </mat-form-field>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div>
+                                    <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
+                                    <app-error-message [formField]="instruction.get('text')"></app-error-message>
+                                </div>
+                            </mat-card-content>
+                            <mat-divider></mat-divider>
+                            <mat-card-actions class="right">
+                                <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
+                                    <span i18n>Remove Instruction</span>
+                                </button>
+                            </mat-card-actions>
+                        </mat-card>
+                    </div>
+                }
 
-      </div>
+            </div>
 
-      <button mat-flat-button color="primary" (click)="addInstruction()">
-        <span i18n>Add Instruction</span>
-      </button>
+            <button mat-flat-button color="primary" (click)="addInstruction()">
+                <span i18n>Add Instruction</span>
+            </button>
 
-    </mat-card-content>
+        </mat-card-content>
 
-    <mat-divider></mat-divider>
+        <mat-divider></mat-divider>
 
-    <mat-card-actions>
-      <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
-      <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
-    </mat-card-actions>
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
+        </mat-card-actions>
 
-  </mat-card>
+    </mat-card>
 </form>

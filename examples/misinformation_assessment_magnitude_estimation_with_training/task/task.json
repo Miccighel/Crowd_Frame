@@ -1,0 +1,131 @@
+{
+	"modality": "pointwise",
+	"allowed_tries": 10,
+	"time_assessment": 2,
+	"time_check_amount": 3,
+    "element_labels": {
+		"main": "Statement",
+		"main_short": "S"
+	},
+	"attributes": [
+		{
+			"name": "id",
+			"show": false,
+			"annotate": false,
+			"required": false
+		},
+		{
+			"name": "statement_text",
+			"name_pretty": "Statement",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "speaker_name",
+			"name_pretty": "Speaker",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "statement_date",
+			"name_pretty": "Date",
+			"show": [
+				"Main"
+			],
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "speaker_party",
+			"show": false,
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "statement_description",
+			"show": false,
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "fact_check_ground_truth_value",
+			"show": false,
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "fact_check_ground_truth_label",
+			"show": false,
+			"required": false,
+			"annotate": false
+		},
+		{
+			"name": "fact_check_source",
+			"show": false,
+			"required": false,
+			"annotate": false
+		}
+	],
+	"annotator": false,
+	"countdown_time": false,
+	"additional_times": false,
+	"countdown_modality": false,
+	"countdown_attribute": false,
+	"countdown_attribute_values": [],
+	"countdown_position_values": [],
+	"logger": false,
+	"logger_option": {
+		"button": {
+			"general": false,
+			"click": false
+		},
+		"mouse": {
+			"general": false,
+			"mouseMovements": false,
+			"leftClicks": false,
+			"rightClicks": false
+		},
+		"keyboard": {
+			"general": false,
+			"shortcuts": false,
+			"keys": false
+		},
+		"textInput": {
+			"general": false,
+			"paste": false,
+			"delete": false
+		},
+		"clipboard": {
+			"general": false,
+			"copy": false,
+			"cut": false
+		},
+		"radio": {
+			"general": false,
+			"change": false
+		},
+		"crowd-xplorer": {
+			"general": false,
+			"query": false,
+			"result": false
+		},
+		"various": {
+			"general": false,
+			"selection": false,
+			"unload": false,
+			"focus&blur": false,
+			"scroll": false,
+			"resize": false
+		}
+	},
+	"server_endpoint": "",
+	"messages": [
+		"A network error may have been happened; try again to access the task after a few minutes. Otherwise, try to access the task from a different access point."
+	]
+}

@@ -1,74 +1,88 @@
-:host { display: block; margin-top: 8px; }
-:host-context(.matrix-grid) { grid-column: 1 / -1; }
+:host {
+    display: block;
+    margin-top: 8px;
+}
+
+:host-context(.matrix-grid) {
+    grid-column: 1 / -1;
+}
 
 /* Card surface */
 .surface {
-  background: #fafafa;
-  border: 1px solid rgba(0, 0, 0, .12);
-  border-radius: 8px;
-  padding: 12px 12px 8px;
+    background: #fafafa;
+    border: 1px solid rgba(0, 0, 0, .12);
+    border-radius: 8px;
+    padding: 12px 12px 8px;
 
-  &:focus-within {
-    box-shadow:
-      0 0 0 2px rgba(0, 0, 0, .04),
-      0 0 0 4px rgba(25, 118, 210, .14);
-    border-color: rgba(25, 118, 210, .24);
-  }
+    &:focus-within {
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, .04),
+        0 0 0 4px rgba(25, 118, 210, .14);
+        border-color: rgba(25, 118, 210, .24);
+    }
 
-  &:has(.mat-mdc-form-field-error) {
-    border-color: rgba(211, 47, 47, .35);
-    box-shadow: 0 0 0 2px rgba(211, 47, 47, .08);
-  }
+    &:has(.mat-mdc-form-field-error) {
+        border-color: rgba(211, 47, 47, .35);
+        box-shadow: 0 0 0 2px rgba(211, 47, 47, .08);
+    }
 }
 
 /* Keep errors inside, wrap long lines */
 .mat-mdc-form-field-subscript-wrapper {
-  min-height: 20px;
-  margin-top: 4px;
-  overflow: hidden;
+    min-height: 20px;
+    margin-top: 4px;
+    overflow: hidden;
 }
+
 .mat-mdc-form-field-error {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
 }
 
 /* Contrast for filled appearance on gray surface */
 .surface :where(.mdc-text-field--filled) {
-  --mdc-filled-text-field-container-color: rgba(255, 255, 255, 0.92);
+    --mdc-filled-text-field-container-color: rgba(255, 255, 255, 0.92);
 }
 
 textarea[matInput] {
-  resize: vertical;
-  min-height: 96px;
-  max-height: 320px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  hyphens: auto;
+    resize: vertical;
+    min-height: 96px;
+    max-height: 320px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
 
-  &::placeholder { opacity: .7; }
+    &::placeholder {
+        opacity: .7;
+    }
 }
 
 /* Live counter styling */
 .word-counter {
-  font-variant-numeric: tabular-nums;
-  opacity: .85;
+    font-variant-numeric: tabular-nums;
+    opacity: .85;
 
-  &.warn {
-    color: rgb(211, 47, 47); /* Material red 700-ish */
-    font-weight: 500;
-  }
+    &.warn {
+        color: rgb(211, 47, 47); /* Material red 700-ish */
+        font-weight: 500;
+    }
 }
 
 /* Disabled parity */
 .mat-mdc-form-field-disabled,
 textarea[disabled] {
-  opacity: .6;
-  cursor: not-allowed;
+    opacity: .6;
+    cursor: not-allowed;
 }
 
 @media (max-width: 599px) {
-  .surface { padding: 10px 10px 6px; border-radius: 6px; }
-  textarea[matInput] { min-height: 84px; max-height: 240px; }
+    .surface {
+        padding: 10px 10px 6px;
+        border-radius: 6px;
+    }
+    textarea[matInput] {
+        min-height: 84px;
+        max-height: 240px;
+    }
 }

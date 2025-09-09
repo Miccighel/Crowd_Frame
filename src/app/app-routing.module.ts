@@ -1,28 +1,60 @@
+/* ============================================================================
+ * src/app/app-routing.module.ts
+ * Central route configuration. Routes are intentionally minimal:
+ * - Standalone viewer for pre-retrieved search results
+ * - Dedicated admin shell
+ * - Base shell as the default entry point
+ * - Wildcard fallback to root
+ * ============================================================================ */
+
 import {NgModule} from '@angular/core';
 import {Routes, RouterModule} from '@angular/router';
+
 import {PreRetrievedResultSummaryComponent} from './components/skeleton/document/dimension/search-engine/pre-retrieved-result-summary/pre-retrieved-result-summary.component';
-import {LoaderComponent} from "./components/loader/loader.component";
+import {BaseComponent} from './components/base/base.component';
+import {AdminComponent} from './components/admin/admin.component';
+import {adminQueryRedirectGuard} from './guards/admin-query-redirect.guard';
 
 const routes: Routes = [
+    /* --------------------------------------------------------------------------
+     * Result summary: deep-link to a specific pre-retrieved search result by UUID
+     * -------------------------------------------------------------------------- */
     {
-        // Route for viewing result summary based on specific IDs and UUIDs.
-        // This is used to display detailed information for a pre retrieved search engine result.
         path: 'result-summary/:uuid',
         component: PreRetrievedResultSummaryComponent,
-        pathMatch: 'full' // Ensures the entire URL must exactly match the path.
+        /* Ensures the entire URL must exactly match the path */
+        pathMatch: 'full'
     },
+
+    /* --------------------------------------------------------------------------
+     * Admin: dedicated route (separate from the main shell overlay)
+     * -------------------------------------------------------------------------- */
     {
-        // Default root route which shows a Loader component.
-        // This is typically shown when the user first visits the site at the base URL.
+        path: 'admin',
+        component: AdminComponent,
+        /* Ensures the entire URL must exactly match the path */
+        pathMatch: 'full'
+    },
+
+    /* --------------------------------------------------------------------------
+     * Root: BaseComponent hosts the global overlay and orchestrates views
+     * Back-compat: redirect to /admin when ?admin=true is present
+     * -------------------------------------------------------------------------- */
+    {
         path: '',
-        component: LoaderComponent,
-        pathMatch: 'full' // Matches only when the path is exactly empty.
+        component: BaseComponent,
+        /* Matches only when the path is exactly empty */
+        pathMatch: 'full',
+        /* Back-compat for ?admin=true → redirects to /admin */
+        canActivate: [adminQueryRedirectGuard]
     },
+
+    /* --------------------------------------------------------------------------
+     * Fallback: any unknown route redirects to root
+     * -------------------------------------------------------------------------- */
     {
-        // Wildcard route to catch all undefined paths.
-        // Redirects to the root, effectively showing the LoaderComponent for any unknown routes.
         path: '**',
-        redirectTo: '' // Redirects to the root path ('')
+        redirectTo: ''
     }
 ];
 
@@ -30,6 +62,5 @@ const routes: Routes = [
     imports: [RouterModule.forRoot(routes)],
     exports: [RouterModule]
 })
-
 export class AppRoutingModule {
 }

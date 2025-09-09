@@ -155,7 +155,6 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.startOrPromptCountdown();
-
         if (this.task.settings.countdown_modality && this.countdownProgressBar) {
             this.countdownProgressBar.value =
                 (this.task.documentsCountdownTime[this.documentIndex] /

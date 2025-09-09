@@ -1,7 +1,12 @@
-// src/app/material.module.ts
+/* ======================================================================
+ * src/app/material.module.ts
+ * Centralized Angular Material imports/exports for the whole app.
+ * Grouped by category to keep things tidy.
+ * ====================================================================== */
+
 import {NgModule} from '@angular/core';
 
-// Form controls
+/* ----------------------------- Form controls ----------------------------- */
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatInputModule} from '@angular/material/input';
 import {MatRadioModule} from '@angular/material/radio';
@@ -9,19 +14,21 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
-// Navigation
+/* -------------------------------- Navigation ----------------------------- */
+/* Includes MatSidenavModule for the app shell / side drawer */
 import {MatStepperModule} from '@angular/material/stepper';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSidenavModule} from '@angular/material/sidenav';
 
-// Layout
+/* ---------------------------------- Layout -------------------------------- */
 import {MatCardModule} from '@angular/material/card';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatListModule} from '@angular/material/list';
 
-// Buttons & Indicators
+/* ----------------------- Buttons & progress indicators -------------------- */
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatButtonModule} from '@angular/material/button';
 import {MatChipsModule} from '@angular/material/chips';
@@ -29,18 +36,18 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
-// Popups & Modals
+/* ------------------------------ Popups & modals --------------------------- */
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
-// Data table
+/* -------------------------------- Data table ------------------------------ */
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatTableModule} from '@angular/material/table';
 
 @NgModule({
     exports: [
-        // Form controls
+        /* ----------------------------- Form controls ----------------------------- */
         MatCheckboxModule,
         MatInputModule,
         MatRadioModule,
@@ -48,19 +55,20 @@ import {MatTableModule} from '@angular/material/table';
         MatSliderModule,
         MatSlideToggleModule,
 
-        // Navigation
+        /* -------------------------------- Navigation ----------------------------- */
         MatStepperModule,
         MatTabsModule,
         MatToolbarModule,
+        MatSidenavModule,
 
-        // Layout
+        /* ---------------------------------- Layout -------------------------------- */
         MatCardModule,
         MatDividerModule,
         MatExpansionModule,
         MatGridListModule,
         MatListModule,
 
-        // Buttons & Indicators
+        /* ----------------------- Buttons & progress indicators -------------------- */
         MatBadgeModule,
         MatButtonModule,
         MatChipsModule,
@@ -68,12 +76,12 @@ import {MatTableModule} from '@angular/material/table';
         MatProgressBarModule,
         MatProgressSpinnerModule,
 
-        // Popups & Modals
+        /* ------------------------------ Popups & modals --------------------------- */
         MatDialogModule,
         MatSnackBarModule,
         MatTooltipModule,
 
-        // Data table
+        /* -------------------------------- Data table ------------------------------ */
         MatPaginatorModule,
         MatTableModule
     ]

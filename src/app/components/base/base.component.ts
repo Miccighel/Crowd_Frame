@@ -28,6 +28,8 @@ import {ConfigService} from '../../services/config.service';
 import {S3Service} from '../../services/aws/s3.service';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 
+type ViewKind = 'runner' | 'result-summary';
+
 @Component({
     selector: 'app-base',
     templateUrl: './base.component.html',
@@ -37,7 +39,7 @@ import {NgxUiLoaderService} from 'ngx-ui-loader';
 })
 export class BaseComponent implements OnInit {
     /* Lean, typed state */
-    currentComponent: 'loader' | 'result-summary' = 'loader';
+    currentComponent: ViewKind = 'runner';
     resultUUID?: string;
 
     /* Shared Task instance */
@@ -59,33 +61,37 @@ export class BaseComponent implements OnInit {
         private readonly cdr: ChangeDetectorRef,
         private readonly ngx: NgxUiLoaderService
     ) {
+        /* Keep a single Task instance */
         this.sectionService.task = new Task();
         this.task = this.sectionService.task;
     }
 
     ngOnInit(): void {
+        /* Decide the branch from query params:
+           - ?result-summary=<uuid> → result-summary branch
+           - otherwise             → runner branch (fetch config with overlay up)
+        */
         this.route.queryParamMap.pipe(
             debounceTime(10),
-            map(q => q.get('result-summary') || null),
+            map(q => q.get('result-summary')),
             distinctUntilChanged(),
             switchMap((summaryId) => {
                 if (summaryId) {
-                    /* Result Summary branch */
+                    /* Result Summary branch (no overlay start here) */
                     this.currentComponent = 'result-summary';
                     this.resultUUID = summaryId;
                     this.cdr.markForCheck();
                     return of(null);
-                } else {
-                    /* Loader branch */
-                    this.currentComponent = 'loader';
-                    this.resultUUID = undefined;
-                    this.cdr.markForCheck();
-
-                    /* Show global overlay while fetching config/settings.
-                       SkeletonComponent will stop this loader when the UI is ready. */
-                    this.ngx.startLoader(this.LOADER_ID);
-                    return from(this.fetchData());
                 }
+
+                /* Runner branch – show Skeleton with config fetched here.
+                   Keep overlay visible while fetching. Skeleton will stop it on first paint. */
+                this.currentComponent = 'runner';
+                this.resultUUID = undefined;
+                this.cdr.markForCheck();
+
+                this.ngx.startLoader(this.LOADER_ID);
+                return from(this.fetchData());
             }),
             catchError(err => {
                 console.error('[BaseComponent] Initialization error:', err);

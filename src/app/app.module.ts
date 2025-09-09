@@ -1,6 +1,5 @@
 import {NgModule, inject, provideAppInitializer} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
-import {provideAnimations} from '@angular/platform-browser/animations';
 import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgOptimizedImage} from '@angular/common';
@@ -11,17 +10,23 @@ import {CountdownModule} from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {AngularEditorModule} from '@kolkov/angular-editor';
+import {ColorPickerDirective} from 'ngx-color-picker';
+import {provideAnimations} from '@angular/platform-browser/animations';
 
 import {MaterialModule} from './app-material.module';
 import {AppRoutingModule} from './app-routing.module';
 
+/* Root shell */
+import {AppComponent} from './app.component';
+
+/* App components */
 import {BaseComponent} from './components/base/base.component';
+import {AdminComponent} from './components/admin/admin.component';
 import {SkeletonComponent} from './components/skeleton/skeleton.component';
 import {SearchEngineBodyComponent} from './components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component';
 import {PreRetrievedResultSummaryComponent} from './components/skeleton/document/dimension/search-engine/pre-retrieved-result-summary/pre-retrieved-result-summary.component';
 import {InstructionsDialogComponent} from './components/skeleton/instructions/instructions-dialog.component';
 import {GeneratorComponent} from './components/generator/generator.component';
-import {LoaderComponent} from './components/loader/loader.component';
 import {QuestionnaireComponent} from './components/skeleton/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator/generator-steps/questionnaire-step/questionnaire-step.component';
@@ -52,10 +57,6 @@ import {ChatInputSelectComponent} from './components/chatbot/chat-inputs/chat-in
 import {ChatInputButtonComponent} from './components/chatbot/chat-inputs/chat-input-button/chat-input-button.component';
 import {ChatUrlInputComponent} from './components/chatbot/chat-inputs/chat-input-url/chat-input-url.component';
 import {CountdownDialogComponent} from './components/skeleton/document/countdown-dialog/countdown-dialog.component';
-
-import {SectionService} from './services/section.service';
-import {ActionLogger} from './services/userActionLogger.service';
-
 import {DocumentVideoComponent} from './components/skeleton/document/elements/element-pointwise/document-video/document-video.component';
 
 import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirective, SkeletonDirective} from './components/skeleton/skeleton.directive';
@@ -66,9 +67,11 @@ import {FilterPipe} from './pipes/filter.pipe';
 
 import {from, Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
-import {ColorPickerDirective} from 'ngx-color-picker';
 import {QuestionItemComponent} from './components/generator/generator-steps/questionnaire-step/question-item.component';
 import {JustificationFieldComponent} from "./components/skeleton/document/dimension/justification-field/justification-field.component";
+
+import {SectionService} from './services/section.service';
+import {ActionLogger} from './services/userActionLogger.service';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -83,7 +86,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
 
 @NgModule({
     declarations: [
+        AppComponent, // root shell
         BaseComponent,
+        AdminComponent,
         SkeletonComponent,
         SearchEngineBodyComponent,
         PreRetrievedResultSummaryComponent,
@@ -91,7 +96,6 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         JustificationFieldComponent,
         InstructionsDialogComponent,
         GeneratorComponent,
-        LoaderComponent,
         ButtonDirective,
         SkeletonDirective,
         InputDirective,
@@ -154,9 +158,10 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
             return initializerFn();
         }),
         provideHttpClient(withInterceptorsFromDi()),
+        // Using the NgModule overload of provideAnimations until we migrate to standalone bootstrap.
         provideAnimations()
     ],
-    bootstrap: [BaseComponent]
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }

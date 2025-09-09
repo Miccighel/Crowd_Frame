@@ -1,0 +1,195 @@
+:host {
+    /* design tokens */
+    --adm-gap: 16px;
+    --adm-gap-lg: 24px;
+    --adm-radius: 14px;
+    --adm-radius-sm: 10px;
+    --adm-sidenav-w: 280px;
+    display: block;
+}
+
+/* keep page width stable when vertical scrollbar appears */
+html {
+    scrollbar-gutter: stable both-edges;
+}
+
+/* ───────── Login view ───────── */
+.admin-login {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: var(--adm-gap);
+}
+
+/* ───────── Shell layout ───────── */
+.admin-shell {
+    height: 100vh; /* full-viewport container for sidenav */
+    background: var(--mat-sys-surface, #f5f7fb);
+}
+
+.admin-content {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr; /* let toolbar size itself (no jumps) */
+}
+
+/* ───────── Toolbar ───────── */
+.admin-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap; /* prevent wrapping → height stays stable */
+    gap: 10px;
+    padding: 0 var(--adm-gap);
+    min-height: 64px; /* desktop baseline */
+
+    .toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap; /* title never wraps */
+        font-weight: 600;
+    }
+
+    .flex-spacer {
+        flex: 1 1 auto;
+    }
+
+    /* avoid icon width jitter while the font loads */
+    .mat-icon {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        flex: 0 0 24px;
+    }
+}
+
+@media (max-width: 599px) {
+    .admin-toolbar {
+        min-height: 56px;
+    }
+}
+
+/* ───────── Sidenav (pushes content) ───────── */
+.admin-nav {
+    width: var(--adm-sidenav-w);
+    padding: var(--adm-gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--adm-gap);
+    border-top-right-radius: var(--adm-radius);
+    border-bottom-right-radius: var(--adm-radius);
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 4px 10px;
+
+        .brand-icon {
+            font-size: 28px;
+            color: var(--mat-sys-primary, #3f51b5);
+        }
+
+        .brand-block {
+            line-height: 1.2;
+        }
+
+        .brand-block .brand {
+            font-weight: 700;
+        }
+
+        .brand-block .subtitle {
+            opacity: .7;
+            font-size: 12px;
+        }
+    }
+
+    .mat-mdc-list-item {
+        border-radius: var(--adm-radius-sm);
+        margin-bottom: 4px;
+
+        &.active,
+        &:hover {
+            background: color-mix(in oklab, var(--mat-sys-primary, #3f51b5), transparent 92%);
+        }
+    }
+
+    .nav-footer {
+        margin-top: auto;
+        display: flex;
+        gap: 8px;
+    }
+}
+
+/* ───────── Main content area ───────── */
+.admin-main {
+    height: 100%;
+    overflow: auto; /* single scroller below the toolbar */
+    padding: var(--adm-gap-lg);
+}
+
+/* ───────── Table (deployment health) ───────── */
+.table-wrap {
+    border-radius: var(--adm-radius);
+    overflow: auto;
+    background: var(--mat-sys-surface, #fff);
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        text-align: left;
+        font-weight: 700;
+        font-size: 13px;
+        background: color-mix(in oklab, var(--mat-sys-surface, #fff), black 2%);
+        padding: 12px 10px;
+        border-bottom: 1px solid color-mix(in oklab, black, transparent 92%);
+    }
+
+    tbody td {
+        font-size: 13px;
+        padding: 10px;
+        border-bottom: 1px solid color-mix(in oklab, black, transparent 94%);
+    }
+
+    tr:hover td {
+        background: color-mix(in oklab, var(--mat-sys-surface, #fff), black 4%);
+    }
+
+    .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        word-break: break-all;
+    }
+
+    .right {
+        text-align: right;
+    }
+
+    .left {
+        text-align: left;
+    }
+
+    .pad {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+}
+
+/* ───────── Responsive ───────── */
+@media (max-width: 1080px) {
+    :host {
+        --adm-sidenav-w: 240px;
+    }
+}
+
+@media (max-width: 880px) {
+    .admin-nav {
+        display: none;
+    }
+}

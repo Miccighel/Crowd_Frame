@@ -1,40 +1,40 @@
 <div class="dimension-container dimension-justification" [formGroup]="form">
-  <div class="dimension-content" [class.surface]="surface">
-    <div class="dimension-text-field">
-      <mat-form-field [appearance]="appearance" class="width-100">
-        <mat-label>{{ label }}</mat-label>
+    <div class="dimension-content" [class.surface]="surface">
+        <div class="dimension-text-field">
+            <mat-form-field [appearance]="appearance" class="width-100">
+                <mat-label>{{ label }}</mat-label>
 
-        <textarea
-          matInput
-          [rows]="rows"
-          [formControlName]="controlName"
-          (change)="onChange($event)">
-        </textarea>
+                <textarea
+                    matInput
+                    [rows]="rows"
+                    [formControlName]="controlName"
+                    (change)="onChange($event)">
+                </textarea>
 
-        @if (showRequiredError()) {
-          <mat-error><span i18n>This field is required</span></mat-error>
-        }
-        @if (showLongerError()) {
-          <mat-error>
-            <span i18n>This justification must have at least {{ minWords }} words.</span>
-          </mat-error>
-        }
-        @if (showInvalidUrlError()) {
-          <mat-error>
-            <span i18n>You cannot use the selected search-engine URL as part of the justification.</span>
-          </mat-error>
-        }
+                @if (showRequiredError()) {
+                    <mat-error><span i18n>This field is required</span></mat-error>
+                }
+                @if (showLongerError()) {
+                    <mat-error>
+                        <span i18n>This justification must have at least {{ minWords }} words.</span>
+                    </mat-error>
+                }
+                @if (showInvalidUrlError()) {
+                    <mat-error>
+                        <span i18n>You cannot use the selected search-engine URL as part of the justification.</span>
+                    </mat-error>
+                }
 
-        @if (showCounter) {
-          <mat-hint
-            align="end"
-            class="word-counter"
-            [class.warn]="minWords && wordCount < minWords"
-            aria-live="polite">
-            {{ wordCount }}{{ minWords ? ' / ' + minWords : '' }} <span i18n>words</span>
-          </mat-hint>
-        }
-      </mat-form-field>
+                @if (showCounter) {
+                    <mat-hint
+                        align="end"
+                        class="word-counter"
+                        [class.warn]="minWords && wordCount < minWords"
+                        aria-live="polite">
+                        {{ wordCount }}{{ minWords ? ' / ' + minWords : '' }} <span i18n>words</span>
+                    </mat-hint>
+                }
+            </mat-form-field>
+        </div>
     </div>
-  </div>
 </div>
