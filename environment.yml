@@ -1,0 +1,17 @@
+name: Crowd_Frame
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - ca-certificates
+  - openssl
+  - libffi
+  - zlib
+  - sqlite
+  - tk
+  - tzdata
+  - setuptools
+  - wheel
+  - pip:
+      - -r requirements.txt

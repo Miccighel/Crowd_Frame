@@ -1,0 +1,50 @@
+name: Release (source-only)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   # e.g., v1.3.0
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create_release:
+    name: Create GitHub Release (source only)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Simple sanity checks; keep the repo tidy
+      - name: Sanity checks
+        run: |
+          test -f README.md || (echo "README.md missing" && exit 1)
+          test -d data || (echo "data/ folder missing" && exit 1)
+
+      # Optional: ensure mandatory env keys are documented in README (edit list then uncomment)
+      # - name: Verify mandatory env keys are documented
+      #   run: |
+      #     required=(
+      #       "task_name" "batch_name" "platform" "server_config"
+      #       "aws_region" "aws_private_bucket" "aws_deploy_bucket"
+      #       "table_acl_name" "table_data_name" "table_log_name"
+      #     )
+      #     missing=0
+      #     for k in "${required[@]}"; do
+      #       grep -qi "\`${k}\`" README.md || { echo "Missing in README: $k"; missing=1; }
+      #     done
+      #     exit $missing
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Crowd_Frame ${{ github.ref_name }}
+          generate_release_notes: true
+          # No files attached: GitHub auto-adds 'Source code (zip/tar.gz)'

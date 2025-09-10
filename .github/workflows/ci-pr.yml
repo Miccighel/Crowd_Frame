@@ -1,32 +1,29 @@
-name: App Release (Crowd_Frame)
+name: PR CI (Crowd_Frame)
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: app-release-${{ github.ref }}
-  cancel-in-progress: false
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   APP_NAME: Crowd_Frame
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
+  CI: "true"
+  NODE_OPTIONS: "--max_old_space_size=6144"
 
 jobs:
-  build:
-    name: Build production (en-US)
+  quality:
+    name: Type-check & Lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -40,14 +37,43 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Derive version from tag
-        id: ver
-        shell: bash
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION"
+      - name: Type-check (no emit)
+        run: yarn tsc -p tsconfig.app.json --noEmit
 
+      - name: Lint
+        run: yarn ng lint
+
+  build:
+    name: Build (production) - en-US
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Restore Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .angular/cache
+          key: angular-cache-${{ runner.os }}-${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock', 'angular.json', 'package.json', 'tsconfig*.json') }}
+          restore-keys: |
+            angular-cache-${{ runner.os }}-${{ env.NODE_VERSION }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      # angular.json expects these two files to exist
       - name: Prepare Angular environment files
         shell: bash
         run: |
@@ -109,6 +135,7 @@ jobs:
           };
           EOF
 
+      # create minimal stubs for everything imported from data/build/**
       - name: Prepare build data stubs
         shell: bash
         run: |
@@ -299,62 +326,3 @@ jobs:
 
       - name: Build (production, en-US)
         run: yarn ng build ${{ env.APP_NAME }} --configuration production --base-href "${{ steps.base.outputs.href }}"
-
-      - name: Locate build output
-        id: out
-        shell: bash
-        run: |
-          ROOT="dist/${{ env.APP_NAME }}"
-          for p in "$ROOT/en-US" "$ROOT/browser/en-US" "$ROOT/browser" "$ROOT"; do
-            if [ -d "$p" ]; then echo "pack_dir=$p" >> "$GITHUB_OUTPUT"; echo "Using: $p"; break; fi
-          done
-
-      - name: Create ZIP
-        if: ${{ steps.out.outputs.pack_dir }}
-        shell: bash
-        run: |
-          mkdir -p release
-          ZIP="release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US.zip"
-          cd "${{ steps.out.outputs.pack_dir }}"
-          zip -r "../../$ZIP" . >/dev/null
-          cd - >/dev/null
-          ls -lh "$ZIP"
-
-      - name: Upload artifact (ZIP)
-        if: ${{ steps.out.outputs.pack_dir }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US
-          path: release/${{ env.APP_NAME }}-v${{ steps.ver.outputs.version }}-en-US.zip
-
-  release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets
-          merge-multiple: true
-
-      - name: Derive version from tag
-        id: ver
-        shell: bash
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: List assets
-        run: ls -lh release-assets || true
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Crowd_Frame v${{ steps.ver.outputs.version }}
-          generate_release_notes: true
-          prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
-          fail_on_unmatched_files: false
-          files: |
-            release-assets/Crowd_Frame-v${{ steps.ver.outputs.version }}-en-US.zip

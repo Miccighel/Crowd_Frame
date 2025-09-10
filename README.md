@@ -1,28 +1,33 @@
 # Crowd_Frame
 
-<!-- Language/Framework badges -->
-![Angular](https://badges.aleen42.com/src/angular.svg)
-![Python](https://badges.aleen42.com/src/python.svg)
-
-<!-- Project status badges -->
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
-![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue)
-[![License](https://img.shields.io/github/license/Miccighel/Crowd_Frame)](LICENSE)
-
-<!-- CI / Release -->
-[![CI](https://github.com/Miccighel/Crowd_Frame/actions/workflows/ci.yml/badge.svg)](https://github.com/Miccighel/Crowd_Frame/actions/workflows/ci.yml)
+<!-- Project status -->
+[![CI](https://img.shields.io/github/actions/workflow/status/Miccighel/Crowd_Frame/ci-pr.yml?branch=master)](https://github.com/Miccighel/Crowd_Frame/actions/workflows/ci-pr.yml)
 [![Release](https://img.shields.io/github/v/release/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/releases)
-[![Downloads](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/)
+[![License](https://img.shields.io/github/license/Miccighel/Crowd_Frame)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total)](https://github.com/Miccighel/Crowd_Frame/releases)
 
-<!-- GitHub stats -->
-[![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/)
-[![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/)
-[![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)
-[![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/)
-[![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed)
-[![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/)
-[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+<!-- Tech stack -->
+![Angular](https://img.shields.io/badge/Angular-20-DD0031?logo=angular&logoColor=white)
+![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=node.js&logoColor=white)
+![Yarn 4 (Berry)](https://img.shields.io/badge/Yarn-4%20(Berry)-2C8EBB?logo=yarn&logoColor=white)
+
+<!-- Repo health -->
+[![Issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/issues)
+[![PRs](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/commits/master)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/graphs/commit-activity)
+[![Contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame)](https://github.com/Miccighel/Crowd_Frame/graphs/contributors)
+
+<!-- Env / Docs -->
+[![Conda env](https://img.shields.io/badge/conda-environment.yml-44A833?logo=anaconda&logoColor=white)](environment.yml)
+[![Requirements](https://img.shields.io/badge/pip-requirements.txt-3775A9?logo=pypi&logoColor=white)](requirements.txt)
+
+<!-- Infra -->
+![AWS](https://img.shields.io/badge/Deploy-AWS-232F3E?logo=amazon-aws&logoColor=white)
+
+<!-- Social -->
+[![Stars](https://img.shields.io/github/stars/Miccighel/Crowd_Frame?style=social)](https://github.com/Miccighel/Crowd_Frame/stargazers)
 
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
 
@@ -48,6 +53,7 @@
     <li><a href="#task-results">Task Results</a></li>
     <li><a href="#faq--troubleshooting">FAQ & Troubleshooting</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#releases--ci-policy">Release & CI Policy</a></li>
     <li><a href="#original-article">Original Article</a></li>
 </ul>
 
@@ -56,7 +62,7 @@
 - **AWS CLI v2**
 - **Node.js 20 LTS**
 - **Yarn** (via Corepack)
-- **Python 3.8+**
+- **Python 3.11** (recommended; used for lockfiles)
 - **Docker** *(optional; only if `enable_solver=true`)*
 
 **AWS:** use a profile that can create/use **S3**, **DynamoDB**, and **CloudWatch Logs**:
@@ -75,6 +81,10 @@ cd Crowd_Frame
 # 2) Enable Yarn via Corepack and install deps
 corepack enable
 yarn install --immutable
+
+# 2.1) (Recommended) create the Python env
+conda env create -f environment.yml
+conda activate Crowd_Frame
 
 # 3) Prepare env and initialize
 cd data
@@ -142,7 +152,6 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
 11. Create the `.env` file (make sure the name is exactly `.env`, no hidden extensions).  
     Path: `your_repo_folder/data/.env`
 
-
 12. Add the required environment variables:
 
     ```ini
@@ -158,11 +167,14 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
     aws_deploy_bucket=your_deploy_bucket_name
     ```
 
-13. Install Python packages:
+13. Set up the Python environment:
 
     ```bash
-    pip install -r ../requirements.txt
-    # (or: pip install -r your_repo_folder/requirements.txt)
+    # Recommended: use the conda env + pip lock
+    conda env create -f ../environment.yml   # first time
+    # or: conda env update -f ../environment.yml --prune  # to refresh
+
+    conda activate Crowd_Frame
     ```
 
 14. Run the initializer:
@@ -177,7 +189,6 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
     - generate an empty task configuration,
     - deploy the task to the public bucket.
 
-
 15. Open your task:
 
     ```
@@ -185,7 +196,7 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
     ```
 
 Crowd_Frame uses several AWS services to deploy tasks and store data; all are within the AWS Free Tier.  
-You can cap spending via the `budget_limit` environment variable—usage is halted once the limit is reached.
+You can cap spending via the `budget_limit` environment variable. Usage is halted once the limit is reached.
 
 ## Environment Variables
 
@@ -258,7 +269,7 @@ The following table details the content of each configuration file.
 Open the console by adding `/admin` to your task URL.
 
 - **ACL** *(default)* — review current access entries, see who holds which units, and resolve or release entries when needed.
-- **DATA** — look up a worker’s submissions and open any row to see the full details.
+- **Data** — look up a worker’s submissions and open any row to see the full details.
 - **Private bucket** — browse the files for the current task/batch and remove items you no longer need.
 
 ## HITs Allocation
@@ -430,7 +441,6 @@ checks enabled, and optional `notes`. Write your control between the two comment
         ]
     }
 ]
-
 ````
 
 ````typescript
@@ -502,11 +512,11 @@ export const environment = {
 
 **Note:** Each time you run `init.py`, this file may be **overwritten**. Keep a backup of local edits if needed.
 
+> **Security:** Do not commit `environment.ts` or `.env` if they contain AWS keys or secrets. Add them to `.gitignore`.
 
-> **Security:** Don’t commit `environment.ts` or `.env` if they contain AWS keys or secrets. Add them to `.gitignore`.
 ## Task Performing
 
-To publish a task, choose how you’ll recruit workers: via a supported platform or **manually**. The publishing steps vary by option. Pick one of the subsections below and follow its instructions.
+To publish a task, choose how you will recruit workers: via a supported platform or **manually**. The publishing steps vary by option. Pick one of the subsections below and follow its instructions.
 
 ### Manual Recruitment
 
@@ -541,7 +551,7 @@ To recruit via MTurk:
    *(Client-side validation will only enable **Submit** when a pasted token matches.)*
 8. Review submission statuses in the **Manage** tab.
 
-> **Security:** Keep `data/build/mturk/tokens.csv` private; it’s used for submission validation.
+> **Security:** Keep `data/build/mturk/tokens.csv` private. It is used for submission validation.
 
 ---
 
@@ -592,7 +602,7 @@ To recruit via Toloka:
     `data/build/toloka/tokens.tsv`
 12. Review submission statuses from each pool’s page.
 
-> **Security:** Keep `data/build/toloka/tokens.tsv` private; it’s used for submission validation.
+> **Security:** Keep `data/build/toloka/tokens.tsv` private. It is used for submission validation.
 
 ## Task Results
 
@@ -615,11 +625,11 @@ Use the download script to fetch all results for a deployed task.
 
 The script will:
 
-- download per‑worker snapshots of raw data;
+- download per-worker snapshots of raw data;
 - refine raw data into tabular files;
 - save the deployed task configuration;
-- generate support files with worker IP and user‑agent attributes;
-- (if `enable_crawling=true`) crawl pages retrieved by the in‑task search engine.
+- generate support files with worker IP and user-agent attributes;
+- (if `enable_crawling=true`) crawl pages retrieved by the in-task search engine.
 
 All outputs are stored under:
 
@@ -631,14 +641,13 @@ where `<task_name>` matches your environment variable. The folder is created if 
 
 |   Folder    | Description                                                                                            |
 |:-----------:|:-------------------------------------------------------------------------------------------------------|
-|   `Data`    | Per‑worker snapshots of raw data.                                                                      |
-| `Dataframe` | Tabular, analysis‑ready files derived from raw data.                                                   |
-| `Resources` | Two support files per worker with IP and user‑agent attributes.                                        |
+|   `Data`    | Per-worker snapshots of raw data.                                                                      |
+| `Dataframe` | Tabular, analysis-ready files derived from raw data.                                                   |
+| `Resources` | Two support files per worker with IP and user-agent attributes.                                        |
 |   `Task`    | Backup of the task configuration.                                                                      |
-| `Crawling`  | Source and metadata for pages retrieved by the in‑task search engine (created only if crawling is on). |
+| `Crawling`  | Source and metadata for pages retrieved by the in-task search engine (created only if crawling is on). |
 
-> **Privacy:** IP and user‑agent data in `Resources` may be personal data. Handle according to your organization’s policies and applicable laws (e.g., GDPR).
-
+> **Privacy:** IP and user-agent data in `Resources` may be personal data. Handle according to your organization’s policies and applicable laws (for example GDPR).
 
 ---
 
@@ -650,7 +659,7 @@ The `Task` folder contains a backup of the task configuration.
 
 ### `result/Data`
 
-The `Data` folder stores a per‑worker snapshot of everything the system recorded.  
+The `Data` folder stores a per-worker snapshot of everything the system recorded.  
 Each worker has a JSON file whose **top level is an array**. The download script adds **one object per batch** the worker participated in.  
 The `source_*` attributes reference the originating DynamoDB tables and the local source path.
 
@@ -708,8 +717,8 @@ The `source_*` attributes reference the originating DynamoDB tables and the loca
 The `Resources` folder contains **two JSON files per worker**.  
 For worker `ABEFLAGYVQ7IN4`, these are `ABEFLAGYVQ7IN4_ip.json` and `ABEFLAGYVQ7IN4_uag.json`.
 
-- `<worker>_ip.json`: reverse‑lookup of IPs (geolocation, provider, headers).
-- `<worker>_uag.json`: parsed user‑agent details (browser/OS/device).
+- `<worker>_ip.json`: reverse-lookup of IPs (geolocation, provider, headers).
+- `<worker>_uag.json`: parsed user-agent details (browser/OS/device).
 
 Examples (subset):
 
@@ -743,13 +752,13 @@ Examples (subset):
 
 ### `result/Crawling`
 
-The `Crawling` folder stores captures of the web pages retrieved by the in‑task search engine.  
+The `Crawling` folder stores captures of the web pages retrieved by the in-task search engine.  
 Crawling is **optional** and is enabled via the `enable_crawling` environment variable.
 
 #### Workflow
 
 1. The download script creates two subfolders: `Metadata/` and `Source/`.
-2. Each retrieved page is assigned a UUID (e.g., `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7`).
+2. Each retrieved page is assigned a UUID (for example `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7`).
 3. The script attempts to download the page source. If successful, the raw content is saved to `Source/<UUID>_source.<ext>` (the extension depends on the content type).
 4. Metadata for each fetch is written to `Metadata/<UUID>_metadata.json` (always; success or failure).
 
@@ -803,7 +812,7 @@ Each `<UUID>_metadata.json` includes, at minimum:
 
 **Notes**
 
-- Non‑HTML resources (PDF, images) are saved with the appropriate extension; metadata is still JSON.
+- Non-HTML resources (PDF, images) are saved with the appropriate extension. Metadata is still JSON.
 - If crawling is disabled, the `Crawling/` directory is not created.
 
 ---
@@ -811,36 +820,31 @@ Each `<UUID>_metadata.json` includes, at minimum:
 ### `result/Dataframe`
 
 The `Dataframe` folder contains a refined, tabular view of each worker snapshot.  
-Data are loaded into **DataFrames** (2‑D tables with labeled rows/columns) and exported as CSV files. The number of exported files (up to ~10) depends on your configuration.
+Data are loaded into **DataFrames** (2-D tables with labeled rows and columns) and exported as CSV files. The number of exported files (up to about 10) depends on your configuration.
 
-Granularity varies by file. For example, `workers_urls` has one row per result returned by the search engine for each query/element/try; `workers_answers` has one row per element/try with the values
+Granularity varies by file. For example, `workers_urls` has one row per result returned by the search engine for each query and element and try. `workers_answers` has one row per element and try with the values
 for the evaluation dimensions. Use care when interpreting each file’s grain.
 
-The following fragments show (i) a sample access‑control snapshot for a single worker and (ii) two answer rows for two elements of an assigned HIT.
+The following fragments show (i) a sample access-control snapshot for a single worker and (ii) two answer rows for two elements of an assigned HIT.
 
-````csv
-worker_id,in_progress,access_counter,token_input,user_agent_source,ip_address,user_agent,time_arrival,generated,task_name,ip_source,folder,time_expired,try_current,paid,status_code,platform,batch_name,try_left,token_output,unit_id,source_acl,source_data,source_log,source_path,try_last,task_id,tries_amount,questionnaire_amount,questionnaire_amount_start,questionnaire_amount_end,documents_amount,dimensions_amount,time_arrival_parsed
-ABEFLAGYVQ7IN4,True,40,DXWPMUMYXSM,cf,<anonymized>,<anonymized>,"Mon, 07 Nov 2022 09:00:00 GMT",True,Sample,cf,Task-Sample/Batch-Sample/Data/BELPCXHDVUYSSJ/,False,1,False,202,custom,Batch-Sample,10,PGHWTXVNMIP,unit_0,Crowd_Frame-Sample_Batch-Sample_ACL, Crowd_Frame-Sample_Batch-Sample_Data,Crowd_Frame-Sample_Batch-Sample_Logger,result/Sample/Data/BELPCXHDVUYSSJ.json,1,Sample,10,1,1,0,3,1,2022-11-07 09:38:16 00:00
-````
-
-````csv
+```csv
 worker_id,paid,task_id,batch_name,unit_id,try_last,try_current,action,time_submit,time_submit_parsed,doc_index,doc_id,doc_fact_check_ground_truth_label,doc_fact_check_ground_truth_value,doc_fact_check_source,doc_speaker_name,doc_speaker_party,doc_statement_date,doc_statement_description,doc_statement_text,doc_truthfulness_value,doc_accesses,doc_time_elapsed,doc_time_start,doc_time_end,global_outcome,global_form_validity,gold_checks,time_spent_check,time_check_amount
 ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 10:19:16 GMT",2022-11-09 10:19:16 00:00,0.0,conservative-activist-steve-lonegan-claims-social-,false,1,Politifact,Steve Lonegan,REP,2022-07-12,"stated on October 1, 2011 in an interview on News 12 New Jersey's Power & Politics show:","Today, the Social Security system is broke.",10,1,2.1,1667989144,1667989146.1,False,False,False,False,False
 ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 10:19:25 GMT",2022-11-09 10:19:25 00:00,1,yes-tax-break-ron-johnson-pushed-2017-has-benefite,true,5,Politifact,Democratic Party of Wisconsin,DEM,2022-04-29,"stated on April 29, 2022 in News release:","The tax carve out (Ron) Johnson spearheaded overwhelmingly benefited the wealthiest, over small businesses.",100,1,10.27,1667989146.1,1667989156.37,False,False,False,False,False
-````
+```
 
 **Rules of thumb** (keep in mind when analyzing):
 
-1. `paid` appears in most files. Use it to separate completed vs. not‑completed work; failures can be insightful.
+1. `paid` appears in most files. Use it to separate completed vs. not-completed work. Failures can be insightful.
 2. `batch_name` appears in some files. Analyze results per batch when needed.
-3. `try_current` and `try_last` (where present) split data by attempts; `try_last` marks the most recent. Account for multiple tries per worker.
-4. `action` (when present) is one of `Back`, `Next`, `Finish`. Only `Next`/`Finish` rows reflect the latest answer for an element.
+3. `try_current` and `try_last` (where present) split data by attempts. `try_last` marks the most recent. Account for multiple tries per worker.
+4. `action` (when present) is one of `Back`, `Next`, `Finish`. Only `Next` and `Finish` rows reflect the latest answer for an element.
 5. `index_selected` (in `workers_urls`) marks results the worker clicked (`-1` means not selected). A value of `4` means three results had already been selected, `7` means six, and so on.
-6. `type` (in `workers_logs`) identifies the log record type; logs are globally time‑sorted.
-7. `workers_acl` holds useful worker‑level info. Join to other files on `worker_id`.
-8. `workers_urls` lists all retrieved results; `workers_crawling` contains crawling info. Join them on `response_uuid`.
+6. `type` (in `workers_logs`) identifies the log record type. Logs are globally time-sorted.
+7. `workers_acl` holds useful worker-level info. Join to other files on `worker_id`.
+8. `workers_urls` lists all retrieved results. `workers_crawling` contains crawling info. Join them on `response_uuid`.
 9. `workers_dimensions_selection` shows the time order in which answers were chosen. Rows for one worker can be interleaved with others if multiple workers act concurrently.
-10. `workers_comments` contains final comments. It’s optional, so it may be empty.
+10. `workers_comments` contains final comments. It is optional, so it may be empty.
 
 **Produced files** (may vary by configuration):
 
@@ -848,7 +852,7 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 |:---------------------------------------:|:------------------------------------------------:|
 |            `workers_acl.csv`            | Snapshots of raw access/control data per worker. |
 |       `workers_ip_addresses.csv`        |        IP address information per worker.        |
-|        `workers_user_agents.csv`        |    Parsed user‑agent information per worker.     |
+|        `workers_user_agents.csv`        |    Parsed user-agent information per worker.     |
 |          `workers_answers.csv`          |        Answers per evaluation dimension.         |
 |         `workers_documents.csv`         |       Elements evaluated during the task.        |
 |       `workers_questionnaire.csv`       |              Questionnaire answers.              |
@@ -868,18 +872,25 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 ### FAQ
 
 - **Paths with special characters**  
-  Avoid special characters in project paths (e.g., `º`). Some tools (CLI, Docker, Python) may fail to resolve these paths reliably.
+  Avoid special characters in project paths (for example `º`). Some tools (CLI, Docker, Python) may fail to resolve these paths reliably.
 
 - **VS Code and working directory**  
-  VS Code terminals/tasks can start in the wrong *working directory*. Run scripts from an external shell (Terminal/PowerShell/cmd) at the repo root (or the expected subfolder), or set:
+  VS Code terminals and tasks can start in the wrong working directory. Run scripts from an external shell (Terminal, PowerShell, cmd) at the repo root (or the expected subfolder), or set:
   `File > Preferences > Settings > terminal.integrated.cwd`.
 
 - **`.env` filename**  
   The file must be named exactly `.env` (not `.env.txt`).  
   On **Windows**, enable “File name extensions” in Explorer; on **macOS**, use “Get Info” to verify the name.
 
+- **ImportError: cannot import name `VerifyTypes` from `httpx._types` (toloka-kit)**  
+  Pin `httpx` to `<0.28` (for example `0.27.2`), which is compatible with `toloka-kit==1.2.3`:
+  ```bash
+  pip install "httpx==0.27.2" "httpcore<2,>=1.0" --upgrade
+  ```
+  This is already handled if you install from the provided `requirements.txt`.
+
 - **How do I reset a task that is blocked or unresponsive?**  
-  If workers cannot continue or the admin panel won’t accept changes, you can restore a clean state by deleting the task’s records from the DynamoDB tables: `*_ACL`, `*_Data`, `*_Logger`. This unlocks
+  If workers cannot continue or the admin panel will not accept changes, you can restore a clean state by deleting the task’s records from the DynamoDB tables: `*_ACL`, `*_Data`, `*_Logger`. This unlocks
   the task so you can reconfigure or redeploy.
 
   > **Warning:** Deleting these records is irreversible and permanently erases progress and submissions. Do this only if you intend to restart from scratch.
@@ -890,7 +901,7 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
   post-install script:
   ```
   NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support
-  ```  
+  ```
   To fix this, run the following command from an elevated command prompt:
   ```bash
   python your_python_folder/Scripts/pywin32_postinstall.py -install
@@ -905,6 +916,15 @@ Any contributions you make are **greatly appreciated**.
 3. Commit your Changes (`git commit -m 'Add some Feature'`)
 4. Push to the Branch (`git push origin feature/dev-branch`)
 5. Open a Pull Request
+
+## Releases & CI Policy
+
+- **Source-only releases** — tagged versions publish the repository source as GitHub Releases; no prebuilt `dist/` is shipped.
+- **CI scope** — CI runs on **pull requests**:
+  - `quality`: type-check (no emit) and lint
+  - `build`: Angular production build (runs only if `quality` passes)
+- **Rationale** — builds depend on user-provided environment and platform settings (AWS buckets, base href, etc.), so prebuilt bundles are not portable.
+
 
 ## Original Article
 
