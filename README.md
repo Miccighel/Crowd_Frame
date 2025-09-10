@@ -65,7 +65,7 @@
 - **Python 3.11** (recommended; used for lockfiles)
 - **Docker** *(optional; only if `enable_solver=true`)*
 
-**AWS:** use a profile that can create/use **S3**, **DynamoDB**, and **CloudWatch Logs**:
+**AWS:** use a profile that can create/use **S3* and **DynamoDB**:
 ```bash
 aws configure --profile your_iam_user
 aws sts get-caller-identity --profile your_iam_user
