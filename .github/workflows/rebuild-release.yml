@@ -1,105 +1,76 @@
-name: Rebuild Release (for existing tag)
+name: Rebuild Release (existing tag)
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Git tag to rebuild from (e.g., v2.0.6)
+        description: "Git tag to rebuild (e.g., v1.3.0)"
         required: true
         type: string
-      skip_tests:
-        description: Skip tests during build
+      make_latest:
+        description: "Mark this release as the latest"
         required: false
-        default: false
+        default: true
         type: boolean
 
 permissions:
   contents: write
 
 concurrency:
-  group: rebuild-release-${{ inputs.tag }}
-  cancel-in-progress: true
+  group: rebuild-release-${{ inputs.tag || github.run_id }}
+  cancel-in-progress: false
 
 jobs:
-  build_and_publish:
-    name: Build artifacts and (re)attach to release
+  recreate_release:
+    name: Recreate GitHub Release for ${{ inputs.tag }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the tag
+      - name: Checkout (fetch tags)
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
           fetch-depth: 0
 
-      - name: Set up JDK 22 (Temurin) with Maven cache
-        uses: actions/setup-java@v4
+      - name: Verify tag exists
+        run: |
+          git fetch --tags --force
+          git rev-parse --verify "refs/tags/${{ inputs.tag }}" >/dev/null || {
+            echo "::error title=Tag not found::Tag '${{ inputs.tag }}' does not exist";
+            exit 1;
+          }
+
+      - name: Delete existing release if present
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ inputs.tag }}
         with:
-          distribution: temurin
-          java-version: '22'
-          cache: maven
+          script: |
+            const tag = process.env.TAG;
+            try {
+              const rel = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: rel.data.id
+              });
+              core.notice(`Deleted existing release for ${tag}`);
+            } catch (e) {
+              if (e.status === 404) {
+                core.notice(`No existing release found for ${tag}; will create fresh.`);
+              } else {
+                throw e;
+              }
+            }
 
-      - name: Quick sanity checks
-        run: |
-          test -f pom.xml || { echo "pom.xml missing"; exit 1; }
-          test -f README.md || { echo "README.md missing"; exit 1; }
-
-      - name: Build (tests on/off)
-        run: |
-          if [ "${{ inputs.skip_tests }}" = "true" ]; then
-            mvn -q -DskipTests=true clean verify
-          else
-            mvn -q -DskipTests=false clean verify
-          fi
-
-      - name: Collect artifacts
-        id: collect
-        run: |
-          set -euo pipefail
-
-          # Read pinned distribution label from POM (produces NewBestSub-<dist.version>*.jar names)
-          DIST_VERSION=$(grep -oPm1 '(?<=<dist.version>)[^<]+' pom.xml)
-          ARTIFACT_ID=$(grep -oPm1 '(?<=<artifactId>)[^<]+' pom.xml | head -n1)
-          BASE="${ARTIFACT_ID}-${DIST_VERSION}"
-
-          mkdir -p dist
-          # Thin jar
-          if [ -f "target/${BASE}.jar" ]; then
-            cp "target/${BASE}.jar" dist/
-          fi
-          # Fat jars (main + test)
-          if ls target/${BASE}-jar-with-dependencies.jar 1>/dev/null 2>&1; then
-            cp "target/${BASE}-jar-with-dependencies.jar" dist/
-          fi
-          if ls target/${BASE}-test-jar-with-dependencies.jar 1>/dev/null 2>&1; then
-            cp "target/${BASE}-test-jar-with-dependencies.jar" dist/
-          fi
-          # Optionally include libs folder if present
-          if [ -d target/lib ]; then
-            (cd target && zip -qr "../dist/${BASE}-lib.zip" lib)
-          fi
-
-          # Generate checksums
-          (cd dist && sha256sum * > SHA256SUMS.txt)
-
-          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
-
-      - name: Ensure release exists (create/update)
+      - name: Create GitHub Release (source-only)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
-          name: NewBestSub ${{ inputs.tag }} (rebuild)
+          name: Crowd_Frame ${{ inputs.tag }}
           generate_release_notes: true
-          draft: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload assets (overwrite if present)
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ inputs.tag }}
-          file: dist/*
-          file_glob: true
-          overwrite: true
-          verbose: true
+          make_latest: ${{ inputs.make_latest && 'true' || 'false' }}
+          # No files attached: GitHub auto-adds "Source code (zip/tar.gz)"
