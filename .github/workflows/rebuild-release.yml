@@ -1,0 +1,105 @@
+name: Rebuild Release (for existing tag)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Git tag to rebuild from (e.g., v2.0.6)
+        required: true
+        type: string
+      skip_tests:
+        description: Skip tests during build
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild-release-${{ inputs.tag }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_publish:
+    name: Build artifacts and (re)attach to release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+
+      - name: Set up JDK 22 (Temurin) with Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '22'
+          cache: maven
+
+      - name: Quick sanity checks
+        run: |
+          test -f pom.xml || { echo "pom.xml missing"; exit 1; }
+          test -f README.md || { echo "README.md missing"; exit 1; }
+
+      - name: Build (tests on/off)
+        run: |
+          if [ "${{ inputs.skip_tests }}" = "true" ]; then
+            mvn -q -DskipTests=true clean verify
+          else
+            mvn -q -DskipTests=false clean verify
+          fi
+
+      - name: Collect artifacts
+        id: collect
+        run: |
+          set -euo pipefail
+
+          # Read pinned distribution label from POM (produces NewBestSub-<dist.version>*.jar names)
+          DIST_VERSION=$(grep -oPm1 '(?<=<dist.version>)[^<]+' pom.xml)
+          ARTIFACT_ID=$(grep -oPm1 '(?<=<artifactId>)[^<]+' pom.xml | head -n1)
+          BASE="${ARTIFACT_ID}-${DIST_VERSION}"
+
+          mkdir -p dist
+          # Thin jar
+          if [ -f "target/${BASE}.jar" ]; then
+            cp "target/${BASE}.jar" dist/
+          fi
+          # Fat jars (main + test)
+          if ls target/${BASE}-jar-with-dependencies.jar 1>/dev/null 2>&1; then
+            cp "target/${BASE}-jar-with-dependencies.jar" dist/
+          fi
+          if ls target/${BASE}-test-jar-with-dependencies.jar 1>/dev/null 2>&1; then
+            cp "target/${BASE}-test-jar-with-dependencies.jar" dist/
+          fi
+          # Optionally include libs folder if present
+          if [ -d target/lib ]; then
+            (cd target && zip -qr "../dist/${BASE}-lib.zip" lib)
+          fi
+
+          # Generate checksums
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+
+          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure release exists (create/update)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: NewBestSub ${{ inputs.tag }} (rebuild)
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets (overwrite if present)
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ inputs.tag }}
+          file: dist/*
+          file_glob: true
+          overwrite: true
+          verbose: true
