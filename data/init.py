@@ -2397,7 +2397,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number,"), file=file)
-        print(wrapper.fill("// @ts-expect-error TS6133: 'data' is declared but its value is never read"), file=file)
+        if not len(unit.get('documents', [])) > 0:
+            print(wrapper.fill("// @ts-expect-error TS6133: 'data' is declared but its value is never read"), file=file)
         print(wrapper.fill("data: JSON,"), file=file)
         print(wrapper.fill("params: JSON"), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)

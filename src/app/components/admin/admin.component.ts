@@ -34,7 +34,7 @@ import {HttpClient} from '@angular/common/http';
 
 /* UI + utils */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
-import CryptoES from 'crypto-es';
+import * as CryptoES from 'crypto-es';
 
 /* App services */
 import {ConfigService} from '../../services/config.service';
