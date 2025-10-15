@@ -3251,8 +3251,6 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
                     counter = 0
 
-                    pprint.pprint(document_data['serialization'])
-                    assert False
                     dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
 
                     df_dim_sel = parse_dimensions_selected(df_dim_sel, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)

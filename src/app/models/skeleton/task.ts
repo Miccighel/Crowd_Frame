@@ -774,6 +774,7 @@ export class Task {
             /* The data slot for the current document is created */
             this.dimensionsSelectedValues[currentDocument] = {};
             /* A new data array for the current document is created and the fist selected value is pushed */
+
             let selectedValue = {
                 document: currentDocument,
                 dimension: currentDimension,
@@ -1312,7 +1313,7 @@ export class Task {
             },
 
             /* Answers */
-            answers: answers ?? {},                  /* initial assessment answers */
+            answers: answers ?? {},                      /* initial assessment answers */
             additional_answers: additionalAnswers ?? {}, /* post-assessment answers (if any) */
 
             /* Notes collected by annotators (if your flow uses them) */
@@ -1330,13 +1331,28 @@ export class Task {
             accesses: this.elementsAccesses?.[overallIndex] ?? 0
         };
 
-        /* ---------- Optional chat telemetry (merged only if provided) ---------- */
+        const idx = elementMeta.elementIndex;
+
         if (opts?.chatExtras) {
             const x = opts.chatExtras;
-            if (x.dimensions_selected) data["dimensions_selected"] = x.dimensions_selected;   /* { data, amount } */
-            if (x.queries) data["queries"] = x.queries;                                       /* { data, amount } */
-            if (x.responses_retrieved) data["responses_retrieved"] = x.responses_retrieved;   /* { data, amount, groups? } */
-            if (x.responses_selected) data["responses_selected"] = x.responses_selected;       /* { data, amount } */
+            if (x.dimensions_selected) data["dimensions_selected"] = x.dimensions_selected;     /* { data, amount } */
+            if (x.queries) data["queries"] = x.queries;                                         /* { data, amount } */
+            if (x.responses_retrieved) data["responses_retrieved"] = x.responses_retrieved;     /* { data, amount, groups? } */
+            if (x.responses_selected) data["responses_selected"] = x.responses_selected;         /* { data, amount } */
+        } else {
+            /* Fallback: pull from internal state by element index (your requested pattern) */
+            const dimensionsSelected = this.dimensionsSelectedValues?.[idx];
+            if (dimensionsSelected) data["dimensions_selected"] = dimensionsSelected;
+
+            const queries = this.searchEngineQueries?.[idx];
+            if (queries) data["queries"] = queries;
+
+            /* Search engine responses */
+            const responsesRetrieved = this.searchEngineRetrievedResponses?.[idx];
+            if (responsesRetrieved) data["responses_retrieved"] = responsesRetrieved;
+
+            const responsesSelected = this.searchEngineSelectedResponses?.[idx];
+            if (responsesSelected) data["responses_selected"] = responsesSelected;
         }
 
         /* Return a plain JSON-serialisable object ready for persistence */
