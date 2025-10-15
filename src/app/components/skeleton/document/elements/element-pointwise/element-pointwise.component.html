@@ -2,7 +2,7 @@
 <ng-template #videoAttributeBlock let-documentIndex="documentIndex">
     @for (attribute of task.settings.attributesMain; track attribute) {
         @if (attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
-            <!-- Pairwise-like element card (no extra inner classes) -->
+            <!-- Pairwise-like element card (no extra inner classes); videos are never accented -->
             <div class="element">
                 <!-- YouTube videos -->
                 @if (task.documents[documentIndex][attribute.name]?.includes('youtube.com')) {
@@ -50,13 +50,16 @@ task.settings.countdown_behavior === 'hide_attributes') {
 
     <!-- CASE: Countdown disabled (seconds == 0) -->
     @if (task.getCountdownSeconds(documentIndex) === 0) {
+
         <!-- NON-VIDEO ATTRIBUTES (single element card) -->
         @if (task.settings.modality === 'pointwise' &&
         !postAssessment &&
         hasRenderableNonVideoAttributes(documentIndex)) {
+            <!-- Do not accent in pointwise -->
             <div class="element">
                 @for (attribute of task.settings.attributesMain; track attribute) {
-                    @if (!attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
+                    @if (!attribute.is_video &&
+                    task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
                         <p style="white-space: pre-line">
                             @if (attribute.name_pretty) {
                                 <strong>{{ attribute.name_pretty }}: </strong>
@@ -78,7 +81,8 @@ task.settings.countdown_behavior === 'hide_attributes') {
                 }
             </div>
         }
-        <!-- VIDEO ATTRIBUTES -->
+
+        <!-- VIDEO ATTRIBUTES (never accented) -->
         <ng-container *ngTemplateOutlet="videoAttributeBlock; context:{ documentIndex: documentIndex }"></ng-container>
     }
 
@@ -92,9 +96,11 @@ task.settings.countdown_behavior === 'hide_attributes') {
             @if (task.settings.modality === 'pointwise' &&
             !postAssessment &&
             hasRenderableNonVideoAttributes(documentIndex)) {
+                <!-- Do not accent in pointwise -->
                 <div class="element">
                     @for (attribute of task.settings.attributesMain; track attribute) {
-                        @if (!attribute.is_video && task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
+                        @if (!attribute.is_video &&
+                        task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
                             <p style="white-space: pre-line">
                                 @if (attribute.name_pretty) {
                                     <strong>{{ attribute.name_pretty }}:</strong>
@@ -116,7 +122,7 @@ task.settings.countdown_behavior === 'hide_attributes') {
                     }
                 </div>
             }
-            <!-- VIDEO ATTRIBUTES -->
+            <!-- VIDEO ATTRIBUTES (never accented) -->
             <ng-container *ngTemplateOutlet="videoAttributeBlock; context:{ documentIndex: documentIndex }"></ng-container>
         }
     }
@@ -140,6 +146,7 @@ task.settings.countdown_behavior === 'hide_attributes') {
     @if (task.settings.modality === 'pointwise' &&
     followingAssessmentAllowed &&
     attributeForPostAssessment) {
+        <!-- Do not accent in pointwise -->
         <div class="element">
             <p style="white-space: pre-line;">
                 <span>{{ task.documents[documentIndex][attributeForPostAssessment.name] }}</span>

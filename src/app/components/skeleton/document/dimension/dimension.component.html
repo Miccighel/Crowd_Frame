@@ -75,33 +75,38 @@
                                                 <!-- Categorical (two branches kept) -->
                                                 @if (dimension.scale.type == 'categorical') {
 
+                                                    <!-- Secondary categorical for VIDEO tasks: hide "No answer" -->
                                                     @if (isVideoTypeLabelCategorical(dimension)) {
                                                         <mat-radio-group class="radio-button-group" formControlName="{{ dimension.name + '_value' + controlSuffix }}">
-                                                            @if (!dimension.scale.multipleSelection) {
+                                                            @if (!isMulti(dimension.scale)) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
-                                                                    @if (mapping.separator) {
-                                                                        <mat-divider inset></mat-divider>
-                                                                    }
-                                                                    <mat-radio-button
-                                                                        class="radio-button"
-                                                                        value="{{ mapping.value }}"
-                                                                        (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
-                                                                        <span class="mapping-label">{{ mapping.label }}</span>
-                                                                        @if (mapping.description) {
-                                                                            <span>{{ ' (' + mapping.description + ')' }}</span>
+                                                                    @if (!shouldHideNoAnswer(dimension, mapping)) {
+                                                                        @if (mapping.separator) {
+                                                                            <mat-divider inset></mat-divider>
                                                                         }
-                                                                    </mat-radio-button>
+                                                                        <mat-radio-button
+                                                                            class="radio-button"
+                                                                            value="{{ mapping.value }}"
+                                                                            (change)="task.storeDimensionValue($event, documentIndex, dimension.index, postAssessmentIndex, false)">
+                                                                            <span class="mapping-label">{{ mapping.label }}</span>
+                                                                            @if (mapping.description) {
+                                                                                <span>{{ ' (' + mapping.description + ')' }}</span>
+                                                                            }
+                                                                        </mat-radio-button>
+                                                                    }
                                                                 }
                                                             }
-                                                            @if (dimension.scale.multipleSelection) {
+                                                            @if (isMulti(dimension.scale)) {
                                                                 <div class="checkbox">
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {
-                                                                            <div>
-                                                                                <mat-checkbox formControlName="{{ k }}" (change)="handleCheckbox($event, dimension, k)">
-                                                                                    {{ mapping.label }}
-                                                                                </mat-checkbox>
-                                                                            </div>
+                                                                            @if (!shouldHideNoAnswer(dimension, mapping)) {
+                                                                                <div>
+                                                                                    <mat-checkbox formControlName="{{ k }}" (change)="handleCheckbox($event, dimension, k)">
+                                                                                        {{ mapping.label }}
+                                                                                    </mat-checkbox>
+                                                                                </div>
+                                                                            }
                                                                         }
                                                                     </div>
                                                                     <mat-form-field>
@@ -117,8 +122,9 @@
                                                             <mat-error><span>This field is required</span></mat-error>
                                                         }
                                                     } @else {
+                                                        <!-- Primary categorical (non-video or the primary video label dim) -->
                                                         <mat-radio-group class="radio-button-group" formControlName="{{ dimension.name + '_value' + controlSuffix }}">
-                                                            @if (!dimension.scale.multipleSelection) {
+                                                            @if (!isMulti(dimension.scale)) {
                                                                 @for (mapping of dimension.scale.mapping; track mapping) {
                                                                     @if (mapping.separator) {
                                                                         <mat-divider inset></mat-divider>
@@ -134,7 +140,7 @@
                                                                     </mat-radio-button>
                                                                 }
                                                             }
-                                                            @if (dimension.scale.multipleSelection) {
+                                                            @if (isMulti(dimension.scale)) {
                                                                 <div class="checkbox">
                                                                     <div formGroupName="{{ dimension.name + '_list' + controlSuffix }}">
                                                                         @for (mapping of dimension.scale.mapping; track mapping; let k = $index) {

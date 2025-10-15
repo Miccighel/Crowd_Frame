@@ -303,6 +303,8 @@ export class DimensionComponent implements OnInit, OnChanges {
 
         this.assessmentForm = assessForm!;
         this.setupDynamicDisableSubscriptions(this.assessmentForm, '');
+        /* After wiring dynamic disables, clear any hidden 'No answer' preselection (video-categorical) */
+        this.clearHiddenNoAnswerSelections(this.assessmentForm, '');
 
         this.formEmitter.emit({
             index: this.documentIndex,
@@ -314,6 +316,8 @@ export class DimensionComponent implements OnInit, OnChanges {
             if (this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex - 1]) {
                 this.assessmentFormAdditional = this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex - 1];
                 this.setupDynamicDisableSubscriptions(this.assessmentFormAdditional, `_post_${this.postAssessmentIndex}`);
+                /* Clear hidden 'No answer' in post form if present */
+                this.clearHiddenNoAnswerSelections(this.assessmentFormAdditional, `_post_${this.postAssessmentIndex}`);
                 this.formEmitter.emit({
                     index: this.documentIndex,
                     type: 'post',
@@ -339,6 +343,8 @@ export class DimensionComponent implements OnInit, OnChanges {
                 }
 
                 this.setupDynamicDisableSubscriptions(this.assessmentFormAdditional, `_post_${this.postAssessmentIndex}`);
+                /* Clear hidden 'No answer' in newly built post form */
+                this.clearHiddenNoAnswerSelections(this.assessmentFormAdditional, `_post_${this.postAssessmentIndex}`);
 
                 this.formEmitter.emit({
                     index: this.documentIndex,
@@ -364,12 +370,14 @@ export class DimensionComponent implements OnInit, OnChanges {
                 Object.entries(currentForm.controls)?.forEach(([controlName, _control]) => {
                     const suffixed = controlName.concat(controlSuffix);
                     if (suffixed in controlsConfig) {
-                        controlsConfig[suffixed]?.setValue(currentForm?.get(controlName)?.value);
+                        (controlsConfig as any)[suffixed]?.setValue(currentForm?.get(controlName)?.value);
                     }
                 });
 
                 this.assessmentFormAdditional = this.formBuilder.group(controlsConfig);
                 this.setupDynamicDisableSubscriptions(this.assessmentFormAdditional, controlSuffix);
+                /* Clear hidden 'No answer' in rebuilt post form */
+                this.clearHiddenNoAnswerSelections(this.assessmentFormAdditional, controlSuffix);
 
                 this.assessmentFormValidityEmitter.emit({
                     postAssessmentIndex: this.postAssessmentIndex ? this.postAssessmentIndex : 0,
@@ -413,12 +421,14 @@ export class DimensionComponent implements OnInit, OnChanges {
             this.task.dimensions.some(dimension => dimension.scale.type == 'interval') &&
             this.task.dimensions.filter(d => d.scale && d.scale.type === 'categorical').length > 1) {
 
-            const currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value);
+            const currentValue = String(Object.prototype.hasOwnProperty.call(eventData, 'value') ? (eventData as any).value : (eventData as any).target?.value);
             const primaryCategoricalDimension = this.getPrimaryCategoricalDimension();
             const previousValue = this.assessmentForm.controls[primaryCategoricalDimension.name.concat('_value')].value;
 
             if (primaryCategoricalDimension.scale instanceof ScaleCategorical) {
-                if (currentValue == primaryCategoricalDimension.scale.mapping[0].value) {
+                const primaryMap = primaryCategoricalDimension.scale.mapping;
+
+                if (currentValue == primaryMap[0].value) {
                     const intervalDimension = this.getIntervalDimension();
                     const secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
 
@@ -426,9 +436,12 @@ export class DimensionComponent implements OnInit, OnChanges {
                         this.assessmentForm.controls[intervalDimension.name.concat('_value')].setValue(intervalDimension.scale.min);
                     }
                     if (secondaryCategoricalDimension?.scale instanceof ScaleCategorical) {
-                        this.assessmentForm.controls[secondaryCategoricalDimension.name.concat('_value')].setValue(secondaryCategoricalDimension.scale.mapping[0].value);
+                        const firstSec = secondaryCategoricalDimension.scale.mapping[0];
+                        /* Avoid auto-selecting a hidden 'No answer' */
+                        const safeValue = this.isNoAnswerMapping(firstSec) ? '' : firstSec.value;
+                        this.assessmentForm.controls[secondaryCategoricalDimension.name.concat('_value')].setValue(safeValue);
                     }
-                } else if (previousValue == primaryCategoricalDimension.scale.mapping[0].value) {
+                } else if (previousValue == primaryMap[0].value) {
                     const intervalDimension = this.getIntervalDimension();
                     const secondaryCategoricalDimension = this.getSecondaryCategoricalDimension();
 
@@ -474,7 +487,7 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     private getPrimaryCategoricalDimension(): Dimension {
-        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === 'categorical');
+        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === 'categorical')!;
     }
 
     private getSecondaryCategoricalDimension(): Dimension {
@@ -482,7 +495,59 @@ export class DimensionComponent implements OnInit, OnChanges {
     }
 
     private getIntervalDimension(): Dimension {
-        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === 'interval');
+        return this.task.dimensions.find(dimension => dimension.scale && dimension.scale.type === 'interval')!;
+    }
+
+    /* =========================
+     * "No answer" helpers
+     * ========================= */
+    private isNoAnswerMapping(mapping: any): boolean {
+        const label = String(mapping?.label ?? '').trim().toLowerCase();
+        const value = String(mapping?.value ?? '').trim().toLowerCase();
+
+        if ((mapping as any)?.noAnswer === true) return true; /* explicit flag supported */
+
+        /* label-based detection (robust to spaces/hyphens) */
+        const normalized = label.replace(/[\s-]+/g, '');
+        const looksNoLabel = normalized === 'noanswer' || label === 'n/a' || label === 'na' || label === 'none';
+
+        /* value-based detection:
+           allow "0" as no-answer only when label also says "No Answer" */
+        const looksNoValue =
+            value === '' || value === 'n/a' || value === 'na' || value === 'no_answer' || (value === '0' && looksNoLabel);
+
+        return looksNoLabel || looksNoValue;
+    }
+
+    public shouldHideNoAnswer(dimension: Dimension, mapping: any): boolean {
+        return this.isVideoTypeLabelCategorical(dimension) && this.isNoAnswerMapping(mapping);
+    }
+
+    /* Support both camelCase/snake_case config */
+    public isMulti(scale: any): boolean {
+        return !!(scale?.multipleSelection ?? scale?.multiple_selection);
+    }
+
+    /* If a hidden "No answer" is preselected, clear it to keep validation sane */
+    private clearHiddenNoAnswerSelections(form: UntypedFormGroup, suffix: string): void {
+        if (!form) return;
+        for (const d of (this.task?.dimensions ?? [])) {
+            if (!(d?.scale instanceof ScaleCategorical)) continue;
+            if (!this.isVideoTypeLabelCategorical(d)) continue;
+
+            const ctrlName = `${d.name}_value${suffix}`;
+            const ctrl = form.get(ctrlName);
+            if (!ctrl) continue;
+
+            const current = String(ctrl.value ?? '');
+            const noAnsValues = (d.scale as ScaleCategorical).mapping
+                .filter(m => this.isNoAnswerMapping(m))
+                .map(m => String(m.value ?? ''));
+
+            if (noAnsValues.includes(current)) {
+                ctrl.reset(null, { emitEvent: false });
+            }
+        }
     }
 
     /* #################### POST ASSESSMENT #################### */
@@ -556,9 +621,9 @@ export class DimensionComponent implements OnInit, OnChanges {
         if (currentAssessmentForm) {
             const currentDocument = this.documentIndex;
 
-            if (this.task.searchEngineSelectedResponses[currentDocument]) {
-                if (this.task.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-                    const selectedUrl: any = Object.values(this.task.searchEngineSelectedResponses[currentDocument]['data']).pop();
+            if ((this.task as any).searchEngineSelectedResponses?.[currentDocument]) {
+                if ((this.task as any).searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
+                    const selectedUrl: any = Object.values((this.task as any).searchEngineSelectedResponses[currentDocument]['data']).pop();
                     const response = selectedUrl['response'];
                     for (const word of cleanedWords) {
                         if (word == response['url']) return {'invalid': 'You cannot use the selected search engine url as part of the justification.'};
@@ -566,8 +631,8 @@ export class DimensionComponent implements OnInit, OnChanges {
                 }
             }
 
-            const allControls = currentAssessmentForm.controls;
-            const currentControl = Object.keys(allControls).find(name => control === (allControls as any)[name]);
+            const allControls = currentAssessmentForm.controls as any;
+            const currentControl = Object.keys(allControls).find((name: string) => control === allControls[name]);
             if (currentControl) {
                 const currentDimensionName = currentControl.split('_')[0];
                 for (const dimension of this.task.dimensions) {

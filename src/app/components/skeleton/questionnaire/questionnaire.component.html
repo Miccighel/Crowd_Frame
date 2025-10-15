@@ -1,7 +1,9 @@
 <!-- questionnaire.component.html -->
 <ng-template matStepLabel>{{ questionnaire.index }}</ng-template>
 
-<div class="container" id="questionnaire-{{ questionnaire.index }}">
+<div class="container"
+     id="questionnaire-{{ questionnaire.index }}"
+     [class.single-overall]="isSingleOverallQuestionnaire">
     @if (ready && questionnaireForm) {
         <form [formGroup]="questionnaireForm">
             <mat-card appearance="outlined" class="questionnaire-card">

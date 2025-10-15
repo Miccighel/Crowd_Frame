@@ -65,6 +65,12 @@
     width: 85%;
 }
 
+/* When there is a single overall questionnaire, remove the left indent accent */
+.container.single-overall .indent {
+    border-left: 0;
+    padding-left: 0;
+}
+
 /* ---------- Navigation buttons spacing ---------- */
 /* Modern: flex gap on the <p class="form-note"> container */
 .questionnaire-card mat-card-actions .form-note {
