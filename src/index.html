@@ -1,23 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-US" dir="ltr" data-critters-container>
 <head>
-    <meta charset="utf-8"/>
-    <title>Crowdsourcing Task</title>
-    <base href="/"/>
+  <meta charset="utf-8">
+  <title>Crowdsourcing Task</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <!-- Base path for all relative URLs -->
+  <base href="/"/>
 
-    <!-- Optional but recommended if this isn’t public -->
-    <meta name="robots" content="noindex, nofollow"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Optional: better link previews / search (keep if public) -->
+  <meta name="description" content="Crowd_Frame task interface">
+  <!-- Optional: hide from search engines if this is not public -->
+  <meta name="robots" content="noindex, nofollow">
 
-    <!-- Material Icons: speed up connection -->
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <!-- Fonts: preconnect both hosts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <!-- Google fonts (already using display=swap) -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="%234679F6" stroke-width="4" stroke-linecap="round"><path d="M8 22V8h14"/><path d="M42 8h14v14"/><path d="M8 42v14h14"/><path d="M56 42v14H42"/></g><g fill="%23111"><circle cx="24" cy="32" r="3"/><circle cx="32" cy="24" r="3"/><circle cx="32" cy="40" r="3"/><circle cx="40" cy="32" r="3"/><circle cx="32" cy="32" r="3"/></g></svg>'>
+
+  <!-- Preload CSS to reduce FOUC, then load it -->
+  <link rel="preload" href="styles.css" as="style">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<app-root></app-root>
-<noscript>You need to enable JavaScript to run this app.</noscript>
+  <app-root></app-root>
+  <!-- Defer script so it doesn’t block parsing; path respects <base href> -->
+  <script src="scripts.js" defer></script>
+  <noscript>This application requires JavaScript to run.</noscript>
 </body>
 </html>

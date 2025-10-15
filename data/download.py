@@ -2614,20 +2614,21 @@ if not os.path.exists(df_data_path):
                         row["gold_checks"] = False
                         row["time_spent_check"] = False
                     row["accesses"] = document_data['serialization']['accesses']
-                    countdowns_start = document_data['serialization']['countdowns_times_start']
-                    countdowns_left = document_data['serialization']['countdowns_times_left']
-                    countdowns_expired_time = document_data['serialization']['countdown_expired_timestamp']
-                    countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_started = document_data['serialization']['countdowns_started']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
-                        countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                    overtime = document_data['serialization']['overtime']
-                    row["countdown_time_start"] = countdowns_start if countdowns_start is not None else np.nan
-                    row["countdown_time_value"] = countdowns_left if countdowns_left is not None else np.nan
-                    row["countdown_time_expired"] = countdowns_expired_value
-                    row["countdown_time_started"] = countdowns_started if countdowns_left is not None else np.nan
-                    row['overtime'] = overtime if countdowns_left is not None else np.nan
-                    row['countdown_end'] = countdowns_expired_time if countdowns_left is not None else np.nan
+                    if document_data['serialization']['countdown'] is not None:
+                        countdowns_start = document_data['serialization']['countdowns_times_start']
+                        countdowns_left = document_data['serialization']['countdowns_times_left']
+                        countdowns_expired_time = document_data['serialization']['countdown_expired_timestamp']
+                        countdowns_expired = document_data['serialization']['countdowns_expired']
+                        countdowns_started = document_data['serialization']['countdowns_started']
+                        countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
+                            countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                        overtime = document_data['serialization']['overtime']
+                        row["countdown_time_start"] = countdowns_start if countdowns_start is not None else np.nan
+                        row["countdown_time_value"] = countdowns_left if countdowns_left is not None else np.nan
+                        row["countdown_time_expired"] = countdowns_expired_value
+                        row["countdown_time_started"] = countdowns_started if countdowns_left is not None else np.nan
+                        row['overtime'] = overtime if countdowns_left is not None else np.nan
+                        row['countdown_end'] = countdowns_expired_time if countdowns_left is not None else np.nan
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
@@ -3250,6 +3251,8 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
                     counter = 0
 
+                    pprint.pprint(document_data['serialization'])
+                    assert False
                     dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
 
                     df_dim_sel = parse_dimensions_selected(df_dim_sel, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
