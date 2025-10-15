@@ -1,22 +1,40 @@
 <div class="video-container" [class.portrait]="portrait">
-  <div class="video-wrapper" [attr.data-video-key]="docIndex + '-' + attrName">
-
+  <div
+    class="video-wrapper"
+    [class.playing]="isPlaying"
+    [attr.data-video-key]="docIndex + '-' + attrName"
+  >
     <!-- Video rendered immediately -->
     @if (loaded) {
       <video
         #videoElement
-        [muted]="true"
         playsinline
-        loop
         preload="metadata"
         disablePictureInPicture
         controls
         controlsList="nodownload"
         aria-label="Embedded video content"
+        [attr.aria-describedby]="'video-instructions-' + docIndex + '-' + attrName"
+        [attr.poster]="poster || null"
         (loadedmetadata)="handleMetadata(videoElement)"
+        (canplay)="onCanPlay()"
+        (play)="isPlaying = true"
+        (pause)="isPlaying = false"
         (contextmenu)="$event.preventDefault()"
-        >
+        style="max-width: 100%; display: block;"
+      >
         <source [src]="src" type="video/mp4"/>
+
+        @if (captions) {
+          <track
+            kind="captions"
+            srclang="en"
+            label="English"
+            [src]="captions"
+            default
+          />
+        }
+
         <p>
           Your browser does not support the video tag.
           <a [href]="src" download>Download the video</a>.
@@ -25,8 +43,12 @@
     }
 
     <!-- Overlay label -->
-    <div class="video-overlay-label" i18n>
-			Click to play or pause the video
-		</div>
+    <div
+      class="video-overlay-label"
+      [id]="'video-instructions-' + docIndex + '-' + attrName"
+      i18n
+    >
+      Click to play or pause the video
+    </div>
   </div>
 </div>

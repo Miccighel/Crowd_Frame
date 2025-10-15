@@ -1,99 +1,97 @@
 /* #################### CONTAINER #################### */
 .video-container {
-	position: relative;
-	width: 100%;
-	max-width: 720px;
-	margin: 2rem auto;
-	background-color: #000;
-	border-radius: 8px;
-	overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 2rem auto;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* #################### VIDEO / IFRAME #################### */
 .video-container video,
 .video-container iframe {
-	width: 100%;
-	height: auto;
-	max-height: 70vh;
-	display: block;
-	object-fit: contain;
-	border-radius: 8px;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  display: block;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 /* #################### PORTRAIT OVERRIDE #################### */
 .video-container.portrait video {
-	max-height: 50vh;
-	width: auto;
-	margin: 0 auto;
-	display: block;
+  max-height: 50vh;
+  width: auto;
+  margin: 0 auto;
+  display: block;
 }
 
 /* #################### WRAPPER #################### */
 .video-wrapper {
-	position: relative;
-	width: 100%;
-	height: 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 /* #################### OVERLAY LABEL #################### */
 .video-overlay-label {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	padding: 6px 10px;
-	font-size: 12px;
-	font-weight: 500;
-	letter-spacing: 0.2px;
-	text-transform: uppercase;
-	background: rgba(0, 0, 0, 0.6);
-	color: #fff;
-	border-radius: 4px;
-	z-index: 2;
-	pointer-events: none;
-	transition: opacity 0.3s ease;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border-radius: 4px;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-/* #################### LOADER SPINNER #################### */
+/* Fade overlay while playing */
+.video-wrapper.playing .video-overlay-label {
+  opacity: 0;
+}
+
+/* #################### LOADER SPINNER (unchanged) #################### */
 .video-loader {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	z-index: 5;
-	text-align: center;
-	pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  text-align: center;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1.5em 2em;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-	// Semi-transparent dark background to blend with the video container
-	background: rgba(0, 0, 0, 0.7);
-	padding: 1.5em 2em;
-	border-radius: 12px;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  .mat-progress-spinner {
+    width: 48px !important;
+    height: 48px !important;
+    stroke-width: 4px;
+    margin-bottom: 1em;
+  }
 
-	// Optional: adds subtle blur behind the spinner for better readability
-	backdrop-filter: blur(2px);
+  .mat-progress-spinner circle {
+    stroke: #3f51b5;
+  }
 
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-
-	.mat-progress-spinner {
-		width: 48px !important;
-		height: 48px !important;
-		stroke-width: 4px;
-		margin-bottom: 1em;
-	}
-
-	// Ensure spinner stroke matches your theme's accent color
-	.mat-progress-spinner circle {
-		stroke: #3f51b5;
-	}
-
-	.loader-label {
-		font-size: 13px;
-		font-weight: 500;
-		color: #fff;
-		letter-spacing: 0.3px;
-	}
+  .loader-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
 }
-
