@@ -566,22 +566,31 @@ export class DynamoDBService {
      * Tries to claim a unit if no active unpaid holder exists:
      *  1) Query current holders
      *  2) Tentative put (arrival time + counter++)
-     *  3) Post-verify; if contention > 1, yield our claim (removal time)
+     *  3) Post-verify; if contention > 1, deterministically elect a winner and yield if we lost
+     *
+     * Notes:
+     * - No new tables or transactions: relies on best-effort convergence.
+     * - Deterministic winner: earliest time_arrival, tie-break by identifier (lexicographic).
+     * - Ensures only ONE active unpaid holder survives the race shortly after post-verify.
+     * - Adds a tiny settle loop to reduce GSI lag effects (GSIs are eventually consistent).
      */
     async claimUnitIfUnassigned(
         cfg: Cfg | any,
         unitEntry: Record<string, any>
-    ): Promise<{ claimed: boolean }> {
+    ): Promise<{ claimed: boolean, winner?: string }> {
         const ncfg = this.ensureClients(cfg);
+        const unitId = unitEntry['unit_id'];
 
         /* 1) Pre-check existing holders */
-        const pre = await this.getACLRecordUnitId(ncfg, unitEntry['unit_id']);
+        const pre = await this.getACLRecordUnitId(ncfg, unitId);
         const preItems = pre?.Items ?? [];
         if (preItems.some(it => this.isActiveUnpaid(it))) {
-            return {claimed: false};
+            return {claimed: false, winner: String(preItems.find(it => this.isActiveUnpaid(it))?.["identifier"] ?? '')};
         }
 
-        /* 2) Tentative claim */
+        /* 2) Tentative claim (arrival time bump + access counter) */
+        unitEntry['claim_marker'] = unitEntry['claim_marker'] ?? `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
         await this.insertACLRecordUnitId(
             ncfg,
             unitEntry,
@@ -590,22 +599,61 @@ export class DynamoDBService {
             false /* updateRemovalTime */
         );
 
-        /* 3) Post-verify and yield if we lost a race */
-        const post = await this.getACLRecordUnitId(ncfg, unitEntry['unit_id']);
-        const postItems = post?.Items ?? [];
-        const activeHolders = postItems.filter(it => this.isActiveUnpaid(it));
+        /* Helper: safe RFC date parse for ordering */
+        const parseUtc = (s: any) => {
+            const t = Date.parse(String(s ?? ''));
+            return Number.isFinite(t) ? t : Number.MAX_SAFE_INTEGER;
+        };
 
-        if (activeHolders.length > 1) {
-            const mine = activeHolders.find(x => x?.['identifier'] === unitEntry?.['identifier']);
-            if (mine) {
-                const yielded = {...mine, in_progress: String(false), time_removal: new Date().toUTCString()};
-                await this.insertACLRecordUnitId(ncfg, yielded, 0, false, true);
+        /* Tiny settle loop to let GSI catch up (GSIs are eventually consistent). */
+        const settle = async (ms: number) => new Promise(res => setTimeout(res, ms));
+
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const post = await this.getACLRecordUnitId(ncfg, unitId);
+            const items = post?.Items ?? [];
+            const activeHolders = items.filter(it => this.isActiveUnpaid(it));
+
+            if (activeHolders.length <= 1) {
+                /* We are the only active unpaid holder (or none due to eventual read) */
+                return {claimed: true};
             }
-            return {claimed: false};
+
+            /* Deterministic election: earliest time_arrival; tie-break on identifier */
+            activeHolders.sort((a, b) => {
+                const ta = parseUtc(a?.["time_arrival"]);
+                const tb = parseUtc(b?.["time_arrival"]);
+                if (ta !== tb) return ta - tb;
+                const ia = String(a?.["identifier"] ?? '');
+                const ib = String(b?.["identifier"] ?? '');
+                return ia.localeCompare(ib);
+            });
+            const winnerId = String(activeHolders[0]?.["identifier"] ?? '');
+
+            if (winnerId === String(unitEntry?.['identifier'])) {
+                /* We won the election → keep the claim */
+                return {claimed: true, winner: winnerId};
+            }
+
+            /* First two passes: short backoff to allow concurrent losers to yield */
+            if (attempt < 2) {
+                await settle(75); // ~75ms backoff; tune if needed
+                continue;
+            }
+
+            /* Last pass: we lost → yield immediately: set own row inactive and set removal time */
+            const yielded = {
+                ...unitEntry,
+                in_progress: String(false),
+                time_removal: new Date().toUTCString()
+            };
+            await this.insertACLRecordUnitId(ncfg, yielded, 0, false, true);
+            return {claimed: false, winner: winnerId};
         }
 
-        return {claimed: true};
+        /* Fallback (should not happen): treat as lost */
+        return {claimed: false};
     }
+
 
     /* =================== ADMIN: GENERIC TABLE HELPERS =================== */
 

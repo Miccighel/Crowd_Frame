@@ -310,12 +310,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /*
-     * Finalize worker initialization.
-     * - Rehydrates or creates the worker ACL entry.
-     * - Optionally assigns a HIT (unassigned → recovery from abandonment → inconsistency sweep).
-     * - Writes TASK_OVERBOOKING / TASK_COMPLETED_BY_OTHERS outcomes back to ACL for auditability.
-     * - Uses best-effort unit claim helper; behavior is preserved, data consistency is improved.
-     */
+      * Finalize worker initialization.
+      * - Rehydrates or creates the worker ACL entry.
+      * - Optionally assigns a HIT (FREE scan in order → recovery from abandonment → inconsistency sweep).
+      * - Writes TASK_OVERBOOKING / TASK_COMPLETED_BY_OTHERS outcomes back to ACL for auditability.
+      * - Uses best-effort unit claim helper; behavior is preserved, data consistency is improved.
+      */
     public async finalizeWorkerInitialization() {
         /* Flag to indicate if a HIT is assigned to the current worker. */
         let hitAssigned = false;
@@ -474,123 +474,98 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
                 if (taskAllowed) {
                     if (!hitAssigned) {
-                        /* Try to claim an unassigned HIT first (sequential in-order, skip active, verify claim). */
+                        /* ------------------------------------------------------
+                           Try to claim an unassigned HIT first (SEQUENTIAL SCAN)
+                           Policy:
+                            - Completed (paid=true)  → skip.
+                            - Active (in_progress=true & paid=false) → skip (move to next).
+                            - First FREE (not completed & not active) → attempt claim.
+                           This continues "until exhaustion".
+                           ------------------------------------------------------ */
                         const hits = await this.S3Service.downloadHits(env);
 
                         if ((aclItems?.length ?? 0) <= 0) {
-                            /* Initialize bookkeeping for all units (default: not completed/in-progress). */
-                            for (const h of hits) hitCompletedOrInProgress[h.unit_id] = false;
+
+                            /* Helper to evaluate unit status from ACL rows. */
+                            const evalUnitStatus = (items: any[]) => {
+                                const paid = items.some(it => String(it?.['paid']).toLowerCase() === 'true');
+                                const activeUnpaid = items.some(it =>
+                                    String(it?.['in_progress']).toLowerCase() === 'true' &&
+                                    String(it?.['paid']).toLowerCase() !== 'true'
+                                );
+                                const free = !paid && !activeUnpaid;
+                                return {paid, activeUnpaid, free};
+                            };
 
                             const ipStr = this.getNormalizedWorkerIp();
 
-                            /* Helper: check if a unit is currently in-progress & unpaid (active holder). */
-                            const unitIsActive = async (unitId: string) => {
-                                /* Prefer a keyed getter by unit_id if available; fall back to scan. */
-                                let page = await this.dynamoDBService.scanACLRecordUnitId(env);
-                                const consider = (items: any[]) => {
-                                    for (const e of (items ?? [])) {
-                                        if (e?.unit_id === unitId) {
-                                            const inProg = /true/i.test(String(e.in_progress));
-                                            const unpaid = /true/i.test(String(e.paid)) === false;
-                                            if (inProg && unpaid) return true;
-                                        }
-                                    }
-                                    return false;
-                                };
-                                if (consider(page.Items)) return true;
-                                let lek = page.LastEvaluatedKey;
-                                while (typeof lek !== "undefined") {
-                                    page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lek);
-                                    if (consider(page.Items)) return true;
-                                    lek = page.LastEvaluatedKey;
-                                }
-                                return false;
-                            };
-
-                            /* ---- Sequential scan from index 0 (deterministic order) */
                             for (let idx = 0; idx < hits.length && !hitAssigned; idx++) {
                                 const hit = hits[idx];
 
-                                /* Skip units already held by someone in-progress & unpaid. */
-                                if (await unitIsActive(hit.unit_id)) {
-                                    hitCompletedOrInProgress[hit.unit_id] = true;
+                                /* Read current ACL state for this unit. */
+                                const page = await this.dynamoDBService.getACLRecordUnitId(env, hit.unit_id);
+                                const items = page?.Items ?? [];
+                                const {paid, activeUnpaid, free} = evalUnitStatus(items);
+
+                                /* Bookkeeping for final summary (optional). */
+                                hitCompletedOrInProgress[hit.unit_id] = paid || activeUnpaid;
+
+                                if (paid) {
+                                    /* Completed → not assignable; continue scanning. */
                                     continue;
                                 }
 
-                                /* Attempt atomic claim (backend must enforce a conditional write). */
-                                const unitEntry: any = {
-                                    unit_id: hit.unit_id,
-                                    token_input: hit.token_input,
-                                    token_output: hit.token_output,
-                                    identifier: this.worker.identifier,
-                                    ip_address: ipStr ?? String(false),
-                                    in_progress: String(true),
-                                    paid: String(false),
-                                    time_arrival: new Date().toUTCString()
-                                };
-
-                                const {claimed} = await this.dynamoDBService.claimUnitIfUnassigned(env, unitEntry);
-
-                                if (!claimed) {
-                                    /* Someone else raced for this index; mark busy and proceed to the next one. */
-                                    hitCompletedOrInProgress[hit.unit_id] = true;
+                                if (activeUnpaid) {
+                                    /* Active holder → skip to the next unit (desired behavior). */
                                     continue;
                                 }
 
-                                /* Post-claim verification (defensive): ensure ACL row is bound to this worker. */
-                                let claimedByUs = false;
-                                let page = await this.dynamoDBService.scanACLRecordUnitId(env);
-                                const verify = (items: any[]) => {
-                                    for (const e of (items ?? [])) {
-                                        if (e?.unit_id === hit.unit_id) {
-                                            const idMatch = String(e.identifier) === String(this.worker.identifier);
-                                            const inProg = /true/i.test(String(e.in_progress));
-                                            const unpaid = /true/i.test(String(e.paid)) === false;
-                                            if (idMatch && inProg && unpaid) return true;
-                                        }
+                                if (free) {
+                                    /* Attempt claim using existing service (post-verify yields on race). */
+                                    const unitEntry: any = {
+                                        unit_id: hit.unit_id,
+                                        token_input: hit.token_input,
+                                        token_output: hit.token_output,
+                                        identifier: this.worker.identifier,
+                                        ip_address: ipStr ?? String(false),
+                                        in_progress: String(true),
+                                        paid: String(false),
+                                        time_arrival: new Date().toUTCString()
+                                    };
+
+                                    const {claimed} = await this.dynamoDBService.claimUnitIfUnassigned(env, unitEntry);
+
+                                    if (claimed) {
+                                        /* Store unit metadata on worker and write status. */
+                                        this.worker.setParameter("unit_id", hit.unit_id);
+                                        this.worker.setParameter("token_input", hit.token_input);
+                                        this.worker.setParameter("token_output", hit.token_output);
+                                        await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
+                                        hitAssigned = true;
+                                        break;
+                                    } else {
+                                        /* Lost the race (unit became active during claim) → keep scanning. */
+                                        hitCompletedOrInProgress[hit.unit_id] = true;
                                     }
-                                    return false;
-                                };
-                                if (verify(page.Items)) claimedByUs = true;
-                                let lek = page.LastEvaluatedKey;
-                                while (!claimedByUs && typeof lek !== "undefined") {
-                                    page = await this.dynamoDBService.scanACLRecordUnitId(env, null, lek);
-                                    if (verify(page.Items)) claimedByUs = true;
-                                    lek = page.LastEvaluatedKey;
-                                }
-
-                                if (claimedByUs) {
-                                    /* Store unit metadata on worker and write status. */
-                                    this.worker.setParameter("unit_id", hit.unit_id);
-                                    this.worker.setParameter("token_input", hit.token_input);
-                                    this.worker.setParameter("token_output", hit.token_output);
-                                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
-                                    hitAssigned = true;
-                                    break;
-                                } else {
-                                    /* Failed verification, keep scanning the next unit in order. */
-                                    hitCompletedOrInProgress[hit.unit_id] = true;
                                 }
                             }
 
-                            /* Try to recover a slot from expired/abandoned entries. */
+                            /* ----------------------------
+                               Recovery: expired/abandoned
+                               ---------------------------- */
                             if (!hitAssigned) {
                                 const myIp = this.getNormalizedWorkerIp();
                                 let wholeEntries = await this.retrieveAllACLEntries();
 
                                 for (const aclEntry of wholeEntries) {
                                     if ((aclEntry["ip_address"] ?? null) !== (myIp ?? null)) {
-                                        if (/true/i.test(aclEntry["paid"]) == true ||
-                                            ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true))) {
-                                            hitCompletedOrInProgress[aclEntry["unit_id"]] = true;
-                                        }
-
                                         /* A slot can be recovered if it elapsed or tries are almost gone. */
                                         const timeArrival = Date.parse(aclEntry["time_arrival"] ?? "");
                                         const hoursElapsed = Math.abs(Date.now() - (Number.isFinite(timeArrival) ? timeArrival : Date.now())) / 36e5;
 
                                         if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed >= this.task.settings.time_assessment) ||
                                             (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1)) {
+
                                             hitAssigned = true;
 
                                             /* Close the abandoned entry. */
@@ -607,61 +582,66 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                             await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
                                         }
                                     }
-
                                     if (hitAssigned) break;
                                 }
 
-                                /* Sweep for inconsistent units (recently released with no active holder). */
+                                /* ----------------------------------------------
+                                   Sweep for inconsistent (no active holder) units
+                                   ---------------------------------------------- */
                                 if (!hitAssigned) {
-                                    const inconsistentUnits: string[] = [];
-                                    for (const [unitId, status] of Object.entries(hitCompletedOrInProgress)) {
-                                        if (status === false && !inconsistentUnits.includes(unitId)) inconsistentUnits.push(unitId);
-                                    }
-
-                                    if (inconsistentUnits.length > 0) {
-                                        const myIp2 = this.getNormalizedWorkerIp();
-                                        wholeEntries = await this.retrieveAllACLEntries();
-                                        for (const inconsistentUnit of inconsistentUnits) {
-                                            let mostRecentAclEntry: any = null;
-                                            for (const aclEntry of wholeEntries) {
-                                                if ((aclEntry["ip_address"] ?? null) !== (myIp2 ?? null)) {
-                                                    if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false) &&
-                                                        inconsistentUnit == aclEntry['unit_id']) {
-                                                        mostRecentAclEntry = aclEntry;
-                                                    }
-                                                }
+                                    let whole = await this.retrieveAllACLEntries();
+                                    for (const hit of hits) {
+                                        const unitId = hit.unit_id;
+                                        let mostRecent: any = null;
+                                        for (const aclEntry of whole) {
+                                            if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false) &&
+                                                unitId == aclEntry['unit_id']) {
+                                                mostRecent = aclEntry;
                                             }
-                                            if (mostRecentAclEntry) {
-                                                hitAssigned = true;
-                                                this.worker.setParameter("token_input", mostRecentAclEntry["token_input"]);
-                                                this.worker.setParameter("token_output", mostRecentAclEntry["token_output"]);
-                                                this.worker.setParameter("unit_id", mostRecentAclEntry["unit_id"]);
-                                                this.worker.setParameter("time_arrival", new Date().toUTCString());
+                                        }
+                                        if (mostRecent) {
+                                            hitAssigned = true;
+                                            this.worker.setParameter("token_input", mostRecent["token_input"]);
+                                            this.worker.setParameter("token_output", mostRecent["token_output"]);
+                                            this.worker.setParameter("unit_id", mostRecent["unit_id"]);
+                                            this.worker.setParameter("time_arrival", new Date().toUTCString());
 
-                                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
-                                            }
-                                            if (hitAssigned) break;
+                                            await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
+                                            break;
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        /* If we still couldn't assign, persist the overall condition. */
-                        if (!hitAssigned) {
-                            let hitsStillToComplete = false;
-                            /* At least one hit is not marked as (completed/in-progress) → still to complete. */
-                            const hits = await this.S3Service.downloadHits(env);
-                            for (const h of hits) {
-                                if (hitCompletedOrInProgress[h.unit_id] == false) {
-                                    hitsStillToComplete = true;
-                                    break;
+                            /* ----------------------------------------------------
+                               If still not assigned: decide terminal status.
+                               - allCompleted → TASK_COMPLETED_BY_OTHERS
+                               - otherwise (i.e., all busy/active) → TASK_OVERBOOKING
+                               ---------------------------------------------------- */
+                            if (!hitAssigned) {
+                                let allCompleted = true;
+                                let anyBusy = false;
+                                for (const hit of hits) {
+                                    const page = await this.dynamoDBService.getACLRecordUnitId(env, hit.unit_id);
+                                    const items = page?.Items ?? [];
+                                    const paid = items.some(it => String(it?.['paid']).toLowerCase() === 'true');
+                                    const activeUnpaid = items.some(it =>
+                                        String(it?.['in_progress']).toLowerCase() === 'true' &&
+                                        String(it?.['paid']).toLowerCase() !== 'true'
+                                    );
+                                    if (!paid) allCompleted = false;
+                                    if (activeUnpaid) anyBusy = true;
+                                }
+
+                                if (allCompleted) {
+                                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_COMPLETED_BY_OTHERS);
+                                } else if (anyBusy) {
+                                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_OVERBOOKING);
+                                } else {
+                                    /* Fallback: treat as overbooking if ambiguous. */
+                                    await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_OVERBOOKING);
                                 }
                             }
-                            if (hitsStillToComplete)
-                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_OVERBOOKING);
-                            else
-                                await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
                     }
 
