@@ -310,19 +310,19 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /*
-      * Finalize worker initialization.
-      * - Rehydrates or creates the worker ACL entry.
-      * - Optionally assigns a HIT (FREE scan in order → recovery from abandonment → inconsistency sweep).
-      * - Writes TASK_OVERBOOKING / TASK_COMPLETED_BY_OTHERS outcomes back to ACL for auditability.
-      * - Uses best-effort unit claim helper; behavior is preserved, data consistency is improved.
-      */
+  * Finalize worker initialization.
+  * - Rehydrates or creates the worker ACL entry.
+  * - Optionally assigns a HIT (FREE scan in order → recovery from abandonment → inconsistency sweep).
+  * - Writes TASK_OVERBOOKING / TASK_COMPLETED_BY_OTHERS outcomes back to ACL for auditability.
+  * - Uses best-effort unit claim helper; behavior is preserved, data consistency is improved.
+  */
     public async finalizeWorkerInitialization() {
         /* Flag to indicate if a HIT is assigned to the current worker. */
         let hitAssigned = false;
         const env = this.configService.environment;
 
-        /* Retrieve existing ACL records by IP (if any). */
-        /* FIX: normalize IP to avoid object-vs-string mismatches that caused everyone to be treated as "new". */
+        /* Retrieve existing ACL records by IP (if any).
+           FIX: normalize IP to avoid object-vs-string mismatches that caused everyone to be treated as "new". */
         const aclByIp = await this.dynamoDBService.getACLRecordIpAddress(env, this.getNormalizedWorkerIp());
         const aclItems: any[] = aclByIp?.Items ?? [];
 
@@ -521,7 +521,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                 }
 
                                 if (free) {
-                                    /* Attempt claim using existing service (post-verify yields on race). */
+                                    /* Attempt claim using existing service (post-verify yields on race).
+                                       Enrich with minimal metadata required by the downloader. */
                                     const unitEntry: any = {
                                         unit_id: hit.unit_id,
                                         token_input: hit.token_input,
@@ -530,7 +531,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                         ip_address: ipStr ?? String(false),
                                         in_progress: String(true),
                                         paid: String(false),
-                                        time_arrival: new Date().toUTCString()
+                                        time_arrival: new Date().toUTCString(),
+                                        task_name: env.taskName,
+                                        batch_name: env.batchName,
+                                        user_agent: this.worker.getUAG()['uag']
                                     };
 
                                     const {claimed} = await this.dynamoDBService.claimUnitIfUnassigned(env, unitEntry);
@@ -540,7 +544,19 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                         this.worker.setParameter("unit_id", hit.unit_id);
                                         this.worker.setParameter("token_input", hit.token_input);
                                         this.worker.setParameter("token_output", hit.token_output);
-                                        await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
+
+                                        /* Also enforce minimal metadata on the worker ACL row */
+                                        await this.dynamoDBService.updateWorkerAcl(
+                                            env,
+                                            this.worker,
+                                            StatusCodes.TASK_HIT_ASSIGNED,
+                                            {
+                                                task_name: env.taskName,
+                                                batch_name: env.batchName,
+                                                user_agent: this.worker.getUAG()['uag']
+                                            }
+                                        );
+
                                         hitAssigned = true;
                                         break;
                                     } else {
@@ -573,13 +589,22 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                             aclEntry["in_progress"] = String(false);
                                             await this.writeUnitAcl(aclEntry, {updateRemovalTime: true});
 
-                                            /* Assign slot to current worker. */
+                                            /* Assign slot to current worker (ensure metadata present). */
                                             this.worker.setParameter("token_input", aclEntry["token_input"]);
                                             this.worker.setParameter("token_output", aclEntry["token_output"]);
                                             this.worker.setParameter("unit_id", aclEntry["unit_id"]);
                                             this.worker.setParameter("time_arrival", new Date().toUTCString());
 
-                                            await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED);
+                                            await this.dynamoDBService.updateWorkerAcl(
+                                                env,
+                                                this.worker,
+                                                StatusCodes.TASK_HIT_ASSIGNED,
+                                                {
+                                                    task_name: env.taskName,
+                                                    batch_name: env.batchName,
+                                                    user_agent: this.worker.getUAG()['uag']
+                                                }
+                                            );
                                         }
                                     }
                                     if (hitAssigned) break;
@@ -601,12 +626,22 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                         }
                                         if (mostRecent) {
                                             hitAssigned = true;
+
                                             this.worker.setParameter("token_input", mostRecent["token_input"]);
                                             this.worker.setParameter("token_output", mostRecent["token_output"]);
                                             this.worker.setParameter("unit_id", mostRecent["unit_id"]);
                                             this.worker.setParameter("time_arrival", new Date().toUTCString());
 
-                                            await this.dynamoDBService.updateWorkerAcl(env, this.worker, StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
+                                            await this.dynamoDBService.updateWorkerAcl(
+                                                env,
+                                                this.worker,
+                                                StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK,
+                                                {
+                                                    task_name: env.taskName,
+                                                    batch_name: env.batchName,
+                                                    user_agent: this.worker.getUAG()['uag']
+                                                }
+                                            );
                                             break;
                                         }
                                     }

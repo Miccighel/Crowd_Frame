@@ -184,7 +184,7 @@ export class DynamoDBService {
 
         const desc = await this.describeTable(tableName);
         const ks = desc.Table?.KeySchema ?? [];
-        const attrs = desc.Table?.AttributeDefinitions ?? [];
+               const attrs = desc.Table?.AttributeDefinitions ?? [];
 
         const types: Record<string, 'S' | 'N' | 'B'> = {};
         for (const a of attrs) {
@@ -307,7 +307,7 @@ export class DynamoDBService {
         /* Stable sort by unit_id; do not mutate original Items reference in case callers depend on it */
         const items = (page.Items ?? []).slice().sort((a: any, b: any) => {
             const ua = String(a?.['unit_id'] ?? '');
-            const ub = String(b?.['unit_id'] ?? '');
+                       const ub = String(b?.['unit_id'] ?? '');
             const cmp = ua.localeCompare(ub);
             return ascending ? cmp : -cmp;
         });
@@ -573,6 +573,19 @@ export class DynamoDBService {
      * - Deterministic winner: earliest time_arrival, tie-break by identifier (lexicographic).
      * - Ensures only ONE active unpaid holder survives the race shortly after post-verify.
      * - Adds a tiny settle loop to reduce GSI lag effects (GSIs are eventually consistent).
+     *
+     * Claim marker (`claim_marker`) — how to interpret it:
+     * - What it is: a per-attempt, best-effort unique stamp (e.g., "1697042234123_k9t3…") written with the tentative PUT.
+     * - Why it exists: for debugging and post-mortem analytics to correlate which tentative write belonged to which app run.
+     * - How to read it: just treat it as an opaque string; newer values do NOT imply stronger precedence.
+     * - What it is NOT: not used in the winner election (we always elect by earliest time_arrival, then by identifier).
+     * - Caller expectations (minimum fields to avoid downstream crashes):
+     *     unitEntry should include at least:
+     *       - unit_id, token_input, token_output
+     *       - identifier, ip_address
+     *       - in_progress="true", paid="false"
+     *       - time_arrival (will be set if updateArrivalTime=true)
+     *       - (optional but recommended for tooling): task_name, batch_name, user_agent
      */
     async claimUnitIfUnassigned(
         cfg: Cfg | any,
