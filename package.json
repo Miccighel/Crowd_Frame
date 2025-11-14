@@ -18,7 +18,7 @@
   "dependencies": {
     "@angular/animations": "^20.3.10",
     "@angular/cdk": "20.2.12",
-    "@angular/cli": "20.3.9",
+    "@angular/cli": "20.3.10",
     "@angular/common": "20.3.10",
     "@angular/compiler": "20.3.10",
     "@angular/core": "20.3.10",
@@ -50,7 +50,7 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^20.3.9",
+    "@angular/build": "^20.3.10",
     "@angular/compiler-cli": "20.3.10",
     "@kolkov/angular-editor": "^3.0.0-beta.2",
     "@types/node": "^24.7.2",
