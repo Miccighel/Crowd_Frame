@@ -165,13 +165,13 @@
                         <td class="left pad mono">{{ row.raw['ip_address'] ?? '—' }}</td>
                         <td class="left pad">
                           <span class="pill" [class.true]="(row.raw['in_progress']||'').toString().toLowerCase()==='true'"
-                                            [class.false]="(row.raw['in_progress']||'').toString().toLowerCase()==='false'">
+                            [class.false]="(row.raw['in_progress']||'').toString().toLowerCase()==='false'">
                             {{ row.raw['in_progress'] ?? '—' }}
                           </span>
                         </td>
                         <td class="left pad">
                           <span class="pill" [class.true]="(row.raw['paid']||'').toString().toLowerCase()==='true'"
-                                            [class.false]="(row.raw['paid']||'').toString().toLowerCase()==='false'">
+                            [class.false]="(row.raw['paid']||'').toString().toLowerCase()==='false'">
                             {{ row.raw['paid'] ?? '—' }}
                           </span>
                         </td>
@@ -230,7 +230,7 @@
                 <button mat-stroked-button
                         (click)="reloadData()
 "
-                        [disabled]="dataTable.loading || !dataTable.identifierCtrl.value">
+                  [disabled]="dataTable.loading || !dataTable.identifierCtrl.value">
                   <mat-icon>file_download</mat-icon><span>Load</span>
                 </button>
 
@@ -324,8 +324,8 @@
                 </mat-form-field>
 
                 <button mat-flat-button color="warn"
-                        (click)="deleteSelectedStorage()"
-                        [disabled]="!storageHasSelection() || storageState.isLoading">
+                  (click)="deleteSelectedStorage()"
+                  [disabled]="!storageHasSelection() || storageState.isLoading">
                   <mat-icon>delete</mat-icon>
                   <span>Delete selected</span>
                 </button>
@@ -390,8 +390,8 @@
                 <span class="flex-spacer"></span>
 
                 <button mat-flat-button color="accent"
-                        (click)="applySelectedFixes()"
-                        [disabled]="deploymentMismatches.length === 0">
+                  (click)="applySelectedFixes()"
+                  [disabled]="deploymentMismatches.length === 0">
                   <mat-icon>done_all</mat-icon>
                   <span>Apply selected</span>
                 </button>
@@ -402,7 +402,9 @@
                   <mat-chip selected color="primary">Adopt</mat-chip>
                   <mat-chip selected color="warn">Release</mat-chip>
                 </mat-chip-set>
-                <span class="hint" *ngIf="deploymentMismatches.length === 0">No mismatches detected yet.</span>
+                @if (deploymentMismatches.length === 0) {
+                  <span class="hint">No mismatches detected yet.</span>
+                }
               </div>
 
               @if (deploymentMismatches.length > 0) {
