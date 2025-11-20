@@ -48,16 +48,7 @@
         "noPropertyAccessFromIndexSignature": true,
         "noUnusedLocals": true,
         /* May be noisy in large refactors */
-        "noUnusedParameters": true,
-        /* May be noisy in large refactors */
-
-        /* ========= STANDARD LIBS ========= */
-        "lib": [
-            "ES2022",
-            "DOM",
-            "DOM.Iterable"
-            /* Provides iterable types for NodeList/HTMLCollection */
-        ]
+        "noUnusedParameters": true
     },
     "angularCompilerOptions": {
         "strictTemplates": false,
