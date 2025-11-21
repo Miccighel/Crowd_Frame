@@ -62,9 +62,20 @@ html {
     }
 }
 
+/* toolbar menu button on narrow screens */
+.show-when-narrow {
+    display: none;
+}
+
 @media (max-width: 599px) {
     .admin-toolbar {
         min-height: 56px;
+    }
+}
+
+@media (max-width: 880px) {
+    .show-when-narrow {
+        display: inline-flex;
     }
 }
 
@@ -107,7 +118,8 @@ html {
         border-radius: var(--adm-radius-sm);
         margin-bottom: 4px;
 
-        &.active, &:hover {
+        &.active,
+        &:hover {
             background: color-mix(in oklab, var(--mat-sys-primary, #3f51b5), transparent 92%);
         }
     }
@@ -207,7 +219,8 @@ html {
     table-layout: fixed;
 }
 
-.table.grid th, .table.grid td {
+.table.grid th,
+.table.grid td {
     border-bottom: 1px solid rgba(0, 0, 0, .08);
     padding: 10px 12px;
     vertical-align: top;
@@ -245,11 +258,13 @@ html {
     opacity: .75;
 }
 
-.table.grid th.left, .table.grid td.left {
+.table.grid th.left,
+.table.grid td.left {
     text-align: left;
 }
 
-.table.grid td.right, .table.grid th.right {
+.table.grid td.right,
+.table.grid th.right {
     text-align: right;
 }
 
@@ -389,4 +404,54 @@ html {
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, .06);
     box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+/* ───────── Section headers / descriptions ───────── */
+.section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+@media (min-width: 960px) {
+    .section-header {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.section-title mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.section-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(0, 0, 0, .68);
+    max-width: 72ch;
+}
+
+/* pill used to display current storage prefix */
+.prefix-pill {
+    border-radius: 999px;
+    font-size: 12px;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, .02);
+    border: 1px solid rgba(0, 0, 0, .06);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }

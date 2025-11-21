@@ -5,6 +5,7 @@
  *  • Minimal, robust admin console:
  *      - ACL: view ACL table rows (via GSI scan), client-side filter, paginate
  *      - DATA: query rows by identifier, client-side filter, paginate
+ *              + load-all (per identifier) + global scan + bulk delete
  *      - Storage: list & delete private-bucket objects scoped to task/batch
  *      - Health: compare ACL vs hits.json and apply fixes
  *      - Generator: mounted lazily to avoid perf issues when not in use
@@ -116,7 +117,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
     /* Sidebar + content */
     activePanel: Panel = 'acl';                /* default to ACL */
-    mount = {generator: false};              /* lazy-mount generator tab */
+    mount = {generator: false};               /* lazy-mount generator tab */
     private readonly ADMIN_LOADER_ID = 'admin';
     private authorizedAdminHashes?: Set<string>;
 
@@ -172,6 +173,9 @@ export class AdminComponent implements OnInit, AfterViewInit {
     expandedAcl = new Set<string>();
     expandedData = new Set<string>();
 
+    /* Selection for DATA rows (by row.id) */
+    selectedDataIds = new Set<string>();
+
     constructor(
         private readonly cdr: ChangeDetectorRef,
         private readonly overlay: NgxUiLoaderService,
@@ -213,8 +217,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
         requestAnimationFrame(() => {
             try {
                 this.overlay.stopLoader(this.ADMIN_LOADER_ID);
-            } catch { /* noop */
-            }
+            } catch { /* noop */ }
         });
     }
 
@@ -369,6 +372,39 @@ export class AdminComponent implements OnInit, AfterViewInit {
             : source.slice();
     }
 
+    async deleteAclRow(row: SimpleRow): Promise<void> {
+        if (!this.loginGranted) return;
+
+        const unitId = readStr(row.raw, 'unit_id') ?? 'unknown';
+        const identifier = readStr(row.raw, 'identifier') ?? 'unknown';
+
+        const ok = confirm(
+            `Delete this ACL record?\n\nunit_id = ${unitId}\nidentifier = ${identifier}\n\nThis cannot be undone.`
+        );
+        if (!ok) return;
+
+        this.overlay.startLoader(this.ADMIN_LOADER_ID);
+        try {
+            await this.ddb.deleteItemFromTable(
+                this.configService.environment,
+                'ACL',
+                row.raw
+            );
+
+            this.aclTable.items = this.aclTable.items.filter(r => r.id !== row.id);
+            this.aclTable.view = this.aclTable.view.filter(r => r.id !== row.id);
+            this.expandedAcl.delete(row.id);
+
+            this.showToast('ACL record deleted.', 2500);
+        } catch (err) {
+            console.error('[Admin] deleteAclRow error:', err);
+            this.showToast('Failed to delete ACL record. See console for details.', 4000);
+        } finally {
+            this.overlay.stopLoader(this.ADMIN_LOADER_ID);
+            this.cdr.markForCheck();
+        }
+    }
+
     /* ───────────────────────────── DATA (simple) ─────────────────────────── */
 
     async reloadData(): Promise<void> {
@@ -376,6 +412,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
         this.dataTable.items = [];
         this.dataTable.view = [];
         this.dataTable.lastEvaluatedKey = undefined;
+        this.selectedDataIds.clear();
         await this.loadMoreData();
     }
 
@@ -424,6 +461,89 @@ export class AdminComponent implements OnInit, AfterViewInit {
         return (id && seq) ? `${id}::${seq}` : (id ?? `data-${idx}`);
     }
 
+    async loadAllData(): Promise<void> {
+        if (!this.loginGranted || this.dataTable.loading) return;
+
+        const identifier = String(this.dataTable.identifierCtrl.value || '').trim();
+        if (!identifier) {
+            this.showToast('Insert identifier to query DATA.', 2500);
+            return;
+        }
+
+        this.overlay.startLoader(this.ADMIN_LOADER_ID);
+        try {
+            this.dataTable.items = [];
+            this.dataTable.view = [];
+            this.dataTable.lastEvaluatedKey = undefined;
+            this.selectedDataIds.clear();
+
+            await this.loadMoreData();  /* first page */
+
+            while (this.dataTable.lastEvaluatedKey) {
+                await this.loadMoreData();
+            }
+
+            this.showToast(`Loaded ${this.dataTable.items.length} DATA record(s) for "${identifier}".`, 3000);
+        } finally {
+            this.overlay.stopLoader(this.ADMIN_LOADER_ID);
+            this.cdr.markForCheck();
+        }
+    }
+
+    async loadAllDataGlobal(): Promise<void> {
+        if (!this.loginGranted || this.dataTable.loading) return;
+
+        const ok = confirm(
+            'Scan all DATA records in the table?\n\nThis may fetch a large number of items.'
+        );
+        if (!ok) return;
+
+        this.dataTable.loading = true;
+        this.dataTable.error = undefined;
+        this.dataTable.items = [];
+        this.dataTable.view = [];
+        this.dataTable.lastEvaluatedKey = undefined;
+        this.selectedDataIds.clear();
+        this.overlay.startLoader(this.ADMIN_LOADER_ID);
+        this.cdr.markForCheck();
+
+        try {
+            let startKey: Record<string, unknown> | undefined = undefined;
+
+            do {
+                const page = await this.ddb.scanTable(
+                    this.configService.environment,
+                    'DATA',
+                    200,
+                    startKey
+                );
+
+                const baseIndex = this.dataTable.items.length;
+                const appended: SimpleRow[] = (page.Items ?? []).map((raw: any, i: number) => ({
+                    id: this.stableDataRowId(raw, baseIndex + i),
+                    raw
+                }));
+
+                this.dataTable.items = [...this.dataTable.items, ...appended];
+                this.recomputeDataView();
+                this.cdr.markForCheck();
+
+                startKey = page.LastEvaluatedKey;
+            } while (startKey);
+
+            this.showToast(`Loaded ${this.dataTable.items.length} DATA record(s).`, 3000);
+        } catch (err: any) {
+            console.error('[Admin] DATA global scan error:', err);
+            this.dataTable.error = err?.message || String(err);
+            this.showToast('Global DATA scan failed. See console for details.', 4000);
+        } finally {
+            this.dataTable.loading = false;
+            this.dataTable.lastEvaluatedKey = undefined;
+            this.overlay.stopLoader(this.ADMIN_LOADER_ID);
+            this.cdr.markForCheck();
+        }
+    }
+
     onDataFilterChanged(value: string) {
         this.dataTable.filter = value || '';
         clearTimeout(this.dataFilterTimer);
@@ -441,6 +561,41 @@ export class AdminComponent implements OnInit, AfterViewInit {
             : source.slice();
     }
 
+    isDataRowSelected(id: string): boolean {
+        return this.selectedDataIds.has(id);
+    }
+
+    toggleDataRowSelection(row: SimpleRow, checked: boolean): void {
+        if (checked) {
+            this.selectedDataIds.add(row.id);
+        } else {
+            this.selectedDataIds.delete(row.id);
+        }
+        this.cdr.markForCheck();
+    }
+
+    dataAllSelected(): boolean {
+        return this.dataTable.view.length > 0 &&
+            this.dataTable.view.every(r => this.selectedDataIds.has(r.id));
+    }
+
+    dataToggleAll(checked: boolean): void {
+        if (checked) {
+            for (const r of this.dataTable.view) {
+                this.selectedDataIds.add(r.id);
+            }
+        } else {
+            for (const r of this.dataTable.view) {
+                this.selectedDataIds.delete(r.id);
+            }
+        }
+        this.cdr.markForCheck();
+    }
+
+    dataHasSelection(): boolean {
+        return this.selectedDataIds.size > 0;
+    }
+
     /* Copy JSON (shared by ACL/DATA tables) */
     copyRowJson(row: { raw: any }): void {
         const text = JSON.stringify(row.raw, null, 2);
@@ -454,6 +609,88 @@ export class AdminComponent implements OnInit, AfterViewInit {
             document.execCommand('copy');
             document.body.removeChild(ta);
             this.showToast('JSON copied.', 1500);
+        }
+    }
+
+    async deleteDataRow(row: SimpleRow): Promise<void> {
+        if (!this.loginGranted) return;
+
+        const identifier = readStr(row.raw, 'identifier') ?? 'unknown';
+        const sequence = readStr(row.raw, 'sequence') ?? 'unknown';
+
+        const ok = confirm(
+            `Delete this DATA record?\n\nidentifier = ${identifier}\nsequence = ${sequence}\n\nThis cannot be undone.`
+        );
+        if (!ok) return;
+
+        this.overlay.startLoader(this.ADMIN_LOADER_ID);
+        try {
+            await this.ddb.deleteItemFromTable(
+                this.configService.environment,
+                'DATA',
+                row.raw
+            );
+
+            this.dataTable.items = this.dataTable.items.filter(r => r.id !== row.id);
+            this.dataTable.view = this.dataTable.view.filter(r => r.id !== row.id);
+            this.expandedData.delete(row.id);
+            this.selectedDataIds.delete(row.id);
+
+            this.showToast('DATA record deleted.', 2500);
+            this.cdr.markForCheck();
+        } catch (err) {
+            console.error('[Admin] deleteDataRow error:', err);
+            this.showToast('Failed to delete DATA record. See console for details.', 4000);
+        } finally {
+            this.overlay.stopLoader(this.ADMIN_LOADER_ID);
+        }
+    }
+
+    async deleteSelectedData(): Promise<void> {
+        if (!this.loginGranted || this.selectedDataIds.size === 0) return;
+
+        const identifier = String(this.dataTable.identifierCtrl.value || '').trim() || 'current selection';
+        const total = this.selectedDataIds.size;
+
+        const ok = confirm(
+            `Delete ${total} DATA record(s) for "${identifier}"?\n\nThis cannot be undone.`
+        );
+        if (!ok) return;
+
+        this.overlay.startLoader(this.ADMIN_LOADER_ID);
+
+        let deleted = 0;
+        let failed = 0;
+
+        try {
+            const rowsToDelete = this.dataTable.items.filter(r => this.selectedDataIds.has(r.id));
+
+            for (const row of rowsToDelete) {
+                try {
+                    await this.ddb.deleteItemFromTable(
+                        this.configService.environment,
+                        'DATA',
+                        row.raw
+                    );
+                    deleted++;
+                } catch (err) {
+                    console.error('[Admin] deleteSelectedData error on row', row.id, err);
+                    failed++;
+                }
+            }
+
+            this.dataTable.items = this.dataTable.items.filter(r => !this.selectedDataIds.has(r.id));
+            this.recomputeDataView();
+            this.selectedDataIds.clear();
+            this.expandedData.clear();
+
+            this.showToast(
+                `Deleted ${deleted} DATA record(s).${failed ? ' Failed: ' + failed : ''}`,
+                4000
+            );
+            this.cdr.markForCheck();
+        } finally {
+            this.overlay.stopLoader(this.ADMIN_LOADER_ID);
         }
     }
 
@@ -777,8 +1014,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
                     this.http.get<{ ip: string }>('https://api64.ipify.org?format=json')
                 );
                 if (ipifyJson?.ip) return ipifyJson.ip;
-            } catch { /* ignore */
-            }
+            } catch { /* ignore */ }
         }
         return '';
     }

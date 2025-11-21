@@ -127,6 +127,19 @@
         @if (activePanel === 'acl') {
           <div class="tab-pad">
             <div class="surface">
+              <!-- Section description -->
+              <div class="section-header mb-12">
+                <h2 class="section-title">
+                  <mat-icon>lock</mat-icon>
+                  <span>Access control (ACL)</span>
+                </h2>
+                <p class="section-subtitle">
+                  Inspect access control records for this deployment. Use the filter to search by content,
+                  expand rows to see all attributes, copy JSON for debugging, or delete single ACL records
+                  when you need to clean up inconsistent entries.
+                </p>
+              </div>
+
               <!-- Actions -->
               <div class="actions-row gap-12 mb-12">
                 <button mat-stroked-button (click)="reloadAcl()" [disabled]="aclTable.loading">
@@ -184,6 +197,14 @@
                           <button mat-icon-button matTooltip="Copy JSON" (click)="copyRowJson(row)">
                             <mat-icon>content_copy</mat-icon>
                           </button>
+                          <button
+                            mat-icon-button
+                            color="warn"
+                            matTooltip="Delete record"
+                            (click)="deleteAclRow(row)"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
                         </td>
                       </tr>
                       @if (isAclExpanded(row.id)) {
@@ -220,6 +241,19 @@
         @if (activePanel === 'data') {
           <div class="tab-pad">
             <div class="surface">
+              <!-- Section description -->
+              <div class="section-header mb-12">
+                <h2 class="section-title">
+                  <mat-icon>table_chart</mat-icon>
+                  <span>Worker data records</span>
+                </h2>
+                <p class="section-subtitle">
+                  Inspect task submissions stored in the DATA table. Load records for a specific identifier,
+                  or scan the entire table. Use the checkboxes to select one or more rows and delete them
+                  when needed. Deletions are permanent and cannot be undone.
+                </p>
+              </div>
+
               <!-- Actions -->
               <div class="actions-row gap-12 mb-12">
                 <mat-form-field appearance="outline" class="w-220">
@@ -227,20 +261,49 @@
                   <input matInput [formControl]="dataTable.identifierCtrl" placeholder="worker_123 …">
                 </mat-form-field>
 
-                <button mat-stroked-button
-                        (click)="reloadData()
-"
+                <button
+                  mat-stroked-button
+                  (click)="reloadData()"
                   [disabled]="dataTable.loading || !dataTable.identifierCtrl.value">
                   <mat-icon>file_download</mat-icon><span>Load</span>
+                </button>
+
+                <!-- Load *all* records for this identifier -->
+                <button
+                  mat-stroked-button
+                  (click)="loadAllData()"
+                  [disabled]="dataTable.loading || !dataTable.identifierCtrl.value">
+                  <mat-icon>unfold_more</mat-icon><span>Load all</span>
+                </button>
+
+                <!-- Global scan: load all DATA records -->
+                <button
+                  mat-stroked-button
+                  (click)="loadAllDataGlobal()"
+                  [disabled]="dataTable.loading">
+                  <mat-icon>table_view</mat-icon><span>Scan all</span>
                 </button>
 
                 <span class="flex-spacer"></span>
 
                 <mat-form-field appearance="outline" class="w-220">
                   <mat-label>Filter (client-side)</mat-label>
-                  <input matInput [ngModel]="dataTable.filter" (ngModelChange)="onDataFilterChanged($event)" placeholder="Type to filter JSON…">
+                  <input
+                    matInput
+                    [ngModel]="dataTable.filter"
+                    (ngModelChange)="onDataFilterChanged($event)"
+                    placeholder="Type to filter JSON…">
                 </mat-form-field>
                 <span class="muted count-label">Showing {{ dataTable.view.length }} item(s)</span>
+
+                <button
+                  mat-flat-button
+                  color="warn"
+                  (click)="deleteSelectedData()"
+                  [disabled]="!dataHasSelection() || dataTable.loading">
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete selected</span>
+                </button>
               </div>
 
               <!-- Table -->
@@ -248,6 +311,12 @@
                 <table class="table grid">
                   <thead>
                     <tr>
+                      <th class="left pad">
+                        <mat-checkbox
+                          [checked]="dataAllSelected()"
+                          (change)="dataToggleAll($event.checked)">
+                        </mat-checkbox>
+                      </th>
                       <th class="left pad">identifier</th>
                       <th class="left pad">sequence</th>
                       <th class="left pad">time</th>
@@ -257,6 +326,13 @@
                   <tbody>
                     @for (row of dataTable.view; track row.id) {
                       <tr>
+                        <td class="pad">
+                          <mat-checkbox
+                            [checked]="isDataRowSelected(row.id)"
+                            (change)="toggleDataRowSelection(row, $event.checked)"
+                            aria-label="Select data record">
+                          </mat-checkbox>
+                        </td>
                         <td class="left pad mono">{{ row.raw['identifier'] ?? '—' }}</td>
                         <td class="left pad mono">{{ row.raw['sequence'] ?? '—' }}</td>
                         <td class="left pad">{{ row.raw['time'] ?? '—' }}</td>
@@ -267,12 +343,20 @@
                           <button mat-icon-button matTooltip="Copy JSON" (click)="copyRowJson(row)">
                             <mat-icon>content_copy</mat-icon>
                           </button>
+                          <button
+                            mat-icon-button
+                            color="warn"
+                            matTooltip="Delete record"
+                            (click)="deleteDataRow(row)"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
                         </td>
                       </tr>
                       @if (isDataExpanded(row.id)) {
                         <tr class="expand-row">
-                          <!-- DATA has 4 visible columns -->
-                          <td class="pad" colspan="4">
+                          <!-- DATA has 5 visible columns -->
+                          <td class="pad" colspan="5">
                             <div class="kv-grid">
                               @for (e of entriesOf(row.raw); track e.key) {
                                 <div class="kv-key mono">{{ e.key }}</div>
@@ -303,6 +387,19 @@
         @if (activePanel === 'storage') {
           <div class="tab-pad">
             <div class="surface">
+              <!-- Section description -->
+              <div class="section-header mb-12">
+                <h2 class="section-title">
+                  <mat-icon>cloud_lock</mat-icon>
+                  <span>Private bucket objects</span>
+                </h2>
+                <p class="section-subtitle">
+                  Browse S3 objects under the current task and batch prefix. Use the filter to narrow down keys,
+                  select individual objects or all visible ones, and delete them when required. Only in-scope
+                  objects (under the computed prefix) can be removed.
+                </p>
+              </div>
+
               <!-- Actions -->
               <div class="actions-row gap-12 mb-12">
                 <!-- Read-only scope preview -->
@@ -324,7 +421,8 @@
                 </mat-form-field>
 
                 <button mat-flat-button color="warn"
-                  (click)="deleteSelectedStorage()"
+                  (click)="deleteSelectedStorage()
+"
                   [disabled]="!storageHasSelection() || storageState.isLoading">
                   <mat-icon>delete</mat-icon>
                   <span>Delete selected</span>
@@ -380,6 +478,19 @@
         @if (activePanel === 'health') {
           <div class="tab-pad">
             <div class="surface">
+              <!-- Section description -->
+              <div class="section-header mb-12">
+                <h2 class="section-title">
+                  <mat-icon>rule_settings</mat-icon>
+                  <span>Deployment health</span>
+                </h2>
+                <p class="section-subtitle">
+                  Compare ACL rows for the current public IP against the tokens defined in <code>hits.json</code>.
+                  Run a scan to detect mismatches, then apply the recommended actions (Adopt / Release) to
+                  synchronize ACL with the current deployment state.
+                </p>
+              </div>
+
               <!-- Actions -->
               <div class="actions-row">
                 <button mat-stroked-button (click)="scanDeploymentHealth()" [disabled]="isScanning">
@@ -452,8 +563,22 @@
         <!-- ───────── Generator (lazy mount) ───────── -->
         @if (activePanel === 'generator' && mount.generator) {
           <div class="tab-pad">
-            <div [@.disabled]="true">
-              <app-generator></app-generator>
+            <div class="surface">
+              <!-- Section description -->
+              <div class="section-header mb-12">
+                <h2 class="section-title">
+                  <mat-icon>build_circle</mat-icon>
+                  <span>Task generator</span>
+                </h2>
+                <p class="section-subtitle">
+                  Configure and publish new Crowd_Frame tasks or batches. Use this view to adjust templates,
+                  parameters, and publishing options. Heavy initialization is delayed until this tab is opened.
+                </p>
+              </div>
+
+              <div [@.disabled]="true">
+                <app-generator></app-generator>
+              </div>
             </div>
           </div>
         }
