@@ -202,35 +202,37 @@ You can cap spending via the `budget_limit` environment variable. Usage is halte
 
 The following table lists the variables you can set in `your_repo_folder/data/.env`.
 
-|          Variable          | Description                                                                              | Mandatory | Value                                 |
-|:--------------------------:|:-----------------------------------------------------------------------------------------|:---------:|:--------------------------------------|
-|       `profile_name`       | IAM profile name created in Step 2. Defaults to `default` if unspecified.               |     ❌     | `your_iam_user`                       |
-|       `mail_contact`       | Contact email for AWS budget notifications.                                              |     ✅     | Valid email address                   |
-|         `platform`         | Deployment platform. Use `none` for manual recruitment.                                 |     ✅     | `none`, `mturk`, `prolific`, `toloka` |
-|       `budget_limit`       | Monthly budget cap in USD (e.g., `5.0`).                                                |     ✅     | Positive float                        |
-|        `task_name`         | Task identifier.                                                                        |     ✅     | Any string                            |
-|        `batch_name`        | Batch identifier.                                                                       |     ✅     | Any string                            |
-|        `task_title`        | Custom task title.                                                                      |     ❌     | Any string                            |
-|       `batch_prefix`       | Prefix to group/filter multiple batches.                                                |     ❌     | Any string                            |
-|        `admin_user`        | Admin username.                                                                         |     ✅     | Any string                            |
-|      `admin_password`      | Admin password.                                                                         |     ✅     | Any string                            |
-|        `aws_region`        | AWS region (e.g., `us-east-1`).                                                         |     ✅     | Valid region                          |
-|    `aws_private_bucket`    | Private S3 bucket for configuration and data.                                           |     ✅     | Unique string                         |
-|    `aws_deploy_bucket`     | Public S3 bucket used to deploy the task.                                               |     ✅     | Unique string                         |
-|    `aws_dataset_bucket`    | Optional S3 bucket for additional datasets.                                             |     ❌     | Unique string                         |
-|      `server_config`       | Worker logging backend: `aws` (managed), `custom` (your endpoint), or `none` (disabled).|     ✅     | `aws`, `custom`, `none`               |
-|      `enable_solver`       | Enable the local HIT solver (automatic allocation). Requires Docker.                    |     ❌     | `true` or `false`                     |
-|     `enable_crawling`      | Enable crawling of search results retrieved in-task.                                    |     ❌     | `true` or `false`                     |
-| `prolific_completion_code` | Prolific study completion code (required if `platform=prolific`).                       |     ❌     | String                                |
-|    `toloka_oauth_token`    | Toloka API token (required if `platform=toloka` and you use API operations).            |     ❌     | String                                |
-|      `ip_info_token`       | Token for `ipinfo.com`.                                                                 |     ❌     | String                                |
-|  `ip_geolocation_api_key`  | API key for `ipgeolocation.io`.                                                         |     ❌     | String                                |
-|      `ipapi_api_key`       | API key for `ipapi.com`.                                                                |     ❌     | String                                |
-|     `user_stack_token`     | API key for `userstack.com` (user-agent parsing).                                       |     ❌     | String                                |
-|      `brave_api_key`       | API key for Brave Search Web API.                                                       |     ❌     | String                                |
-|     `google_api_key`       | API key for Google Custom Search JSON API.                                              |     ❌     | String                                |
-|        `google_cx`         | Google Programmable Search Engine ID (Custom Search Engine `cx`).                       |     ❌     | String                                |
-|    `pubmed_api_key`        | API key for NCBI PubMed eUtils (used to increase rate limits; optional but recommended).|     ❌     | String                                |
+|          Variable           | Description                                                                              | Mandatory | Value                                 |
+|:---------------------------:|:-----------------------------------------------------------------------------------------|:---------:|:--------------------------------------|
+|        `profile_name`       | IAM profile name created in Step 2. Defaults to `default` if unspecified.               |     ❌     | `your_iam_user`                       |
+|        `mail_contact`       | Contact email for AWS budget notifications.                                              |     ✅     | Valid email address                   |
+|          `platform`         | Deployment platform. Use `none` for manual recruitment.                                 |     ✅     | `none`, `mturk`, `prolific`, `toloka` |
+|        `budget_limit`       | Monthly budget cap in USD (e.g., `5.0`).                                                |     ✅     | Positive float                        |
+|         `task_name`         | Task identifier.                                                                         |     ✅     | Any string                            |
+|         `batch_name`        | Batch identifier.                                                                        |     ✅     | Any string                            |
+|         `task_title`        | Custom task title.                                                                       |     ❌     | Any string                            |
+|        `batch_prefix`       | Prefix to group/filter multiple batches.                                                 |     ❌     | Any string                            |
+|         `admin_user`        | Admin username.                                                                          |     ✅     | Any string                            |
+|       `admin_password`      | Admin password.                                                                          |     ✅     | Any string                            |
+|         `aws_region`        | AWS region (e.g., `us-east-1`).                                                          |     ✅     | Valid region                          |
+|     `aws_private_bucket`    | Private S3 bucket for configuration and data.                                            |     ✅     | Unique string                         |
+|     `aws_deploy_bucket`     | Public S3 bucket used to deploy the task.                                                |     ✅     | Unique string                         |
+|     `aws_dataset_bucket`    | Optional S3 bucket for additional datasets.                                              |     ❌     | Unique string                         |
+|       `server_config`       | Worker logging backend: `aws` (managed), `custom` (your endpoint), or `none` (disabled). |     ✅     | `aws`, `custom`, `none`               |
+|       `enable_solver`       | Enable the local HIT solver (automatic allocation). Requires Docker.                     |     ❌     | `true` or `false`                     |
+|      `enable_crawling`      | Enable crawling of search results retrieved in-task.                                     |     ❌     | `true` or `false`                     |
+|    `prolific_api_token`     | Prolific API token used to create studies via the Researcher API (`platform=prolific`).  |     ❌     | String                                |
+|    `prolific_project_id`    | Prolific project ID for new studies. If unset, the user’s `current_project_id` is used.  |     ❌     | String                                |
+|  `prolific_completion_code` | Custom Prolific completion code. If unset, a deterministic code based on task/batch is used. |  ❌   | String                                |
+|     `toloka_oauth_token`    | Toloka API token (required if `platform=toloka` and you use API operations).             |     ❌     | String                                |
+|       `ip_info_token`       | Token for `ipinfo.com`.                                                                  |     ❌     | String                                |
+|   `ip_geolocation_api_key`  | API key for `ipgeolocation.io`.                                                          |     ❌     | String                                |
+|       `ipapi_api_key`       | API key for `ipapi.com`.                                                                 |     ❌     | String                                |
+|      `user_stack_token`     | API key for `userstack.com` (user-agent parsing).                                        |     ❌     | String                                |
+|       `brave_api_key`       | API key for Brave Search Web API.                                                        |     ❌     | String                                |
+|      `google_api_key`       | API key for Google Custom Search JSON API.                                               |     ❌     | String                                |
+|         `google_cx`         | Google Programmable Search Engine ID (Custom Search Engine `cx`).                        |     ❌     | String                                |
+|     `pubmed_api_key`        | API key for NCBI PubMed eUtils (used to increase rate limits; optional but recommended). |     ❌     | String                                |
 
 ### Search Provider API Keys
 
@@ -589,21 +591,42 @@ To recruit via MTurk:
 
 To recruit via Prolific:
 
-1. Set `platform = prolific` in `data/.env`.
-2. In Prolific, create the study and set its general parameters.
-3. Configure **data collection**:
-    - a) Choose **External study link**.
-    - b) Provide the task URL.  
-      `https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/?workerId={{PROLIFIC_PID}}&platform=prolific`
-    - c) Choose **URL parameters** to record Prolific IDs.
-    - d) Ensure the parameter name is `workerId` (rename `PROLIFIC_PID` → `workerId` if needed).
-4. Set completion handling:
-    - a) Choose to **redirect** participants on completion.
-    - b) Copy the completion code from the URL (the `cc` parameter).
-    - c) Set `prolific_completion_code` in `data/.env` to that code so submissions can be validated.
-5. Configure audience **criteria** and places.
-6. Set the overall study cost.
-7. Monitor submission statuses from the study page.
+1. **Enable Prolific in Crowd_Frame**
+
+   In `data/.env`:
+
+   - `platform = prolific`
+   - (optional) `prolific_api_token` – Prolific Researcher API token. If set, the init script can auto-create a draft study.
+   - (optional) `prolific_project_id` – Prolific project where the study is created. If unset, the user’s `current_project_id` is used.
+   - (optional) `prolific_completion_code` – Explicit completion code. If unset, Crowd_Frame uses a deterministic `<TASK_NAME>_<BATCH_NAME>_OK`.
+
+2. **If `prolific_api_token` is set (API mode)**
+
+   - On first deploy, the init script:
+     - Looks for a study with `internal_name = "<task_name>_<batch_name>"`.
+     - If it exists → logs it and **does not modify** it.
+     - If it does **not** exist → creates a **draft** study in the chosen project with:
+       - External link pointing to  
+         `https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/index.html?...`
+       - URL parameters storing Prolific IDs.
+       - Description taken from the general instructions config.
+       - A `COMPLETED` completion code (from `prolific_completion_code` or the auto-generated one).
+   - Then open the draft in Prolific, configure audience and cost, and publish as usual.
+
+3. **If you do *not* use the API**
+
+   - Create the study manually in Prolific:
+     - Data collection → **External study link**:
+       ```text
+       https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/index.html?workerID={{PROLIFIC_PID}}&platform=prolific
+       ```
+     - Enable **URL parameters** so `PROLIFIC_PID` is passed as `workerID`.
+     - Configure completion redirect to:
+       ```text
+       https://app.prolific.com/submissions/complete?cc=<COMPLETION_CODE>
+       ```
+       using the same `<COMPLETION_CODE>` value as `prolific_completion_code` (or the auto-generated one printed by the init script).
+   - Set audience, places, and cost as you normally would in Prolific.
 
 ---
 

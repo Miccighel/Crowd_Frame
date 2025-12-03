@@ -19,6 +19,7 @@ import time
 import warnings
 import requests
 import filecmp
+import re
 from mako.template import Template
 from python_on_whales import DockerClient
 from datetime import datetime
@@ -106,6 +107,7 @@ aws_dataset_bucket = os.getenv('aws_dataset_bucket')
 toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 prolific_api_token = os.getenv('prolific_api_token')
+prolific_project_id = os.getenv('prolific_project_id')
 budget_limit = os.getenv('budget_limit')
 brave_api_key = os.getenv('brave_api_key')
 pubmed_api_key = os.getenv('pubmed_api_key')
@@ -145,7 +147,7 @@ if platform is None:
 if language_code is None:
     language_code = 'en-US'
 
-console.rule(f"{step_index} - Configuration policy")
+console.rule(f"{step_index} - Configuration Policy")
 step_index = step_index + 1
 
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
@@ -220,7 +222,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -234,7 +236,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     iam_client.attach_user_policy(UserName=config_user_name, PolicyArn=policy['Arn'])
     serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
-    console.rule(f"{step_index} - Amazon Mechanical Turk policy")
+    console.rule(f"{step_index} - Amazon Mechanical Turk Policy")
     step_index = step_index + 1
 
     status.start()
@@ -277,7 +279,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"{step_index} - [yellow]{mturk_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{mturk_user_name}[/yellow] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -380,7 +382,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             console.print('[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert the credentials of a valid IAM user with admin access')
 
-    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] authentication")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] Authentication")
     step_index = step_index + 1
 
     status.start()
@@ -408,7 +410,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     lambda_client = boto_session.client('lambda', region_name=aws_region)
     budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
 
-    console.rule(f"{step_index} - [yellow]{root_user.user_name}[/yellow] policies check")
+    console.rule(f"{step_index} - [yellow]{root_user.user_name}[/yellow] Policies Check")
     step_index = step_index + 1
 
     status.start()
@@ -508,7 +510,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         handle_aws_error(error.response)
         stop_sequence()
 
-    console.rule(f"{step_index} - Crowd workers interaction policy")
+    console.rule(f"{step_index} - Crowd Workers Interaction Policy")
     step_index = step_index + 1
 
     status.start()
@@ -566,7 +568,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Policy ARN: [cyan underline]{policy['Policy']['Arn']}[/cyan underline]")
 
-    console.rule(f"{step_index} - [cyan underline]crowd-worker[/cyan underline] user creation")
+    console.rule(f"{step_index} - [cyan underline]crowd-worker[/cyan underline] User Creation")
     step_index = step_index + 1
 
     status.start()
@@ -614,7 +616,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     aws_worker_access_id = key_data['AccessKey']['AccessKeyId']
     aws_worker_access_secret = key_data['AccessKey']['SecretAccessKey']
 
-    console.rule(f"{step_index} - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Private Bucket [cyan underline]{aws_private_bucket}[/cyan underline] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -704,7 +706,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_cors.json", cors_configuration)
 
-    console.rule(f"{step_index} - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Deploy Bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -808,7 +810,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if aws_dataset_bucket is not None:
 
-        console.rule(f"{step_index} - Dataset bucket [cyan underline]{aws_dataset_bucket}[/cyan underline] creation")
+        console.rule(f"{step_index} - Dataset Bucket [cyan underline]{aws_dataset_bucket}[/cyan underline] Creation")
         step_index = step_index + 1
 
         status.start()
@@ -841,7 +843,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         )
         serialize_json(folder_aws_generated_path, f"bucket_{aws_dataset_bucket}_public_access_configuration.json", response)
 
-    console.rule(f"{step_index} - Configuring Cloudfront distribution for deploy bucket")
+    console.rule(f"{step_index} - Configuring Cloudfront Distribution For {aws_deploy_bucket}")
     step_index = step_index + 1
 
     cloudfront_client = boto3.Session(profile_name=profile_name).client('cloudfront')
@@ -924,7 +926,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if aws_dataset_bucket is not None:
 
-        console.rule(f"{step_index} - Configuring Cloudfront distribution for {aws_dataset_bucket}")
+        console.rule(f"{step_index} - Configuring Cloudfront Distribution For {aws_dataset_bucket}")
         step_index = step_index + 1
 
         cloudfront_client = boto3.Session(profile_name=profile_name).client('cloudfront')
@@ -1042,7 +1044,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Domain name: [cyan]{cloudfront_endpoint}")
     console.print(f"Comment: [cyan]{distribution['Comment']}")
 
-    console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] Setup")
     step_index = step_index + 1
 
     try:
@@ -1085,7 +1087,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.stop()
         console.print(f"Table [cyan underline]{table_data_name}[/cyan underline] already created")
 
-    console.rule(f"{step_index} - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_acl_name}[/cyan underline] Setup")
     step_index = step_index + 1
 
     try:
@@ -1160,7 +1162,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     except dynamodb_client.exceptions.ResourceInUseException:
         console.print(f"Table [cyan underline]{table_acl_name}[/cyan underline] already created")
 
-    console.rule(f"{step_index} - API Gateway {api_gateway_name} setup")
+    console.rule(f"{step_index} - API Gateway {api_gateway_name} Setup")
     step_index = step_index + 1
 
     status.start()
@@ -1373,7 +1375,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
     serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_default.json", response)
 
-    console.rule(f"{step_index} - Logging infrastructure setup")
+    console.rule(f"{step_index} - Logging Infrastructure Setup")
     step_index = step_index + 1
 
     status.start()
@@ -1429,7 +1431,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("[green]Policies correctly set up")
 
         status.start()
-        status.update(f"Table {table_logging_name} setup")
+        status.update(f"Table {table_logging_name} Setup")
 
         try:
             table_name = table_logging_name
@@ -1619,7 +1621,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.stop()
 
-    console.rule(f"{step_index} - HITs Solver setup")
+    console.rule(f"{step_index} - HITs Solver Setup")
     step_index = step_index + 1
 
     console.print(f"Environment variable [blue]enable_solver[/blue] value: [cyan]{enable_solver}")
@@ -1667,7 +1669,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("HITs solver not deployed")
         hit_solver_endpoint = None
 
-    console.rule(f"{step_index} - Budgeting setting")
+    console.rule(f"{step_index} - Budgeting Setting")
     step_index = step_index + 1
 
     status.start()
@@ -1845,7 +1847,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             print("An unexpected error occurred: ", {e})
 
-    console.rule(f"{step_index} - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]PRODUCTION[/cyan underline] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -1903,7 +1905,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"{step_index} - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]DEVELOPMENT[/cyan underline] Creation")
     step_index = step_index + 1
 
     status.start()
@@ -1979,7 +1981,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"{step_index} - Task configuration synchronization")
+    console.rule(f"{step_index} - Task Configuration Synchronization")
     step_index = step_index + 1
 
     status.start()
@@ -2136,7 +2138,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console=console,
     )
 
-    console.rule(f"{step_index} - Sample task configuration")
+    console.rule(f"{step_index} - Sample Task Configuration")
     step_index = step_index + 1
 
     status.start()
@@ -2714,73 +2716,236 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    if platform == 'prolific':
+    if platform == "prolific":
+        status.update("Prolific Workspace / Project Sanity Check")
 
+        headers = {"Authorization": f"Token {prolific_api_token}"}
+
+        # Build study description from general instructions (HTML preserved)
+        study_description = "<Edit the study description here>"
+
+        if instructions_general_config:
+            description_parts = []
+            for block in instructions_general_config:
+                caption = (block.get("caption") or "").strip()
+                text_html = (block.get("text") or "").strip()
+
+                # Keep HTML; add a heading for the caption if present
+                if caption:
+                    description_parts.append(f"<h3>{caption}</h3>")
+                if text_html:
+                    description_parts.append(text_html)
+
+            if description_parts:
+                study_description = "\n\n".join(description_parts)
+
+        # 1) Decide which project to use
+        project_id = prolific_project_id  # <- defined above from .env
+
+        if project_id:
+            console.print(
+                "[bold]Prolific project[/bold]: using id from "
+                "env var [cyan]prolific_project_id[/cyan] "
+                f"→ [blue]{project_id}[/blue]"
+            )
+        else:
+            # Fallback: ask Prolific which project is "current" for this user
+            try:
+                user_resp = requests.get(
+                    "https://api.prolific.com/api/v1/users/me/",
+                    headers=headers,
+                )
+                if user_resp.ok:
+                    user_data = user_resp.json()
+                    current_project_id = user_data.get("current_project_id")
+                    if current_project_id:
+                        project_id = current_project_id
+                        console.print(
+                            "[bold]Prolific project[/bold]: using "
+                            f"[green]current_project_id[/green] from /users/me "
+                            f"→ [blue]{project_id}[/blue]"
+                        )
+                    else:
+                        console.print(
+                            "[red]/users/me does not expose current_project_id. "
+                            "Set prolific_project_id in your .env.[/red]"
+                        )
+                        raise SystemExit(1)
+                else:
+                    console.print(
+                        f"[red]Failed to call /users/me: {user_resp.status_code}[/red]"
+                    )
+                    console.print(user_resp.text)
+                    raise SystemExit(1)
+            except Exception as e:
+                console.print(
+                    f"[red]Error while probing Prolific current project:[/red] {e}"
+                )
+                console.print(
+                    "[red]Set prolific_project_id in your .env to fix this.[/red]"
+                )
+                raise SystemExit(1)
+
+        # Optional: log project info
+        try:
+            project_resp = requests.get(
+                f"https://api.prolific.com/api/v1/projects/{project_id}/",
+                headers=headers,
+            )
+            if project_resp.ok:
+                project = project_resp.json()
+                project_name = project.get("title") or project.get("name", "<unknown>")
+                console.print(
+                    "[bold]Confirmed Prolific project[/bold]: "
+                    f"[green]{project_name}[/green] "
+                    f"(id: [blue]{project_id}[/blue])"
+                )
+            else:
+                console.print(
+                    f"[yellow]Warning: could not retrieve project {project_id}: "
+                    f"{project_resp.status_code}[/yellow]"
+                )
+        except Exception as e:
+            console.print(
+                f"[yellow]Warning: error fetching project {project_id}: {e}[/yellow]"
+            )
+
+        # 2) Prolific study find-or-create
         console.rule(f"{step_index} - Prolific Study Creation")
         step_index = step_index + 1
 
         status.start()
-        status.update(f"Checking study existance")
+        status.update("Checking Prolific study existence")
 
-        study_list = requests.get(
+        study_list_resp = requests.get(
             "https://api.prolific.com/api/v1/studies/",
-            headers={'Authorization': f"Token {prolific_api_token}"}
-        ).json()['results']
+            headers=headers,
+        )
+
+        if not study_list_resp.ok:
+            console.print(
+                f"[red]Failed to list studies: {study_list_resp.status_code}[/red]"
+            )
+            console.print(study_list_resp.text)
+            raise SystemExit(1)
+
+        study_list = study_list_resp.json().get("results", [])
 
         study_current = None
         for study_data in study_list:
-            if study_data['internal_name'] == f"{task_name}_{batch_name}":
+            if study_data.get("internal_name") == f"{task_name}_{batch_name}":
                 study_current = study_data
                 console.print(
-                    f"Prolific study detected. ID: [blue]{study_current['id']}[/blue], Name (Internal): [green]{study_current['internal_name']}[/green]"
+                    "Prolific study detected. "
+                    f"ID: [blue]{study_current['id']}[/blue], "
+                    f"Name (Internal): [green]{study_current['internal_name']}[/green]"
                 )
-                # PATCH update: add fields to update as needed
-                update_data = {
-                    "name": task_title if task_title else task_name,
-                    "description": "Updated description here.",
-                    # add more fields to update if needed
-                }
-                response = requests.patch(
-                    f"https://api.prolific.com/api/v1/studies/{study_current['id']}/",
-                    json=update_data,
-                    headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'}
+                console.print(
+                    "[yellow]Existing Prolific study found; "
+                    "no update performed by init script.[/yellow]"
                 )
-                if response.status_code == 200:
-                    console.print(f"[green]Study updated successfully[/green]")
-                    console.print(response.json())
-                else:
-                    console.print(f"[red]Failed to update study: {response.status_code}[/red]")
-                    console.print(response.text)
                 break
 
         if study_current is None:
+            status.update("Creating Prolific study")
+
+            base_external_url = (
+                f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/"
+                f"{task_name}/{batch_name}/index.html"
+            )
+
+            external_study_url = (
+                base_external_url
+                + "?workerID={{%PROLIFIC_PID%}}"
+                + "&studyID={{%STUDY_ID%}}"
+                + "&sessionID={{%SESSION_ID%}}"
+                + "&platform=prolific"
+            )
+
+            prolific_completion_code_env = os.getenv("prolific_completion_code")
+            if prolific_completion_code_env:
+                completion_code = prolific_completion_code_env
+            else:
+                completion_code = (
+                    f"{task_name}_{batch_name}_OK"
+                    .replace("-", "")
+                    .replace(" ", "")
+                    .upper()
+                )
+
             study_data = {
                 "name": task_title if task_title else task_name,
                 "internal_name": f"{task_name}_{batch_name}",
-                "description": "<Edit the study description here>",
-                "external_study_url": f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}&sessionID={{%SESSION_ID}}&platform=prolific",
+                "description": study_description,
+                "external_study_url": external_study_url,
                 "prolific_id_option": "url_parameters",
                 "completion_option": "url",
+                "completion_codes": [
+                    {
+                        "code": completion_code,
+                        "code_type": "COMPLETED",
+                        "actions": [
+                            {"action": "AUTOMATICALLY_APPROVE"},
+                        ],
+                    }
+                ],
                 "total_available_places": len(hits),
                 "estimated_completion_time": 30,
                 "reward": 5,
-                "device_compatibility": [
-                    "desktop"
-                ],
+                "device_compatibility": ["desktop"],
                 "peripheral_requirements": [],
-                "eligibility_requirements": []
+                "eligibility_requirements": [],
             }
+
             response = requests.post(
-                f"https://api.prolific.com/api/v1/projects/62e3a5aec0202351838e8e0a/studies/",
+                f"https://api.prolific.com/api/v1/projects/{project_id}/studies/",
                 json=study_data,
-                headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'}
+                headers={
+                    "Authorization": f"Token {prolific_api_token}",
+                    "Content-Type": "application/json",
+                },
             )
+
             if response.status_code == 201:
-                console.print(f"[green]Study created successfully[/green]")
-                console.print(response.json())
+                study = response.json()
+                study_id = study.get("id")
+                study_name = study.get("name") or study.get("internal_name", "<unknown>")
+                study_status = study.get("status", "<unknown>")
+
+                console.print("[green]Study created successfully[/green]")
+                console.print(
+                    f"  ID: [blue]{study_id}[/blue]\n"
+                    f"  Name: [green]{study_name}[/green]\n"
+                    f"  Status: [cyan]{study_status}[/cyan]\n"
+                    f"  Completion Code: [magenta]{completion_code}[/magenta]"
+                )
+
+                if study_id:
+                    console.print(
+                        "  Open in Prolific: "
+                        f"https://app.prolific.com/researcher/studies/{study_id}"
+                    )
+
             else:
-                console.print(f"[red]Failed to create study: {response.status_code}[/red]")
-                console.print(response.text)
+                console.print(
+                    f"[red]Failed to create study: {response.status_code}[/red]"
+                )
+
+                try:
+                    error_json = response.json()
+                    error_root = error_json.get("error") or error_json
+                    error_title = error_root.get("title", "<no title>")
+                    error_detail = error_root.get("detail")
+
+                    console.print(f"[red]  Error: {error_title}[/red]")
+
+                    if error_detail:
+                        console.print(f"[yellow]  Detail: {error_detail}[/yellow]")
+                    else:
+                        console.print(f"[yellow]{error_json}[/yellow]")
+
+                except ValueError:
+                    console.print(response.text)
 
     if platform == 'toloka':
         console.rule(f"{step_index} - Toloka HTML Interface")
@@ -3268,7 +3433,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     if 'results_retrieved' in search_engine_config:
 
         if len(search_engine_config['results_retrieved']) > 0:
-            console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
+            console.rule(f"{step_index} - Invalidating Contents on Cloudfront distribution")
             step_index = step_index + 1
 
             # Specify the path to invalidate
