@@ -65,7 +65,7 @@ task.settings.countdown_behavior === 'hide_attributes') {
                                 <strong>{{ attribute.name_pretty }}: </strong>
                             }
                             @if (!attribute.name_pretty) {
-                                <strong>{{ attribute.name.split('_').join(' ') | titlecase }}:</strong>
+                                <strong>{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
                             }
                             <!-- image attributes -->
                             @if (attribute.isImage(task.documents[documentIndex][attribute.name])) {
