@@ -1379,6 +1379,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.start()
     console.print(f"Modality chosen: [cyan on white]{server_config}")
 
+    endpoint = ""  # default logging endpoint for the frontend
+
     if server_config == "aws":
 
         status.update(f"Setting up policies")
@@ -1602,6 +1604,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             log_route,
         )
 
+        # Derive the API Gateway /log endpoint for the frontend
+        endpoint = f"{api_stage_endpoint}/log"
+
     elif server_config == "custom":
         console.print("Please insert your custom logging endpoint: ")
         endpoint = console.input()
@@ -1609,7 +1614,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Logging infrastructure not deployed")
         endpoint = ""
     else:
-        raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+        raise Exception(
+            "Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
     status.stop()
 
@@ -1874,7 +1880,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
         "api_gateway_endpoint": f"{api_stage_endpoint}",
-        "hit_solver_endpoint": f"{hit_solver_endpoint}"
+        "hit_solver_endpoint": f"{hit_solver_endpoint}",
+        "log_endpoint": f"{endpoint}",
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1928,7 +1935,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
         "api_gateway_endpoint": f"{api_stage_endpoint}",
-        "hit_solver_endpoint": f"{hit_solver_endpoint}"
+        "hit_solver_endpoint": f"{hit_solver_endpoint}",
+        "log_endpoint": f"{endpoint}",
     }
 
     with open(environment_development, 'w') as file:

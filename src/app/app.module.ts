@@ -79,7 +79,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
             tap((data) => {
                 actionLogger.opt = data['logger_option'];
                 actionLogger.isActive = data['logger'];
-                actionLogger.endpoint = data['server_endpoint'];
+                actionLogger.endpoint = data['server_endpoint'] || '';  // may be ""
             })
         );
 }
