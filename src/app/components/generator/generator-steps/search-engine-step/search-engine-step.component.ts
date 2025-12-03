@@ -14,7 +14,7 @@ import { SearchEngineSettings } from "../../../../models/searchEngine/searchEngi
 import { S3Service } from "../../../../services/aws/s3.service";
 
 interface SourceType {
-    value: string;
+    value: string | null;
     viewValue: string;
 }
 
@@ -37,11 +37,19 @@ export class SearchEngineStepComponent implements OnInit {
 
     formStep: UntypedFormGroup;
 
+    /*
+     * Available search engine sources:
+     *  - BraveWebSearch        → Brave (general web search)
+     *  - GoogleWebSearch       → Google Programmable Search
+     *  - FakerWebSearch        → Synthetic/fake results (debug / sandbox)
+     *  - PubmedSearch          → PubMed (biomedical literature)
+     */
     sourceTypes: SourceType[] = [
-        { value: null, viewValue: "None" },
-        { value: "BingWebSearch", viewValue: "BingWeb" },
-        { value: "FakerWebSearch", viewValue: "FakerWeb" },
-        { value: "PubmedSearch", viewValue: "Pubmed" },
+        { value: null,              viewValue: "No search engine (disable)" },
+        { value: "BraveWebSearch",  viewValue: "Brave (general web search)" },
+        { value: "GoogleWebSearch", viewValue: "Google (Programmable Search)" },
+        { value: "FakerWebSearch",  viewValue: "Faker (synthetic debug search)" },
+        { value: "PubmedSearch",    viewValue: "PubMed (biomedical articles)" },
     ];
 
     @Output() formEmitter: EventEmitter<UntypedFormGroup>;
@@ -70,38 +78,51 @@ export class SearchEngineStepComponent implements OnInit {
     }
 
     public async ngOnInit() {
-        let serializedSearchEngineSettings = this.localStorageService.getItem(
+        const serializedSearchEngineSettings = this.localStorageService.getItem(
             "search-engine-settings"
         );
+
         if (serializedSearchEngineSettings) {
             this.dataStored = new SearchEngineSettings(
                 JSON.parse(serializedSearchEngineSettings)
             );
         } else {
             this.initalizeControls();
-            let rawSearchEngineSettings =
+            const rawSearchEngineSettings =
                 await this.S3Service.downloadSearchEngineSettings(
                     this.configService.environment
                 );
             this.dataStored = new SearchEngineSettings(rawSearchEngineSettings);
             this.localStorageService.setItem(
-                `search-engine-settings`,
+                "search-engine-settings",
                 JSON.stringify(rawSearchEngineSettings)
             );
         }
+
+        /*
+         * Backwards compatibility:
+         * If an older configuration still has BingWebSearch set,
+         * map it to FakerWebSearch by default (closest behaviour).
+         */
+        if (this.dataStored?.source === "BingWebSearch") {
+            this.dataStored.source = "FakerWebSearch";
+        }
+
         this.formStep = this._formBuilder.group({
             source: [this.dataStored ? this.dataStored.source : ""],
             domains_filter: this._formBuilder.array([]),
         });
-        if (this.dataStored)
-            if (this.dataStored.domains_filter)
-                if (this.dataStored.domains_filter.length > 0)
-                    this.dataStored.domains_filter.forEach(
-                        (domain, _domainIndex) => this.addDomain(domain)
-                    );
-        this.formStep.valueChanges.subscribe((_form) => {
+
+        if (this.dataStored?.domains_filter?.length) {
+            this.dataStored.domains_filter.forEach((domain) =>
+                this.addDomain(domain)
+            );
+        }
+
+        this.formStep.valueChanges.subscribe(() => {
             this.serializeConfiguration();
         });
+
         this.serializeConfiguration();
         this.formEmitter.emit(this.formStep);
     }
@@ -110,7 +131,7 @@ export class SearchEngineStepComponent implements OnInit {
         return this.formStep?.get("domains_filter") as UntypedFormArray;
     }
 
-    addDomain(domain = null) {
+    addDomain(domain: string | null = null) {
         this.domains().push(
             this._formBuilder.group({
                 url: [domain ? domain : "", Validators.required],
@@ -125,18 +146,22 @@ export class SearchEngineStepComponent implements OnInit {
     /* JSON OUTPUT */
 
     serializeConfiguration() {
-        let searchEngineJSON = JSON.parse(JSON.stringify(this.formStep.value));
+        const searchEngineJSON = JSON.parse(JSON.stringify(this.formStep.value));
+
         if (searchEngineJSON.source) {
-            let domainsStringArray = [];
-            for (let domain of searchEngineJSON.domains_filter)
+            const domainsStringArray: string[] = [];
+            for (const domain of searchEngineJSON.domains_filter) {
                 domainsStringArray.push(domain.url);
+            }
             searchEngineJSON.domains_filter = domainsStringArray;
         } else {
+            // No source selected: normalize to false + empty domains
             searchEngineJSON.source = false;
             searchEngineJSON.domains_filter = [];
         }
+
         this.localStorageService.setItem(
-            `search-engine-settings`,
+            "search-engine-settings",
             JSON.stringify(searchEngineJSON)
         );
         this.configurationSerialized = JSON.stringify(searchEngineJSON);

@@ -107,8 +107,10 @@ toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 prolific_api_token = os.getenv('prolific_api_token')
 budget_limit = os.getenv('budget_limit')
-bing_api_key = os.getenv('bing_api_key')
+brave_api_key = os.getenv('brave_api_key')
 pubmed_api_key = os.getenv('pubmed_api_key')
+google_api_key = os.getenv('google_api_key')
+google_cx = os.getenv('google_cx')
 ip_info_token = os.getenv('ip_info_token')
 ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ip_api_api_key')
@@ -1184,9 +1186,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 'ExposeHeaders': [
                     'x-msedge-clientid',
                     'x-msedge-clientip',
-                    'x-search-location',
-                    'bingapis-market',
-                    'bingapis-traceid'
+                    'x-search-location'
                 ],
                 'MaxAge': 300
             },
@@ -1221,26 +1221,67 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         MaxResults='5',
     )['Items']
 
-    status.update(f"Creating HTTP proxy integration")
-    integration_uri = 'https://api.bing.microsoft.com/v7.0/search'
-    api_integration = None
+    status.update("Creating Brave HTTP proxy integration")
+    brave_integration_uri = "https://api.search.brave.com/res/v1/web/search"
+    brave_api_integration = None
+
     for api_integration_current in api_integrations:
-        if api_integration_current['IntegrationType'] == 'HTTP_PROXY':
-            if api_integration_current['IntegrationUri'] == integration_uri:
-                api_integration = api_integration_current
-                console.print(f"[yellow]HTTP proxy integration already created")
-    if not api_integration:
-        api_integration = api_gateway_client.create_integration(
-            ApiId=api_gateway['ApiId'],
-            IntegrationType='HTTP_PROXY',
-            IntegrationMethod='GET',
-            PayloadFormatVersion='1.0',
-            IntegrationUri='https://api.bing.microsoft.com/v7.0/search'
+        if (
+            api_integration_current["IntegrationType"] == "HTTP_PROXY"
+            and api_integration_current["IntegrationUri"] == brave_integration_uri
+        ):
+            brave_api_integration = api_integration_current
+            console.print("[yellow]Brave HTTP proxy integration already created")
+            break
+
+    if not brave_api_integration:
+        brave_api_integration = api_gateway_client.create_integration(
+            ApiId=api_gateway["ApiId"],
+            IntegrationType="HTTP_PROXY",
+            IntegrationMethod="GET",
+            PayloadFormatVersion="1.0",
+            IntegrationUri=brave_integration_uri,
         )
-        console.print(f"[green]HTTP proxy integration created")
-    console.print(f"Identifier: [cyan underline]{api_integration['IntegrationId']}")
-    console.print(f"URI: [cyan underline]{api_integration['IntegrationUri']}")
-    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_integration_{api_integration['IntegrationId']}.json", api_integration)
+        console.print("[green]Brave HTTP proxy integration created")
+
+    console.print(f"Identifier: [cyan underline]{brave_api_integration['IntegrationId']}")
+    console.print(f"URI: [cyan underline]{brave_api_integration['IntegrationUri']}")
+    serialize_json(
+        folder_aws_generated_path,
+        f"api_gateway_{api_gateway_name}_integration_{brave_api_integration['IntegrationId']}.json",
+        brave_api_integration,
+    )
+
+    status.update("Creating Google HTTP proxy integration")
+    google_integration_uri = "https://www.googleapis.com/customsearch/v1"
+    google_api_integration = None
+
+    for api_integration_current in api_integrations:
+        if (
+            api_integration_current["IntegrationType"] == "HTTP_PROXY"
+            and api_integration_current["IntegrationUri"] == google_integration_uri
+        ):
+            google_api_integration = api_integration_current
+            console.print("[yellow]Google HTTP proxy integration already created")
+            break
+
+    if not google_api_integration:
+        google_api_integration = api_gateway_client.create_integration(
+            ApiId=api_gateway["ApiId"],
+            IntegrationType="HTTP_PROXY",
+            IntegrationMethod="GET",
+            PayloadFormatVersion="1.0",
+            IntegrationUri=google_integration_uri,
+        )
+        console.print("[green]Google HTTP proxy integration created")
+
+    console.print(f"Identifier: [cyan underline]{google_api_integration['IntegrationId']}")
+    console.print(f"URI: [cyan underline]{google_api_integration['IntegrationUri']}")
+    serialize_json(
+        folder_aws_generated_path,
+        f"api_gateway_{api_gateway_name}_integration_{google_api_integration['IntegrationId']}.json",
+        google_api_integration,
+    )
 
     status.update(f"Fetching available API routes")
     api_routes = api_gateway_client.get_routes(
@@ -1248,24 +1289,69 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         MaxResults='5',
     )['Items']
 
-    api_route_name = 'GET /bing'
-    status.update(f"Creating {api_route_name} api route")
+    brave_route_name = "GET /brave"
+    status.update(f"Creating {brave_route_name} api route")
+
     try:
-        response = api_gateway_client.create_route(
-            ApiId=api_gateway['ApiId'],
-            RouteKey=api_route_name,
-            Target=f"integrations/{api_integration['IntegrationId']}",
+        brave_response = api_gateway_client.create_route(
+            ApiId=api_gateway["ApiId"],
+            RouteKey=brave_route_name,
+            Target=f"integrations/{brave_api_integration['IntegrationId']}",
         )
-        api_route = response
-        console.print(f"[green]API route created[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-    except api_gateway_client.exceptions.ConflictException as error:
-        for api_route in api_routes:
-            if api_route['RouteKey'] == api_route_name:
-                console.print(f"[yellow]API route [cyan]{api_route_name}[/cyan] already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-    console.print(f"Identifier: [cyan underline]{api_route['RouteId']}")
-    console.print(f"Key: [cyan underline]{api_route['RouteKey']}")
-    console.print(f"Target: [cyan underline]{api_route['Target']}")
-    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_route_{api_route['RouteId']}.json", api_route)
+        brave_api_route = brave_response
+        console.print(
+            "[green]Brave API route created[/green], "
+            f"HTTP STATUS CODE: {brave_response['ResponseMetadata']['HTTPStatusCode']}."
+        )
+    except api_gateway_client.exceptions.ConflictException:
+        for api_route_candidate in api_routes:
+            if api_route_candidate["RouteKey"] == brave_route_name:
+                brave_api_route = api_route_candidate
+                console.print(
+                    f"[yellow]Brave API route [cyan]{brave_route_name}[/cyan] already created."
+                )
+                break
+
+    console.print(f"Identifier: [cyan underline]{brave_api_route['RouteId']}")
+    console.print(f"Key: [cyan underline]{brave_api_route['RouteKey']}")
+    console.print(f"Target: [cyan underline]{brave_api_route['Target']}")
+    serialize_json(
+        folder_aws_generated_path,
+        f"api_gateway_{api_gateway_name}_route_{brave_api_route['RouteId']}.json",
+        brave_api_route,
+    )
+
+    google_route_name = "GET /google"
+    status.update(f"Creating {google_route_name} api route")
+
+    try:
+        google_response = api_gateway_client.create_route(
+            ApiId=api_gateway["ApiId"],
+            RouteKey=google_route_name,
+            Target=f"integrations/{google_api_integration['IntegrationId']}",
+        )
+        google_api_route = google_response
+        console.print(
+            "[green]Google API route created[/green], "
+            f"HTTP STATUS CODE: {google_response['ResponseMetadata']['HTTPStatusCode']}."
+        )
+    except api_gateway_client.exceptions.ConflictException:
+        for api_route_candidate in api_routes:
+            if api_route_candidate["RouteKey"] == google_route_name:
+                google_api_route = api_route_candidate
+                console.print(
+                    f"[yellow]Google API route [cyan]{google_route_name}[/cyan] already created."
+                )
+                break
+
+    console.print(f"Identifier: [cyan underline]{google_api_route['RouteId']}")
+    console.print(f"Key: [cyan underline]{google_api_route['RouteKey']}")
+    console.print(f"Target: [cyan underline]{google_api_route['Target']}")
+    serialize_json(
+        folder_aws_generated_path,
+        f"api_gateway_{api_gateway_name}_route_{google_api_route['RouteId']}.json",
+        google_api_route,
+    )
 
     status.update(f"Creating auto deployment stage")
     try:
@@ -1430,55 +1516,90 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.stop()
 
         status.start()
-        status.update(f"Fetching available integrations")
+        status.update("Fetching available integrations")
         api_integrations = api_gateway_client.get_integrations(
-            ApiId=api_gateway['ApiId'],
-            MaxResults='5',
-        )['Items']
+            ApiId=api_gateway["ApiId"],
+            MaxResults="5",
+        )["Items"]
 
-        status.update(f"Creating gateway integration between queue and lambda")
-        integration_uri = 'https://api.bing.microsoft.com/v7.0/search'
-        api_integration = None
+        # ----------------------------------------------------------------------
+        # SQS logging integration (AWS_PROXY) — used by POST /log
+        # ----------------------------------------------------------------------
+        queue_url = f"https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}"
+
+        status.update("Creating gateway integration between /log route and SQS queue")
+        sqs_integration = None
         for api_integration_current in api_integrations:
-            if api_integration_current['IntegrationType'] == 'AWS_PROXY':
-                api_integration = api_integration_current
-                console.print(f"[yellow]AWS proxy integration with SQS already created.")
-        if not api_integration:
-            response = api_gateway_client.create_integration(
-                ApiId=api_gateway['ApiId'],
-                IntegrationType='AWS_PROXY',
-                IntegrationSubtype='SQS-SendMessage',
-                PayloadFormatVersion='1.0',
-                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
-                RequestParameters={
-                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
-                    'MessageBody': '$request.body'
-                }
-            )
-            api_integration = response
-            console.print(f"[green]AWS proxy integration with SQS created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}")
-        console.print(f"Identifier: [cyan underline]{api_integration['IntegrationId']}")
-        console.print(f"Queue URL: [cyan underline]{api_integration['RequestParameters']['QueueUrl']}")
-        serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_integration_{api_integration['IntegrationId']}.json", api_integration)
+            if (
+                api_integration_current["IntegrationType"] == "AWS_PROXY"
+                and api_integration_current.get("IntegrationSubtype") == "SQS-SendMessage"
+                and api_integration_current.get("RequestParameters", {}).get("QueueUrl") == queue_url
+            ):
+                sqs_integration = api_integration_current
+                console.print("[yellow]AWS proxy integration with SQS already created.")
+                break
 
-        api_route_name = 'POST /log'
+        if not sqs_integration:
+            response = api_gateway_client.create_integration(
+                ApiId=api_gateway["ApiId"],
+                IntegrationType="AWS_PROXY",
+                IntegrationSubtype="SQS-SendMessage",
+                PayloadFormatVersion="1.0",
+                CredentialsArn=f"arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS",
+                RequestParameters={
+                    "QueueUrl": queue_url,
+                    "MessageBody": "$request.body",
+                },
+            )
+            sqs_integration = response
+            console.print(
+                "[green]AWS proxy integration with SQS created, "
+                f"HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}"
+            )
+
+        console.print(f"Identifier: [cyan underline]{sqs_integration['IntegrationId']}")
+        console.print(f"Queue URL: [cyan underline]{queue_url}")
+        serialize_json(
+            folder_aws_generated_path,
+            f"api_gateway_{api_gateway_name}_integration_{sqs_integration['IntegrationId']}.json",
+            sqs_integration,
+        )
+
+        # ----------------------------------------------------------------------
+        # Route POST /log → SQS integration
+        # ----------------------------------------------------------------------
+        api_route_name = "POST /log"
         status.update(f"Creating {api_route_name} api route")
+
+        log_route = None
         try:
             response = api_gateway_client.create_route(
-                ApiId=api_gateway['ApiId'],
+                ApiId=api_gateway["ApiId"],
                 RouteKey=api_route_name,
-                Target=f"integrations/{api_integration['IntegrationId']}",
+                Target=f"integrations/{sqs_integration['IntegrationId']}",
             )
-            api_route = response
-            console.print(f"[green]API route created[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-        except api_gateway_client.exceptions.ConflictException as error:
-            for api_route in api_routes:
-                if api_route['RouteKey'] == api_route_name:
-                    console.print(f"[yellow]API route [cyan]{api_route_name}[/cyan] already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-        console.print(f"Identifier: [cyan underline]{api_route['RouteId']}")
-        console.print(f"Key: [cyan underline]{api_route['RouteKey']}")
-        console.print(f"Target: [cyan underline]{api_route['Target']}")
-        serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_route_{api_route['RouteId']}.json", api_route)
+            log_route = response
+            console.print(
+                "[green]API route created[/green], "
+                f"HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}."
+            )
+        except api_gateway_client.exceptions.ConflictException:
+            for api_route_candidate in api_routes:
+                if api_route_candidate["RouteKey"] == api_route_name:
+                    log_route = api_route_candidate
+                    console.print(
+                        f"[yellow]API route [cyan]{api_route_name}[/cyan] already created."
+                    )
+                    break
+
+        console.print(f"Identifier: [cyan underline]{log_route['RouteId']}")
+        console.print(f"Key: [cyan underline]{log_route['RouteKey']}")
+        console.print(f"Target: [cyan underline]{log_route['Target']}")
+        serialize_json(
+            folder_aws_generated_path,
+            f"api_gateway_{api_gateway_name}_route_{log_route['RouteId']}.json",
+            log_route,
+        )
 
     elif server_config == "custom":
         console.print("Please insert your custom logging endpoint: ")
@@ -1487,8 +1608,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Logging infrastructure not deployed")
         endpoint = ""
     else:
-        raise Exception(
-            "Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+        raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
     status.stop()
 
@@ -1743,7 +1863,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
-        "bing_api_key": bing_api_key,
+        "brave_api_key": brave_api_key,
+        "google_api_key": google_api_key,
+        "google_cx": google_cx,
         "pubmed_api_key": pubmed_api_key,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
@@ -1795,8 +1917,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
-        "bing_api_key": bing_api_key,
+        "brave_api_key": brave_api_key,
         "pubmed_api_key": pubmed_api_key,
+        "google_api_key": google_api_key,
+        "google_cx": google_cx,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
@@ -1871,6 +1995,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     task_config_items_updated_local = 0
     task_config_items_updated_names = []
     task_config_items_updated_names_local = []
+
 
     def sync_task_configs_simple(
         s3,

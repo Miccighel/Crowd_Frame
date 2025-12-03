@@ -1,10 +1,19 @@
 {
-    "/bing": {
-        "target": "https://api.bing.microsoft.com/v7.0/search",
-        "secure": false,
+    "/brave": {
+        "target": "https://api.search.brave.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug",
         "pathRewrite": {
-            "^/bing": ""
-        },
-        "changeOrigin": true
+            "^/brave": "/res/v1/web/search"
+        }
+    },
+    "/google": {
+        "target": "https://www.googleapis.com",
+        "secure": true,
+        "changeOrigin": true,
+        "pathRewrite": {
+            "^/google": "/customsearch/v1"
+        }
     }
 }
