@@ -204,30 +204,60 @@ The following table lists the variables you can set in `your_repo_folder/data/.e
 
 |          Variable          | Description                                                                              | Mandatory | Value                                 |
 |:--------------------------:|:-----------------------------------------------------------------------------------------|:---------:|:--------------------------------------|
-|       `profile_name`       | IAM profile name created in Step 2. Defaults to `default` if unspecified.                |     ❌     | `your_iam_user`                       |
+|       `profile_name`       | IAM profile name created in Step 2. Defaults to `default` if unspecified.               |     ❌     | `your_iam_user`                       |
 |       `mail_contact`       | Contact email for AWS budget notifications.                                              |     ✅     | Valid email address                   |
-|         `platform`         | Deployment platform. Use `none` for manual recruitment.                                  |     ✅     | `none`, `mturk`, `prolific`, `toloka` |
-|       `budget_limit`       | Monthly budget cap in USD (e.g., `5.0`).                                                 |     ✅     | Positive float                        |
-|        `task_name`         | Task identifier.                                                                         |     ✅     | Any string                            |
-|        `batch_name`        | Batch identifier.                                                                        |     ✅     | Any string                            |
-|        `task_title`        | Custom task title.                                                                       |     ❌     | Any string                            |
-|       `batch_prefix`       | Prefix to group/filter multiple batches.                                                 |     ❌     | Any string                            |
-|        `admin_user`        | Admin username.                                                                          |     ✅     | Any string                            |
-|      `admin_password`      | Admin password.                                                                          |     ✅     | Any string                            |
-|        `aws_region`        | AWS region (e.g., `us-east-1`).                                                          |     ✅     | Valid region                          |
-|    `aws_private_bucket`    | Private S3 bucket for configuration and data.                                            |     ✅     | Unique string                         |
-|    `aws_deploy_bucket`     | Public S3 bucket used to deploy the task.                                                |     ✅     | Unique string                         |
-|    `aws_dataset_bucket`    | Optional S3 bucket for additional datasets.                                              |     ❌     | Unique string                         |
-|      `server_config`       | Worker logging backend: `aws` (managed), `custom` (your endpoint), or `none` (disabled). |     ✅     | `aws`, `custom`, `none`               |
-|      `enable_solver`       | Enable the local HIT solver (automatic allocation). Requires Docker.                     |     ❌     | `true` or `false`                     |
-|     `enable_crawling`      | Enable crawling of search results retrieved in-task.                                     |     ❌     | `true` or `false`                     |
-| `prolific_completion_code` | Prolific study completion code (required if `platform=prolific`).                        |     ❌     | String                                |
-|    `toloka_oauth_token`    | Toloka API token (required if `platform=toloka` and you use API operations).             |     ❌     | String                                |
-|      `ip_info_token`       | Token for `ipinfo.com`.                                                                  |     ❌     | String                                |
-|  `ip_geolocation_api_key`  | API key for `ipgeolocation.io`.                                                          |     ❌     | String                                |
-|      `ipapi_api_key`       | API key for `ipapi.com`.                                                                 |     ❌     | String                                |
-|     `user_stack_token`     | API key for `userstack.com` (user-agent parsing).                                        |     ❌     | String                                |
-|       `bing_api_key`       | API key for Bing Web Search.                                                             |     ❌     | String                                |
+|         `platform`         | Deployment platform. Use `none` for manual recruitment.                                 |     ✅     | `none`, `mturk`, `prolific`, `toloka` |
+|       `budget_limit`       | Monthly budget cap in USD (e.g., `5.0`).                                                |     ✅     | Positive float                        |
+|        `task_name`         | Task identifier.                                                                        |     ✅     | Any string                            |
+|        `batch_name`        | Batch identifier.                                                                       |     ✅     | Any string                            |
+|        `task_title`        | Custom task title.                                                                      |     ❌     | Any string                            |
+|       `batch_prefix`       | Prefix to group/filter multiple batches.                                                |     ❌     | Any string                            |
+|        `admin_user`        | Admin username.                                                                         |     ✅     | Any string                            |
+|      `admin_password`      | Admin password.                                                                         |     ✅     | Any string                            |
+|        `aws_region`        | AWS region (e.g., `us-east-1`).                                                         |     ✅     | Valid region                          |
+|    `aws_private_bucket`    | Private S3 bucket for configuration and data.                                           |     ✅     | Unique string                         |
+|    `aws_deploy_bucket`     | Public S3 bucket used to deploy the task.                                               |     ✅     | Unique string                         |
+|    `aws_dataset_bucket`    | Optional S3 bucket for additional datasets.                                             |     ❌     | Unique string                         |
+|      `server_config`       | Worker logging backend: `aws` (managed), `custom` (your endpoint), or `none` (disabled).|     ✅     | `aws`, `custom`, `none`               |
+|      `enable_solver`       | Enable the local HIT solver (automatic allocation). Requires Docker.                    |     ❌     | `true` or `false`                     |
+|     `enable_crawling`      | Enable crawling of search results retrieved in-task.                                    |     ❌     | `true` or `false`                     |
+| `prolific_completion_code` | Prolific study completion code (required if `platform=prolific`).                       |     ❌     | String                                |
+|    `toloka_oauth_token`    | Toloka API token (required if `platform=toloka` and you use API operations).            |     ❌     | String                                |
+|      `ip_info_token`       | Token for `ipinfo.com`.                                                                 |     ❌     | String                                |
+|  `ip_geolocation_api_key`  | API key for `ipgeolocation.io`.                                                         |     ❌     | String                                |
+|      `ipapi_api_key`       | API key for `ipapi.com`.                                                                |     ❌     | String                                |
+|     `user_stack_token`     | API key for `userstack.com` (user-agent parsing).                                       |     ❌     | String                                |
+|      `brave_api_key`       | API key for Brave Search Web API.                                                       |     ❌     | String                                |
+|     `google_api_key`       | API key for Google Custom Search JSON API.                                              |     ❌     | String                                |
+|        `google_cx`         | Google Programmable Search Engine ID (Custom Search Engine `cx`).                       |     ❌     | String                                |
+|    `pubmed_api_key`        | API key for NCBI PubMed eUtils (used to increase rate limits; optional but recommended).|     ❌     | String                                |
+
+### Search Provider API Keys
+
+Crowd_Frame can optionally use external search providers inside the task UI
+(Brave Search, Google Custom Search, PubMed).  
+All of these integrations are optional: if a key is not configured, that provider
+cannot be selected in the Generator (Step 5).
+
+#### Brave Search (`brave_api_key`)
+
+1. Create an account and log into the Brave Search API dashboard.
+2. Create an API key for the **Web** search endpoint.
+3. Set the key as `brave_api_key` in `data/.env`.
+
+#### Google Custom Search (`google_api_key`, `google_cx`)
+
+1. In the Google Cloud Console, create a project and enable the **Custom Search API**.
+2. Under **APIs & Services → Credentials**, create an API key and set it as `google_api_key`.
+3. Create a **Programmable Search Engine** (Custom Search Engine) and copy its `cx` identifier.
+4. Set this identifier as `google_cx` in `data/.env`.
+
+#### PubMed eUtils (`pubmed_api_key`)
+
+1. Log into **My NCBI** (or create an NCBI account).
+2. Generate an **API key** for NCBI E-utilities from your account settings.
+3. Set this key as `pubmed_api_key` in `data/.env`. If omitted, PubMed still works,
+   but with the default (lower) rate limits.
 
 ## Task Configuration
 

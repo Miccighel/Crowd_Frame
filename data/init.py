@@ -482,6 +482,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     }
 
     denied = []
+    endpoint = ""
     if server_config == "aws":
         actions = required_policies['server']
     else:
