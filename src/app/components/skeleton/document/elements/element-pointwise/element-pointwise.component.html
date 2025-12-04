@@ -103,10 +103,10 @@ task.settings.countdown_behavior === 'hide_attributes') {
                         task.checkCurrentTaskType(task.documents[documentIndex], attribute.show)) {
                             <p style="white-space: pre-line">
                                 @if (attribute.name_pretty) {
-                                    <strong>{{ attribute.name_pretty }}:</strong>
+                                    <strong>{{ attribute.name_pretty }}: </strong>
                                 }
                                 @if (!attribute.name_pretty) {
-                                    <strong>{{ attribute.name.split('_').join(' ') | titlecase }}:</strong>
+                                    <strong>{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
                                 }
                                 <!-- image attributes -->
                                 @if (attribute.isImage(task.documents[documentIndex][attribute.name])) {
