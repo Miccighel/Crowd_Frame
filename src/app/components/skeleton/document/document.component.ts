@@ -211,10 +211,22 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     public handleCountdown(event: any): void {
+        /* Persist last seen text for this document (if provided). */
+        if (typeof event?.text === "string") {
+            this.task.countdownLastText[this.documentIndex] = event.text;
+        }
+
         if (!this.task.countdownsExpired[this.documentIndex] && event.action === 'done') {
+            /* First time the countdown reaches zero for this document. */
             this.task.countdownsExpired[this.documentIndex] = true;
+
+            /* Timestamp (epoch seconds) when the countdown hit 0 on this document. */
             this.task.countdownExpiredTimestamp[this.documentIndex] = Date.now() / 1000;
+
+            /* Snapshot payload at expiry: 0 seconds left (text already stored above). */
             this.sendCountdownPayload(0);
+
+            /* Pointwise flows: trigger change detection so UI can react to "timer over". */
             if (this.task.settings.modality === 'pointwise') {
                 if (this.task.settings.annotator) {
                     this.annotatorOptions?.forEach(a => a.changeDetector.detectChanges());
@@ -225,24 +237,29 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         if (event.action === 'notify') {
+            /* Update progress bar with remaining time as a percentage. */
             if (this.countdownProgressBar) {
                 this.countdownProgressBar.value =
                     (event.left /
                         (this.task.documentsStartCountdownTime[this.documentIndex] * 1000)) *
                     100;
             }
+
+            /* Throttle countdown_update writes: every 3 "notify" ticks. */
             this.countdownInterval++;
             if (this.countdownInterval === 3) {
+                /* Snapshot: ms left; text already stored in Task above. */
                 this.sendCountdownPayload(event.left);
                 this.countdownInterval = 0;
             }
         }
     }
 
+
     private async sendCountdownPayload(timeLeftMs: number): Promise<void> {
         const currentEl = this.task.getElementIndex(this.worker.getPositionCurrent());
 
-        /* Collect additional answers (keep as-is, just flatten to POJO) */
+        /* Collect additional answers (keep as-is, just flatten to a POJO). */
         const additionalAnswers: Record<string, any> = {};
         for (const frm of this.documentsFormsAdditional[currentEl.elementIndex] || []) {
             Object.keys(frm.controls).forEach(ctrl => {
@@ -250,10 +267,13 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
             });
         }
 
-        /* Base answers for the current document */
+        /* Base answers for the current document at this moment in time. */
         const baseAnswers = this.documentsForm[currentEl.elementIndex].value;
 
-        /* Build countdown payload via Task (single source of truth) */
+        /* Build a "countdown_update" payload with:
+         *  - timeLeftSeconds: numeric seconds left
+         *  - countdown_time_text: taken from Task.countdownLastText
+         */
         const payload = this.task.buildCountdownUpdatePayload(
             currentEl,
             baseAnswers,
@@ -270,6 +290,7 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
         );
     }
 
+
     private openCountdownDialog(): void {
         const ref = this.dialog.open(CountdownDialogComponent, {
             disableClose: true,
@@ -278,13 +299,21 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
             minHeight: '85%',
             data: {timeAllowed: this.task.documentsStartCountdownTime[this.documentIndex]},
         });
+
         ref.afterClosed().subscribe(res => {
             if (res === 'confirmed') {
+                /* User explicitly starts the countdown for this document. */
                 this.countdown.begin();
+
+                /* Boolean flag: this document's timer has been started at least once. */
                 this.task.countdownsStarted[this.documentIndex] = true;
+
+                /* Timestamp (epoch seconds) when the user started the timer on this document. */
+                this.task.countdownStartedTimestamp[this.documentIndex] = Date.now() / 1000;
             }
         });
     }
+
 
     /* #################### FORMS & ASSESSMENTS #################### */
 
@@ -356,10 +385,6 @@ export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {
         if (idx > 0) {
             this.assessmentFormsAdditional[idx - 1].disable();
         }
-    }
-
-    public checkInitialAssessmentFormInteraction(): boolean {
-        return this.task.initialAssessmentFormInteraction[this.documentIndex].every(Boolean);
     }
 
     public checkAssessmentFormValidity(): boolean {

@@ -96,6 +96,10 @@ export class Task {
     countdownsExpired: Array<boolean>;
     /* Array of checks to see if the countdowns were started, one per document; kind of redundant but makes things easier */
     countdownsStarted: Array<boolean>;
+    /* Per-document timestamp (epoch seconds) when the user started the countdown dialog. */
+    countdownStartedTimestamp: number[] = [];
+    /* Per-document last seen human-readable countdown string (e.g. "01:23"). */
+    countdownLastText: (string | null)[] = [];
     /* Array to record when the countdown expires using a timestamp */
     countdownExpiredTimestamp: Array<number>;
     /* Array to record the excess time a worker takes to evaluate a document */
@@ -1273,16 +1277,22 @@ export class Task {
         return data;
     }
 
+
     public buildTaskDocumentPayload(
         /* Element meta returned by getElementIndex(stepIndex) */
-        elementMeta: { elementType: string; elementIndex: number; overallIndex: number; elementLabel: string },
+        elementMeta: {
+            elementType: string;
+            elementIndex: number;
+            overallIndex: number;
+            elementLabel: string;
+        },
         /* Values from the main (initial) assessment form */
         answers: Record<string, any>,
         /* Values from any additional/post-assessment forms (optional) */
         additionalAnswers: Record<string, any> = {},
         /* Remaining seconds on the document countdown, or null if not applicable */
         countdown: number | null = null,
-        /* Action that produced this payload: "Next" | "Back" | "Finish" */
+        /* Action that produced this payload: "Next" | "Back" | "Finish" | "Update" */
         action: string = "Next",
         /* Optional extras (used by Chat widget to attach telemetry) */
         opts?: {
@@ -1294,45 +1304,115 @@ export class Task {
             };
         }
     ): Record<string, any> {
-        /* Resolve overall index (safeguard if caller forgets to pass it) */
+        /* Resolve overall index (safeguard if caller forgets to pass it). */
         const overallIndex =
             typeof elementMeta.overallIndex === "number"
                 ? elementMeta.overallIndex
                 : this.questionnaireAmount + elementMeta.elementIndex;
 
+        /* Document index within this.documents[]. */
+        const documentIndex = elementMeta.elementIndex;
+
+        /* ------------------ Countdown context (per document) ------------------ */
+
+        /* Configured duration of the countdown for this document, in seconds.
+         * Example: 130 for a 130-second timer. Null if countdown is not enabled. */
+        const configuredSeconds =
+            this.documentsStartCountdownTime?.[documentIndex] ?? null;
+
+        /* Whether the worker has ever confirmed the countdown dialog on this document. */
+        const countdownStartedFlag =
+            typeof this.countdownsStarted?.[documentIndex] === "boolean"
+                ? this.countdownsStarted[documentIndex]
+                : false;
+
+        /* Timestamp (epoch seconds) when the worker confirmed the dialog
+         * and the countdown actually started on this document. */
+        const countdownStartedTs =
+            this.countdownStartedTimestamp?.[documentIndex] ?? null;
+
+        /* Whether the countdown for this document has ever reached 0. */
+        const countdownExpiredFlag =
+            typeof this.countdownsExpired?.[documentIndex] === "boolean"
+                ? this.countdownsExpired[documentIndex]
+                : false;
+
+        /* Timestamp (epoch seconds) when the countdown first hit 0 on this document. */
+        const countdownExpiredTs =
+            this.countdownExpiredTimestamp?.[documentIndex] ?? null;
+
+        /* Last seen human-readable countdown string for this document (e.g., "01:58"). */
+        const countdownTimeText =
+            this.countdownLastText?.[documentIndex] ?? null;
+
+        /* "Overtime" in seconds: how much the worker exceeded the configured limit.
+         *  - null  → countdown not configured
+         *  - 0     → finished within the time limit
+         *  - > 0   → extra seconds spent beyond the limit */
+        let overtime: number | null = null;
+        if (configuredSeconds != null) {
+            const elapsed = this.timestampsElapsed?.[overallIndex];
+            if (typeof elapsed === "number") {
+                overtime = Math.max(0, elapsed - configuredSeconds);
+            }
+        }
+
         /* ---------- Core envelope (stable fields) ---------- */
         const data: Record<string, any> = {
-            /* Info block: mirrors ACL/data sequencing and element identity */
+            /* Info block: mirrors ACL/data sequencing and element identity. */
             info: {
-                action,                                /* "Next" | "Back" | "Finish" */
-                element: "document",                   /* constant discriminator */
-                index: elementMeta.elementIndex,       /* document index within documents[] */
-                sequence: this.sequenceNumber,         /* monotonic sequence for auditing */
-                try: this.tryCurrent,                  /* attempt number */
-                access: this.elementsAccesses?.[overallIndex] ?? 0 /* #times the element has been accessed */
+                action,                                  /* "Next" | "Back" | "Finish" | "Update" */
+                element: "document",                     /* constant discriminator */
+                index: documentIndex,                    /* document index within documents[] */
+                sequence: this.sequenceNumber,           /* monotonic sequence for auditing */
+                try: this.tryCurrent,                    /* attempt number */
+                access: this.elementsAccesses?.[overallIndex] ?? 0 /* #times this element was accessed */
             },
 
-            /* Answers */
-            answers: answers ?? {},                      /* initial assessment answers */
-            additional_answers: additionalAnswers ?? {}, /* post-assessment answers (if any) */
+            /* Answers at this event. */
+            answers: answers ?? {},                         /* initial assessment answers */
+            additional_answers: additionalAnswers ?? {},    /* post-assessment answers (if any) */
 
-            /* Notes collected by annotators (if your flow uses them) */
-            notes: this.notes?.[elementMeta.elementIndex] ?? [],
+            /* Free-form notes collected by annotators (if your flow uses them). */
+            notes: this.notes?.[documentIndex] ?? [],
 
-            /* Countdown snapshot (seconds left) if the feature is enabled */
+            /* ------------------ Countdown snapshot + telemetry ------------------ */
+
+            /* Numeric seconds left at this event (or null if no countdown). */
             countdown,
 
-            /* Timestamps: start/end pairs and total elapsed for this element */
+            /* Configured duration in seconds for this document's countdown. */
+            countdown_time_start: configuredSeconds,
+
+            /* Seconds left at this event (same as "countdown"). */
+            countdown_time_value: countdown,
+
+            /* Last seen human-readable representation (e.g., "01:58") for this document. */
+            countdown_time_text: countdownTimeText,
+
+            /* When the user started the countdown on this document (epoch seconds, or null). */
+            countdown_time_started: countdownStartedTs,
+
+            /* When the countdown hit 0 on this document (epoch seconds, or null). */
+            countdown_time_expired: countdownExpiredTs,
+
+            /* Boolean flags: kept for compatibility / quick checks. */
+            countdowns_started: countdownStartedFlag,
+            countdowns_expired: countdownExpiredFlag,
+
+            /* Seconds beyond the allowed limit, or null if no countdown. */
+            overtime,
+
+            /* ------------------ Generic timing & access ------------------ */
             timestamps_start: this.timestampsStart?.[overallIndex] ?? [],
             timestamps_end: this.timestampsEnd?.[overallIndex] ?? [],
             timestamps_elapsed: this.timestampsElapsed?.[overallIndex] ?? 0,
 
-            /* Redundant numeric access count (kept for backward compatibility) */
+            /* Redundant numeric access count (kept for backward compatibility). */
             accesses: this.elementsAccesses?.[overallIndex] ?? 0
         };
 
-        const idx = elementMeta.elementIndex;
-
+        /* Attach chat/search telemetry (either from opts or from internal state). */
         if (opts?.chatExtras) {
             const x = opts.chatExtras;
             if (x.dimensions_selected) data["dimensions_selected"] = x.dimensions_selected;     /* { data, amount } */
@@ -1340,22 +1420,20 @@ export class Task {
             if (x.responses_retrieved) data["responses_retrieved"] = x.responses_retrieved;     /* { data, amount, groups? } */
             if (x.responses_selected) data["responses_selected"] = x.responses_selected;         /* { data, amount } */
         } else {
-            /* Fallback: pull from internal state by element index (your requested pattern) */
-            const dimensionsSelected = this.dimensionsSelectedValues?.[idx];
+            const dimensionsSelected = this.dimensionsSelectedValues?.[documentIndex];
             if (dimensionsSelected) data["dimensions_selected"] = dimensionsSelected;
 
-            const queries = this.searchEngineQueries?.[idx];
+            const queries = this.searchEngineQueries?.[documentIndex];
             if (queries) data["queries"] = queries;
 
-            /* Search engine responses */
-            const responsesRetrieved = this.searchEngineRetrievedResponses?.[idx];
+            const responsesRetrieved = this.searchEngineRetrievedResponses?.[documentIndex];
             if (responsesRetrieved) data["responses_retrieved"] = responsesRetrieved;
 
-            const responsesSelected = this.searchEngineSelectedResponses?.[idx];
+            const responsesSelected = this.searchEngineSelectedResponses?.[documentIndex];
             if (responsesSelected) data["responses_selected"] = responsesSelected;
         }
 
-        /* Return a plain JSON-serialisable object ready for persistence */
+        /* Return a plain JSON-serialisable object ready for persistence. */
         return data;
     }
 
@@ -1388,26 +1466,31 @@ export class Task {
     }
 
     /* ------------------------------------------------------
-     * Countdown payload builder (thin wrapper)
-     * Centralizes the “countdown_update” payload shape.
-     * Keep Task free of Angular types: pass plain objects.
+     * Countdown payload builder (thin wrapper).
+     *
+     * Builds a "countdown_update" record:
+     *  - action is always "Update"
+     *  - countdown is a snapshot of seconds left
+     *  - countdown_time_text is taken from Task.countdownLastText
+     *  - update_type = "countdown_update" so downstream parsers can distinguish it
      * ------------------------------------------------------ */
     public buildCountdownUpdatePayload(
-        elementData: any,
+        elementMeta: any,
         baseAnswers: Record<string, any>,
         additionalAnswers: Record<string, any> = {},
         timeLeftSeconds: number
-    ): any {
-        /* Delegate to the canonical builder (already sets countdown fields) */
+    ): Record<string, any> {
         const payload = this.buildTaskDocumentPayload(
-            elementData,
+            elementMeta,
             baseAnswers,
             additionalAnswers,
-            timeLeftSeconds,              /* already seconds */
-            'Update'
+            timeLeftSeconds,  /* numeric seconds left at this event */
+            "Update"
         );
-        /* Tag this as a countdown update for downstream parsers */
-        payload['update_type'] = 'countdown_update';
+
+        /* Tag this as a countdown-specific update. */
+        payload["update_type"] = "countdown_update";
+
         return payload;
     }
 

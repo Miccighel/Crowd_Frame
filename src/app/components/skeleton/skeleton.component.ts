@@ -1435,7 +1435,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let completedElementIndex = completedElementData["elementIndex"];
 
         /* Track accesses per element. */
-        this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
+        this.task.elementsAccesses[completedElementBaseIndex] =
+            this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
         /* Update timestamps and countdowns if configured. */
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
@@ -1447,7 +1448,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
                 if (completedElementType == "S")
-                    this.documentComponent?.get(completedElementIndex).annotatorOptions.first?.handleNotes();
+                    this.documentComponent
+                        ?.get(completedElementIndex)
+                        .annotatorOptions.first
+                        ?.handleNotes();
             }
         }
 
@@ -1483,7 +1487,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                         this.worker.setParameter("try_current", String(this.task.tryCurrent));
                         this.worker.setParameter("in_progress", String(true));
                         this.worker.setParameter("paid", String(false));
-                        this.worker.setParameter('position_current', String(this.computeJumpIndex()));
+                        this.worker.setParameter("position_current", String(this.computeJumpIndex()));
                     }
 
                     /* Single, typed write based on outcome and remaining tries. */
@@ -1511,7 +1515,12 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.questionnairesForm[completedElementIndex].value,
                     action
                 );
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);
+                await this.dynamoDBService.insertDataRecord(
+                    this.configService.environment,
+                    this.worker,
+                    this.task,
+                    questionnairePayload
+                );
                 this.storePositionCurrent(String(currentElement));
             }
 
@@ -1519,12 +1528,19 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 /* Document payload (with optional countdown + post forms). */
                 let countdown = null;
                 if (this.task.settings.countdownTime >= 0)
-                    countdown = Math?.round(Number(this.documentComponent?.get(completedElementIndex).countdown.i.value) / 1000);
+                    countdown = Math?.round(
+                        Number(
+                            this.documentComponent
+                                ?.get(completedElementIndex)
+                                .countdown.i.value
+                        ) / 1000
+                    );
 
                 let additionalAnswers = {};
                 for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
                     Object.keys(assessmentFormAdditional.controls)?.forEach(controlName => {
-                        additionalAnswers[controlName] = assessmentFormAdditional?.get(controlName).value;
+                        additionalAnswers[controlName] =
+                            assessmentFormAdditional?.get(controlName).value;
                     });
                 }
 
@@ -1536,14 +1552,27 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     action
                 );
 
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
+                await this.dynamoDBService.insertDataRecord(
+                    this.configService.environment,
+                    this.worker,
+                    this.task,
+                    documentPayload
+                );
                 this.storePositionCurrent(String(currentElement));
             }
 
-            if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
+            if (
+                completedElementBaseIndex == this.task.getElementsNumber() - 1 &&
+                action == "Finish"
+            ) {
                 /* Persist the overall quality checks at the very end. */
                 const qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
+                await this.dynamoDBService.insertDataRecord(
+                    this.configService.environment,
+                    this.worker,
+                    this.task,
+                    qualityChecksPayload
+                );
                 this.storePositionCurrent(String(currentElement));
             }
         }

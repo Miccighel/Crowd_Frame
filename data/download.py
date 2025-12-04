@@ -1533,7 +1533,8 @@ if 'toloka' in platforms:
                                     row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
                                     row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
                                     row['user_adult_allowed'] = user_metadata['adult_allowed']
-                                    acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka') & (df_acl_copy['generated'] is True)]
+                                    acl_rows = df_acl_copy.loc[
+                                        (df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka') & (df_acl_copy['generated'] is True)]
                                     if row['assignment_token_input_final'] is not np.nan:
                                         acl_rows = df_acl_copy.loc[df_acl_copy['token_input'] == row['assignment_token_input_final']]
                                     if len(acl_rows) > 0:
@@ -2614,21 +2615,73 @@ if not os.path.exists(df_data_path):
                         row["gold_checks"] = False
                         row["time_spent_check"] = False
                     row["accesses"] = document_data['serialization']['accesses']
-                    if document_data['serialization']['countdown'] is not None:
-                        countdowns_start = document_data['serialization']['countdowns_times_start']
-                        countdowns_left = document_data['serialization']['countdowns_times_left']
-                        countdowns_expired_time = document_data['serialization']['countdown_expired_timestamp']
-                        countdowns_expired = document_data['serialization']['countdowns_expired']
-                        countdowns_started = document_data['serialization']['countdowns_started']
-                        countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
-                            countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                        overtime = document_data['serialization']['overtime']
-                        row["countdown_time_start"] = countdowns_start if countdowns_start is not None else np.nan
-                        row["countdown_time_value"] = countdowns_left if countdowns_left is not None else np.nan
-                        row["countdown_time_expired"] = countdowns_expired_value
-                        row["countdown_time_started"] = countdowns_started if countdowns_left is not None else np.nan
-                        row['overtime'] = overtime if countdowns_left is not None else np.nan
-                        row['countdown_end'] = countdowns_expired_time if countdowns_left is not None else np.nan
+                    serialization = document_data.get("serialization", {})
+
+                    # Process rows where we have any countdown info
+                    if (
+                        serialization.get("countdown") is not None
+                        or serialization.get("countdown_time_value") is not None
+                    ):
+                        idx = serialization.get("info", {}).get("index")
+
+                        # ----- countdown_time_start (configured duration in seconds) -----
+                        # New structure: scalar field "countdown_time_start".
+                        # Old structure: "countdowns_times_start" (scalar or list).
+                        start_raw = serialization.get("countdown_time_start",
+                                                      serialization.get("countdowns_times_start"))
+                        if isinstance(start_raw, (list, tuple)) and isinstance(idx, int) and 0 <= idx < len(start_raw):
+                            countdown_time_start = start_raw[idx]
+                        else:
+                            countdown_time_start = start_raw
+
+                        # ----- countdown_time_value (seconds left at this event) -----
+                        # New structure: scalar "countdown_time_value".
+                        # Old structure: "countdowns_times_left" (scalar or list) or, as last resort, "countdown".
+                        value_raw = serialization.get(
+                            "countdown_time_value",
+                            serialization.get(
+                                "countdowns_times_left",
+                                serialization.get("countdown")
+                            )
+                        )
+                        if isinstance(value_raw, (list, tuple)) and isinstance(idx, int) and 0 <= idx < len(value_raw):
+                            countdown_time_value = value_raw[idx]
+                        else:
+                            countdown_time_value = value_raw
+
+                        # ----- countdown_time_text (human-readable, e.g. "01:58") -----
+                        # New structure: "countdown_time_text".
+                        # Old structure: "countdown_text".
+                        countdown_time_text = serialization.get(
+                            "countdown_time_text",
+                            serialization.get("countdown_text")
+                        )
+
+                        # ----- timestamps (epoch seconds; may be missing in old data) -----
+                        # When the worker confirmed the countdown dialog (timer started).
+                        countdown_started_ts = serialization.get(
+                            "countdown_time_started",
+                            serialization.get("countdown_started_timestamp")
+                        )
+
+                        # When the countdown hit zero.
+                        countdown_expired_ts = serialization.get(
+                            "countdown_time_expired",
+                            serialization.get("countdown_expired_timestamp")
+                        )
+
+                        # ----- overtime (seconds beyond the allowed duration) -----
+                        overtime = serialization.get("overtime")
+
+                        # ====== Assign to row with NaN fallbacks ======
+                        row["countdown_time_start"] = countdown_time_start if countdown_time_start is not None else np.nan
+                        row["countdown_time_value"] = countdown_time_value if countdown_time_value is not None else np.nan
+                        row["countdown_time_text"] = countdown_time_text if countdown_time_text is not None else np.nan
+
+                        row["countdown_time_started"] = countdown_started_ts if countdown_started_ts is not None else np.nan
+                        row["countdown_time_expired"] = countdown_expired_ts if countdown_expired_ts is not None else np.nan
+
+                        row["overtime"] = overtime if overtime is not None else np.nan
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
@@ -3368,6 +3421,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 row["response_visited"] = response["visited"]
 
                 if 'parameters' in response.keys():
+                    print(response)
                     for parameter, value in response['parameters'].items():
                         if f"param_{parameter}" not in df.columns:
                             if "date_last_crawled" in parameter:
