@@ -42,6 +42,7 @@ from dotenv import load_dotenv
 from pytz import timezone
 from rich.columns import Columns
 from rich.console import Console
+from urllib.parse import urlparse
 import toloka.client as toloka
 
 # Local application imports
@@ -3421,22 +3422,82 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 row["response_visited"] = response["visited"]
 
                 if 'parameters' in response.keys():
-                    print(response)
                     for parameter, value in response['parameters'].items():
-                        if f"param_{parameter}" not in df.columns:
-                            if "date_last_crawled" in parameter:
-                                df[f"param_{parameter}_parsed"] = np.nan
-                            df[f"param_{parameter}"] = np.nan
-                        row[f"param_{parameter}"] = value
+                        col_name = f"param_{parameter}"
+
+                        # Ensure base column exists
+                        if col_name not in df.columns:
+                            df[col_name] = np.nan
+
+                        # Always store raw value
+                        row[col_name] = value
+
+                        # --------- Special cases ----------
+
+                        # 1) date_last_crawled → parsed date
                         if "date_last_crawled" in parameter:
+                            parsed_col_name = f"{col_name}_parsed"
+                            if parsed_col_name not in df.columns:
+                                df[parsed_col_name] = np.nan
+
+                            parsed_date = np.nan
+
+                            # Only try to parse if non-empty string
+                            if isinstance(value, str) and value.strip():
+                                dt = None
+                                try:
+                                    # Canonical ISO with microseconds
+                                    dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+                                except ValueError:
+                                    # Old Bing-style with 7 fractional digits (…0000000Z)
+                                    try:
+                                        truncated = value[:-4] + value[-1]
+                                        dt = datetime.strptime(truncated, "%Y-%m-%dT%H:%M:%S.%fZ")
+                                    except Exception:
+                                        dt = None
+
+                                if dt is not None:
+                                    parsed_date = ' '.join(
+                                        find_date_string(str(dt)).split(' ')[:2]
+                                    )
+
+                            row[parsed_col_name] = parsed_date
+
+                        # 2) Booleans → ints (useful for modeling / counts)
+                        if parameter == "is_navigational":
+                            int_col = f"{col_name}_int"
+                            if int_col not in df.columns:
+                                df[int_col] = np.nan
+                            if isinstance(value, bool):
+                                row[int_col] = int(value)
+
+                        if parameter == "is_family_friendly":
+                            int_col = f"{col_name}_int"
+                            if int_col not in df.columns:
+                                df[int_col] = np.nan
+                            if isinstance(value, bool):
+                                row[int_col] = int(value)
+
+                        # 3) page_language → normalized language code (e.g., "en-US" → "en")
+                        if parameter == "page_language":
+                            norm_col = f"{col_name}_norm"
+                            if norm_col not in df.columns:
+                                df[norm_col] = np.nan
+                            if isinstance(value, str) and value.strip():
+                                row[norm_col] = value.split('-')[0].lower()
+
+                        # 4) identifier → domain (if it looks like a URL)
+                        if parameter == "identifier" and isinstance(value, str) and value.startswith("http"):
+                            domain_col = "param_domain"
+                            if domain_col not in df.columns:
+                                df[domain_col] = np.nan
                             try:
-                                date_parsed = ' '.join(find_date_string(datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")).split(' ')[:2])
-                                df[f"param_{parameter}_parsed"] = date_parsed
-                            except ValueError:
-                                # Result returned from Bing Web Search API
-                                truncated_date_string = value[:-4] + value[-1]  # Truncate the last three zeros
-                                date_parsed = ' '.join(find_date_string(str(datetime.strptime(truncated_date_string, "%Y-%m-%dT%H:%M:%S.%fZ"))).split(' ')[:2])
-                                df[f"param_{parameter}_parsed"] = date_parsed
+                                parsed = urlparse(value)
+                                if parsed.netloc:
+                                    row[domain_col] = parsed.netloc.lower()
+                            except Exception:
+                                # leave as NaN if parsing fails
+                                pass
 
                 row["index_selected"] = -1
                 row_check = df.loc[
