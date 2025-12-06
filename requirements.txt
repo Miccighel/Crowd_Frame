@@ -41,8 +41,6 @@ chardet==5.2.0
     # via -r requirements.in
 charset-normalizer==3.4.3
     # via requests
-colorama==0.4.6
-    # via tqdm
 datefinder==0.7.3
     # via -r requirements.in
 docker==7.1.0
@@ -126,8 +124,6 @@ pytz==2025.2
     #   -r requirements.in
     #   datefinder
     #   pandas
-pywin32==311
-    # via docker
 regex==2025.9.1
     # via datefinder
 requests==2.32.5
@@ -170,7 +166,7 @@ typing-inspection==0.4.1
     # via pydantic
 tzdata==2025.2
     # via pandas
-urllib3==2.5.0
+urllib3==2.6.0
     # via
     #   botocore
     #   docker
