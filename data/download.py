@@ -2619,25 +2619,38 @@ if not os.path.exists(df_data_path):
                     serialization = document_data.get("serialization", {})
 
                     # Process rows where we have any countdown info
+                    serialization = document_data.get("serialization", {})
+
+                    # Process rows where we have any countdown info (new or old schema)
                     if (
                         serialization.get("countdown") is not None
                         or serialization.get("countdown_time_value") is not None
+                        or serialization.get("countdowns_times_start") is not None
+                        or serialization.get("countdowns_times_left") is not None
                     ):
                         idx = serialization.get("info", {}).get("index")
 
+
+                        def resolve_per_index(raw):
+                            """
+                            Helper: if `raw` is a list/tuple and idx is a valid integer,
+                            return raw[idx], otherwise return raw as-is.
+                            """
+                            if isinstance(raw, (list, tuple)) and isinstance(idx, int) and 0 <= idx < len(raw):
+                                return raw[idx]
+                            return raw
+
+
                         # ----- countdown_time_start (configured duration in seconds) -----
-                        # New structure: scalar field "countdown_time_start".
-                        # Old structure: "countdowns_times_start" (scalar or list).
+                        # New schema: "countdown_time_start"
+                        # Old schema: "countdowns_times_start" (scalar or list)
                         start_raw = serialization.get("countdown_time_start",
                                                       serialization.get("countdowns_times_start"))
-                        if isinstance(start_raw, (list, tuple)) and isinstance(idx, int) and 0 <= idx < len(start_raw):
-                            countdown_time_start = start_raw[idx]
-                        else:
-                            countdown_time_start = start_raw
+                        countdown_time_start = resolve_per_index(start_raw)
 
                         # ----- countdown_time_value (seconds left at this event) -----
-                        # New structure: scalar "countdown_time_value".
-                        # Old structure: "countdowns_times_left" (scalar or list) or, as last resort, "countdown".
+                        # New schema: "countdown_time_value"
+                        # Old schema: "countdowns_times_left" (scalar or list) or fallback: "countdown"
                         value_raw = serialization.get(
                             "countdown_time_value",
                             serialization.get(
@@ -2645,31 +2658,39 @@ if not os.path.exists(df_data_path):
                                 serialization.get("countdown")
                             )
                         )
-                        if isinstance(value_raw, (list, tuple)) and isinstance(idx, int) and 0 <= idx < len(value_raw):
-                            countdown_time_value = value_raw[idx]
-                        else:
-                            countdown_time_value = value_raw
+                        countdown_time_value = resolve_per_index(value_raw)
 
                         # ----- countdown_time_text (human-readable, e.g. "01:58") -----
-                        # New structure: "countdown_time_text".
-                        # Old structure: "countdown_text".
+                        # New schema: "countdown_time_text"
+                        # Old schema: "countdown_text" (if it ever existed)
                         countdown_time_text = serialization.get(
                             "countdown_time_text",
                             serialization.get("countdown_text")
                         )
 
-                        # ----- timestamps (epoch seconds; may be missing in old data) -----
-                        # When the worker confirmed the countdown dialog (timer started).
-                        countdown_started_ts = serialization.get(
+                        # ----- countdown_time_started (epoch seconds when timer started) -----
+                        # New schema: "countdown_time_started" or "countdown_started_timestamp"
+                        # Old schema only had a bool "countdowns_started" → no reliable timestamp → NaN
+                        started_raw = serialization.get(
                             "countdown_time_started",
                             serialization.get("countdown_started_timestamp")
                         )
+                        countdown_time_started = resolve_per_index(started_raw)
 
-                        # When the countdown hit zero.
-                        countdown_expired_ts = serialization.get(
+                        # ----- countdown_time_expired (epoch seconds when timer hit 0) -----
+                        # New schema: "countdown_time_expired" or "countdown_expired_timestamp"
+                        # Old schema sometimes used -1 as sentinel for "never expired".
+                        expired_raw = serialization.get(
                             "countdown_time_expired",
                             serialization.get("countdown_expired_timestamp")
                         )
+                        expired_resolved = resolve_per_index(expired_raw)
+
+                        if isinstance(expired_resolved, (int, float)) and expired_resolved < 0:
+                            # Normalize negative sentinel (-1) to "no expiry"
+                            countdown_time_expired = None
+                        else:
+                            countdown_time_expired = expired_resolved
 
                         # ----- overtime (seconds beyond the allowed duration) -----
                         overtime = serialization.get("overtime")
@@ -2679,8 +2700,9 @@ if not os.path.exists(df_data_path):
                         row["countdown_time_value"] = countdown_time_value if countdown_time_value is not None else np.nan
                         row["countdown_time_text"] = countdown_time_text if countdown_time_text is not None else np.nan
 
-                        row["countdown_time_started"] = countdown_started_ts if countdown_started_ts is not None else np.nan
-                        row["countdown_time_expired"] = countdown_expired_ts if countdown_expired_ts is not None else np.nan
+                        # Old runs: these will just be NaN (no timestamps stored back then)
+                        row["countdown_time_started"] = countdown_time_started if countdown_time_started is not None else np.nan
+                        row["countdown_time_expired"] = countdown_time_expired if countdown_time_expired is not None else np.nan
 
                         row["overtime"] = overtime if overtime is not None else np.nan
 
