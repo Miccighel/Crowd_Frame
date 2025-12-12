@@ -1,13 +1,12 @@
 aiohttp
 boto3
-botocore
 chardet
 datefinder
 docker
 ipinfo
 httpx>=0.27,<0.28
 lxml
-Mako
+mako
 numpy
 pandas
 pycountry
@@ -17,7 +16,6 @@ python-on-whales
 pytz
 requests
 rich
-setuptools
 toloka-kit
 tqdm
 xlf-merge

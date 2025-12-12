@@ -67,8 +67,32 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 console = Console()
 pp = pprint.PrettyPrinter(indent=4)
 
-env_path = Path('.') / '.env'
+# ------------------------------------------------------------------
+# Resolve project roots (do not depend on the current working dir)
+# download.py path: <project-root>/data/download.py
+# ------------------------------------------------------------------
+
+step_index = 1
+console.rule(f"{step_index} - Initialization")
+step_index = step_index + 1
+
+DATA_DIR = Path(__file__).resolve().parent  # <project-root>/data
+CORE_DIR = DATA_DIR.parent                 # <project-root>
+
+# ------------------------------------------------------------------
+# Load .env (data/.env only, per project instructions)
+# ------------------------------------------------------------------
+
+env_path = DATA_DIR / ".env"
+if not env_path.exists():
+    raise FileNotFoundError(f".env not found at expected path: {env_path}")
+
 load_dotenv(dotenv_path=env_path)
+console.print(f".env loaded from: [bold]{env_path}[/bold]")
+
+# ------------------------------------------------------------------
+# Read configuration from environment
+# ------------------------------------------------------------------
 
 mail_contact = os.getenv('mail_contact')
 profile_name = os.getenv('profile_name')
@@ -93,31 +117,53 @@ ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ipapi_api_key')
 user_stack_token = os.getenv('user_stack_token')
 
-folder_result_path = f"result/{task_name}/"
-models_path = f"result/{task_name}/Dataframe/"
-resources_path = f"result/{task_name}/Resources/"
-data_path = f"result/{task_name}/Data/"
-crawling_path = f"result/{task_name}/Crawling/"
-crawling_path_source = f"result/{task_name}/Crawling/Source/"
-crawling_path_metadata = f"result/{task_name}/Crawling/Metadata/"
-df_log_partial_folder_path = f"{models_path}Logs-Partial/"
-task_config_folder = f"{folder_result_path}/Task/"
-df_mturk_data_path = f"{models_path}workers_mturk_data.csv"
-df_toloka_data_path = f"{models_path}workers_toloka_data.csv"
-df_prolific_study_data_path = f"{models_path}workers_prolific_study_data.csv"
-df_prolific_demographic_data_path = f"{models_path}workers_prolific_demographic_data.csv"
-df_acl_path = f"{models_path}workers_acl.csv"
-df_ip_path = f"{models_path}workers_ip_addresses.csv"
-df_uag_path = f"{models_path}workers_user_agents.csv"
-df_docs_path = f"{models_path}workers_documents.csv"
-df_log_path = f"{models_path}workers_logs.csv"
-df_quest_path = f"{models_path}workers_questionnaire.csv"
-df_comm_path = f"{models_path}workers_comments.csv"
-df_data_path = f"{models_path}workers_answers.csv"
-df_notes_path = f"{models_path}workers_notes.csv"
-df_dim_path = f"{models_path}workers_dimensions_selection.csv"
-df_url_path = f"{models_path}workers_urls.csv"
-df_crawl_path = f"{models_path}workers_crawling.csv"
+if not task_name:
+    raise RuntimeError("Missing required env var: task_name (check data/.env)")
+
+# ------------------------------------------------------------------
+# Paths (anchored to DATA_DIR; no os.chdir needed)
+# ------------------------------------------------------------------
+
+result_root = DATA_DIR / "result" / task_name
+models_dir = result_root / "Dataframe"
+resources_dir = result_root / "Resources"
+data_dir = result_root / "Data"
+crawling_dir = result_root / "Crawling"
+crawling_source_dir = crawling_dir / "Source"
+crawling_metadata_dir = crawling_dir / "Metadata"
+logs_partial_dir = models_dir / "Logs-Partial"
+task_config_dir = result_root / "Task"
+
+# Keep original variable names as strings to minimize downstream edits
+folder_result_path = f"{result_root}/"
+models_path = f"{models_dir}/"
+resources_path = f"{resources_dir}/"
+data_path = f"{data_dir}/"
+crawling_path = f"{crawling_dir}/"
+crawling_path_source = f"{crawling_source_dir}/"
+crawling_path_metadata = f"{crawling_metadata_dir}/"
+df_log_partial_folder_path = f"{logs_partial_dir}/"
+task_config_folder = f"{task_config_dir}/"
+
+# Output CSV paths
+df_mturk_data_path = f"{models_dir / 'workers_mturk_data.csv'}"
+df_toloka_data_path = f"{models_dir / 'workers_toloka_data.csv'}"
+df_prolific_study_data_path = f"{models_dir / 'workers_prolific_study_data.csv'}"
+df_prolific_demographic_data_path = f"{models_dir / 'workers_prolific_demographic_data.csv'}"
+df_acl_path = f"{models_dir / 'workers_acl.csv'}"
+df_ip_path = f"{models_dir / 'workers_ip_addresses.csv'}"
+df_uag_path = f"{models_dir / 'workers_user_agents.csv'}"
+df_docs_path = f"{models_dir / 'workers_documents.csv'}"
+df_log_path = f"{models_dir / 'workers_logs.csv'}"
+df_quest_path = f"{models_dir / 'workers_questionnaire.csv'}"
+df_comm_path = f"{models_dir / 'workers_comments.csv'}"
+df_data_path = f"{models_dir / 'workers_answers.csv'}"
+df_notes_path = f"{models_dir / 'workers_notes.csv'}"
+df_dim_path = f"{models_dir / 'workers_dimensions_selection.csv'}"
+df_url_path = f"{models_dir / 'workers_urls.csv'}"
+df_crawl_path = f"{models_dir / 'workers_crawling.csv'}"
+
+# Filenames
 filename_hits_config = "hits.json"
 filename_dimensions_config = "dimensions.json"
 filename_instructions_general_config = "instructions_general.json"
@@ -127,15 +173,8 @@ filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
 
-step_index = 1
-
-console.rule(f"{step_index} - Initialization")
-step_index = step_index + 1
-
-os.chdir("../data/")
-
-console.print("[bold]Download.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
+console.print(f"Results root: [bold]{result_root}[/bold]")
 
 os.makedirs(folder_result_path, exist_ok=True)
 os.makedirs(models_path, exist_ok=True)

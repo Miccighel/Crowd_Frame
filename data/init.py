@@ -49,21 +49,37 @@ iam_path = '/Crowd_Frame/'
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
-# Your working dir must be set to data/
+step_index = 1
 
+console.rule(f"{step_index} - Initialization")
+step_index = step_index + 1
 
-folder_aws_path = f"{os.getcwd()}/aws/"
-folder_aws_generated_path = f"{folder_aws_path}generated/"
-folder_build_path = f"{os.getcwd()}/build/"
-folder_build_config_path = f"{folder_build_path}config/"
-folder_build_task_path = f"{folder_build_path}task/"
-folder_build_mturk_path = f"{folder_build_path}mturk/"
-folder_build_toloka_path = f"{folder_build_path}toloka/"
-folder_build_env_path = f"{folder_build_path}environments/"
-folder_build_deploy_path = f"{folder_build_path}deploy/"
-folder_build_skeleton_path = f"{folder_build_path}skeleton/"
-folder_tasks_path = f"{os.getcwd()}/tasks/"
-folder_locales_path = f"{Path.cwd().parent}/src/locale/"
+# ------------------------------------------------------------------
+# Resolve project roots (do not depend on the current working dir)
+# init.py path: <project-root>/data/init.py
+# ------------------------------------------------------------------
+
+DATA_DIR = Path(__file__).resolve().parent  # <project-root>/data
+CORE_DIR = DATA_DIR.parent  # <project-root>
+
+# ------------------------------------------------------------------
+# Paths (anchored to DATA_DIR / CORE_DIR)
+# ------------------------------------------------------------------
+
+folder_aws_path = f"{DATA_DIR}/aws/"
+folder_aws_generated_path = f"{DATA_DIR}/aws/generated/"
+
+folder_build_path = f"{DATA_DIR}/build/"
+folder_build_config_path = f"{DATA_DIR}/build/config/"
+folder_build_task_path = f"{DATA_DIR}/build/task/"
+folder_build_mturk_path = f"{DATA_DIR}/build/mturk/"
+folder_build_toloka_path = f"{DATA_DIR}/build/toloka/"
+folder_build_env_path = f"{DATA_DIR}/build/environments/"
+folder_build_deploy_path = f"{DATA_DIR}/build/deploy/"
+folder_build_skeleton_path = f"{DATA_DIR}/build/skeleton/"
+
+folder_tasks_path = f"{DATA_DIR}/tasks/"
+folder_locales_path = f"{CORE_DIR}/src/locale/"
 
 filename_hits_config = "hits.json"
 filename_dimensions_config = "dimensions.json"
@@ -85,8 +101,16 @@ def key_cont():
     console.input('[yellow]Press enter to continue...')
 
 
-env_path = Path('.') / '.env'
+# ------------------------------------------------------------------
+# Load .env (data/.env only)
+# ------------------------------------------------------------------
+
+env_path = DATA_DIR / ".env"
+if not env_path.exists():
+    raise FileNotFoundError(f".env not found at expected path: {env_path}")
+
 load_dotenv(dotenv_path=env_path)
+console.print(f".env loaded from: [bold]{env_path}[/bold]")
 
 mail_contact = os.getenv('mail_contact')
 platform = os.getenv('platform')
@@ -127,12 +151,6 @@ if profile_name is None:
 
 iam_client = boto3.Session(profile_name=profile_name).client('iam', region_name=aws_region)
 
-step_index = 1
-
-console.rule(f"{step_index} - Initialization")
-step_index = step_index + 1
-
-console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 if batch_prefix is None:
@@ -3025,157 +3043,258 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         serialize_json(folder_build_toloka_path, 'output_specification.json', output_specification)
         console.print(f"Path: {toloka_output_spec_file}")
 
-    console.rule(f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(
+        f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build"
+    )
     step_index = step_index + 1
 
-    console.print(f"Deployment language code: [cyan underline]{language_code}")
-    folder_build_result = f"{Path(os.getcwd()).parent.absolute()}/dist/Crowd_Frame/{language_code}/"
-    console.print(f"Build output folder: [cyan underline]{folder_build_result}")
+    console.print(f"Deployment language code: [cyan underline]{language_code}[/cyan underline]")
 
-    if language_code != 'en-US':
+    # dist folder must be computed from the Angular workspace root (CORE_DIR), not from cwd
+    folder_build_result_path = CORE_DIR / "dist" / "Crowd_Frame" / language_code
+    console.print(f"Build output folder: [cyan underline]{folder_build_result_path}[/cyan underline]")
 
-        locale_file_existing_path = f"{folder_locales_path}messages.{language_code}.xlf"
-        locale_file_existing_temp_path = f"{folder_locales_path}messages.{language_code}-old.xlf"
-        if os.path.exists(locale_file_existing_path):
-            status.update(f"Copying previous translations, please wait")
-            shutil.copy(locale_file_existing_path, locale_file_existing_temp_path)
 
-        status.update(f"Extracting i18n translations, please wait")
-        command = "yarn run translate"
-        console.print(f"Command: [green on black]{command}")
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    # ------------------------------------------------------------------
+    # Subprocess helpers (stream stderr too, fail fast, and enforce cwd)
+    # ------------------------------------------------------------------
+
+    def _build_node_env(project_root: Path) -> dict:
+        env = os.environ.copy()
+
+        raw_parts = (env.get("PATH") or "").split(os.pathsep)
+        path_parts = [p for p in raw_parts if p and os.path.isdir(p)]
+
+        extra_dirs: list[str] = []
+
+        # Common macOS/Homebrew paths
+        for d in ("/usr/local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin"):
+            if os.path.isdir(d):
+                extra_dirs.append(d)
+
+        # NVM (macOS/Linux)
+        nvm_root = Path.home() / ".nvm" / "versions" / "node"
+        if nvm_root.exists():
+            for p in sorted(nvm_root.glob("*/bin")):
+                if p.is_dir():
+                    extra_dirs.append(str(p))
+
+        # Windows (if any)
+        program_files = os.environ.get("ProgramFiles")
+        if program_files:
+            nodejs_dir = os.path.join(program_files, "nodejs")
+            if os.path.isdir(nodejs_dir):
+                extra_dirs.append(nodejs_dir)
+
+        # Local node bin
+        local_bin = project_root / "node_modules" / ".bin"
+        if local_bin.is_dir():
+            extra_dirs.append(str(local_bin))
+
+        merged: list[str] = []
+        for d in extra_dirs + path_parts:
+            if d not in merged:
+                merged.append(d)
+
+        env["PATH"] = os.pathsep.join(merged)
+        return env
+
+
+    def _resolve_exe(name: str, env: dict) -> str:
+        exe = shutil.which(name, path=env.get("PATH", ""))
+        if not exe:
+            raise RuntimeError(f"{name} not found in PATH. PATH={env.get('PATH', '')}")
+        return exe
+
+
+    def _run_streamed(args: list[str], title: str, cwd: Path, env: dict) -> None:
+        status.update(title)
+        console.print(f"Command: [green on black]{' '.join(args)}[/green on black]")
+
+        process = subprocess.Popen(
+            args,
+            cwd=str(cwd),
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+
+        assert process.stdout is not None
         for line in process.stdout:
-            line_clean = line.decode().strip()
+            line_clean = line.strip()
             if "Initial Total" in line_clean:
                 line_clean = line_clean[2:]
-            if line_clean != "":
+            if line_clean:
                 console.print(line_clean)
-        process.wait()
 
-        status.update(f"Updating translation files, please wait")
+        return_code = process.wait()
+        if return_code != 0:
+            raise RuntimeError(f"Command failed (exit {return_code}): {' '.join(args)}")
+
+
+    node_env = _build_node_env(CORE_DIR)
+    yarn_exe = _resolve_exe("yarn", node_env)
+    xlf_merge_exe = _resolve_exe("xlf-merge", node_env)
+
+    # ------------------------------------------------------------------
+    # i18n extraction + merge (run from CORE_DIR)
+    # ------------------------------------------------------------------
+
+    if language_code != "en-US":
+        locale_file_existing_path = f"{folder_locales_path}messages.{language_code}.xlf"
+        locale_file_existing_temp_path = f"{folder_locales_path}messages.{language_code}-old.xlf"
+
+        if os.path.exists(locale_file_existing_path):
+            status.update("Copying previous translations, please wait")
+            shutil.copy(locale_file_existing_path, locale_file_existing_temp_path)
+
+        _run_streamed(
+            [yarn_exe, "run", "translate"],
+            "Extracting i18n translations, please wait",
+            cwd=CORE_DIR,
+            env=node_env,
+        )
+
         if os.path.exists(locale_file_existing_temp_path):
-            command = f"xlf-merge merge {locale_file_existing_temp_path} {folder_locales_path}messages.xlf {locale_file_existing_path}"
-            console.print(f"Command: [green on black]{command}")
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-            for line in process.stdout:
-                line_clean = line.decode().strip()
-                if "Initial Total" in line_clean:
-                    line_clean = line_clean[2:]
-                if line_clean != "":
-                    console.print(line_clean)
-            process.wait()
+            _run_streamed(
+                [
+                    xlf_merge_exe,
+                    "merge",
+                    locale_file_existing_temp_path,
+                    f"{folder_locales_path}messages.xlf",
+                    locale_file_existing_path,
+                ],
+                "Updating translation files, please wait",
+                cwd=CORE_DIR,
+                env=node_env,
+            )
             os.remove(locale_file_existing_temp_path)
 
-    status.update("Executing build command, please wait")
+    # ------------------------------------------------------------------
+    # Angular build (run from CORE_DIR)
+    # ------------------------------------------------------------------
 
-    command = None
-    if language_code == 'en-US':
-        command = f'yarn run build --configuration="production" --output-hashing=none --named-chunks=false --base-href /{task_name}/{batch_name}/'
-    else:
-        command = f'yarn run build --configuration="production-{language_code}" --output-hashing=none --named-chunks=false --base-href /{task_name}/{batch_name}/'
+    configuration = "production" if language_code == "en-US" else f"production-{language_code}"
+    _run_streamed(
+        [
+            yarn_exe,
+            "run",
+            "build",
+            "--configuration",
+            configuration,
+            "--output-hashing=none",
+            "--named-chunks=false",
+            "--base-href",
+            f"/{task_name}/{batch_name}/",
+        ],
+        "Executing build command, please wait",
+        cwd=CORE_DIR,
+        env=node_env,
+    )
 
-    console.print(f"Command: [green on black]{command}")
-
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    for line in process.stdout:
-        line_clean = line.decode().strip()
-        if "Initial Total" in line_clean:
-            line_clean = line_clean[2:]
-        if line_clean != "":
-            console.print(line_clean)
-    process.wait()
+    # ------------------------------------------------------------------
+    # Merge JS assets with esbuild
+    # ------------------------------------------------------------------
 
     status.update("Merging Javascript assets (via esbuild single bundle)")
 
-    # Set asset paths
-    script_merged_file = f"{folder_build_deploy_path}scripts.js"
-    polyfills_source = f"{folder_build_result}polyfills.js"
-    main_script_source = f"{folder_build_result}main.js"
-    entry_script_source = f"{folder_build_result}entry-for-esbuild.js"
-    temp_bundle_file = f"{script_merged_file}.tmp"
+    script_merged_file_path = Path(folder_build_deploy_path) / "scripts.js"
+    entry_script_source_path = folder_build_result_path / "entry-for-esbuild.js"
+    temp_bundle_file_path = Path(str(script_merged_file_path) + ".tmp")
 
-    # Remove previous temp files, if any
-    for path in [entry_script_source, temp_bundle_file]:
-        if os.path.exists(path):
-            os.remove(path)
+    for p in [entry_script_source_path, temp_bundle_file_path]:
+        if p.exists():
+            p.unlink()
 
-    # Require main.js to exist
-    if not os.path.exists(main_script_source):
-        console.print(f"[bold red]main.js not found, cannot continue![/bold red]")
-        raise RuntimeError("main.js not found after Angular build")
+    # main*.js (fallback to accommodate possible layout changes)
+    main_candidates = list(folder_build_result_path.rglob("main*.js"))
+    if not main_candidates:
+        console.print("[bold red]main*.js not found, cannot continue![/bold red]")
+        raise RuntimeError(f"main*.js not found after Angular build in {folder_build_result_path}")
+    main_script_source_path = main_candidates[0]
 
-    # Compose entry file for esbuild
-    with open(entry_script_source, "w") as entry_file:
-        if os.path.exists(polyfills_source):
-            console.print(f"Entry will include: [italic purple on black]{polyfills_source}")
-            entry_file.write("import './polyfills.js';\n")
+    # polyfills*.js (optional)
+    polyfills_candidates = list(folder_build_result_path.rglob("polyfills*.js"))
+    polyfills_source_path = polyfills_candidates[0] if polyfills_candidates else None
+
+    with open(entry_script_source_path, "w") as entry_file:
+        if polyfills_source_path is not None:
+            poly_rel = polyfills_source_path.relative_to(folder_build_result_path).as_posix()
+            console.print(f"Entry will include: [italic purple on black]{polyfills_source_path}[/italic purple on black]")
+            entry_file.write(f"import './{poly_rel}';\n")
         else:
-            console.print(f"[yellow]Warning: polyfills.js not detected, proceeding without it[/yellow]")
-        console.print(f"Entry will include: [italic purple on black]{main_script_source}")
-        entry_file.write("import './main.js';\n")
+            console.print("[yellow]Warning: polyfills not detected, proceeding without it[/yellow]")
 
-    # Run esbuild into temp file
-    esbuild_cmd = (
-        f"yarn esbuild {entry_script_source} --bundle --outfile={temp_bundle_file} --format=esm"
+        main_rel = main_script_source_path.relative_to(folder_build_result_path).as_posix()
+        console.print(f"Entry will include: [italic purple on black]{main_script_source_path}[/italic purple on black]")
+        entry_file.write(f"import './{main_rel}';\n")
+
+    _run_streamed(
+        [
+            yarn_exe,
+            "esbuild",
+            str(entry_script_source_path),
+            "--bundle",
+            f"--outfile={temp_bundle_file_path}",
+            "--format=esm",
+        ],
+        "Running esbuild to create single JS bundle (temp file)",
+        cwd=CORE_DIR,
+        env=node_env,
     )
-    console.print(f"Running esbuild: [green on black]{esbuild_cmd}")
-    status.update("Running esbuild to create single JS bundle (temp file)")
 
     try:
-        result = subprocess.run(esbuild_cmd, shell=True, capture_output=True, text=True)
-        if result.returncode != 0:
-            console.print(f"[bold red]esbuild bundling failed![/bold red]")
-            console.print(result.stderr)
-            raise RuntimeError("esbuild failed")
-
-        # If previous bundle exists, compare before overwriting
-        if os.path.exists(script_merged_file) and filecmp.cmp(temp_bundle_file, script_merged_file, shallow=False):
+        if script_merged_file_path.exists() and filecmp.cmp(
+            str(temp_bundle_file_path), str(script_merged_file_path), shallow=False
+        ):
             console.print("[green]No changes in JS bundle, skipping overwrite[/green]")
-            os.remove(temp_bundle_file)
+            temp_bundle_file_path.unlink(missing_ok=True)
         else:
-            shutil.move(temp_bundle_file, script_merged_file)
-            console.print(f"[cyan]Bundle updated: {script_merged_file}[/cyan]")
-
+            shutil.move(str(temp_bundle_file_path), str(script_merged_file_path))
+            console.print(f"[cyan]Bundle updated: {script_merged_file_path}[/cyan]")
     finally:
-        # Cleanup: always remove temp entry file and temp bundle (if not already removed)
-        if os.path.exists(entry_script_source):
-            os.remove(entry_script_source)
-        if os.path.exists(temp_bundle_file):
-            os.remove(temp_bundle_file)
+        if entry_script_source_path.exists():
+            entry_script_source_path.unlink()
+        if temp_bundle_file_path.exists():
+            temp_bundle_file_path.unlink()
 
     console.print("Deleting build folder")
-    folder_build_result = folder_build_result.replace(f"/Crowd_Frame/{language_code}/", '')
-    if os.path.exists(folder_build_result):
-        console.print(f"Path: [italic underline]{folder_build_result}")
-        shutil.rmtree(folder_build_result)
+    build_folder_to_delete = CORE_DIR / "dist" / "Crowd_Frame"
+    if build_folder_to_delete.exists():
+        console.print(f"Path: [italic underline]{build_folder_to_delete}[/italic underline]")
+        shutil.rmtree(build_folder_to_delete)
     else:
-        console.print(f"Build folder not detected: [italic underline]{folder_build_result}")
+        console.print(f"Build folder not detected: [italic underline]{build_folder_to_delete}[/italic underline]")
+
+    # ------------------------------------------------------------------
+    # Create index.html from template
+    # ------------------------------------------------------------------
 
     model = Template(filename=f"{folder_build_deploy_path}model.html")
-    if task_title:
-        index_page = model.render(
-            task_title=task_title,
-            task_name=task_name,
-            batch_name=batch_name
-        )
-    else:
-        index_page = model.render(
-            task_title=None,
-            task_name=task_name,
-            batch_name=batch_name
-        )
+    index_page = model.render(
+        task_title=task_title if task_title else None,
+        task_name=task_name,
+        batch_name=batch_name,
+    )
+
     index_page_file = f"{folder_build_deploy_path}index.html"
-    with open(index_page_file, 'w') as file:
+    with open(index_page_file, "w") as file:
         print(index_page, file=file)
 
     console.print("Model instantiated")
-    console.print(f"Path: [italic underline]{index_page_file}")
+    console.print(f"Path: [italic underline]{index_page_file}[/italic underline]")
 
-    console.rule(f"{step_index} - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    # ------------------------------------------------------------------
+    # Packaging Task folders + copy artifacts
+    # ------------------------------------------------------------------
+
+    console.rule(f"{step_index} - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}[/cyan underline]")
     step_index = step_index + 1
 
     status.start()
-    status.update(f"Starting")
+    status.update("Starting")
 
     folder_tasks_batch_path = f"{folder_tasks_path}{task_name}/{batch_name}/"
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
@@ -3186,289 +3305,260 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
 
-    if not os.path.exists(folder_tasks_batch_deploy_path):
-        console.print("[green]Deploy folder created")
-        os.makedirs(folder_tasks_batch_deploy_path, exist_ok=True)
-    else:
-        console.print("[yellow]Deploy folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}")
-    if platform == 'mturk':
-        if not os.path.exists(folder_tasks_batch_mturk_path):
-            console.print("[green]Amazon Mechanical Turk assets folder created")
-            os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
-        else:
-            console.print("[yellow]Amazon Mechanical Turk assets folder already present")
-    if platform == 'toloka':
-        if not os.path.exists(folder_tasks_batch_toloka_path):
-            console.print("[green]Toloka assets folder created")
-            os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
-        else:
-            console.print("[yellow]Toloka assets folder already present")
-    if not os.path.exists(folder_tasks_batch_env_path):
-        console.print("[green]Environments folder created")
-        os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
-    else:
-        console.print("[yellow]Environments folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_env_path}")
-    if not os.path.exists(folder_tasks_batch_task_path):
-        console.print("[green]Task configuration folder created")
-        os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
-    else:
-        console.print("[yellow]Task configuration folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_task_path}")
-    if not os.path.exists(folder_tasks_batch_config_path):
-        console.print("[green]Task configuration folder created")
-        os.makedirs(folder_tasks_batch_config_path, exist_ok=True)
-    else:
-        console.print("[yellow]General configuration folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_config_path}")
-    if not os.path.exists(folder_tasks_batch_skeleton_path):
-        console.print("[green]Task skeleton folder created")
-        os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
-    else:
-        console.print("[yellow]Task skeleton folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_skeleton_path}")
+    os.makedirs(folder_tasks_batch_deploy_path, exist_ok=True)
+    os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
+    os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
+    os.makedirs(folder_tasks_batch_config_path, exist_ok=True)
+    os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
+
+    if platform == "mturk":
+        os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
+    if platform == "toloka":
+        os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
+
+    console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}[/italic]")
+    console.print(f"Path: [italic]{folder_tasks_batch_env_path}[/italic]")
+    console.print(f"Path: [italic]{folder_tasks_batch_task_path}[/italic]")
+    console.print(f"Path: [italic]{folder_tasks_batch_config_path}[/italic]")
+    console.print(f"Path: [italic]{folder_tasks_batch_skeleton_path}[/italic]")
 
 
-    def copy(source, destination, title):
-        panel = Panel(f"Source: [italic white on black]{source}[/italic white on black]\nDestination: [italic white on black]{destination}[/italic white on black]", title=title)
+    def copy(source: str, destination: str, title: str) -> None:
+        panel = Panel(
+            f"Source: [italic white on black]{source}[/italic white on black]\n"
+            f"Destination: [italic white on black]{destination}[/italic white on black]",
+            title=title,
+        )
         console.print(panel)
         copy2(source, destination)
 
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
+    console.print(
+        f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder"
+    )
 
-    source = f"{folder_build_deploy_path}scripts.js"
-    destination = f"{folder_tasks_batch_deploy_path}scripts.js"
-    copy(source, destination, "Javascript Assets")
-
-    source = f"{folder_build_deploy_path}styles.css"
-    destination = f"{folder_tasks_batch_deploy_path}styles.css"
-    copy(source, destination, "CSS Styles")
-
-    source = f"{folder_build_deploy_path}index.html"
-    destination = f"{folder_tasks_batch_deploy_path}index.html"
-    copy(source, destination, "Task Homepage")
+    copy(f"{folder_build_deploy_path}scripts.js", f"{folder_tasks_batch_deploy_path}scripts.js", "Javascript Assets")
+    copy(f"{folder_build_deploy_path}styles.css", f"{folder_tasks_batch_deploy_path}styles.css", "CSS Styles")
+    copy(f"{folder_build_deploy_path}index.html", f"{folder_tasks_batch_deploy_path}index.html", "Task Homepage")
 
     console.print(f"Copying files for [blue underline on white]{folder_build_env_path}[/blue underline on white] folder")
+    copy(f"{folder_build_env_path}environment.ts", f"{folder_tasks_batch_env_path}environment.ts", "Dev Environment")
+    copy(f"{folder_build_env_path}environment.prod.ts", f"{folder_tasks_batch_env_path}environment.prod.ts", "Prod Environment")
 
-    source = f"{folder_build_env_path}environment.ts"
-    destination = f"{folder_tasks_batch_env_path}environment.ts"
-    copy(source, destination, "Dev Environment")
-
-    source = f"{folder_build_env_path}environment.prod.ts"
-    destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
-    copy(source, destination, "Prod Environment")
-
-    if platform == 'toloka':
+    if platform == "toloka":
         console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
+        copy(f"{folder_build_toloka_path}interface.html", f"{folder_tasks_batch_toloka_path}interface.html", "Page Markup")
+        copy(f"{folder_build_toloka_path}interface.css", f"{folder_tasks_batch_toloka_path}interface.css", "Page Stylesheet")
+        copy(f"{folder_build_toloka_path}interface.js", f"{folder_tasks_batch_toloka_path}interface.js", "Page Javascript")
+        copy(f"{folder_build_toloka_path}tokens.tsv", f"{folder_tasks_batch_toloka_path}tokens.tsv", "Hits tokens")
+        copy(f"{folder_build_toloka_path}input_specification.json", f"{folder_tasks_batch_toloka_path}input_specification.json", "Input Specification")
+        copy(f"{folder_build_toloka_path}output_specification.json", f"{folder_tasks_batch_toloka_path}output_specification.json", "Output Specification")
 
-        source = f"{folder_build_toloka_path}interface.html"
-        destination = f"{folder_tasks_batch_toloka_path}interface.html"
-        copy(source, destination, "Page Markup")
-
-        source = f"{folder_build_toloka_path}interface.css"
-        destination = f"{folder_tasks_batch_toloka_path}interface.css"
-        copy(source, destination, "Page Stylesheet")
-
-        source = f"{folder_build_toloka_path}interface.js"
-        destination = f"{folder_tasks_batch_toloka_path}interface.js"
-        copy(source, destination, "Page Javascript")
-
-        source = f"{folder_build_toloka_path}tokens.tsv"
-        destination = f"{folder_tasks_batch_toloka_path}tokens.tsv"
-        copy(source, destination, "Hits tokens")
-
-        source = f"{folder_build_toloka_path}input_specification.json"
-        destination = f"{folder_tasks_batch_toloka_path}input_specification.json"
-        copy(source, destination, "Input Specification")
-
-        source = f"{folder_build_toloka_path}output_specification.json"
-        destination = f"{folder_tasks_batch_toloka_path}output_specification.json"
-        copy(source, destination, "Output Specification")
-
-    if platform == 'mturk':
+    if platform == "mturk":
         console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
-
-        source = f"{folder_build_mturk_path}index.html"
-        destination = f"{folder_tasks_batch_mturk_path}index.html"
-        copy(source, destination, "Amazon Mechanical Turk landing page")
-
-        source = f"{folder_build_mturk_path}tokens.csv"
-        destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
-        copy(source, destination, "Hits tokens")
+        copy(f"{folder_build_mturk_path}index.html", f"{folder_tasks_batch_mturk_path}index.html", "Amazon Mechanical Turk landing page")
+        copy(f"{folder_build_mturk_path}tokens.csv", f"{folder_tasks_batch_mturk_path}tokens.csv", "Hits tokens")
 
     console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
-
-    source = f"{folder_build_task_path}{filename_hits_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_hits_config}"
-    copy(source, destination, "Hits")
-
-    source = f"{folder_build_task_path}{filename_dimensions_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
-    copy(source, destination, "Dimensions")
-
-    source = f"{folder_build_task_path}{filename_instructions_evaluation_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
-    copy(source, destination, "Assessment Instructions")
-
-    source = f"{folder_build_task_path}{filename_instructions_general_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
-    copy(source, destination, "General Instructions")
-
-    source = f"{folder_build_task_path}{filename_questionnaires_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
-    copy(source, destination, "Questionnaires")
-
-    source = f"{folder_build_task_path}{filename_search_engine_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
-    copy(source, destination, "Search Engine")
-
-    source = f"{folder_build_task_path}{filename_task_settings_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
-    copy(source, destination, "Task Settings")
-
-    source = f"{folder_build_task_path}{filename_workers_settings_config}"
-    destination = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
-    copy(source, destination, "Workers Settings")
+    copy(f"{folder_build_task_path}{filename_hits_config}", f"{folder_tasks_batch_task_path}{filename_hits_config}", "Hits")
+    copy(f"{folder_build_task_path}{filename_dimensions_config}", f"{folder_tasks_batch_task_path}{filename_dimensions_config}", "Dimensions")
+    copy(f"{folder_build_task_path}{filename_instructions_evaluation_config}", f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}", "Assessment Instructions")
+    copy(f"{folder_build_task_path}{filename_instructions_general_config}", f"{folder_tasks_batch_task_path}{filename_instructions_general_config}", "General Instructions")
+    copy(f"{folder_build_task_path}{filename_questionnaires_config}", f"{folder_tasks_batch_task_path}{filename_questionnaires_config}", "Questionnaires")
+    copy(f"{folder_build_task_path}{filename_search_engine_config}", f"{folder_tasks_batch_task_path}{filename_search_engine_config}", "Search Engine")
+    copy(f"{folder_build_task_path}{filename_task_settings_config}", f"{folder_tasks_batch_task_path}{filename_task_settings_config}", "Task Settings")
+    copy(f"{folder_build_task_path}{filename_workers_settings_config}", f"{folder_tasks_batch_task_path}{filename_workers_settings_config}", "Workers Settings")
 
     console.print(f"Copying files for [yellow underline on white]{folder_tasks_batch_skeleton_path}[/yellow underline on white] folder")
-
-    source = f"{folder_build_skeleton_path}document.ts"
-    destination = f"{folder_tasks_batch_skeleton_path}document.ts"
-    copy(source, destination, "Document Interface")
-
-    source = f"{folder_build_skeleton_path}goldChecker.ts"
-    destination = f"{folder_tasks_batch_skeleton_path}goldChecker.ts"
-    copy(source, destination, "Gold Checker")
+    copy(f"{folder_build_skeleton_path}document.ts", f"{folder_tasks_batch_skeleton_path}document.ts", "Document Interface")
+    copy(f"{folder_build_skeleton_path}goldChecker.ts", f"{folder_tasks_batch_skeleton_path}goldChecker.ts", "Gold Checker")
 
     console.print(f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
+    copy(f"{folder_build_config_path}admin.json", f"{folder_tasks_batch_config_path}admin.json", "Admin Credentials")
 
-    source = f"{folder_build_config_path}admin.json"
-    destination = f"{folder_tasks_batch_config_path}admin.json"
-    copy(source, destination, "Admin Credentials")
+    # ------------------------------------------------------------------
+    # Deploy (upload to S3)
+    # ------------------------------------------------------------------
 
-    console.rule(f"{step_index} - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"{step_index} - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy[/cyan underline]")
     step_index = step_index + 1
 
     status.start()
-    status.update(f"Starting")
+    status.update("Starting")
 
     s3_private_generator_path = f"{task_name}/{batch_name}/Generator/"
     s3_private_task_path = f"{task_name}/{batch_name}/Task/"
     s3_deploy_path = f"{task_name}/{batch_name}/"
 
-    folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
-    folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
-    folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
-    folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
 
-
-    def upload(path, bucket, key, title, content_type, acl=None):
+    def upload(path: str, bucket: str, key: str, title: str, content_type: str, acl: str | None = None) -> None:
         panel = Panel(
-            f"Region: [italic white on black]{aws_region}[/italic white on black]\nBucket: [italic white on black]{bucket}[/italic white on black]\nFile: [italic white on black]{path}[/italic white on black]\nKey: [italic white on black]{key}[/italic white on black]\nPath: [italic white on black]s3://{aws_region}/{bucket}/{key}[/italic white on black]\nACL: {acl}",
-            title=title)
+            f"Region: [italic white on black]{aws_region}[/italic white on black]\n"
+            f"Bucket: [italic white on black]{bucket}[/italic white on black]\n"
+            f"File: [italic white on black]{path}[/italic white on black]\n"
+            f"Key: [italic white on black]{key}[/italic white on black]\n"
+            f"Path: [italic white on black]s3://{aws_region}/{bucket}/{key}[/italic white on black]\n"
+            f"ACL: {acl}",
+            title=title,
+        )
         console.print(panel)
-        if acl:
-            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type, ACL=acl)
-        else:
-            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
-        console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
+
+        with open(path, "rb") as fh:
+            if acl:
+                response = s3_client.put_object(
+                    Body=fh, Bucket=bucket, Key=key, ContentType=content_type, ACL=acl
+                )
+            else:
+                response = s3_client.put_object(
+                    Body=fh, Bucket=bucket, Key=key, ContentType=content_type
+                )
+
+        console.print(
+            f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}"
+        )
 
 
-    console.print(f"[white on blue bold]Generator configuration")
+    console.print("[white on blue bold]Generator configuration[/white on blue bold]")
+    upload(
+        f"{folder_tasks_batch_config_path}admin.json",
+        aws_private_bucket,
+        f"{s3_private_generator_path}admin.json",
+        "Admin Credentials",
+        "application/json",
+        "bucket-owner-full-control",
+    )
 
-    iam_path = f"{folder_tasks_batch_config_path}admin.json"
-    key = f"{s3_private_generator_path}admin.json"
-    upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json", 'bucket-owner-full-control')
+    console.print("[white on green bold]Task configuration[/white on green bold]")
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_hits_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_hits_config}",
+        "Hits",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_instructions_evaluation_config}",
+        "Assessment Instructions",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_instructions_general_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_instructions_general_config}",
+        "General Instructions",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_questionnaires_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_questionnaires_config}",
+        "Questionnaires",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_dimensions_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_dimensions_config}",
+        "Dimensions",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_search_engine_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_search_engine_config}",
+        "Search Engine",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_task_settings_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_task_settings_config}",
+        "Task Settings",
+        "application/json",
+        "bucket-owner-full-control",
+    )
+    upload(
+        f"{folder_tasks_batch_task_path}{filename_workers_settings_config}",
+        aws_private_bucket,
+        f"{s3_private_task_path}{filename_workers_settings_config}",
+        "Workers Settings",
+        "application/json",
+        "bucket-owner-full-control",
+    )
 
-    console.print(f"[white on green bold]Task configuration")
+    console.print("[white on purple bold]Angular Application[/white on purple bold]")
+    upload(
+        f"{folder_tasks_batch_deploy_path}scripts.js",
+        aws_deploy_bucket,
+        f"{s3_deploy_path}scripts.js",
+        "Javascript Assets",
+        "text/javascript",
+        "public-read",
+    )
+    upload(
+        f"{folder_tasks_batch_deploy_path}styles.css",
+        aws_deploy_bucket,
+        f"{s3_deploy_path}styles.css",
+        "CSS Styles",
+        "text/css",
+        "public-read",
+    )
+    upload(
+        f"{folder_tasks_batch_deploy_path}index.html",
+        aws_deploy_bucket,
+        f"{s3_deploy_path}index.html",
+        "Task Homepage",
+        "text/html",
+        "public-read",
+    )
 
-    iam_path = f"{folder_tasks_batch_task_path}{filename_hits_config}"
-    key = f"{s3_private_task_path}{filename_hits_config}"
-    upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
+    if "results_retrieved" in search_engine_config and len(search_engine_config["results_retrieved"]) > 0:
+        console.rule(f"{step_index} - Invalidating Contents on Cloudfront distribution")
+        step_index = step_index + 1
 
-    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
-    key = f"{s3_private_task_path}{filename_instructions_evaluation_config}"
-    upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
+        paths = {
+            "Quantity": 3,
+            "Items": [
+                f"/{task_name}/{batch_name}/styles.css",
+                f"/{task_name}/{batch_name}/scripts.js",
+                f"/{task_name}/{batch_name}/index.html",
+            ],
+        }
 
-    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
-    key = f"{s3_private_task_path}{filename_instructions_general_config}"
-    upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
-
-    iam_path = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
-    key = f"{s3_private_task_path}{filename_questionnaires_config}"
-    upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
-
-    iam_path = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
-    key = f"{s3_private_task_path}{filename_dimensions_config}"
-    upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
-
-    iam_path = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
-    key = f"{s3_private_task_path}{filename_search_engine_config}"
-    upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
-
-    iam_path = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
-    key = f"{s3_private_task_path}{filename_task_settings_config}"
-    upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
-
-    iam_path = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
-    key = f"{s3_private_task_path}{filename_workers_settings_config}"
-    upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
-
-    console.print(f"[white on purple bold]Angular Application")
-
-    iam_path = f"{folder_tasks_batch_deploy_path}scripts.js"
-    key = f"{s3_deploy_path}scripts.js"
-    upload(iam_path, aws_deploy_bucket, key, "Javascript Assets", "text/javascript", "public-read")
-
-    iam_path = f"{folder_tasks_batch_deploy_path}styles.css"
-    key = f"{s3_deploy_path}styles.css"
-    upload(iam_path, aws_deploy_bucket, key, "CSS Styles", "text/css", "public-read")
-
-    iam_path = f"{folder_tasks_batch_deploy_path}index.html"
-    key = f"{s3_deploy_path}index.html"
-    upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
-
-    if 'results_retrieved' in search_engine_config:
-
-        if len(search_engine_config['results_retrieved']) > 0:
-            console.rule(f"{step_index} - Invalidating Contents on Cloudfront distribution")
-            step_index = step_index + 1
-
-            # Specify the path to invalidate
-            # Adjust the path to target your specific subpath
-            paths = {
-                'Quantity': 3,
-                'Items': [
-                    f"/{task_name}/{batch_name}/styles.css",
-                    f"/{task_name}/{batch_name}/scripts.js",
-                    f"/{task_name}/{batch_name}/index.html"
-                ]
-            }
-
-            # Create the invalidation
-            response = cloudfront_client.create_invalidation(
-                DistributionId=distribution['Id'],
-                InvalidationBatch={
-                    'Paths': paths,
-                    'CallerReference': str(time.time())  # Unique identifier for this invalidation
-                }
-            )
+        cloudfront_client.create_invalidation(
+            DistributionId=distribution["Id"],
+            InvalidationBatch={
+                "Paths": paths,
+                "CallerReference": str(time.time()),
+            },
+        )
 
     console.rule(f"{step_index} - Public Links")
     step_index = step_index + 1
 
     status.start()
-    status.update(f"Writing")
+    status.update("Writing")
 
-    console.print(f"Deploy Bucket Endpoint")
-    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+    console.print("Deploy Bucket Endpoint")
+    console.print(
+        f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html[/bold white on black]"
+    )
 
-    console.print(f"Static Website Endpoint")
-    console.print(f"[bold white on black]http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com/{task_name}/{batch_name}/")
+    console.print("Static Website Endpoint")
+    console.print(
+        f"[bold white on black]http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com/{task_name}/{batch_name}/[/bold white on black]"
+    )
 
-    if 'results_retrieved' in search_engine_config:
-        if len(search_engine_config['results_retrieved']) > 0:
-            console.print(f"Cloudfront Endpoint")
-            console.print(f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/")
+    if "results_retrieved" in search_engine_config and len(search_engine_config["results_retrieved"]) > 0:
+        console.print("Cloudfront Endpoint")
+        console.print(
+            f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/[/bold white on black]"
+        )
