@@ -62,10 +62,11 @@
 - **AWS CLI v2**
 - **Node.js 20 LTS**
 - **Yarn** (via Corepack)
-- **Python 3.11** (recommended; used for lockfiles)
+- **Miniconda** (to create the Python 3.11 environment)
 - **Docker** *(optional; only if `enable_solver=true`)*
 
-**AWS:** use a profile that can create/use **S3* and **DynamoDB**:
+**AWS:** use a profile that can create/use **S3** and **DynamoDB**:
+
 ```bash
 aws configure --profile your_iam_user
 aws sts get-caller-identity --profile your_iam_user
@@ -82,19 +83,19 @@ cd Crowd_Frame
 corepack enable
 yarn install --immutable
 
-# 2.1) (Recommended) create the Python env
+# 3) Create and activate the Python env (Python 3.11 is installed here)
 conda env create -f environment.yml
 conda activate Crowd_Frame
 
-# 3) Prepare env and initialize
+# 4) Prepare env and initialize
 cd data
-cp .env.example .env   # or create .env as shown below
+# Create .env as shown below
 python init.py
 
-# 4) (Optional) sanity checks
+# 5) (Optional) sanity checks
 aws --version; node -v; yarn -v; python --version
 
-# 5) Open the deployed task
+# 6) Open the deployed task
 # https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/index.html
 ```
 
@@ -102,9 +103,12 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
 
 ## Getting Started
 
-1. Create an [AWS account](https://aws.amazon.com/it/).
-2. Create a new [IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) `your_iam_user`.
-3. Attach the `AdministratorAccess` policy:
+1. Create an [AWS account](https://aws.amazon.com/).
+
+2. Create a new [IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) called `your_iam_user`.
+
+3. For quick testing, attach the **AdministratorAccess** policy to `your_iam_user`.  
+   *(For production use, replace this with a least-privilege policy.)*
 
    ```json
    {
@@ -113,11 +117,21 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
    }
    ```
 
-4. Generate an access key pair.
-5. Save the access key in your AWS **credentials** file.
+4. Generate an access key pair for `your_iam_user`.
 
-    - **Windows**: `C:\Users\<your_os_user>\.aws\credentials`
-    - **macOS/Linux**: `~/.aws/credentials`
+5. Configure an AWS CLI profile and verify it works:
+
+   ```bash
+   aws configure --profile your_iam_user
+   aws sts get-caller-identity --profile your_iam_user
+   ```
+
+6. Credentials file locations:
+
+   - **Windows**: `C:\Users\<your_os_user>\.aws\credentials`
+   - **macOS/Linux**: `~/.aws/credentials`
+
+   Example credentials entry:
 
    ```ini
    [your_iam_user]
@@ -125,34 +139,34 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
    aws_secret_access_key=your_secret
    ```
 
-6. Clone the repo: [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame).
-7. Enable Yarn via Corepack:
+7. Clone the repo and enter it:
+
+   ```bash
+   git clone https://github.com/Miccighel/Crowd_Frame.git
+   cd Crowd_Frame
+   ```
+
+8. Enable Yarn via Corepack and install Node dependencies:
 
    ```bash
    corepack enable
-   ```
-
-8. Go to the repo folder:
-
-   ```bash
-   cd ~/path/to/project
-   ```
-
-9. Install dependencies:
-
-   ```bash
    yarn install --immutable
    ```
 
-10. Go to the `data` folder:
+9. Install **Miniconda** (or Anaconda), then create the Python environment:
+
+   ```bash
+   conda env create -f environment.yml
+   conda activate Crowd_Frame
+   ```
+
+10. Move to the `data` folder:
+
     ```bash
     cd data
     ```
 
-11. Create the `.env` file (make sure the name is exactly `.env`, no hidden extensions).  
-    Path: `your_repo_folder/data/.env`
-
-12. Add the required environment variables:
+11. Create `data/.env` *(the file must be named exactly `.env`)* and set the required variables:
 
     ```ini
     mail_contact=your_email_address
@@ -165,38 +179,30 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
     aws_region=your_aws_region
     aws_private_bucket=your_private_bucket_name
     aws_deploy_bucket=your_deploy_bucket_name
+    profile_name=your_iam_user
     ```
 
-13. Set up the Python environment:
-
-    ```bash
-    # Recommended: use the conda env + pip lock
-    conda env create -f ../environment.yml   # first time
-    # or: conda env update -f ../environment.yml --prune  # to refresh
-
-    conda activate Crowd_Frame
-    ```
-
-14. Run the initializer:
+12. Run the initializer:
 
     ```bash
     python init.py
     ```
 
-    This script will:
-    - read your environment variables,
-    - set up the AWS infrastructure,
-    - generate an empty task configuration,
-    - deploy the task to the public bucket.
+13. This script will:
 
-15. Open your task:
+    - read `data/.env`
+    - set up the AWS infrastructure
+    - generate an empty task configuration
+    - deploy the task to the public bucket
+
+14. Open your task:
 
     ```
-    https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html
+    https://<deploy_bucket>.s3.<region>.amazonaws.com/<task_name>/<batch_name>/index.html
     ```
 
-Crowd_Frame uses several AWS services to deploy tasks and store data; all are within the AWS Free Tier.  
-You can cap spending via the `budget_limit` environment variable. Usage is halted once the limit is reached.
+Crowd_Frame uses AWS services (e.g., S3, DynamoDB, optionally CloudFront) to deploy tasks and store data. Usage may fall within the AWS Free Tier, depending on your account and workload.
+You can cap spending via `budget_limit`; when it’s reached, the scripts stop creating new resources/deployments (existing AWS charges may still apply).
 
 ## Environment Variables
 
