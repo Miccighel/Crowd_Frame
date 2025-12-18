@@ -24,7 +24,7 @@
 
     <!-- Empty state when no header and no items -->
     @if (!visibleInstructions?.length && !hasElementHeader) {
-        <p i18n>No instructions available.</p>
+        <!-- render nothing -->
     } @else if (visibleInstructions?.length) {
         <!-- STYLED (cards + numbering) -->
         @if (mode === 'styled') {
