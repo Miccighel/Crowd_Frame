@@ -2626,68 +2626,113 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"{step_index} - Class [cyan underline]goldChecker.ts")
     step_index = step_index + 1
 
-    # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
-    # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
-    # to implement the check
+    # This class provides a stub to implement the gold elements check.
+    # We keep strict TypeScript checks enabled; the generated stub must compile cleanly.
+    # To avoid TS6133 (unused locals/params) without @ts-ignore, we generate a small
+    # helper (markAsUsed) and call it with placeholder variables.
+    #
+    # IMPORTANT: keep the legacy API stable so existing README/examples do not break:
+    # - performGoldCheck(goldConfiguration : Array<Object>, taskType = null)
+    # - variable names: document, answers, notes
 
-    filename = f"goldChecker.ts"
+    filename = "goldChecker.ts"
     if os.path.exists(f"{folder_build_skeleton_path}{filename}"):
         console.print(f"Gold checker [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
-        with open(f"{folder_build_skeleton_path}{filename}", 'w') as file:
-            print("export class GoldChecker {", file=file)
-            print("", file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
-            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
-            print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>, taskType = null) {'), file=file)
-            print("", file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-            print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)
-            print("", file=file)
-            print(wrapper.fill("/* If there are no gold elements there is nothing to be checked */"), file=file)
-            print(wrapper.fill("if(goldConfiguration.length<=0) {"), file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
-            print(wrapper.fill("goldChecks.push(true)"), file=file)
-            print(wrapper.fill("return goldChecks"), file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-            print(wrapper.fill('}'), file=file)
-            print("", file=file)
-            print(wrapper.fill("for (let goldElement of goldConfiguration) {"), file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
-            print("", file=file)
-            print(wrapper.fill("/* Element attributes */"), file=file)
-            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
-            print(wrapper.fill('let document = goldElement["document"]'), file=file)
-            print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
-            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
-            print(wrapper.fill('let answers = goldElement["answers"]'), file=file)
-            print(wrapper.fill("/* Worker's notes*/"), file=file)
-            print(wrapper.fill('// @ts-ignore TS6133: intentionally unused – user will implement logic.'))
-            print(wrapper.fill('let notes = goldElement["notes"]'), file=file)
-            print("", file=file)
-            print(wrapper.fill("let goldCheck = true"), file=file)
-            print("", file=file)
-            print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
-            print(
-                wrapper.fill("/* Write your code; the check for the current element holds if goldCheck remains set to true */"),
-                file=file)
-            print("", file=file)
-            print("", file=file)
-            print("", file=file)
-            print(wrapper.fill("/* CONTROL IMPLEMENTATION ENDS HERE */"), file=file)
-            print(wrapper.fill("/* Push goldCheck inside goldChecks array for the current gold element */"), file=file)
-            print(wrapper.fill('goldChecks.push(goldCheck)'), file=file)
-            print("", file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-            print(wrapper.fill('}'), file=file)
-            print("", file=file)
-            print(wrapper.fill('return goldChecks'), file=file)
-            print("", file=file)
-            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
-            print(wrapper.fill('}'), file=file)
-            print("", file=file)
-            print("}", file=file)
+        with open(f"{folder_build_skeleton_path}{filename}", "w") as file:
+
+            def ts_line(indent_level: int, line: str) -> None:
+                indent = "\t" * indent_level
+                print(f"{indent}{line}", file=file)
+
+
+            def ts_block_comment(indent_level: int, lines) -> None:
+                ts_line(indent_level, "/*")
+                for comment_line in lines:
+                    ts_line(indent_level, f" * {comment_line}")
+                ts_line(indent_level, " */")
+
+
+            ts_line(0, "export class GoldChecker {")
+            ts_line(0, "")
+
+            ts_block_comment(1, [
+                "Helper for template stubs:",
+                "- keeps strict TypeScript checks enabled (noUnusedLocals/noUnusedParameters)",
+                "- avoids TS6133 while leaving placeholders for the developer to implement the check",
+                "- kept as a small no-op so existing examples/snippets remain valid",
+            ])
+            ts_line(1, "private static markAsUsed(...values: unknown[]): void {")
+            ts_line(2, "void values;")
+            ts_line(1, "}")
+            ts_line(0, "")
+
+            # Legacy signature preserved on purpose
+            ts_line(1, "static performGoldCheck(goldConfiguration : Array<Object>, taskType = null) {")
+            ts_line(0, "")
+            ts_line(2, "let goldChecks = new Array<boolean>()")
+            ts_line(0, "")
+
+            ts_line(2, "/* If there are no gold elements there is nothing to be checked */")
+            ts_line(2, "if(goldConfiguration.length<=0) {")
+            ts_line(3, "goldChecks.push(true)")
+            ts_line(3, "return goldChecks")
+            ts_line(2, "}")
+            ts_line(0, "")
+
+            ts_line(2, "for (let goldElement of goldConfiguration) {")
+            ts_line(0, "")
+
+            ts_line(3, "/* Element attributes */")
+            ts_line(3, 'let document = goldElement["document"]')
+            ts_line(3, "/* Worker's answers for each gold dimensions */")
+            ts_line(3, 'let answers = goldElement["answers"]')
+            ts_line(3, "/* Worker's notes*/")
+            ts_line(3, 'let notes = goldElement["notes"]')
+            ts_line(0, "")
+
+            ts_block_comment(3, [
+                "Placeholders intentionally extracted for the developer-provided control logic.",
+                "Until the check is implemented, they are marked as used to avoid TS6133.",
+                "You may remove this call once all variables/params are used by your implementation.",
+            ])
+            ts_line(3, "GoldChecker.markAsUsed(taskType, document, answers, notes);")
+            ts_line(0, "")
+
+            ts_line(3, "let goldCheck = true")
+            ts_line(0, "")
+
+            ts_block_comment(3, [
+                "Developer guidelines",
+                "- Implement the validation logic inside the CONTROL section below",
+                "- One boolean is produced per gold element (goldChecks[i])",
+                "- goldCheck must remain true to pass; set it to false when a condition fails",
+                "- Use document to access the gold item content/metadata for the current element",
+                "- Use answers and notes to validate the worker output for the current element",
+                "- Handle missing/undefined fields defensively (treat invalid/missing as failure unless intended)",
+                "- Keep the check deterministic and side-effect free (do not mutate inputs, no network calls)",
+                "- If you have multiple conditions, combine them explicitly (e.g., goldCheck = goldCheck && condition)",
+                "- Use taskType only for task-specific branching (optional)",
+            ])
+            ts_line(0, "")
+
+            ts_line(3, "/* CONTROL IMPLEMENTATION STARTS HERE */")
+            ts_line(3, "/* Write your code; the check for the current element holds if goldCheck remains set to true */")
+            ts_line(0, "")
+            ts_line(3, "/* CONTROL IMPLEMENTATION ENDS HERE */")
+            ts_line(3, "/* Push goldCheck inside goldChecks array for the current gold element */")
+            ts_line(3, "goldChecks.push(goldCheck)")
+            ts_line(0, "")
+
+            ts_line(2, "}")
+            ts_line(0, "")
+            ts_line(2, "return goldChecks")
+            ts_line(0, "")
+            ts_line(1, "}")
+            ts_line(0, "")
+            ts_line(0, "}")
+            ts_line(0, "")
 
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
