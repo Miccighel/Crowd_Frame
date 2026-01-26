@@ -59,6 +59,5 @@
   },
   "browser": {
     "crypto": false
-  },
-  "packageManager": "yarn@4.12.0"
+  }
 }
