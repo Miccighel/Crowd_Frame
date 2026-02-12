@@ -1837,7 +1837,7 @@ if not os.path.exists(df_comm_path):
         if len(empty_cols) > 0:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_comm.drop(empty_cols, axis=1, inplace=True)
-        df_comm["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_comm["paid"] = df_comm["paid"].replace({0.0: False, 1.0: True})
         df_comm["paid"] = df_comm["paid"].astype(bool)
         df_comm.sort_values(by='time_submit_parsed', inplace=True)
         df_comm.to_csv(df_comm_path, index=False)
@@ -2070,20 +2070,20 @@ if not os.path.exists(df_quest_path):
     if df_quest.shape[0] > 0:
         empty_cols = [col for col in df_quest.columns if df_quest[col].isnull().all()]
         df_quest.drop(empty_cols, axis=1, inplace=True)
-        df_quest["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_quest["paid"] = df_quest["paid"].replace({0.0: False, 1.0: True})
         df_quest["paid"] = df_quest["paid"].astype(bool)
         df_quest["try_current"] = df_quest["try_current"].astype(int)
-        df_quest["questionnaire_allow_back"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_quest["questionnaire_allow_back"] = df_quest["questionnaire_allow_back"].replace({0.0: False, 1.0: True})
         df_quest["questionnaire_allow_back"] = df_quest["questionnaire_allow_back"].astype(bool)
         df_quest["question_attribute_required"] = df_quest["question_attribute_required"].astype(bool)
         if 'question_attribute_freeText' in df_quest:
-            df_quest["question_attribute_freeText"].replace({0.0: False, 1.0: True}, inplace=True)
+            df_quest["question_attribute_freeText"] = df_quest["question_attribute_freeText"].replace({0.0: False, 1.0: True})
             df_quest["question_attribute_freeText"] = df_quest["question_attribute_freeText"].astype(bool)
         if 'question_attribute_dropped' in df_quest:
-            df_quest["question_attribute_dropped"].replace({0.0: False, 1.0: True}, inplace=True)
+            df_quest["question_attribute_dropped"] = df_quest["question_attribute_dropped"].replace({0.0: False, 1.0: True})
             df_quest["question_attribute_dropped"] = df_quest["question_attribute_dropped"].astype(bool)
         if 'question_attribute_showDetail' in df_quest:
-            df_quest["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
+            df_quest["question_attribute_showDetail"] = df_quest["question_attribute_showDetail"].replace({0.0: False, 1.0: True})
             df_quest["question_attribute_showDetail"] = df_quest["question_attribute_showDetail"].astype(bool)
         df_quest.sort_values(by=['worker_id', 'time_submit_parsed'], inplace=True)
         df_quest.to_csv(df_quest_path, index=False)
@@ -2771,7 +2771,7 @@ if not os.path.exists(df_data_path):
         if empty_cols:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_answ.drop(columns=empty_cols, inplace=True)
-        df_answ["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_answ["paid"] = df_answ["paid"].replace({0.0: False, 1.0: True})
         df_answ["paid"] = df_answ["paid"].astype(bool)
         df_answ["try_last"] = df_answ["try_last"].astype(int)
         df_answ["try_current"] = df_answ["try_current"].astype(int)
@@ -2926,7 +2926,7 @@ if not os.path.exists(df_notes_path):
         if len(empty_cols) > 0:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_notes.drop(empty_cols, axis=1, inplace=True)
-        df_notes["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_notes["paid"] = df_notes["paid"].replace({0.0: False, 1.0: True})
         df_notes["paid"] = df_notes["paid"].astype(bool)
         df_notes["try_last"] = df_notes["try_last"].astype(int)
         df_notes["try_current"] = df_notes["try_current"].astype(int)
@@ -3096,7 +3096,7 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
         if len(empty_cols) > 0:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_dim_sel.drop(empty_cols, axis=1, inplace=True)
-        df_dim_sel["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_dim_sel["paid"] = df_dim_sel["paid"].replace({0.0: False, 1.0: True})
         df_dim_sel["paid"] = df_dim_sel["paid"].astype(bool)
         df_dim_sel["try_last"] = df_dim_sel["try_last"].astype(int)
         df_dim_sel["try_current"] = df_dim_sel["try_current"].astype(int)
@@ -3340,17 +3340,19 @@ if not os.path.exists(df_url_path):
                     df_urls = parse_responses(df_urls, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected)
 
     df_urls.drop_duplicates(inplace=True)
-    unique_urls = np.unique(df_urls['response_url'].values)
+
+    unique_urls = pd.unique(df_urls["response_url"].dropna())
     console.print(f"Generating UUIDs for {len(unique_urls)} unique URLs")
-    for url in tqdm(unique_urls):
-        df_urls.loc[df_urls['response_url'] == url, 'response_uuid'] = uuid.uuid4()
+
+    response_uuid_by_url = {url: str(uuid.uuid4()) for url in unique_urls}
+    df_urls["response_uuid"] = df_urls["response_url"].map(response_uuid_by_url).astype("string")
 
     if df_urls.shape[0] > 0:
         empty_cols = [col for col in df_urls.columns if df_urls[col].isnull().all()]
         if len(empty_cols) > 0:
             console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_urls.drop(empty_cols, axis=1, inplace=True)
-        df_urls["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        df_urls["paid"] = df_urls["paid"].replace({0.0: False, 1.0: True})
         df_urls["paid"] = df_urls["paid"].astype(bool)
         df_urls["try_last"] = df_urls["try_last"].astype(int)
         df_urls["try_current"] = df_urls["try_current"].astype(int)
