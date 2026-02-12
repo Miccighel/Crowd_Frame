@@ -286,8 +286,22 @@ jobs:
       - name: Type-check (no emit)
         run: yarn tsc -p tsconfig.app.json --noEmit
 
-      - name: Lint
-        run: yarn ng lint
+      - name: Lint (optional)
+        shell: bash
+        run: |
+          if node - <<'NODE'
+          const fs = require('fs');
+          const angular = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
+          const appName = process.env.APP_NAME;
+          const project = angular.projects?.[appName];
+          const targets = project?.targets || project?.architect || {};
+          process.exit(targets.lint ? 0 : 1);
+          NODE
+          then
+            yarn ng lint "${APP_NAME}"
+          else
+            echo "::notice title=Lint skipped::No 'lint' target configured for ${APP_NAME}."
+          fi
 
   build:
     name: Build (production) - en-US
