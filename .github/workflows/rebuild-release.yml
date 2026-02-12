@@ -72,5 +72,7 @@ jobs:
           tag_name: ${{ inputs.tag }}
           name: Crowd_Frame ${{ inputs.tag }}
           generate_release_notes: true
-          make_latest: ${{ inputs.make_latest && 'true' || 'false' }}
+          make_latest: ${{ inputs.make_latest }}
+          draft: false
+          prerelease: false
           # No files attached: GitHub auto-adds "Source code (zip/tar.gz)"

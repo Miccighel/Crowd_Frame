@@ -7,9 +7,9 @@
 [![Downloads](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total)](https://github.com/Miccighel/Crowd_Frame/releases)
 
 <!-- Tech stack -->
-![Angular](https://img.shields.io/badge/Angular-20-DD0031?logo=angular&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
 ![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=node.js&logoColor=white)
+![Node.js 22](https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white)
 ![Yarn 4 (Berry)](https://img.shields.io/badge/Yarn-4%20(Berry)-2C8EBB?logo=yarn&logoColor=white)
 
 <!-- Repo health -->
@@ -60,7 +60,7 @@
 ## Prerequisites
 
 - **AWS CLI v2**
-- **Node.js 20 LTS**
+- **Node.js 22 LTS**
 - **Yarn** (via Corepack)
 - **Miniconda** (to create the Python 3.11 environment)
 - **Docker** *(optional; only if `enable_solver=true`)*
@@ -212,7 +212,7 @@ The following table lists the variables you can set in `your_repo_folder/data/.e
 |:---------------------------:|:-----------------------------------------------------------------------------------------|:---------:|:--------------------------------------|
 |        `profile_name`       | IAM profile name created in Step 2. Defaults to `default` if unspecified.               |     ❌     | `your_iam_user`                       |
 |        `mail_contact`       | Contact email for AWS budget notifications.                                              |     ✅     | Valid email address                   |
-|          `platform`         | Deployment platform. Use `none` for manual recruitment.                                 |     ✅     | `none`, `mturk`, `prolific`, `toloka` |
+|          `platform`         | Deployment platform. Use `none` for manual recruitment.                                 |     ✅     | `none`, `mturk`, `prolific` |
 |        `budget_limit`       | Monthly budget cap in USD (e.g., `5.0`).                                                |     ✅     | Positive float                        |
 |         `task_name`         | Task identifier.                                                                         |     ✅     | Any string                            |
 |         `batch_name`        | Batch identifier.                                                                        |     ✅     | Any string                            |
@@ -230,7 +230,6 @@ The following table lists the variables you can set in `your_repo_folder/data/.e
 |    `prolific_api_token`     | Prolific API token used to create studies via the Researcher API (`platform=prolific`).  |     ❌     | String                                |
 |    `prolific_project_id`    | Prolific project ID for new studies. If unset, the user’s `current_project_id` is used.  |     ❌     | String                                |
 |  `prolific_completion_code` | Custom Prolific completion code. If unset, a deterministic code based on task/batch is used. |  ❌   | String                                |
-|     `toloka_oauth_token`    | Toloka API token (required if `platform=toloka` and you use API operations).             |     ❌     | String                                |
 |       `ip_info_token`       | Token for `ipinfo.com`.                                                                  |     ❌     | String                                |
 |   `ip_geolocation_api_key`  | API key for `ipgeolocation.io`.                                                          |     ❌     | String                                |
 |       `ipapi_api_key`       | API key for `ipapi.com`.                                                                 |     ❌     | String                                |
@@ -559,6 +558,8 @@ export const environment = {
 
 To publish a task, choose how you will recruit workers: via a supported platform or **manually**. The publishing steps vary by option. Pick one of the subsections below and follow its instructions.
 
+Supported platforms: **mturk**, **prolific**, or **none** (manual recruitment).
+
 ### Manual Recruitment
 
 To recruit workers manually (no platform integration):
@@ -637,34 +638,6 @@ To recruit via Prolific:
        using the same `<COMPLETION_CODE>` value as `prolific_completion_code` (or the auto-generated one printed by the init script).
    - Set audience, places, and cost as you normally would in Prolific.
 
----
-
-### Toloka
-
-To recruit via Toloka:
-
-1. Set `platform = toloka` in `data/.env`.
-2. In Toloka, create the **project** and set its general parameters.
-3. Go to the build output for Toloka:  
-   `data/build/toloka/`
-4. Copy the wrapper files:
-    - HTML: `data/build/toloka/interface.html`
-    - JS:   `data/build/toloka/interface.js`
-    - CSS:  `data/build/toloka/interface.css`
-5. In Toloka’s **Task Interface**, paste each file into the corresponding **HTML / JS / CSS** editors.
-6. Copy the data specifications:
-    - Input:  `data/build/toloka/input_specification.json`
-    - Output: `data/build/toloka/output_specification.json`
-7. Paste them into the **Data Specification** fields.
-8. Copy the general instructions:
-    - `data/build/task/instructions_general.json`
-9. Paste the text into **Instructions for Tolokers** (source-code edit mode).
-10. Create a **pool** and define audience parameters and reward.
-11. Publish and upload the tokens file for the pool:  
-    `data/build/toloka/tokens.tsv`
-12. Review submission statuses from each pool’s page.
-
-> **Security:** Keep `data/build/toloka/tokens.tsv` private. It is used for submission validation.
 
 ## Task Results
 
@@ -927,8 +900,6 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 |        `workers_mturk_data.csv`         |         MTurk worker/assignment exports.         |
 |    `workers_prolific_study_data.csv`    |        Prolific study/submission exports.        |
 | `workers_prolific_demographic_data.csv` |          Prolific worker demographics.           |
-|        `workers_toloka_data.csv`        |        Toloka project/submission exports.        |
-
 ## FAQ & Troubleshooting
 
 ### FAQ
@@ -944,12 +915,9 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
   The file must be named exactly `.env` (not `.env.txt`).  
   On **Windows**, enable “File name extensions” in Explorer; on **macOS**, use “Get Info” to verify the name.
 
-- **ImportError: cannot import name `VerifyTypes` from `httpx._types` (toloka-kit)**  
-  Pin `httpx` to `<0.28` (for example `0.27.2`), which is compatible with `toloka-kit==1.2.3`:
-  ```bash
-  pip install "httpx==0.27.2" "httpcore<2,>=1.0" --upgrade
-  ```
-  This is already handled if you install from the provided `requirements.txt`.
+
+- **Toloka support**  
+  Toloka integration has been removed from Crowd_Frame (the `toloka-kit` dependency and the Toloka build/download helpers are no longer part of the project).
 
 - **How do I reset a task that is blocked or unresponsive?**  
   If workers cannot continue or the admin panel will not accept changes, you can restore a clean state by deleting the task’s records from the DynamoDB tables: `*_ACL`, `*_Data`, `*_Logger`. This unlocks

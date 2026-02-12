@@ -73,7 +73,6 @@ folder_build_path = f"{DATA_DIR}/build/"
 folder_build_config_path = f"{DATA_DIR}/build/config/"
 folder_build_task_path = f"{DATA_DIR}/build/task/"
 folder_build_mturk_path = f"{DATA_DIR}/build/mturk/"
-folder_build_toloka_path = f"{DATA_DIR}/build/toloka/"
 folder_build_env_path = f"{DATA_DIR}/build/environments/"
 folder_build_deploy_path = f"{DATA_DIR}/build/deploy/"
 folder_build_skeleton_path = f"{DATA_DIR}/build/skeleton/"
@@ -128,7 +127,6 @@ language_code = os.getenv('language_code')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 aws_dataset_bucket = os.getenv('aws_dataset_bucket')
-toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 prolific_api_token = os.getenv('prolific_api_token')
 prolific_project_id = os.getenv('prolific_project_id')
@@ -164,6 +162,10 @@ if platform is None:
 
 if language_code is None:
     language_code = 'en-US'
+
+if platform == 'toloka':
+    console.print("[red]Toloka support has been removed from Crowd_Frame. Please set 'platform' to 'mturk', 'prolific', or 'none' in data/.env.[/red]")
+    stop_sequence()
 
 console.rule(f"{step_index} - Configuration Policy")
 step_index = step_index + 1
@@ -3010,83 +3012,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 except ValueError:
                     console.print(response.text)
 
-    if platform == 'toloka':
-        console.rule(f"{step_index} - Toloka HTML Interface")
-        step_index = step_index + 1
-
-        status.start()
-        status.update(f"Instantiating Mako model")
-
-        model = Template(filename=f"{folder_build_toloka_path}model.html")
-        if 'results_retrieved' in search_engine_config:
-            if len(search_engine_config['results_retrieved']) > 0:
-                toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=cloudfront_endpoint)
-            else:
-                toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
-        else:
-            toloka_page = model.render(aws_region=aws_region, aws_deploy_bucket=aws_deploy_bucket, task_name=task_name, batch_name=batch_name, cloudfront_endpoint=None)
-
-        toloka_page_file = f"{folder_build_toloka_path}interface.html"
-        with open(toloka_page_file, 'w') as file:
-            print(toloka_page, file=file)
-
-        console.print(f"Model istantiated")
-        console.print(f"Path: {toloka_page_file}")
-
-        hits_file = f"{folder_build_task_path}{filename_hits_config}"
-        toloka_tokens_file = f"{folder_build_toloka_path}tokens.tsv"
-        console.print(f"Loading [cyan underline]{filename_hits_config}[/cyan underline] file")
-        console.print(f"Path: [ital]{hits_file}")
-        hits = read_json(hits_file)
-        token_df = pd.DataFrame(columns=["INPUT:token_input"])
-        tokens_input = []
-        tokens_output = []
-        for hit in hits:
-            token_df = pd.concat([token_df, pd.DataFrame({"INPUT:token_input": [hit['token_input']]})], ignore_index=True)
-            token_df = pd.concat([token_df, pd.DataFrame({"INPUT:token_input": [None]})], ignore_index=True)
-            tokens_input.append(hit['token_input'])
-            tokens_output.append(hit['token_output'])
-        token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
-        console.print(f"Token for the current batch chosen")
-        console.print(f"Path: [italic]{toloka_tokens_file}")
-
-        console.print(f"Building input specification")
-        toloka_input_spec_file = f"{folder_build_toloka_path}input_specification.json"
-        input_specification = {
-            "token_input": {
-                "type": "string",
-                "hidden": False,
-                "required": False,
-                "max_length": 11,
-                "min_length": 11,
-                "allowed_values": tokens_input
-            }
-        }
-        serialize_json(folder_build_toloka_path, 'input_specification.json', input_specification)
-        console.print(f"Path: {toloka_input_spec_file}")
-
-        console.print(f"Building output specification")
-        toloka_output_spec_file = f"{folder_build_toloka_path}output_specification.json"
-        output_specification = {
-            "token_input": {
-                "type": "string",
-                "hidden": False,
-                "required": True,
-                "max_length": 11,
-                "min_length": 11,
-                "allowed_values": tokens_input
-            },
-            "token_output": {
-                "type": "string",
-                "hidden": False,
-                "required": True,
-                "max_length": 11,
-                "min_length": 11,
-                "allowed_values": tokens_output
-            }
-        }
-        serialize_json(folder_build_toloka_path, 'output_specification.json', output_specification)
-        console.print(f"Path: {toloka_output_spec_file}")
 
     console.rule(
         f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build"
@@ -3345,7 +3270,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
     folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
-    folder_tasks_batch_toloka_path = f"{folder_tasks_batch_path}toloka/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
@@ -3358,8 +3282,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if platform == "mturk":
         os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
-    if platform == "toloka":
-        os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
 
     console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}[/italic]")
     console.print(f"Path: [italic]{folder_tasks_batch_env_path}[/italic]")
@@ -3390,14 +3312,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     copy(f"{folder_build_env_path}environment.ts", f"{folder_tasks_batch_env_path}environment.ts", "Dev Environment")
     copy(f"{folder_build_env_path}environment.prod.ts", f"{folder_tasks_batch_env_path}environment.prod.ts", "Prod Environment")
 
-    if platform == "toloka":
-        console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
-        copy(f"{folder_build_toloka_path}interface.html", f"{folder_tasks_batch_toloka_path}interface.html", "Page Markup")
-        copy(f"{folder_build_toloka_path}interface.css", f"{folder_tasks_batch_toloka_path}interface.css", "Page Stylesheet")
-        copy(f"{folder_build_toloka_path}interface.js", f"{folder_tasks_batch_toloka_path}interface.js", "Page Javascript")
-        copy(f"{folder_build_toloka_path}tokens.tsv", f"{folder_tasks_batch_toloka_path}tokens.tsv", "Hits tokens")
-        copy(f"{folder_build_toloka_path}input_specification.json", f"{folder_tasks_batch_toloka_path}input_specification.json", "Input Specification")
-        copy(f"{folder_build_toloka_path}output_specification.json", f"{folder_tasks_batch_toloka_path}output_specification.json", "Output Specification")
 
     if platform == "mturk":
         console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
