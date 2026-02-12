@@ -305,9 +305,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:21.1.2":
-  version: 21.1.2
-  resolution: "@angular/cdk@npm:21.1.2"
+"@angular/cdk@npm:21.1.4":
+  version: 21.1.4
+  resolution: "@angular/cdk@npm:21.1.4"
   dependencies:
     parse5: "npm:^8.0.0"
     tslib: "npm:^2.3.0"
@@ -316,7 +316,7 @@ __metadata:
     "@angular/core": ^21.0.0 || ^22.0.0
     "@angular/platform-browser": ^21.0.0 || ^22.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/15e63377fe361c3a4e559b7ddfaa62061f196185e622d682e08b2fa8dd2b1c3125281a2b003d67170acf593aeaeab3ce3a67426b763d93ae2101f689467ab666
+  checksum: 10/422842c186d625357873f301bc5bc518db5c2f15027c970ca13bfc9d284e3be06533a4ce3d7e9b4a754fbb66b095ad14608e81b0c1ca84e72eba6812f74d95cc
   languageName: node
   linkType: hard
 
@@ -447,19 +447,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:21.1.2":
-  version: 21.1.2
-  resolution: "@angular/material@npm:21.1.2"
+"@angular/material@npm:21.1.4":
+  version: 21.1.4
+  resolution: "@angular/material@npm:21.1.4"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/cdk": 21.1.2
+    "@angular/cdk": 21.1.4
     "@angular/common": ^21.0.0 || ^22.0.0
     "@angular/core": ^21.0.0 || ^22.0.0
     "@angular/forms": ^21.0.0 || ^22.0.0
     "@angular/platform-browser": ^21.0.0 || ^22.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10/cdcd2455fea8a87e3eea336961266ff9724badfd03fc6e48478a60d54b6931fd637313de4f88e41b56710193a4db5dd2885f6c35dac37c538c2dfff7285f5bf6
+  checksum: 10/257716f75d6120e93e5fa7afa5f72fd491dd15ca7d0b3a7603314ac3c3cfc1fe8131dfcba8789a358c9d7bc677c76c76bf44971bf745d1270e574199cf47c138
   languageName: node
   linkType: hard
 
@@ -4814,7 +4814,7 @@ __metadata:
   dependencies:
     "@angular/animations": "npm:21.1.4"
     "@angular/build": "npm:21.1.4"
-    "@angular/cdk": "npm:21.1.2"
+    "@angular/cdk": "npm:21.1.4"
     "@angular/cli": "npm:21.1.4"
     "@angular/common": "npm:21.1.4"
     "@angular/compiler": "npm:21.1.4"
@@ -4822,7 +4822,7 @@ __metadata:
     "@angular/core": "npm:21.1.4"
     "@angular/forms": "npm:21.1.4"
     "@angular/localize": "npm:21.1.4"
-    "@angular/material": "npm:21.1.2"
+    "@angular/material": "npm:21.1.4"
     "@angular/platform-browser": "npm:21.1.4"
     "@angular/platform-browser-dynamic": "npm:21.1.4"
     "@angular/router": "npm:21.1.4"
