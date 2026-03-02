@@ -11,14 +11,12 @@
     "build": "ng build",
     "build:it": "ng build --configuration=development-it",
     "translate": "ng extract-i18n --output-path src/locale",
-    "lint": "ng lint",
-    "fix:strict-forms": "yarn tsx scripts/strict-forms-codemod.ts && yarn lint --fix"
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
     "@angular/animations": "21.1.5",
     "@angular/cdk": "21.1.5",
-    "@angular/cli": "21.1.4",
     "@angular/common": "21.1.5",
     "@angular/compiler": "21.1.5",
     "@angular/core": "21.1.5",
@@ -51,6 +49,7 @@
   },
   "devDependencies": {
     "@angular/build": "21.1.4",
+    "@angular/cli": "21.1.5",
     "@angular/compiler-cli": "21.1.5",
     "@kolkov/angular-editor": "^3.0.5",
     "@types/node": "^24.10.13",
