@@ -113,7 +113,7 @@ pytz==2025.2
     #   datefinder
 regex==2026.1.15
     # via datefinder
-requests==2.32.5
+requests==2.33.0
     # via
     #   -r requirements.in
     #   docker
