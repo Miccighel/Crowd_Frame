@@ -7,9 +7,9 @@
 [![Downloads](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total)](https://github.com/Miccighel/Crowd_Frame/releases)
 
 <!-- Tech stack -->
-![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
 ![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![Node.js 22](https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white)
+![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=node.js&logoColor=white)
 ![Yarn 4 (Berry)](https://img.shields.io/badge/Yarn-4%20(Berry)-2C8EBB?logo=yarn&logoColor=white)
 
 <!-- Repo health -->
@@ -60,8 +60,8 @@
 ## Prerequisites
 
 - **AWS CLI v2**
-- **Node.js 22 LTS**
-- **Yarn** (via Corepack)
+- **Node.js 24 LTS** recommended for the Angular frontend
+- **Yarn 4** via Corepack
 - **Miniconda** (to create the Python 3.11 environment)
 - **Docker** *(optional; only if `enable_solver=true`)*
 
@@ -79,8 +79,9 @@ aws sts get-caller-identity --profile your_iam_user
 git clone https://github.com/Miccighel/Crowd_Frame.git
 cd Crowd_Frame
 
-# 2) Enable Yarn via Corepack and install deps
+# 2) Enable Yarn via Corepack and install dependencies
 corepack enable
+corepack prepare yarn@4.13.0 --activate
 yarn install --immutable
 
 # 3) Create and activate the Python env (Python 3.11 is installed here)
@@ -150,6 +151,7 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
 
    ```bash
    corepack enable
+   corepack prepare yarn@4.13.0 --activate
    yarn install --immutable
    ```
 
@@ -526,6 +528,16 @@ export class GoldChecker {
 ````
 
 ## Local Development
+
+Crowd_Frame currently uses **Angular 22**, **Node.js 24 LTS**, and **Yarn 4 (Berry)** for the frontend. Use Yarn commands rather than npm commands so that the lockfile and package manager configuration remain consistent.
+
+```bash
+corepack enable
+corepack prepare yarn@4.13.0 --activate
+yarn install --immutable
+yarn ng build
+yarn ng serve
+```
 
 You can edit and test the configuration **locally** without deploying the full AWS stack.
 
@@ -915,6 +927,9 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
   The file must be named exactly `.env` (not `.env.txt`).  
   On **Windows**, enable “File name extensions” in Explorer; on **macOS**, use “Get Info” to verify the name.
 
+
+- **Use Yarn, not npm**  
+  The frontend uses Yarn 4. Use `yarn install`, `yarn up`, and `yarn ng ...` commands instead of npm commands to avoid generating a `package-lock.json` or triggering npm peer-resolution conflicts.
 
 - **Toloka support**  
   Toloka integration has been removed from Crowd_Frame (the `toloka-kit` dependency and the Toloka build/download helpers are no longer part of the project).
