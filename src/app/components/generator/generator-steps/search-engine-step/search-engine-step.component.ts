@@ -1,5 +1,5 @@
 /* Core */
-import { Component, EventEmitter, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from "@angular/core";
 import {
     UntypedFormArray,
     UntypedFormBuilder,
@@ -22,6 +22,7 @@ interface SourceType {
     selector: "app-search-engine-step",
     templateUrl: "./search-engine-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SearchEngineStepComponent implements OnInit {

@@ -1,7 +1,7 @@
 /* ------------------------------------------------------
    Core Angular
    ------------------------------------------------------ */
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 
 /* ------------------------------------------------------
@@ -46,6 +46,7 @@ type StatusKey =
     selector: 'app-outcome-section',
     templateUrl: './outcome-section.component.html',
     styleUrls: ['./outcome-section.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
 export class OutcomeSectionComponent implements OnInit {

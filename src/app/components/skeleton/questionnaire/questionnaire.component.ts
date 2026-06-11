@@ -8,13 +8,14 @@
  *  ########################################################################### */
 
 import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    AfterViewInit,
-    Output
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  AfterViewInit,
+  Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
     UntypedFormBuilder,
@@ -49,6 +50,7 @@ import {MatStepper} from '@angular/material/stepper';
     selector: 'app-questionnaire',
     templateUrl: './questionnaire.component.html',
     styleUrls: ['./questionnaire.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class QuestionnaireComponent implements OnInit, AfterViewInit {

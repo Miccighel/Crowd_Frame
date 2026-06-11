@@ -1,13 +1,14 @@
 /* Core modules */
 import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    ViewChild,
-    AfterViewInit
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+  AfterViewInit,
+  ChangeDetectionStrategy
 } from "@angular/core";
 import {of} from "rxjs";
 import {catchError, map, tap} from "rxjs/operators";
@@ -52,6 +53,7 @@ import {FakerService} from "../../../../../../services/searchEngine/faker.servic
     selector: "app-search-engine-body",
     templateUrl: "./search-engine-body.component.html",
     styleUrls: ["./search-engine-body.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 /*

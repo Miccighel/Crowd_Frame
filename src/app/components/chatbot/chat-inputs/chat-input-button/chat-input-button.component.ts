@@ -1,9 +1,10 @@
 import {
-    Component,
-    EventEmitter,
-    Input,
-    Output,
-    ViewEncapsulation,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from "@angular/core";
 
 @Component({
@@ -11,6 +12,7 @@ import {
     templateUrl: "chat-input-button.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-button.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInputButtonComponent {

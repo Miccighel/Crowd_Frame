@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from "@angular/core";
 import { FormBuilder, FormGroup, NgForm } from "@angular/forms";
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 
@@ -6,6 +6,7 @@ import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
     selector: "chat-comment-modal",
     templateUrl: "chat-comment-modal.component.html",
     styleUrls: ["./chat-comment-modal.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatCommentModalComponent implements OnInit {

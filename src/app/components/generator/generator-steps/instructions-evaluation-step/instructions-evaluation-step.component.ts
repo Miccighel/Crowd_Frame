@@ -1,5 +1,5 @@
 /* Core */
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy} from '@angular/core';
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
@@ -13,6 +13,7 @@ import {EvaluationInstruction} from "../../../../models/skeleton/instructions/ev
     selector: 'app-instructions-evaluation-step',
     templateUrl: './instructions-evaluation-step.component.html',
     styleUrls: ['../../generator.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 

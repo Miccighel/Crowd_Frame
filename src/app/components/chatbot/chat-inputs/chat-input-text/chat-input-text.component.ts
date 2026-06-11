@@ -1,15 +1,17 @@
 import {
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    Output,
-    ViewChild,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  ChangeDetectionStrategy
 } from "@angular/core";
 @Component({
     selector: "chat-input-text",
     templateUrl: "chat-input-text.component.html",
     styleUrls: ["./chat-input-text.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInputTextComponent {

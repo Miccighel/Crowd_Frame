@@ -1,13 +1,14 @@
 /* Core */
 import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnInit,
-    Output,
-    SimpleChanges
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
     UntypedFormBuilder,
@@ -30,6 +31,7 @@ import {DataRecord} from '../../../../models/skeleton/dataRecord';
     selector: 'app-dimension',
     templateUrl: './dimension.component.html',
     styleUrls: ['./dimension.component.scss', '../document.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class DimensionComponent implements OnInit, OnChanges {

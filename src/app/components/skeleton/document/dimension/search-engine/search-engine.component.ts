@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 /* Material Design */
 import {MatStepper} from '@angular/material/stepper';
@@ -18,6 +18,7 @@ import {ConfigService} from '../../../../../services/config.service';
     selector: 'app-search-engine',
     templateUrl: './search-engine.component.html',
     styleUrls: ['./search-engine.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SearchEngineComponent implements OnInit {

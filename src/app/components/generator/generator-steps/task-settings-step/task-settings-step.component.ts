@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from "@angular/core";
+import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy} from "@angular/core";
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
@@ -27,6 +27,7 @@ interface ModalityType {
     selector: "app-task-settings-step",
     templateUrl: "./task-settings-step.component.html",
     styleUrls: ["../../generator.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class TaskSettingsStepComponent implements OnInit {

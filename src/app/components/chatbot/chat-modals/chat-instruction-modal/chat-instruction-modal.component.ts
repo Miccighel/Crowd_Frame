@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 import { BaseInstruction } from "src/app/models/skeleton/instructions/baseInstruction";
@@ -8,6 +8,7 @@ import { EvaluationInstruction } from "src/app/models/skeleton/instructions/eval
     selector: "chat-instruction-modal",
     templateUrl: "chat-instruction-modal.component.html",
     styleUrls: ["./chat-instruction-modal.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInstructionModalComponent {

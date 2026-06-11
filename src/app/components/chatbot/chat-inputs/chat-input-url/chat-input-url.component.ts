@@ -1,15 +1,16 @@
 import {
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    Output,
-    ViewChild,
-    ViewEncapsulation,
-    SimpleChanges,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ViewEncapsulation,
+  SimpleChanges,
+  ChangeDetectionStrategy
 } from "@angular/core";
 import { Subject } from "rxjs";
 
@@ -18,6 +19,7 @@ import { Subject } from "rxjs";
     templateUrl: "chat-input-url.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-url.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {

@@ -1,12 +1,13 @@
 import {
-    Component,
-    EventEmitter,
-    ElementRef,
-    Input,
-    OnInit,
-    ViewChild,
-    Output,
-    ViewEncapsulation,
+  Component,
+  EventEmitter,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+  Output,
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from "@angular/core";
 import { MagnitudeDimensionInfo } from "src/app/models/conversational/common.model";
 
@@ -15,6 +16,7 @@ import { MagnitudeDimensionInfo } from "src/app/models/conversational/common.mod
     templateUrl: "chat-input-magnitude.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-magnitude.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInputMagnitudeComponent implements OnInit {

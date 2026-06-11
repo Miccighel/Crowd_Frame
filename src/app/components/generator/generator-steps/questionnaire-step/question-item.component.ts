@@ -20,11 +20,12 @@
  * =========================================================================== */
 
 import {
-    Component,
-    Input,
-    OnInit,
-    OnChanges,
-    SimpleChanges,
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
     AbstractControl,
@@ -40,6 +41,7 @@ type TargetOption = { name: string; label: string };
     selector: 'app-question-item',
     templateUrl: './question-item.component.html',
     styleUrls: ['./question-item.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
 export class QuestionItemComponent implements OnInit, OnChanges {

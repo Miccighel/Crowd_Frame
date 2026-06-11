@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy, Input, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {Component, OnInit, OnDestroy, Input, SimpleChanges, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
 import {Subject} from 'rxjs';
 
 import {Title} from '@angular/platform-browser';
@@ -13,6 +13,7 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
     templateUrl: './pre-retrieved-result-summary.component.html',
     styleUrls: ['./pre-retrieved-result-summary.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PreRetrievedResultSummaryComponent implements OnInit, OnDestroy {

@@ -3,13 +3,15 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 @Component({
   selector: 'app-document-video',
   templateUrl: './document-video.component.html',
   styleUrls: ['./document-video.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class DocumentVideoComponent implements OnInit {

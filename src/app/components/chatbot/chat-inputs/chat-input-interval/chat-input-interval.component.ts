@@ -1,10 +1,11 @@
 import {
-    Component,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    ViewEncapsulation,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from "@angular/core";
 import { MatSliderChange } from "@angular/material/slider";
 import { IntervalDimensionInfo } from "src/app/models/conversational/common.model";
@@ -14,6 +15,7 @@ import { IntervalDimensionInfo } from "src/app/models/conversational/common.mode
     templateUrl: "chat-input-interval.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-interval.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInputIntervalComponent implements OnInit {

@@ -1,12 +1,13 @@
 /* Core */
 import {
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output, ViewChild
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output, ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 /* Services */
@@ -23,6 +24,7 @@ import {Worker} from '../../../../../models/worker/worker';
     selector: 'app-element-pointwise',
     templateUrl: './element-pointwise.component.html',
     styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ElementPointwiseComponent implements OnInit {

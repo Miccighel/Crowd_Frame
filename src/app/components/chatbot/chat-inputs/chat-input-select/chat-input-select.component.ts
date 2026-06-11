@@ -1,9 +1,10 @@
 import {
-    Component,
-    EventEmitter,
-    Input,
-    Output,
-    ViewEncapsulation, OnInit
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewEncapsulation, OnInit,
+  ChangeDetectionStrategy
 } from "@angular/core";
 
 @Component({
@@ -11,6 +12,7 @@ import {
     templateUrl: "chat-input-select.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-select.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatInputSelectComponent implements OnInit {

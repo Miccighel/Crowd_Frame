@@ -1,5 +1,5 @@
 /* Core */
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy} from '@angular/core';
 import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
@@ -12,6 +12,7 @@ import {BaseInstruction} from "../../../../models/skeleton/instructions/baseInst
     selector: 'app-instructions-step',
     templateUrl: './instructions-general-step.component.html',
     styleUrls: ['../../generator.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class InstructionsGeneralStep implements OnInit {

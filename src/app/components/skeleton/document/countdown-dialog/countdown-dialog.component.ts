@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 export interface DialogData {
@@ -9,6 +9,7 @@ export interface DialogData {
     selector: 'app-countdown-dialog',
     templateUrl: './countdown-dialog.component.html',
     styleUrls: ['./countdown-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CountdownDialogComponent {

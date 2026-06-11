@@ -67,7 +67,7 @@
  *   • Likert/CRT modes are supported independently (not used in this sample).
  * ============================================================================ */
 
-import {Component, EventEmitter, OnInit, Output} from "@angular/core";
+import {Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy} from "@angular/core";
 import {
     UntypedFormArray,
     UntypedFormBuilder,
@@ -98,6 +98,7 @@ interface QuestionnairePositionOption {
     selector: "app-questionnaire-step",
     templateUrl: "./questionnaire-step.component.html",
     styleUrls: ["../../generator.component.scss", "./questionnaire-step.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
 export class QuestionnaireStepComponent implements OnInit {

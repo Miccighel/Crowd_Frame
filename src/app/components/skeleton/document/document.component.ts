@@ -2,18 +2,19 @@
 
 /* Angular Core */
 import {
-    AfterViewInit,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnDestroy,
-    OnInit,
-    Output,
-    QueryList,
-    ViewChild,
-    ViewChildren,
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 
@@ -53,6 +54,7 @@ import {Title} from '@angular/platform-browser';
     selector: 'app-document',
     templateUrl: './document.component.html',
     styleUrls: ['./document.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
 export class DocumentComponent implements OnInit, AfterViewInit, OnDestroy {

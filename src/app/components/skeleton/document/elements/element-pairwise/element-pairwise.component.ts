@@ -8,7 +8,8 @@ import {
   OnInit,
   Output,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   UntypedFormBuilder,
@@ -41,6 +42,7 @@ export interface AssessmentFormEvent {
   selector: 'app-element-pairwise',
   templateUrl: './element-pairwise.component.html',
   styleUrls: ['./element-pairwise.component.scss', '../../document.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ElementPairwiseComponent implements OnInit, OnChanges {
