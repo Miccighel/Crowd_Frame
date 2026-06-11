@@ -4037,9 +4037,9 @@ __metadata:
     esbuild: "npm:^0.27.7"
     material-icons: "npm:^1.13.14"
     ngx-color-picker: "npm:^20.1.1"
-    ngx-cookie-service: "npm:21.3.1"
+    ngx-cookie-service: "npm:22.0.0"
     ngx-countdown: "npm:20.0.0"
-    ngx-device-detector: "npm:^11.0.0"
+    ngx-device-detector: "npm:^12.0.0"
     ngx-file-helpers: "npm:15.0.1"
     ngx-ui-loader: "npm:^19.0.0"
     rxjs: "npm:^7.8.2"
@@ -5816,15 +5816,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-cookie-service@npm:21.3.1":
-  version: 21.3.1
-  resolution: "ngx-cookie-service@npm:21.3.1"
+"ngx-cookie-service@npm:22.0.0":
+  version: 22.0.0
+  resolution: "ngx-cookie-service@npm:22.0.0"
   dependencies:
     tslib: "npm:^2.8.1"
   peerDependencies:
-    "@angular/common": ^21.0.0
-    "@angular/core": ^21.0.0
-  checksum: 10/e71725059702cfc55257b17b226ec5c8353e7dd643790aaea9d52f04c4136f65c6dc7755dafe61e0864a2b7ed5355f14b706f34f3cd4ad145a3b1636d336d647
+    "@angular/common": ^22.0.0
+    "@angular/core": ^22.0.0
+  checksum: 10/32c6739d3edb2d7719b2b43fdf14e798466e34aba990654b0e5c5f4ccd48073d089bb1bb3bc969fc23d208a293c60bf32ba90259496fcc576b4e335f5752ecc9
   languageName: node
   linkType: hard
 
@@ -5837,15 +5837,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "ngx-device-detector@npm:11.0.0"
+"ngx-device-detector@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "ngx-device-detector@npm:12.0.0"
   dependencies:
     tslib: "npm:^2.8.1"
   peerDependencies:
-    "@angular/common": ^21.0.0
-    "@angular/core": ^21.0.0
-  checksum: 10/1eb1c678047bc8ea9901ecdf6a9b20e348bd26441b27a7ea17ee2bbea7c62c71fcab1d563b2cf24fab23b1d4989504bc6004970212ae758db418034be282b02c
+    "@angular/common": ^22.0.0
+    "@angular/core": ^22.0.0
+  checksum: 10/9ab1b2786b7144d892b5ab1b64212ad75e2029d8912adcb5a24d63c8a3e985d9e7ecf7c708935264a28fff693a1269c463d22679ddc168ff34c4c05a6911bd8d
   languageName: node
   linkType: hard
 
