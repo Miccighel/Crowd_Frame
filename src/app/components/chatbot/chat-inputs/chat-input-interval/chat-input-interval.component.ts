@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy
 } from "@angular/core";
 import { MatSliderChange } from "@angular/material/slider";
-import { IntervalDimensionInfo } from "src/app/models/conversational/common.model";
+import { IntervalDimensionInfo } from "app/models/conversational/common.model";
 
 @Component({
     selector: "chat-input-interval",

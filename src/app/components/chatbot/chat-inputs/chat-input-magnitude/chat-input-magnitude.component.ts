@@ -9,7 +9,7 @@ import {
   ViewEncapsulation,
   ChangeDetectionStrategy
 } from "@angular/core";
-import { MagnitudeDimensionInfo } from "src/app/models/conversational/common.model";
+import { MagnitudeDimensionInfo } from "app/models/conversational/common.model";
 
 @Component({
     selector: "chat-input-magnitude",

@@ -19,7 +19,7 @@ import {SearchEngineStepComponent} from "../search-engine-step/search-engine-ste
 import {TaskSettingsStepComponent} from "../task-settings-step/task-settings-step.component";
 import {WorkerChecksStepComponent} from "../worker-checks-step/worker-checks-step.component";
 
-import {S3Service} from 'src/app/services/aws/s3.service';
+import {S3Service} from 'app/services/aws/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 

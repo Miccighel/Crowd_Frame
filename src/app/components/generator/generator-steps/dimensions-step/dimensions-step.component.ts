@@ -9,9 +9,9 @@ import {
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
-import {S3Service} from "src/app/services/aws/s3.service";
+import {S3Service} from "app/services/aws/s3.service";
 /* Models */
-import {Dimension, Mapping} from "src/app/models/skeleton/dimension";
+import {Dimension, Mapping} from "app/models/skeleton/dimension";
 
 interface ScaleType {
     value: string;

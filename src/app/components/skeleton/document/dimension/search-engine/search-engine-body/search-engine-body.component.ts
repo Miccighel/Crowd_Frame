@@ -34,7 +34,7 @@ import {
 import {CustomDataSource} from "../../../../../../models/searchEngine/customDataSource";
 import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
 import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
-import {Dimension} from "src/app/models/skeleton/dimension";
+import {Dimension} from "app/models/skeleton/dimension";
 import {PubmedSearchResponse} from "../../../../../../models/searchEngine/pubmedSearchResponse";
 import {FakeSearchResponse} from "../../../../../../models/searchEngine/fakeSearchResponse";
 import {BraveWebSearchResponse} from "../../../../../../models/searchEngine/braveWebSearchResponse";

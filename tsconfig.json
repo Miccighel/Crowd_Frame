@@ -1,20 +1,29 @@
 {
     /* =============================================================================
      * tsconfig.json — TypeScript configuration for the Angular application
-     * - Uses modern ESM output and esbuild-compatible module resolution.
-     * - Comments use /* ... *\/ JSONC style.
+     * - Uses modern ESM output and esbuild-compatible module resolution
+     * - Uses explicit path aliases instead of baseUrl
+     * - Keeps non-strict TypeScript checks for compatibility with the existing codebase
      * ============================================================================= */
 
     "$schema": "./node_modules/@angular-devkit/build-angular/tsconfig.schema.json",
     "compilerOptions": {
         /* ========= PATHS & OUTPUT ========= */
-        "baseUrl": "./",
         "outDir": "./dist/out-tsc",
+        "paths": {
+            "app/*": [
+                "./src/app/*"
+            ],
+            "data/*": [
+                "./data/*"
+            ]
+        },
+
         /* ========= MODULE & TARGET ========= */
         "module": "esnext",
         /* ESM output for modern bundlers */
         "moduleResolution": "bundler",
-        /* Resolution mode aligned with esbuild/Angular 17+ */
+        /* Resolution mode aligned with esbuild/Angular */
         "target": "ES2022",
         /* Baseline supported by Angular */
 
@@ -22,7 +31,7 @@
         "experimentalDecorators": true,
         /* Required for Angular decorators */
         "useDefineForClassFields": false,
-        /* Kept false until migration to TS 5 semantics */
+        /* Kept false until migration to newer TypeScript class field semantics */
         "importHelpers": true,
         /* Emits helper calls via tslib */
         "resolveJsonModule": true,
@@ -31,6 +40,12 @@
         /* ========= INTEROP ========= */
         "esModuleInterop": true,
         /* Enables default-import interop with CJS */
+
+        /* ========= COMPATIBILITY MODE ========= */
+        "strict": false,
+        "strictNullChecks": false,
+        "strictPropertyInitialization": false,
+        "strictFunctionTypes": false,
 
         /* ========= DIAGNOSTICS & SAFETY ========= */
         "sourceMap": true,

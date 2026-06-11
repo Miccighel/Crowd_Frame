@@ -1,4 +1,4 @@
-import { CategoricalInfo } from "src/app/models/conversational/common.model";
+import { CategoricalInfo } from "app/models/conversational/common.model";
 
 /* =============================================================================
  * ChatHelper

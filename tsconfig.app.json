@@ -5,10 +5,8 @@
         "types": [
             "node"
         ],
-        // Explicitly re-declare target + libs for the application context
-        "target": "ES2022",
-        "downlevelIteration": false
-        // safe with ES2022 target
+        /* Explicitly re-declare target for the application context */
+        "target": "ES2022"
     },
     "files": [
         "src/main.ts"
@@ -19,13 +17,5 @@
     "exclude": [
         "src/test.ts",
         "src/**/*.spec.ts"
-    ],
-    "angularCompilerOptions": {
-      "extendedDiagnostics": {
-        "checks": {
-          "nullishCoalescingNotNullable": "suppress",
-          "optionalChainNotNullable": "suppress"
-        }
-      }
-    }
+    ]
 }

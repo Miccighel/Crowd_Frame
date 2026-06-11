@@ -1,8 +1,8 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
-import { BaseInstruction } from "src/app/models/skeleton/instructions/baseInstruction";
-import { EvaluationInstruction } from "src/app/models/skeleton/instructions/evaluationInstruction";
+import { BaseInstruction } from "app/models/skeleton/instructions/baseInstruction";
+import { EvaluationInstruction } from "app/models/skeleton/instructions/evaluationInstruction";
 
 @Component({
     selector: "chat-instruction-modal",
