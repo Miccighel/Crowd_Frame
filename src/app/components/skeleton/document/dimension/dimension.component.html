@@ -320,7 +320,7 @@
 
                                 <div class="{{ (dimensions.length === 1) ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple' }}">
 
-                                    @let ins = dimension.scale?.instructions;
+                                    @let ins = $safeNavigationMigration(dimension.scale?.instructions);
                                     @if (ins) {
                                         <app-instruction-list
                                             [element]="postAssessment

@@ -191,7 +191,7 @@
 
                                             <td class="p-0 width-20 pr-16px center">
                         <span>
-                          <pre>{{ this.getCategoryReport(ctrl.get('name')?.value) }}</pre>
+                          <pre>{{ this.getCategoryReport($safeNavigationMigration(ctrl.get('name')?.value)) }}</pre>
                         </span>
                                             </td>
 
@@ -387,7 +387,7 @@
                                             </mat-option>
                                         }
                                     </mat-select>
-                                    <app-error-message [formField]="formStep.get('annotator')?.get('type')"></app-error-message>
+                                    <app-error-message [formField]="$safeNavigationMigration(formStep.get('annotator')?.get('type'))"></app-error-message>
                                 </mat-form-field>
                             </td>
                         </tr>
@@ -413,7 +413,7 @@
                                                 <mat-label><span i18n>Label</span></mat-label>
                                                 <input matInput type="text" formControlName="label"/>
                                                 <app-error-message
-                                                    [formField]="formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('label')">
+                                                    [formField]="$safeNavigationMigration(formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('label'))">
                                                 </app-error-message>
                                             </mat-form-field>
                                         </td>
@@ -425,7 +425,7 @@
                                                        [(colorPicker)]="this.annotatorOptionColors[valueIndex]"
                                                        (colorPickerChange)="updateOptionColor($event, valueIndex)"/>
                                                 <app-error-message
-                                                    [formField]="formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('color')">
+                                                    [formField]="$safeNavigationMigration(formStep.get('annotator')?.get('values')?.get(valueIndex.toString())?.get('color'))">
                                                 </app-error-message>
                                             </mat-form-field>
                                         </td>
@@ -524,7 +524,7 @@
                         <mat-form-field matLine appearance="fill" class="indent p-2px" [formGroupName]="i">
                             <mat-label>{{ this.hitsAttributesValues[this.formStep.get('countdown_attribute')?.value][i] }}</mat-label>
                             <input matInput type="number" formControlName="time" min="0"/>
-                            <app-error-message [formField]="this.formStep.get('countdown_attribute_values')?.get(i.toString())?.get('time')"></app-error-message>
+                            <app-error-message [formField]="$safeNavigationMigration(this.formStep.get('countdown_attribute_values')?.get(i.toString())?.get('time'))"></app-error-message>
                         </mat-form-field>
                     }
                 </div>
@@ -541,7 +541,7 @@
                         <mat-form-field matLine class="indent p-2px" [formGroupName]="i">
                             <mat-label>Position {{ i }}</mat-label>
                             <input matInput type="number" formControlName="time" min="0"/>
-                            <app-error-message [formField]="this.formStep.get('countdown_position_values')?.get(i.toString())?.get('time')"></app-error-message>
+                            <app-error-message [formField]="$safeNavigationMigration(this.formStep.get('countdown_position_values')?.get(i.toString())?.get('time'))"></app-error-message>
                         </mat-form-field>
                     }
                 </div>
@@ -562,7 +562,7 @@
                             <tr>
                                 <td class="p-0 pr-16px">
                                     <mat-form-field matLine class="width-100"
-                                                    [hideRequiredMarker]="msgCtrl.get('message')?.valid"
+                                                    [hideRequiredMarker]="$safeNavigationMigration(msgCtrl.get('message')?.valid)"
                                                     appearance="fill">
                                         <mat-label><span i18n>Message</span></mat-label>
                                         <input matInput type="text" formControlName="message"/>

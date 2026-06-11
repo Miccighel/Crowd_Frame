@@ -60,8 +60,8 @@
             }
 
             <app-instruction-list
-                [element]="task.instructionsEvaluation?.element"
-                [instructions]="task.instructionsEvaluation?.instructions"
+                [element]="$safeNavigationMigration(task.instructionsEvaluation?.element)"
+                [instructions]="$safeNavigationMigration(task.instructionsEvaluation?.instructions)"
                 [instructionsMode]="'styled'"
                 [currentTaskType]="document.params['task_type']"
             >
