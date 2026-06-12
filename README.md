@@ -49,6 +49,7 @@
     <li><a href="#hits-allocation">HITs Allocation</a></li>
     <li><a href="#quality-checks">Quality Checks</a></li>
     <li><a href="#local-development">Local Development</a></li>
+    <li><a href="#dependency-maintenance">Dependency Maintenance</a></li>
     <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#task-results">Task Results</a></li>
     <li><a href="#faq--troubleshooting">FAQ & Troubleshooting</a></li>
@@ -81,7 +82,7 @@ cd Crowd_Frame
 
 # 2) Enable Yarn via Corepack and install dependencies
 corepack enable
-corepack prepare yarn@4.13.0 --activate
+corepack prepare yarn@4.16.0 --activate
 yarn install --immutable
 
 # 3) Create and activate the Python env (Python 3.11 is installed here)
@@ -151,7 +152,7 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
 
    ```bash
    corepack enable
-   corepack prepare yarn@4.13.0 --activate
+   corepack prepare yarn@4.16.0 --activate
    yarn install --immutable
    ```
 
@@ -172,6 +173,7 @@ See task examples: [`examples/`](https://github.com/Miccighel/Crowd_Frame/tree/m
 
     ```ini
     mail_contact=your_email_address
+    platform=none
     budget_limit=your_usd_budget_limit
     task_name=your_task_name
     batch_name=your_batch_name
@@ -315,7 +317,7 @@ Open the console by adding `/admin` to your task URL.
 
 The HITs for a task must be stored in a special JSON file.
 Such a file can be manually uploaded when configuring the task itself.
-The file must comply with a special format that satisfies 5 requirements:
+The file must comply with a special format that satisfies 6 requirements:
 
 1. There must be an array of HITs (also called _units_);
 2. Each HIT must have a _unique_ input token attribute;
@@ -529,11 +531,11 @@ export class GoldChecker {
 
 ## Local Development
 
-Crowd_Frame currently uses **Angular 22**, **Node.js 24 LTS**, and **Yarn 4 (Berry)** for the frontend. Use Yarn commands rather than npm commands so that the lockfile and package manager configuration remain consistent.
+Crowd_Frame currently uses **Angular 22**, **Node.js 24 LTS**, and **Yarn 4 (Berry)** for the frontend. The repository declares `yarn@4.16.0` through `packageManager`. Use Yarn commands rather than npm commands so that the lockfile and package manager configuration remain consistent.
 
 ```bash
 corepack enable
-corepack prepare yarn@4.13.0 --activate
+corepack prepare yarn@4.16.0 --activate
 yarn install --immutable
 yarn ng build
 yarn ng serve
@@ -565,6 +567,73 @@ export const environment = {
 **Note:** Each time you run `init.py`, this file may be **overwritten**. Keep a backup of local edits if needed.
 
 > **Security:** Do not commit `environment.ts` or `.env` if they contain AWS keys or secrets. Add them to `.gitignore`.
+
+## Dependency Maintenance
+
+Crowd_Frame uses separate dependency stacks for the Angular frontend and the Python tooling. Review dependencies periodically, especially before preparing a release.
+
+### Frontend Dependencies
+
+The frontend uses **Yarn 4 (Berry)**. Use Yarn commands rather than npm commands so that `yarn.lock` and the package manager configuration remain consistent.
+
+```bash
+corepack enable
+corepack prepare yarn@4.16.0 --activate
+yarn install --immutable
+yarn npm audit --all
+yarn up -i
+```
+
+Apply major frontend upgrades one package at a time, then test the application:
+
+```bash
+yarn ng build
+yarn ng serve
+```
+
+Avoid npm commands in the frontend. They may generate a `package-lock.json` or trigger npm peer-resolution conflicts.
+
+### Python Dependencies
+
+Python dependencies are pinned in `requirements.txt`, which is generated from `requirements.in` with `pip-compile`. Do not edit `requirements.txt` manually.
+
+Check the pinned dependencies for known vulnerabilities:
+
+```bash
+conda activate Crowd_Frame
+
+python -m pip install --upgrade pip pip-tools pip-audit
+pip-audit -r requirements.txt
+```
+
+For targeted security updates, update only the affected package and regenerate the lockfile:
+
+```bash
+pip-compile --upgrade-package package-name --output-file=requirements.txt requirements.in
+python -m pip install -r requirements.txt
+pip-audit -r requirements.txt
+```
+
+If a broader refresh is needed, regenerate the full lockfile:
+
+```bash
+pip-compile --upgrade --output-file=requirements.txt requirements.in
+python -m pip install -r requirements.txt
+pip-audit -r requirements.txt
+```
+
+### Release Checks
+
+Before tagging a release, run at least:
+
+```bash
+yarn install --immutable
+yarn ng build
+pip-audit -r requirements.txt
+git status --short
+```
+
+Commit dependency updates separately from feature changes whenever possible.
 
 ## Task Performing
 
@@ -912,6 +981,7 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 |        `workers_mturk_data.csv`         |         MTurk worker/assignment exports.         |
 |    `workers_prolific_study_data.csv`    |        Prolific study/submission exports.        |
 | `workers_prolific_demographic_data.csv` |          Prolific worker demographics.           |
+
 ## FAQ & Troubleshooting
 
 ### FAQ
@@ -930,6 +1000,26 @@ ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 
 
 - **Use Yarn, not npm**  
   The frontend uses Yarn 4. Use `yarn install`, `yarn up`, and `yarn ng ...` commands instead of npm commands to avoid generating a `package-lock.json` or triggering npm peer-resolution conflicts.
+
+- **Wrong Node.js version during Angular build**  
+  If the Angular CLI reports an unsupported Node.js version even though the active shell uses the correct one, check which `node` and `yarn` binaries are being used. The build script may be resolving a global Yarn binary instead of the Corepack/Yarn binary from the active Node.js installation.
+
+  ```bash
+  node -v
+  which node
+  yarn -v
+  which yarn
+  yarn node -v
+  ```
+
+  With `nvm`, select the supported Node.js version before running deployment scripts:
+
+  ```bash
+  nvm use 24.16.0
+  corepack enable
+  corepack prepare yarn@4.16.0 --activate
+  export PATH="$HOME/.nvm/versions/node/v24.16.0/bin:$PATH"
+  ```
 
 - **Toloka support**  
   Toloka integration has been removed from Crowd_Frame (the `toloka-kit` dependency and the Toloka build/download helpers are no longer part of the project).

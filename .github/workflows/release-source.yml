@@ -3,7 +3,7 @@ name: Release (source-only)
 on:
   push:
     tags:
-      - "v*.*.*"   # e.g., v1.3.0
+      - "v*.*.*"   # e.g., v2.0.0
 
 permissions:
   contents: write

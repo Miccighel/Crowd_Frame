@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to rebuild (e.g., v1.3.0)"
+        description: "Git tag to rebuild (e.g., v2.0.0)"
         required: true
         type: string
       make_latest:

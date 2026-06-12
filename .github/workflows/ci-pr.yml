@@ -13,7 +13,7 @@ concurrency:
 
 env:
   APP_NAME: Crowd_Frame
-  NODE_VERSION: "22.12.0"
+  NODE_VERSION: "24.16.0"
   CI: "true"
   NODE_OPTIONS: "--max_old_space_size=6144"
 
@@ -32,7 +32,9 @@ jobs:
           cache: yarn
 
       - name: Enable Corepack (Yarn 4)
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare yarn@4.16.0 --activate
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -319,7 +321,9 @@ jobs:
           cache: yarn
 
       - name: Enable Corepack (Yarn 4)
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare yarn@4.16.0 --activate
 
       - name: Restore Angular build cache
         uses: actions/cache@v4
